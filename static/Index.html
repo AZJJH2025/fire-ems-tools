@@ -26,7 +26,7 @@
     formData.append("file", file);
 
     try {
-        let response = await fetch("https://2bd2-34-168-51-128.ngrok-free.app/", { 
+        let response = await fetch("/api/upload" { 
             method: "POST",
             body: formData
         });
