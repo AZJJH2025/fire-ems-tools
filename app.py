@@ -15,6 +15,8 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route("/")
 def home():
+    file_path = os.path.join("static", "index.html")
+    print(f"Trying to serve: {file_path}")  # Debugging output
     return send_from_directory("static", "index.html")
 
 # **Explicit route to serve static files**
