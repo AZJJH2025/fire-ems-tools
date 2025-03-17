@@ -4,7 +4,6 @@ __pycache__/
 venv/
 
 # Ensure static files are included
-# static/
 venv/
 upload/
 venv/
