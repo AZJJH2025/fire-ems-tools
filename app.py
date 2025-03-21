@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import os
 import pandas as pd
+import re
 from werkzeug.utils import secure_filename
 
 # Flask Setup
@@ -84,13 +85,15 @@ def analyze_file(file_path):
         if file_path.endswith(".csv"):
             df = pd.read_csv(file_path)
         else:
-            df = pd.read_excel(file_path)
+            df = pd.read_excel(file_path, engine="openpyxl")
 
         # ✅ Convert date columns safely
         date_columns = ["date", "incident_date", "response_time"]  # Adjust based on actual file structure
         for col in date_columns:
             if col in df.columns:
-                df[col] = pd.to_datetime(df[col], errors="coerce")  # Force conversion, replace invalids with NaT
+                df[col] = df[col].astype(str)  # Ensure all values are string before conversion
+                df[col] = df[col].apply(clean_date_format)  # Apply date cleaning function
+                df[col] = pd.to_datetime(df[col], errors="coerce")  # Convert, replacing invalids with NaT
                 df[col].fillna(pd.Timestamp("2000-01-01"), inplace=True)  # Replace NaT with a default date
 
         # ✅ Perform basic analysis
@@ -104,6 +107,22 @@ def analyze_file(file_path):
 
     except Exception as e:
         return {"error": f"Analysis error: {str(e)}"}
+
+
+def clean_date_format(value):
+    """
+    Cleans and standardizes date formats in the dataset.
+    - Removes any non-numeric characters except `/`, `-`, or `:`
+    - Returns empty string for completely invalid values.
+    """
+    if pd.isna(value) or not isinstance(value, str) or value.strip() == "":
+        return ""
+
+    # Remove unexpected characters but keep standard date separators
+    value = re.sub(r"[^0-9/\-: ]", "", value).strip()
+
+    # If value is still empty after cleaning, return a placeholder
+    return value if value else "2000-01-01"
 
 
 if __name__ == "__main__":
