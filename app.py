@@ -15,20 +15,16 @@ MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB limit
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
-
 
 @app.route("/")
 def serve_index():
     return send_from_directory(app.static_folder, "index.html")
 
-
 @app.route("/api/status")
 def status():
     return jsonify({"status": "🚀 Fire EMS API is Live!"})
-
 
 @app.route("/api/upload", methods=["POST", "OPTIONS"])
 def upload_file():
@@ -66,8 +62,5 @@ def upload_file():
         app.logger.error(f"Upload error: {str(e)}")
         return jsonify({"error": f"Server error: {str(e)}"}), 500
 
-
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080, debug=True)
-
-
