@@ -1,63 +1,66 @@
 function uploadFile() {
-    const fileInput = document.getElementById("fileInput");
-    const result = document.getElementById("result");
-    const file = fileInput.files[0];
-
-    if (!file) {
-        result.innerHTML = `<p style="color:red;">No file selected.</p>`;
+    let fileInput = document.getElementById("fileInput");
+    if (fileInput.files.length === 0) {
+        alert("🚨 No file selected! Please choose a file.");
         return;
     }
 
-    const formData = new FormData();
-    formData.append("file", file);
+    let formData = new FormData();
+    formData.append("file", fileInput.files[0]);
 
-    result.innerHTML = "⏳ Uploading and analyzing...";
+    let result = document.getElementById("result");
+    let loading = document.getElementById("loading");
+
+    result.innerHTML = ""; // Clear previous result
+    loading.style.display = "block"; // Show loading indicator
 
     fetch("/api/upload", {
         method: "POST",
-        body: formData,
+        body: formData
     })
-    .then((response) => response.json())
-    .then((data) => {
+    .then(response => response.json())
+    .then(data => {
+        loading.style.display = "none"; // Hide loading indicator
+
         if (data.error) {
-            result.innerHTML = `<p style="color:red;">Upload error: ${data.error}</p>`;
+            result.innerHTML = `<p style="color:red;">🚨 Upload error: ${data.error}</p>`;
             return;
         }
 
-        result.innerHTML = `
-            <div style="background:#eee;padding:10px;">
-                <p><strong>File uploaded successfully:</strong> ${data.filename}</p>
-                <p><strong>Rows:</strong> ${data.rows.length}</p>
-                <p><strong>Columns:</strong> ${data.columns.length}</p>
-                <p><strong>Column Names:</strong> ${data.columns.join(", ")}</p>
-                <p><strong>First Reported Date:</strong> ${data.first_reported_date || "N/A"}</p>
-            </div>
-        `;
-
-        // Optional: Build a table
-        const table = document.createElement("table");
-        const headerRow = document.createElement("tr");
-        data.columns.forEach((col) => {
-            const th = document.createElement("th");
-            th.textContent = col;
-            headerRow.appendChild(th);
-        });
-        table.appendChild(headerRow);
-
-        data.rows.forEach((row) => {
-            const tr = document.createElement("tr");
-            row.forEach((cell) => {
-                const td = document.createElement("td");
-                td.textContent = cell;
-                tr.appendChild(td);
-            });
-            table.appendChild(tr);
-        });
-
-        result.appendChild(table);
+        displayTable(data);
     })
-    .catch((error) => {
-        console.error("Upload failed:", error);
-        result.innerHTML = `<p style="color:red;">Upload failed. ${error.message}</p>`;
+    .catch(error => {
+        loading.style.display = "none";
+        console.error("🚨 Error:", error);
+        result.innerHTML = `<p style="color:red;">🚨 Error uploading file</p>`;
     });
+}
+
+function displayTable(data) {
+    let result = document.getElementById("result");
+    result.innerHTML = ""; // Clear previous results
+
+    let table = document.createElement("table");
+    let headerRow = document.createElement("tr");
+
+    // Add table headers
+    data.columns.forEach(col => {
+        let th = document.createElement("th");
+        th.textContent = col;
+        headerRow.appendChild(th);
+    });
+    table.appendChild(headerRow);
+
+    // Add table rows
+    data.rows.forEach(row => {
+        let tr = document.createElement("tr");
+        data.columns.forEach(col => {
+            let td = document.createElement("td");
+            td.textContent = row[col] || "N/A"; // Handle missing values
+            tr.appendChild(td);
+        });
+        table.appendChild(tr);
+    });
+
+    result.appendChild(table);
 }
