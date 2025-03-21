@@ -4,14 +4,13 @@ import os
 import pandas as pd
 from werkzeug.utils import secure_filename
 
-# Flask Setup
+# Setup
 app = Flask(__name__, static_folder="static", static_url_path="/static")
 CORS(app)
 
-# Upload Folder
 UPLOAD_FOLDER = "upload"
 ALLOWED_EXTENSIONS = {"csv", "xls", "xlsx"}
-MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB limit
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
@@ -45,37 +44,34 @@ def upload_file():
             return jsonify({"error": "File type not allowed. Please upload CSV or Excel."}), 400
 
         filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
 
-        # Check file size
         file.seek(0, os.SEEK_END)
         file_length = file.tell()
-        file.seek(0, 0)
+        file.seek(0)
 
         if file_length > MAX_FILE_SIZE:
             return jsonify({"error": "File size exceeds 5MB limit."}), 400
 
-        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
         file.save(filepath)
 
-        # Process file with Pandas
-        try:
+        # ✅ Read & Parse File
+        if filename.endswith(".csv"):
+            df = pd.read_csv(filepath)
+        else:
             df = pd.read_excel(filepath, engine="openpyxl")
 
-            # Convert timestamps, handling errors
-            for col in ["Reported Time", "Dispatch Time", "Enroute Time", "Onscene Time"]:
-                if col in df.columns:
-                    df[col] = pd.to_datetime(df[col], errors="coerce")
+        # ✅ Example processing: convert all datetime columns safely
+        for col in df.columns:
+            if pd.api.types.is_datetime64_any_dtype(df[col]):
+                df[col] = df[col].apply(lambda x: x.isoformat() if pd.notnull(x) else None)
 
-            # Handle missing timestamps
-            df.fillna({"Onscene Time": "Missing"}, inplace=True)
-
-            # Convert to JSON
-            processed_data = df.head(5).to_dict(orient="records")  # Send only first 5 rows
-
-        except Exception as e:
-            return jsonify({"error": f"Data processing error: {str(e)}"}), 500
-
-        return jsonify({"message": "File uploaded and analyzed successfully", "data": processed_data}), 200
+        preview = df.head(5).to_dict(orient="records")
+        return jsonify({
+            "message": "File uploaded and parsed successfully",
+            "filename": filename,
+            "preview": preview
+        })
 
     except Exception as e:
         app.logger.error(f"Upload error: {str(e)}")
