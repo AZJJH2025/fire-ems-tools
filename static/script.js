@@ -1,66 +1,50 @@
-async function uploadFile() {
-    console.log("🚀 uploadFile() function triggered!");
+document.getElementById('uploadForm').addEventListener('submit', function (event) {
+    event.preventDefault();
 
-    const fileInput = document.getElementById('fileInput');
-    const resultDiv = document.getElementById('result');
-    const table = document.getElementById("dataTable");
-    const headerRow = document.getElementById("headerRow");
-    const tableBody = document.getElementById("tableBody");
+    let formData = new FormData();
+    let fileInput = document.getElementById("file");
+    formData.append("file", fileInput.files[0]);
 
-    if (!fileInput.files.length) {
-        resultDiv.innerHTML = '<p style="color: red;">Please select a file first.</p>';
-        return;
-    }
+    let result = document.getElementById("result");
+    result.innerHTML = "<p>Uploading file...</p>"; // Display loading message
 
-    const file = fileInput.files[0];
+    fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            result.innerHTML = `<p style="color:red;">Upload error: ${data.error}</p>`;
+            return;
+        }
 
-    const formData = new FormData();
-    formData.append("file", file);
+        let table = document.createElement("table");
+        let headerRow = document.createElement("tr");
 
-    try {
-        console.log("📤 Sending file to /api/upload...");
-        const response = await fetch("/api/upload", {
-            method: "POST",
-            body: formData
+        // Generate table headers
+        data.columns.forEach(col => {
+            let th = document.createElement("th");
+            th.textContent = col;
+            headerRow.appendChild(th);
+        });
+        table.appendChild(headerRow);
+
+        // Use `data.rows` (backend changed to return `rows`)
+        data.rows.forEach(row => {
+            let tr = document.createElement("tr");
+            data.columns.forEach(col => {
+                let td = document.createElement("td");
+                td.textContent = row[col]; // Retrieve value using column name
+                tr.appendChild(td);
+            });
+            table.appendChild(tr);
         });
 
-        const data = await response.json();
-
-        if (response.ok) {
-            console.log("✅ File uploaded successfully:", data.filename);
-            resultDiv.innerHTML = `<p style="color: green;">File uploaded successfully: ${data.filename}</p>`;
-
-            // ✅ Populate Table
-            table.style.display = "table";  // Show table
-            headerRow.innerHTML = "";  // Clear old headers
-            tableBody.innerHTML = "";  // Clear old data
-
-            // Add column headers
-            data.columns.forEach(col => {
-                let th = document.createElement("th");
-                th.textContent = col;
-                headerRow.appendChild(th);
-            });
-
-            // Add row data
-            data.rows.forEach(row => {
-                let tr = document.createElement("tr");
-                row.forEach(cell => {
-                    let td = document.createElement("td");
-                    td.textContent = cell;
-                    tr.appendChild(td);
-                });
-                tableBody.appendChild(tr);
-            });
-        } else {
-            console.error("❌ Server error:", data.error);
-            resultDiv.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
-        }
-    } catch (error) {
-        console.error("❌ Upload error:", error);
-        resultDiv.innerHTML = `<p style="color: red;">Upload error: ${error.message}</p>`;
-    }
-}
-
-// ✅ Make function globally accessible
-window.uploadFile = uploadFile;
+        result.innerHTML = `<p><strong>File uploaded successfully:</strong> ${data.filename}</p>`;
+        result.appendChild(table);
+    })
+    .catch(error => {
+        result.innerHTML = `<p style="color:red;">Error: ${error}</p>`;
+    });
+});
