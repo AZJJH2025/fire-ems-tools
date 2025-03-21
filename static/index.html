@@ -7,22 +7,32 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 20px;
+      margin: 40px;
     }
     table {
       border-collapse: collapse;
-      margin-top: 20px;
       width: 100%;
+      margin-top: 20px;
     }
     th, td {
-      border: 1px solid #ccc;
+      border: 1px solid #ddd;
       padding: 8px;
+      text-align: left;
     }
     th {
       background-color: #f2f2f2;
+      position: sticky;
+      top: 0;
     }
     tr:nth-child(even) {
       background-color: #f9f9f9;
+    }
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+    #loading {
+      display: none;
+      font-weight: bold;
     }
     #result {
       margin-top: 20px;
@@ -30,12 +40,16 @@
   </style>
 </head>
 <body>
+  <h1>🚒 Fire & EMS Data Uploader</h1>
   <h2>🚒🔥 Upload Fire/EMS Data (CSV or Excel) 🚑🔥</h2>
-  <input type="file" id="fileInput" />
+
+  <input type="file" id="file" />
   <button onclick="uploadFile()">Upload & Analyze</button>
 
+  <div id="loading">⏳ Uploading and analyzing file...</div>
   <div id="result"></div>
 
-  <script src="script.js"></script>
+  <!-- Load external JavaScript -->
+  <script src="static/script.js"></script>
 </body>
 </html>
