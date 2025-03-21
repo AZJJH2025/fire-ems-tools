@@ -48,27 +48,26 @@ def upload_file():
         filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
         file.save(filepath)
 
-        # ✅ Load Excel and parse safely
+        # ✅ Load Excel
         df = pd.read_excel(filepath, engine="openpyxl")
 
-        # ✅ Basic Analysis (Modify as needed)
-        num_rows = len(df)
-        num_columns = len(df.columns)
-        column_names = df.columns.tolist()
+        # ✅ Drop unnamed columns (extra empty ones)
+        df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
 
-        # ✅ Check first valid "Reported" date
+        # ✅ Ensure 'Reported' date column is properly formatted
         if "Reported" in df.columns:
+            df["Reported"] = pd.to_datetime(df["Reported"], errors="coerce")  # Convert to datetime
             reported_valid = df["Reported"].dropna()
-            first_reported = str(reported_valid.iloc[0].date()) if not reported_valid.empty else "No valid reported date found"
+            first_reported = reported_valid.min().strftime("%Y-%m-%d") if not reported_valid.empty else "No valid reported date found"
         else:
             first_reported = "Reported column not found"
 
         return jsonify({
             "message": "File uploaded and analyzed successfully.",
             "filename": filename,
-            "num_rows": num_rows,
-            "num_columns": num_columns,
-            "column_names": column_names,
+            "num_rows": len(df),
+            "num_columns": len(df.columns),
+            "column_names": df.columns.tolist(),
             "first_reported_date": first_reported
         })
 
