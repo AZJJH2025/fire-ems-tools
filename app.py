@@ -1,41 +1,85 @@
-async function uploadFile() {
-    let input = document.getElementById("fileInput");
-    let file = input.files[0];
+from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
+import os
+import pandas as pd
+from werkzeug.utils import secure_filename
 
-    if (!file) {
-        alert("Please select a file first.");
-        return;
-    }
+# Flask Setup
+app = Flask(__name__, static_folder="static", static_url_path="/static")
+CORS(app)
 
-    let formData = new FormData();
-    formData.append("file", file);
+# Upload Folder
+UPLOAD_FOLDER = "upload"
+ALLOWED_EXTENSIONS = {"csv", "xls", "xlsx"}
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB limit
 
-    try {
-        let response = await fetch("/api/upload", {
-            method: "POST",
-            body: formData
-        });
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-        let data = await response.json();
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-        if (data.error) {
-            document.getElementById("result").innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
-            return;
+@app.route("/")
+def serve_index():
+    return send_from_directory(app.static_folder, "index.html")
+
+@app.route("/api/status")
+def status():
+    return jsonify({"status": "🚀 Fire EMS API is Live!"})
+
+@app.route("/api/upload", methods=["POST", "OPTIONS"])
+def upload_file():
+    try:
+        if request.method == "OPTIONS":
+            return jsonify({"message": "CORS preflight successful"}), 200
+
+        if "file" not in request.files:
+            return jsonify({"error": "No file part"}), 400
+
+        file = request.files["file"]
+
+        if file.filename == "":
+            return jsonify({"error": "No selected file"}), 400
+
+        if not allowed_file(file.filename):
+            return jsonify({"error": "File type not allowed. Please upload CSV or Excel."}), 400
+
+        # Secure filename
+        filename = secure_filename(file.filename)
+
+        # Check file size
+        file.seek(0, os.SEEK_END)
+        file_length = file.tell()
+        file.seek(0, 0)
+
+        if file_length > MAX_FILE_SIZE:
+            return jsonify({"error": "File size exceeds 5MB limit."}), 400
+
+        file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        file.save(file_path)
+
+        # Load the file with Pandas
+        df = pd.read_excel(file_path) if filename.endswith("xlsx") else pd.read_csv(file_path)
+
+        # Handle missing dates
+        if "Reported" in df.columns:
+            df["Reported"] = pd.to_datetime(df["Reported"], errors="coerce")
+            df["Reported"] = df["Reported"].fillna(pd.Timestamp("1970-01-01"))
+
+        # Prepare response
+        response_data = {
+            "message": "File uploaded and analyzed successfully",
+            "filename": filename,
+            "rows": len(df),
+            "columns": list(df.columns),
+            "first_reported_date": df["Reported"].min().strftime("%Y-%m-%d") if "Reported" in df.columns else "N/A"
         }
 
-        let resultHTML = `<p><strong>File uploaded successfully:</strong> ${data.filename}</p>`;
-        resultHTML += `<p><strong>Rows:</strong> ${data.rows}</p>`;
+        return jsonify(response_data), 200
 
-        // ✅ Ensure `data.columns` is an array before using .forEach
-        if (Array.isArray(data.columns)) {
-            resultHTML += `<p><strong>Columns:</strong> ${data.columns.length}</p>`;
-            resultHTML += `<p><strong>Column Names:</strong> ${data.columns.join(", ")}</p>`;
-        } else {
-            resultHTML += `<p style="color:red;">Error: Columns data is missing</p>`;
-        }
+    except Exception as e:
+        app.logger.error(f"Upload error: {str(e)}")
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
-        document.getElementById("result").innerHTML = resultHTML;
-    } catch (error) {
-        document.getElementById("result").innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
-    }
-}
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8080, debug=True)
