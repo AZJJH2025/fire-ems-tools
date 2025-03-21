@@ -34,7 +34,6 @@ def upload_file():
 
         if "file" not in request.files:
             return jsonify({"error": "No file part"}), 400
-
         file = request.files["file"]
 
         if file.filename == "":
@@ -43,8 +42,8 @@ def upload_file():
         if not allowed_file(file.filename):
             return jsonify({"error": "File type not allowed. Please upload CSV or Excel."}), 400
 
-        # Secure filename
-        filename = secure_filename(file.filename)
+file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+return jsonify({"message": "File uploaded successfully", "filename": filename}), 200
 
         # Check file size
         file.seek(0, os.SEEK_END)
@@ -64,3 +63,5 @@ def upload_file():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080, debug=True)
+
+
