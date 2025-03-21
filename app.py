@@ -35,41 +35,34 @@ def upload_file():
 
         if "file" not in request.files:
             return jsonify({"error": "No file part"}), 400
-
         file = request.files["file"]
 
         if file.filename == "":
             return jsonify({"error": "No selected file"}), 400
 
         if not allowed_file(file.filename):
-            return jsonify({"error": "File type not allowed. Upload CSV/Excel only."}), 400
+            return jsonify({"error": "File type not allowed. Please upload CSV or Excel."}), 400
 
+        # Secure filename
         filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-        file.save(filepath)
+        file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        file.save(file_path)
 
-        # ✅ Load Excel
-        df = pd.read_excel(filepath, engine="openpyxl")
+        # Load data
+        df = pd.read_excel(file_path) if filename.endswith(".xlsx") else pd.read_csv(file_path)
 
-        # ✅ Drop unnamed columns (extra empty ones)
-        df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
+        # Clean column names
+        df.columns = df.columns.str.strip()  # Remove extra spaces
 
-        # ✅ Ensure 'Reported' date column is properly formatted
-        if "Reported" in df.columns:
-            df["Reported"] = pd.to_datetime(df["Reported"], errors="coerce")  # Convert to datetime
-            reported_valid = df["Reported"].dropna()
-            first_reported = reported_valid.min().strftime("%Y-%m-%d") if not reported_valid.empty else "No valid reported date found"
-        else:
-            first_reported = "Reported column not found"
-
-        return jsonify({
-            "message": "File uploaded and analyzed successfully.",
+        # Convert DataFrame to JSON-friendly format
+        table_data = {
             "filename": filename,
-            "num_rows": len(df),
-            "num_columns": len(df.columns),
-            "column_names": df.columns.tolist(),
-            "first_reported_date": first_reported
-        })
+            "rows": df.fillna("").values.tolist(),  # Convert to list
+            "columns": df.columns.tolist(),  # Column names
+            "first_reported_date": df.iloc[0, 1] if "Reported" in df.columns else "N/A",
+        }
+
+        return jsonify(table_data), 200
 
     except Exception as e:
         app.logger.error(f"Upload error: {str(e)}")

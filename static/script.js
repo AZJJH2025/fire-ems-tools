@@ -1,8 +1,11 @@
 async function uploadFile() {
-    console.log("🚀 Upload started!");
+    console.log("🚀 uploadFile() function triggered!");
 
     const fileInput = document.getElementById('fileInput');
     const resultDiv = document.getElementById('result');
+    const table = document.getElementById("dataTable");
+    const headerRow = document.getElementById("headerRow");
+    const tableBody = document.getElementById("tableBody");
 
     if (!fileInput.files.length) {
         resultDiv.innerHTML = '<p style="color: red;">Please select a file first.</p>';
@@ -11,14 +14,11 @@ async function uploadFile() {
 
     const file = fileInput.files[0];
 
-    // Show loading message
-    resultDiv.innerHTML = '<p>Uploading file... please wait.</p>';
+    const formData = new FormData();
+    formData.append("file", file);
 
     try {
         console.log("📤 Sending file to /api/upload...");
-        const formData = new FormData();
-        formData.append("file", file);
-
         const response = await fetch("/api/upload", {
             method: "POST",
             body: formData
@@ -27,16 +27,31 @@ async function uploadFile() {
         const data = await response.json();
 
         if (response.ok) {
-            console.log("✅ File uploaded successfully:", data);
+            console.log("✅ File uploaded successfully:", data.filename);
+            resultDiv.innerHTML = `<p style="color: green;">File uploaded successfully: ${data.filename}</p>`;
 
-            // ✅ Display results
-            resultDiv.innerHTML = `
-                <p style="color: green;">File uploaded successfully: ${data.filename}</p>
-                <p><strong>Rows:</strong> ${data.num_rows}</p>
-                <p><strong>Columns:</strong> ${data.num_columns}</p>
-                <p><strong>Column Names:</strong> ${data.column_names.join(", ")}</p>
-                <p><strong>First Reported Date:</strong> ${data.first_reported_date}</p>
-            `;
+            // ✅ Populate Table
+            table.style.display = "table";  // Show table
+            headerRow.innerHTML = "";  // Clear old headers
+            tableBody.innerHTML = "";  // Clear old data
+
+            // Add column headers
+            data.columns.forEach(col => {
+                let th = document.createElement("th");
+                th.textContent = col;
+                headerRow.appendChild(th);
+            });
+
+            // Add row data
+            data.rows.forEach(row => {
+                let tr = document.createElement("tr");
+                row.forEach(cell => {
+                    let td = document.createElement("td");
+                    td.textContent = cell;
+                    tr.appendChild(td);
+                });
+                tableBody.appendChild(tr);
+            });
         } else {
             console.error("❌ Server error:", data.error);
             resultDiv.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
@@ -46,3 +61,6 @@ async function uploadFile() {
         resultDiv.innerHTML = `<p style="color: red;">Upload error: ${error.message}</p>`;
     }
 }
+
+// ✅ Make function globally accessible
+window.uploadFile = uploadFile;
