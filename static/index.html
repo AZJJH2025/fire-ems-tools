@@ -3,41 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fire & EMS Data Upload</title>
+    <title>Fire/EMS Data Upload</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid black;
-            padding: 10px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; position: sticky; top: 0; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        tr:hover { background-color: #f1f1f1; }
     </style>
 </head>
 <body>
+
     <h2>Upload Fire/EMS Data (CSV or Excel)</h2>
-    <input type="file" id="fileInput" />
-    <button onclick="uploadFile()">Upload & Analyze</button>
-    <p id="result"></p>
+    <form id="uploadForm">
+        <input type="file" id="file" name="file" accept=".csv, .xls, .xlsx">
+        <button type="submit">Upload & Analyze</button>
+    </form>
 
-    <!-- Data Table -->
-    <table id="dataTable" style="display: none;">
-        <thead>
-            <tr id="headerRow"></tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-    </table>
+    <div id="result"></div>
 
-    <script src="static/script.js"></script>
+    <script src="script.js"></script>
+
 </body>
 </html>
