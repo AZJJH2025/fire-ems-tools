@@ -1,11 +1,5 @@
-// Testing if Git detects this change
-
-// ✅ Debugging log to check if the script is loading
-console.log("✅ script.js is loaded!");
-
-// ✅ Upload function
 async function uploadFile() {
-    console.log("🚀 uploadFile() function triggered!");  // Debugging log
+    console.log("🚀 Upload started!");
 
     const fileInput = document.getElementById('fileInput');
     const resultDiv = document.getElementById('result');
@@ -17,20 +11,11 @@ async function uploadFile() {
 
     const file = fileInput.files[0];
 
-    // Validate file type
-    const validTypes = ["text/csv", "application/vnd.ms-excel", 
-                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"];
-    if (!validTypes.includes(file.type)) {
-        resultDiv.innerHTML = '<p style="color: red;">Invalid file type. Only CSV & Excel allowed.</p>';
-        return;
-    }
-
     // Show loading message
     resultDiv.innerHTML = '<p>Uploading file... please wait.</p>';
 
     try {
-        console.log("📤 Sending file to /api/upload...");  // Debugging log
-
+        console.log("📤 Sending file to /api/upload...");
         const formData = new FormData();
         formData.append("file", file);
 
@@ -42,8 +27,16 @@ async function uploadFile() {
         const data = await response.json();
 
         if (response.ok) {
-            console.log("✅ File uploaded successfully:", data.filename);
-            resultDiv.innerHTML = `<p style="color: green;">File uploaded successfully: ${data.filename}</p>`;
+            console.log("✅ File uploaded successfully:", data);
+
+            // ✅ Display results
+            resultDiv.innerHTML = `
+                <p style="color: green;">File uploaded successfully: ${data.filename}</p>
+                <p><strong>Rows:</strong> ${data.num_rows}</p>
+                <p><strong>Columns:</strong> ${data.num_columns}</p>
+                <p><strong>Column Names:</strong> ${data.column_names.join(", ")}</p>
+                <p><strong>First Reported Date:</strong> ${data.first_reported_date}</p>
+            `;
         } else {
             console.error("❌ Server error:", data.error);
             resultDiv.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
@@ -53,6 +46,3 @@ async function uploadFile() {
         resultDiv.innerHTML = `<p style="color: red;">Upload error: ${error.message}</p>`;
     }
 }
-
-// ✅ Make function globally accessible
-window.uploadFile = uploadFile;

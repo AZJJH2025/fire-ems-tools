@@ -21,6 +21,10 @@ def allowed_file(filename):
 def serve_index():
     return send_from_directory(app.static_folder, "index.html")
 
+
+
+
+
 @app.route("/api/upload", methods=["POST", "OPTIONS"])
 def upload_file():
     try:
@@ -45,21 +49,25 @@ def upload_file():
         # ✅ Load Excel and parse safely
         df = pd.read_excel(filepath, engine="openpyxl")
 
-        # ✅ Example safe datetime analysis
+        # ✅ Basic Analysis (Modify as needed)
+        num_rows = len(df)
+        num_columns = len(df.columns)
+        column_names = df.columns.tolist()
+
+        # ✅ Check first valid "Reported" date
         if "Reported" in df.columns:
             reported_valid = df["Reported"].dropna()
-            if not reported_valid.empty:
-                first_reported = reported_valid.iloc[0]
-                first_date = str(first_reported.date())
-            else:
-                first_date = "No valid reported date found"
+            first_reported = str(reported_valid.iloc[0].date()) if not reported_valid.empty else "No valid reported date found"
         else:
-            first_date = "Reported column not found"
+            first_reported = "Reported column not found"
 
         return jsonify({
             "message": "File uploaded and analyzed successfully.",
             "filename": filename,
-            "first_reported_date": first_date
+            "num_rows": num_rows,
+            "num_columns": num_columns,
+            "column_names": column_names,
+            "first_reported_date": first_reported
         })
 
     except Exception as e:
