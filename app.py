@@ -23,10 +23,8 @@ def allowed_file(filename):
 
 @app.route("/")
 def serve_index():
-    # Assuming index.html is in the root directory, not in static
-    # If index.html is moved to static folder, use:
-    # return send_from_directory(app.static_folder, "index.html")
-    return render_template("index.html")  # This assumes index.html is in a templates folder
+    # Using render_template to serve index.html from the templates folder
+    return render_template("index.html")
 
 @app.route("/api/status")
 def status():
@@ -84,4 +82,4 @@ def upload_file():
     return jsonify({"error": "File type not allowed. Only CSV and Excel files are supported."}), 400
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080, debug=True)
+    app.run(host="0.0.0.0", port=8000, debug=True)
