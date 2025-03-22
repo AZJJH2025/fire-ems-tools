@@ -83,9 +83,7 @@ function renderDataTable(data, container) {
             
             data.columns.forEach(column => {
                 const td = document.createElement("td");
-                td.textContent = row[column] !== undefined && row[column] !== null 
-                    ? row[column] 
-                    : '';
+                td.textContent = (row[column] !== undefined && row[column] !== null) ? row[column] : '';
                 tr.appendChild(td);
             });
             
@@ -103,5 +101,5 @@ function renderDataTable(data, container) {
     console.log("✅ Table rendered successfully!");
 }
 
-// Make uploadFile globally accessible
+// Make uploadFile globally accessible so the HTML onClick can reference it
 window.uploadFile = uploadFile;
