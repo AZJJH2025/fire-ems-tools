@@ -713,3 +713,6 @@ document.addEventListener('DOMContentLoaded', function() {
             font-size: 12px;
             color: #666;
         }
+`;
+    document.head.appendChild(style);
+});
