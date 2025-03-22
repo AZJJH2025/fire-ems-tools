@@ -1,8 +1,8 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify
 import pandas as pd
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='', static_folder='static')  # Ensure static folder is set
 
 # Allowed file extensions
 def allowed_file(filename):
@@ -11,7 +11,7 @@ def allowed_file(filename):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return app.send_static_file('index.html')
 
 @app.route('/api/upload', methods=['POST'])
 def upload_file():
