@@ -1,107 +1,144 @@
-// Define the uploadFile function to handle file uploads
-function uploadFile() {
-    // Get the file input element and verify a file is selected
-    const fileInput = document.getElementById("fileInput");
-    if (!fileInput || fileInput.files.length === 0) {
-        console.error("No file selected.");
-        alert("Please select a file to upload.");
-        return;
-    }
-    
-    // Show a loading message
-    const loadingDiv = document.getElementById("loading");
-    loadingDiv.style.display = "block";
+from flask import Flask, request, jsonify, send_from_directory, render_template
+from flask_cors import CORS
+import pandas as pd
+import os
+import traceback
+from datetime import datetime
+from werkzeug.utils import secure_filename
 
-    // Create a FormData object and append the selected file
-    const file = fileInput.files[0];
-    const formData = new FormData();
-    formData.append("file", file);
-    
-    // Make a POST request to the /api/upload endpoint
-    fetch("/api/upload", {
-        method: "POST",
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log("File uploaded and processed:", data);
-        // Hide the loading message
-        loadingDiv.style.display = "none";
+# Flask Setup
+app = Flask(__name__, static_folder="static", static_url_path="/static")
+CORS(app)
 
-        // Check if the API returned an error
-        if (data.error) {
-            alert("Error: " + data.error);
-            return;
-        }
-        
-        // Process the response data, e.g., update the UI with the results.
-        // For example, render the data table:
-        const resultDiv = document.getElementById("result");
-        renderDataTable(data, resultDiv);
-        
-        // Optionally, display the dashboard if data processing is successful.
-        const dashboard = document.getElementById("dashboard");
-        dashboard.style.display = "block";
-    })
-    .catch(error => {
-        console.error("Upload error:", error);
-        loadingDiv.style.display = "none";
-        alert("An error occurred during file upload.");
-    });
-}
+# Upload Folder Configuration
+UPLOAD_FOLDER = "uploads"
+ALLOWED_EXTENSIONS = {"csv", "xls", "xlsx"}
 
-// Function to render table from API data
-function renderDataTable(data, container) {
-    console.log("🔨 Rendering table with data");
-    
-    // Create table element
-    const table = document.createElement("table");
-    table.classList.add("data-table");
+# Create upload folder if it doesn't exist
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # Limit uploads to 16MB
 
-    // Create header row
-    const headerRow = document.createElement("tr");
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route("/")
+def serve_index():
+    # Serve index.html from the templates folder
+    return render_template("index.html")
+
+@app.route("/api/status")
+def status():
+    return jsonify({"status": "🚀 Fire EMS API is Live!"})
+
+@app.route("/api/upload", methods=["POST"])
+def upload_file():
+    if "file" not in request.files:
+        return jsonify({"error": "No file part"}), 400
     
-    // Add column headers
-    if (data.columns && Array.isArray(data.columns) && data.columns.length > 0) {
-        data.columns.forEach(column => {
-            const th = document.createElement("th");
-            th.textContent = column;
-            headerRow.appendChild(th);
-        });
-        table.appendChild(headerRow);
-    } else {
-        console.warn("⚠️ No columns found in API response");
-        container.innerHTML = '<p class="error-message">No column data available</p>';
-        return;
-    }
+    file = request.files["file"]
+    if file.filename == "":
+        return jsonify({"error": "No selected file"}), 400
     
-    // Add data rows
-    if (data.data && Array.isArray(data.data) && data.data.length > 0) {
-        // Handle data as array of objects (your API format)
-        data.data.forEach(row => {
-            const tr = document.createElement("tr");
+    if file and allowed_file(file.filename):
+        try:
+            # Use secure_filename if you intend to save the file; here we process it directly
+            # filename = secure_filename(file.filename)
             
-            data.columns.forEach(column => {
-                const td = document.createElement("td");
-                td.textContent = row[column] !== undefined && row[column] !== null 
-                    ? row[column] 
-                    : '';
-                tr.appendChild(td);
-            });
+            # Process based on file type: CSV, XLSX, or XLS
+            if file.filename.lower().endswith(".csv"):
+                df = pd.read_csv(file)
+            elif file.filename.lower().endswith(".xlsx"):
+                df = pd.read_excel(file, engine="openpyxl")
+            elif file.filename.lower().endswith(".xls"):
+                df = pd.read_excel(file, engine="xlrd")
+            else:
+                return jsonify({"error": "Unsupported file extension"}), 400
             
-            table.appendChild(tr);
-        });
-    } else {
-        console.error("❌ No data property found in API response");
-        container.innerHTML = '<p class="error-message">No data available</p>';
-        return;
-    }
+            # Get basic info
+            num_rows = len(df)
+            columns = df.columns.tolist()
+            
+            # Process date/time columns
+            date_columns = ['Reported', 'Unit Dispatched', 'Unit Enroute', 'Unit Onscene']
+            for col in date_columns:
+                if col in df.columns:
+                    df[col] = pd.to_datetime(df[col], errors='coerce')
+            
+            # Determine first reported date if available
+            first_reported_date = None
+            if "Reported" in df.columns:
+                valid_dates = df["Reported"].dropna()
+                if not valid_dates.empty:
+                    first_date = valid_dates.min()
+                    if pd.notna(first_date):
+                        first_reported_date = first_date.strftime('%Y-%m-%d')
+            
+            # Calculate response times if necessary columns exist
+            if "Unit Dispatched" in df.columns and "Unit Onscene" in df.columns:
+                df['Response Time'] = (df['Unit Onscene'] - df['Unit Dispatched']).dt.total_seconds() / 60
+                avg_response_time = df['Response Time'].dropna().mean()
+                median_response_time = df['Response Time'].dropna().median()
+                percentile_90_response_time = df['Response Time'].dropna().quantile(0.9)
+            else:
+                avg_response_time = None
+                median_response_time = None
+                percentile_90_response_time = None
+            
+            # Calculate incidents by hour of day from "Reported" column
+            incidents_by_hour = {}
+            if "Reported" in df.columns:
+                df['Hour'] = df['Reported'].dt.hour
+                hour_counts = df['Hour'].dropna().value_counts().sort_index()
+                incidents_by_hour = hour_counts.to_dict()
+            
+            # Calculate incidents by day of week from "Reported" column
+            incidents_by_day = {}
+            if "Reported" in df.columns:
+                df['DayOfWeek'] = df['Reported'].dt.dayofweek
+                day_counts = df['DayOfWeek'].dropna().value_counts().sort_index()
+                day_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+                incidents_by_day = {day_names[i]: count for i, count in day_counts.items()}
+            
+            # Convert datetime columns to string format
+            for col in df.select_dtypes(include=['datetime64']).columns:
+                df[col] = df[col].dt.strftime('%Y-%m-%d %H:%M:%S').fillna('')
+            
+            # Replace NaN values with empty strings
+            df = df.fillna('')
+            
+            # Convert DataFrame to list of dictionaries (records)
+            data = df.to_dict(orient="records")
+            
+            # Create response with analytics and basic info
+            response = {
+                "message": "File uploaded successfully",
+                "filename": file.filename,
+                "rows": num_rows,
+                "data": data,
+                "columns": columns,
+                "first_reported_date": first_reported_date,
+                "analytics": {
+                    "avg_response_time": float(avg_response_time) if avg_response_time is not None else None,
+                    "median_response_time": float(median_response_time) if median_response_time is not None else None,
+                    "percentile_90_response_time": float(percentile_90_response_time) if percentile_90_response_time is not None else None,
+                    "incidents_by_hour": incidents_by_hour,
+                    "incidents_by_day": incidents_by_day
+                }
+            }
+            
+            return jsonify(response)
+            
+        except Exception as e:
+            app.logger.error(f"Error processing file: {str(e)}")
+            app.logger.error(traceback.format_exc())
+            return jsonify({
+                "error": str(e),
+                "message": "Error processing file. Please check the file format."
+            }), 500
     
-    // Clear container and add table
-    container.innerHTML = '';
-    container.appendChild(table);
-    console.log("✅ Table rendered successfully!");
-}
+    return jsonify({"error": "File type not allowed. Only CSV and Excel files are supported."}), 400
 
-// Make uploadFile globally accessible
-window.uploadFile = uploadFile;
+if __name__ == "__main__":
+    # For production on Render, consider setting debug to False
+    app.run(host="0.0.0.0", port=8000, debug=True)
