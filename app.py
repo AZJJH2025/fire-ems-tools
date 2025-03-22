@@ -10,7 +10,7 @@ app = Flask(__name__, static_folder="static", static_url_path="/static")
 CORS(app)
 
 # Upload Folder
-UPLOAD_FOLDER = "uploads"  # Changed to plural for convention
+UPLOAD_FOLDER = "uploads"
 ALLOWED_EXTENSIONS = {"csv", "xls", "xlsx"}
 
 # Create upload folder if it doesn't exist
@@ -51,21 +51,35 @@ def upload_file():
             num_rows = len(df)
             columns = df.columns.tolist()
             
-            # Convert to records format (list of dictionaries)
-            data = df.to_dict(orient="records")
-            
-            # Get first reported date if column exists
+            # Get first reported date if column exists - with safer date handling
             first_reported_date = None
             if "Reported" in df.columns:
-                reported_dates = pd.to_datetime(df["Reported"], errors='coerce')
-                if not reported_dates.isna().all():  # Check if there are any valid dates
-                    first_reported_date = reported_dates.min().strftime('%Y-%m-%d')
+                # Convert to datetime with coercion for invalid dates
+                df["Reported"] = pd.to_datetime(df["Reported"], errors='coerce')
+                
+                # Only process if we have valid dates (not all NaT)
+                valid_dates = df["Reported"].dropna()
+                if not valid_dates.empty:
+                    # Get the minimum date and convert to string
+                    first_date = valid_dates.min()
+                    if pd.notna(first_date):  # Extra check to ensure it's not NaT
+                        first_reported_date = first_date.strftime('%Y-%m-%d')
+            
+            # Convert DataFrame to records format (list of dictionaries)
+            # Handle NaN/NaT values before conversion to avoid JSON serialization issues
+            df = df.fillna('')  # Replace NaN with empty string
+            
+            # For datetime columns, convert to string
+            for col in df.select_dtypes(include=['datetime64']).columns:
+                df[col] = df[col].astype(str).replace('NaT', '')
+                
+            data = df.to_dict(orient="records")
             
             # Return JSON response
             return jsonify({
                 "message": "File uploaded successfully",
                 "filename": file.filename,
-                "rows": num_rows,  # Added for clarity
+                "rows": num_rows,
                 "data": data,
                 "columns": columns,
                 "first_reported_date": first_reported_date
