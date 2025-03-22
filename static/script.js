@@ -1,66 +1,56 @@
-function uploadFile() {
-    let fileInput = document.getElementById("fileInput");
-    if (fileInput.files.length === 0) {
-        alert("🚨 No file selected! Please choose a file.");
+// ✅ script.js is loaded!
+console.log("✅ script.js is loaded!");
+
+// ✅ Upload function
+async function uploadFile() {
+    console.log("🚀 uploadFile() function triggered!");  // Debugging log
+
+    const fileInput = document.getElementById('fileInput');
+    const resultDiv = document.getElementById('result');
+
+    if (!fileInput.files.length) {
+        resultDiv.innerHTML = '<p style="color: red;">Please select a file first.</p>';
         return;
     }
 
-    let formData = new FormData();
-    formData.append("file", fileInput.files[0]);
+    const file = fileInput.files[0];
 
-    let result = document.getElementById("result");
-    let loading = document.getElementById("loading");
+    // Validate file type
+    const validTypes = ["text/csv", "application/vnd.ms-excel", 
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"];
+    if (!validTypes.includes(file.type)) {
+        resultDiv.innerHTML = '<p style="color: red;">Invalid file type. Only CSV & Excel allowed.</p>';
+        return;
+    }
 
-    result.innerHTML = ""; // Clear previous result
-    loading.style.display = "block"; // Show loading indicator
+    // Show loading message
+    resultDiv.innerHTML = '<p>Uploading file... please wait.</p>';
 
-    fetch("/api/upload", {
-        method: "POST",
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        loading.style.display = "none"; // Hide loading indicator
+    try {
+        console.log("📤 Sending file to /api/upload...");  // Debugging log
 
-        if (data.error) {
-            result.innerHTML = `<p style="color:red;">🚨 Upload error: ${data.error}</p>`;
-            return;
-        }
+        const formData = new FormData();
+        formData.append("file", file);
 
-        displayTable(data);
-    })
-    .catch(error => {
-        loading.style.display = "none";
-        console.error("🚨 Error:", error);
-        result.innerHTML = `<p style="color:red;">🚨 Error uploading file</p>`;
-    });
-}
-
-function displayTable(data) {
-    let result = document.getElementById("result");
-    result.innerHTML = ""; // Clear previous results
-
-    let table = document.createElement("table");
-    let headerRow = document.createElement("tr");
-
-    // Add table headers
-    data.columns.forEach(col => {
-        let th = document.createElement("th");
-        th.textContent = col;
-        headerRow.appendChild(th);
-    });
-    table.appendChild(headerRow);
-
-    // Add table rows
-    data.rows.forEach(row => {
-        let tr = document.createElement("tr");
-        data.columns.forEach(col => {
-            let td = document.createElement("td");
-            td.textContent = row[col] || "N/A"; // Handle missing values
-            tr.appendChild(td);
+        const response = await fetch("/api/upload", {
+            method: "POST",
+            body: formData
         });
-        table.appendChild(tr);
-    });
 
-    result.appendChild(table);
+        const data = await response.json();
+
+        if (response.ok) {
+            console.log("✅ File uploaded successfully:", data.filename);
+            resultDiv.innerHTML = `<p style="color: green;">File uploaded successfully: ${data.filename}</p>`;
+        } else {
+            console.error("❌ Server error:", data.error);
+            resultDiv.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
+        }
+    } catch (error) {
+        console.error("❌ Upload error:", error);
+        resultDiv.innerHTML = `<p style="color: red;">Upload error: ${error.message}</p>`;
+    }
 }
+
+// ✅ Make function globally accessible
+window.uploadFile = uploadFile;
