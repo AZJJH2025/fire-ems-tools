@@ -227,22 +227,35 @@ def upload_call_data():
             required_columns = ['latitude', 'longitude']
             missing_columns = [col for col in required_columns if col not in data.columns]
             
-            # If latitude and longitude are missing but address is present, try geocoding
-            if missing_columns and 'address' in data.columns:
-                app.logger.info("Attempting to geocode addresses since lat/lng columns are missing")
+            # Define possible address column names (add any others that might be in your files)
+            address_column_names = ['address', 'location', 'site_address', 'full_address', 'street_address', 
+                                   'location_address', 'site', 'incident_address', 'incident_location',
+                                   'Address', 'Location', 'LOCATION', 'ADDRESS', 'Incident Address', 
+                                   'Street', 'Street Address', 'Addr', 'FullAddress', 'Full_Address']
+
+            # Check if any of these columns exist in the data
+            found_address_column = None
+            for addr_col in address_column_names:
+                if addr_col in data.columns:
+                    found_address_column = addr_col
+                    break
+
+            # If latitude and longitude are missing but some form of address column is present, try geocoding
+            if missing_columns and found_address_column:
+                app.logger.info(f"Attempting to geocode addresses from column '{found_address_column}' since lat/lng columns are missing")
                 
                 # Create new latitude and longitude columns
                 data['latitude'] = None
                 data['longitude'] = None
                 
                 # Number of addresses to geocode
-                total_addresses = data['address'].count()
+                total_addresses = data[found_address_column].count()
                 geocoded_count = 0
                 
                 # Loop through addresses and geocode them
                 for index, row in data.iterrows():
-                    if not pd.isna(row['address']):
-                        lat, lng = geocode_address(row['address'])
+                    if not pd.isna(row[found_address_column]):
+                        lat, lng = geocode_address(row[found_address_column])
                         if lat and lng:
                             data.at[index, 'latitude'] = lat
                             data.at[index, 'longitude'] = lng
