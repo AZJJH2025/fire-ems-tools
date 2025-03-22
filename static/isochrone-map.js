@@ -59,9 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add selected layer
         if (style === 'streets') {
             osmLayer.addTo(map);
-    `;
-    document.head.appendChild(style);
-}); else if (style === 'satellite') {
+        } else if (style === 'satellite') {
             satelliteLayer.addTo(map);
         } else if (style === 'terrain') {
             terrainLayer.addTo(map);
@@ -763,6 +761,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .facility-coverage {
             font-size: 12px;
             color: #666;
-`;
+        }
+    `;
     document.head.appendChild(style);
 });
