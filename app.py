@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify, send_from_directory, render_template
 from flask_cors import CORS
 import pandas as pd
+import numpy as np
 import os
 import traceback
+from datetime import datetime
 from werkzeug.utils import secure_filename
 
 # Flask Setup
@@ -51,12 +53,17 @@ def upload_file():
             num_rows = len(df)
             columns = df.columns.tolist()
             
-            # Get first reported date if column exists - with safer date handling
+            # Process date/time columns
+            date_columns = ['Reported', 'Unit Dispatched', 'Unit Enroute', 'Unit Onscene']
+            
+            for col in date_columns:
+                if col in df.columns:
+                    # Convert to datetime with coercion for invalid dates
+                    df[col] = pd.to_datetime(df[col], errors='coerce')
+            
+            # Get first reported date
             first_reported_date = None
             if "Reported" in df.columns:
-                # Convert to datetime with coercion for invalid dates
-                df["Reported"] = pd.to_datetime(df["Reported"], errors='coerce')
-                
                 # Only process if we have valid dates (not all NaT)
                 valid_dates = df["Reported"].dropna()
                 if not valid_dates.empty:
@@ -65,25 +72,77 @@ def upload_file():
                     if pd.notna(first_date):  # Extra check to ensure it's not NaT
                         first_reported_date = first_date.strftime('%Y-%m-%d')
             
-            # Convert DataFrame to records format (list of dictionaries)
-            # Handle NaN/NaT values before conversion to avoid JSON serialization issues
-            df = df.fillna('')  # Replace NaN with empty string
+            # Calculate response times if we have the necessary columns
+            if "Unit Dispatched" in df.columns and "Unit Onscene" in df.columns:
+                # Calculate response time in minutes
+                df['Response Time'] = (df['Unit Onscene'] - df['Unit Dispatched']).dt.total_seconds() / 60
+                
+                # Calculate average response time
+                avg_response_time = df['Response Time'].dropna().mean()
+                
+                # Calculate median response time
+                median_response_time = df['Response Time'].dropna().median()
+                
+                # Calculate 90th percentile response time
+                percentile_90_response_time = df['Response Time'].dropna().quantile(0.9)
+            else:
+                avg_response_time = None
+                median_response_time = None
+                percentile_90_response_time = None
             
-            # For datetime columns, convert to string
+            # Calculate incidents by hour of day if we have timestamps
+            incidents_by_hour = {}
+            if "Reported" in df.columns:
+                # Extract hour from timestamp
+                df['Hour'] = df['Reported'].dt.hour
+                
+                # Count incidents by hour
+                hour_counts = df['Hour'].dropna().value_counts().sort_index()
+                
+                # Convert to dictionary with hour keys
+                incidents_by_hour = hour_counts.to_dict()
+            
+            # Calculate incidents by day of week
+            incidents_by_day = {}
+            if "Reported" in df.columns:
+                # Extract day of week from timestamp (0=Monday, 6=Sunday)
+                df['DayOfWeek'] = df['Reported'].dt.dayofweek
+                
+                # Count incidents by day of week
+                day_counts = df['DayOfWeek'].dropna().value_counts().sort_index()
+                
+                # Convert to dictionary with day names
+                day_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+                incidents_by_day = {day_names[i]: count for i, count in day_counts.items()}
+            
+            # For datetime columns, convert to string after all calculations
             for col in df.select_dtypes(include=['datetime64']).columns:
                 df[col] = df[col].astype(str).replace('NaT', '')
-                
+            
+            # Convert NaN values to empty strings
+            df = df.fillna('')
+            
+            # Convert DataFrame to records format (list of dictionaries)
             data = df.to_dict(orient="records")
             
-            # Return JSON response
-            return jsonify({
+            # Create response with additional analytics
+            response = {
                 "message": "File uploaded successfully",
                 "filename": file.filename,
                 "rows": num_rows,
                 "data": data,
                 "columns": columns,
-                "first_reported_date": first_reported_date
-            })
+                "first_reported_date": first_reported_date,
+                "analytics": {
+                    "avg_response_time": float(avg_response_time) if avg_response_time is not None else None,
+                    "median_response_time": float(median_response_time) if median_response_time is not None else None,
+                    "percentile_90_response_time": float(percentile_90_response_time) if percentile_90_response_time is not None else None,
+                    "incidents_by_hour": incidents_by_hour,
+                    "incidents_by_day": incidents_by_day
+                }
+            }
+            
+            return jsonify(response)
             
         except Exception as e:
             app.logger.error(f"Error processing file: {str(e)}")
