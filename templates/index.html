@@ -1,396 +1,96 @@
-// Otherwise, create a new marker entry
-            markersByLocation[locationKey] = {
-                lat: record.Latitude,
-                lng: record.Longitude,
-                incidents: [record]
-            };
-        }
-    });
-    
-    // Create markers for each location
-    Object.values(markersByLocation).forEach(location => {
-        // Determine marker color based on number of incidents at this location
-        let markerColor = 'blue';
-        if (location.incidents.length >= 5) {
-            markerColor = 'red';
-        } else if (location.incidents.length >= 2) {
-            markerColor = 'orange';
-        }
-        
-        // Create marker with appropriate color
-        const marker = L.marker([location.lat, location.lng], {
-            icon: L.divIcon({
-                className: `marker-icon marker-${markerColor}`,
-                html: `<div class="marker-pin" style="background-color: ${markerColor};">${location.incidents.length}</div>`,
-                iconSize: [30, 30],
-                iconAnchor: [15, 30]
-            })
-        }).addTo(map);
-        
-        // Create popup content with all incidents at this location
-        let popupContent = '<div class="incidents-popup">';
-        
-        if (location.incidents.length > 1) {
-            popupContent += `<h4>${location.incidents.length} incidents at this location</h4>`;
-        }
-        
-        // Add details for each incident
-        location.incidents.forEach((record, index) => {
-            if (index > 0) popupContent += '<hr>';
-            
-            popupContent += `
-                <div class="incident-details">
-                    <strong>Run #:</strong> ${record['Run No'] || ''}<br>
-                    <strong>Reported:</strong> ${record['Reported'] || ''}<br>
-                    <strong>Unit:</strong> ${record['Unit'] || ''}<br>
-                    <strong>Address:</strong> ${record['Full Address'] || ''}<br>
-                    <strong>City:</strong> ${record['Incident City'] || ''}
-                `;
-            
-            if (record['Response Time (min)'] !== undefined) {
-                popupContent += `<br><strong>Response Time:</strong> ${record['Response Time (min)']} min`;
-            }
-            
-            popupContent += '</div>';
-        });
-        
-        popupContent += '</div>';
-        
-        // Bind popup to marker
-        marker.bindPopup(popupContent, {
-            maxWidth: 300,
-            maxHeight: 300,
-            autoPan: true
-        });
-    });
-}
-
-// Function to create unit activity chart (more compact)
-function createUnitChart(data, stats) {
-    const canvas = document.getElementById('unit-chart');
-    if (!canvas) return;
-    
-    // Check if we have unit data
-    const hasUnitData = data.some(record => record['Unit']);
-    
-    if (!hasUnitData) {
-        canvas.parentElement.innerHTML = '<p>No unit data available for chart</p>';
-        return;
-    }
-    
-    // Count incidents by unit
-    const unitCounts = {};
-    
-    data.forEach(record => {
-        if (record['Unit']) {
-            const unit = record['Unit'];
-            unitCounts[unit] = (unitCounts[unit] || 0) + 1;
-        }
-    });
-    
-    // Sort units by count and take top 8 (instead of 10 for compactness)
-    const topUnits = Object.entries(unitCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 8);
-    
-    // Create chart
-    new Chart(canvas, {
-        type: 'bar',
-        data: {
-            labels: topUnits.map(unit => unit[0]),
-            datasets: [{
-                label: 'Incidents',
-                data: topUnits.map(unit => unit[1]),
-                backgroundColor: 'rgba(76, 175, 80, 0.7)',
-                borderColor: 'rgba(76, 175, 80, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            indexAxis: 'y',  // Horizontal bar chart
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    title: {
-                        display: false // Remove axis title
-                    }
-                },
-                y: {
-                    title: {
-                        display: false // Remove axis title
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false // Hide legend
-                },
-                title: {
-                    display: false // Hide title - we have a header
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `Incidents: ${context.parsed.x}`;
-                        }
-                    }
-                }
-            },
-            responsive: true,
-            maintainAspectRatio: false
-        }
-    });
-}
-
-// Function to create location/city chart (more compact)
-function createLocationChart(data, stats) {
-    const canvas = document.getElementById('location-chart');
-    if (!canvas) return;
-    
-    // Determine which field to use for location data
-    const locationField = data.some(record => record['Incident City']) ? 'Incident City' : null;
-    
-    if (!locationField) {
-        canvas.parentElement.innerHTML = '<p>No location data available for chart</p>';
-        return;
-    }
-    
-    // Count incidents by location
-    const locationCounts = {};
-    
-    data.forEach(record => {
-        if (record[locationField]) {
-            const location = record[locationField];
-            locationCounts[location] = (locationCounts[location] || 0) + 1;
-        }
-    });
-    
-    // Sort locations by count and take top 6 (reduced for compactness)
-    const topLocations = Object.entries(locationCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 6);
-    
-    // Calculate "Other" category
-    const totalIncidents = Object.values(locationCounts).reduce((sum, count) => sum + count, 0);
-    const topIncidents = topLocations.reduce((sum, [_, count]) => sum + count, 0);
-    const otherIncidents = totalIncidents - topIncidents;
-    
-    // Add "Other" category if significant
-    if (otherIncidents > 0) {
-        topLocations.push(['Other', otherIncidents]);
-    }
-    
-    // Create chart
-    new Chart(canvas, {
-        type: 'doughnut', // Doughnut is more compact than pie
-        data: {
-            labels: topLocations.map(location => location[0]),
-            datasets: [{
-                data: topLocations.map(location => location[1]),
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.7)',
-                    'rgba(54, 162, 235, 0.7)',
-                    'rgba(255, 206, 86, 0.7)',
-                    'rgba(75, 192, 192, 0.7)',
-                    'rgba(153, 102, 255, 0.7)',
-                    'rgba(255, 159, 64, 0.7)',
-                    'rgba(199, 199, 199, 0.7)'
-                ],
-                borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)',
-                    'rgba(199, 199, 199, 1)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            plugins: {
-                title: {
-                    display: false // Hide title - we have a header
-                },
-                legend: {
-                    position: 'right',
-                    labels: {
-                        boxWidth: 12,
-                        font: {
-                            size: 10
-                        }
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const value = context.parsed;
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = Math.round(value / total * 100);
-                            return `${context.label}: ${value} (${percentage}%)`;
-                        }
-                    }
-                }
-            },
-            responsive: true,
-            maintainAspectRatio: false
-        }
-    });
-}
-
-// Function to create response time chart (more compact)
-function createResponseTimeChart(data) {
-    const canvas = document.getElementById('response-time-chart');
-    if (!canvas) return;
-    
-    // Get response times
-    const responseTimes = data
-        .filter(record => record['Response Time (min)'] !== undefined)
-        .map(record => record['Response Time (min)']);
-    
-    if (responseTimes.length === 0) {
-        canvas.parentElement.innerHTML = '<p>No response time data available for chart</p>';
-        return;
-    }
-    
-    // Calculate statistics
-    const averageResponseTime = Math.round(responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length);
-    
-    // Sort response times to find median and percentiles
-    const sortedTimes = [...responseTimes].sort((a, b) => a - b);
-    const median = sortedTimes[Math.floor(sortedTimes.length / 2)];
-    const p90index = Math.floor(sortedTimes.length * 0.9);
-    const p90 = sortedTimes[p90index];
-    
-    // Create more compact bins for histogram (0-5, 5-10, 10-15, etc.)
-    const bins = {};
-    const binSize = 5;
-    const maxResponseTime = Math.min(Math.max(...responseTimes), 60); // Cap at 60 min for readability
-    const numBins = Math.ceil(maxResponseTime / binSize);
-    
-    // Initialize bins
-    for (let i = 0; i < numBins; i++) {
-        bins[`${i * binSize}-${(i + 1) * binSize}`] = 0;
-    }
-    
-    // Count response times in each bin
-    responseTimes.forEach(time => {
-        if (time <= 60) { // Only count times up to 60 min
-            const binIndex = Math.floor(time / binSize);
-            const binKey = `${binIndex * binSize}-${(binIndex + 1) * binSize}`;
-            bins[binKey] = (bins[binKey] || 0) + 1;
-        }
-    });
-    
-    // Create chart
-    new Chart(canvas, {
-        type: 'bar',
-        data: {
-            labels: Object.keys(bins),
-            datasets: [{
-                label: 'Incidents',
-                data: Object.values(bins),
-                backgroundColor: 'rgba(255, 159, 64, 0.7)',
-                borderColor: 'rgba(255, 159, 64, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: false
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Minutes'
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                },
-                title: {
-                    display: false
-                },
-                subtitle: {
-                    display: true,
-                    text: `Avg: ${averageResponseTime} min | Median: ${median} min | 90th %: ${p90} min`,
-                    position: 'bottom',
-                    font: {
-                        size: 12
-                    },
-                    padding: {
-                        top: 10,
-                        bottom: 0
-                    }
-                }
-            },
-            responsive: true,
-            maintainAspectRatio: false
-        }
-    });
-}
-
-// Function to render table from API data
-function renderDataTable(data, container) {
-    console.log("🔨 Rendering table with data");
-    
-    // Create table element
-    const table = document.createElement("table");
-    
-    // Create header row
-    const headerRow = document.createElement("tr");
-    
-    // Add column headers
-    if (data.columns && Array.isArray(data.columns)) {
-        data.columns.forEach(column => {
-            const th = document.createElement("th");
-            th.textContent = column;
-            headerRow.appendChild(th);
-        });
-        table.appendChild(headerRow);
-    } else {
-        console.warn("⚠️ No columns found in API response");
-        container.innerHTML = '<p class="error-message">No column data available</p>';
-        return;
-    }
-    
-    // Add data rows
-    if (data.data && Array.isArray(data.data)) {
-        // Handle data as array of objects (your API format)
-        data.data.forEach(row => {
-            const tr = document.createElement("tr");
-            
-            data.columns.forEach(column => {
-                const td = document.createElement("td");
-                td.textContent = row[column] !== undefined && row[column] !== null 
-                    ? row[column] 
-                    : '';
-                tr.appendChild(td);
-            });
-            
-            table.appendChild(tr);
-        });
-    } else {
-        console.error("❌ No data property found in API response");
-        container.innerHTML = '<p class="error-message">No data available</p>';
-        return;
-    }
-    
-    // Clear container and add table
-    container.innerHTML = '';
-    container.appendChild(table);
-    console.log("✅ Table rendered successfully!");
-}
-
-// Make uploadFile globally accessible
-window.uploadFile = uploadFile;
-   </script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>🚒🔥 Fire/EMS Data Analytics Dashboard 🚑🔥</title>
+   <link rel="stylesheet" href="/static/styles.css">
+   <!-- Leaflet CSS for maps -->
+   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+   <!-- Chart.js for charts -->
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+   <header>
+      <h1>🚒 Fire & EMS Data Analytics Dashboard 🚑</h1>
+      <p>Upload your Fire/EMS data files for interactive visualization and analysis</p>
+   </header>
+   
+   <!-- File Upload Section -->
+   <div class="file-upload-container">
+      <h2>Upload Data File</h2>
+      <div class="file-input-wrapper">
+         <input type="file" id="fileInput">
+         <button onclick="uploadFile()">Upload & Analyze</button>
+      </div>
+      <p>Accepted formats: CSV, Excel (.xls, .xlsx)</p>
+   </div>
+   
+   <div id="loading">⏳ Uploading and analyzing file... Please wait.</div>
+   
+   <div id="result">
+      <!-- Results will be displayed here by the JavaScript -->
+      <p>Upload a file to view analytics and visualizations.</p>
+   </div>
+   
+   <!-- Dashboard Section - Initially Hidden -->
+   <div id="dashboard" style="display: none;">
+      <div class="dashboard-header">
+         <h2>📊 Data Analysis Dashboard</h2>
+         <div id="file-stats"></div>
+      </div>
+      
+      <!-- First Row: Map and Time Heatmap -->
+      <div class="dashboard-row">
+         <!-- Map visualization -->
+         <div class="dashboard-card">
+            <h3>📍 Incident Map</h3>
+            <div id="incident-map"></div>
+         </div>
+         
+         <!-- Time patterns heatmap -->
+         <div class="dashboard-card">
+            <h3>⏰ Incidents by Time (Day/Hour)</h3>
+            <div id="time-chart"></div>
+         </div>
+      </div>
+      
+      <!-- Second Row: Unit Activity and Location Charts -->
+      <div class="dashboard-row">
+         <!-- Unit activity chart -->
+         <div class="dashboard-card">
+            <h3>🚒 Unit Activity</h3>
+            <div class="chart-container">
+               <canvas id="unit-chart"></canvas>
+            </div>
+         </div>
+         
+         <!-- Location/city chart -->
+         <div class="dashboard-card">
+            <h3>🏙️ Incidents by Location</h3>
+            <div class="chart-container">
+               <canvas id="location-chart"></canvas>
+            </div>
+         </div>
+      </div>
+      
+      <!-- Data table section -->
+      <div class="dashboard-row">
+         <div class="dashboard-card full-width">
+            <h3>📋 Incident Data Table</h3>
+            <div id="data-table"></div>
+         </div>
+      </div>
+   </div>
+   
+   <!-- Leaflet JS for maps -->
+   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+   
+   <!-- Custom JavaScript -->
+   <script src="/static/script.js"></script>
 </body>
 </html>
