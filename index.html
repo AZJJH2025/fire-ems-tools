@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fire & EMS Data Uploader</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+      position: sticky;
+      top: 0;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+    #loading {
+      display: none;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>🚒 Fire & EMS Data Uploader</h1>
+
+  <input type="file" id="fileInput" />
+  <button onclick="uploadFile()">Upload & Analyze</button>
+  <div id="loading">⏳ Uploading and analyzing file...</div>
+  <div id="result"></div>
+
+  <!-- Load external JavaScript -->
+  <script src="/static/script.js"></script>
+</body>
+</html>
