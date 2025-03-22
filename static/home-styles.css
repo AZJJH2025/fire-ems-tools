@@ -1,0 +1,268 @@
+/* Base Styles */
+:root {
+  --primary-color: #2196f3;
+  --primary-dark: #0d8aee;
+  --success-color: #4caf50;
+  --warning-color: #ff9800;
+  --danger-color: #f44336;
+  --light-gray: #f5f5f5;
+  --dark-gray: #333;
+  --border-color: #ddd;
+  --text-color: #333;
+  --text-light: #666;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  color: var(--text-color);
+  background-color: #f9f9f9;
+}
+
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+/* Typography */
+h1, h2, h3, h4 {
+  margin-bottom: 0.5em;
+  line-height: 1.2;
+}
+
+p {
+  margin-bottom: 1rem;
+}
+
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Header */
+header {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 50px 0;
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+header p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+/* Main Content */
+main {
+  padding-bottom: 60px;
+}
+
+.intro {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto 40px;
+}
+
+/* Tools Grid */
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 30px;
+}
+
+/* Tool Cards */
+.tool-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  min-height: 250px;
+}
+
+.tool-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.tool-card.completed {
+  border-top: 4px solid var(--success-color);
+}
+
+.tool-card.in-progress {
+  border-top: 4px solid var(--warning-color);
+}
+
+.tool-card.planned {
+  border-top: 4px solid var(--text-light);
+  opacity: 0.8;
+}
+
+.tool-card.future {
+  border: 2px dashed var(--border-color);
+  background-color: var(--light-gray);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.tool-icon {
+  background-color: var(--light-gray);
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}
+
+.tool-icon i {
+  font-size: 24px;
+  color: var(--primary-color);
+}
+
+.tool-content {
+  padding: 20px 20px 20px 100px;
+  flex-grow: 1;
+}
+
+.tool-card.future .tool-content {
+  padding: 20px;
+}
+
+.tool-card h3 {
+  font-size: 1.3rem;
+  color: var(--dark-gray);
+  margin-bottom: 10px;
+}
+
+.tool-card p {
+  color: var(--text-light);
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+}
+
+.tool-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.tag {
+  background-color: var(--light-gray);
+  color: var(--text-light);
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  border-radius: 4px;
+}
+
+.tool-link {
+  display: inline-block;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.tool-link:hover {
+  background-color: var(--primary-dark);
+  text-decoration: none;
+}
+
+.tool-link.disabled {
+  background-color: var(--border-color);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.tool-status {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.completed .tool-status {
+  color: var(--success-color);
+}
+
+.in-progress .tool-status {
+  color: var(--warning-color);
+}
+
+.planned .tool-status {
+  color: var(--text-light);
+}
+
+/* Footer */
+footer {
+  background-color: var(--dark-gray);
+  color: white;
+  padding: 30px 0;
+  text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  header {
+    padding: 30px 0;
+  }
+  
+  header h1 {
+    font-size: 2rem;
+  }
+  
+  .tools-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .tool-card {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .tool-content {
+    padding: 90px 20px 20px 20px;
+  }
+  
+  .tool-icon {
+    top: 20px;
+    left: 20px;
+  }
+  
+  .tool-status {
+    top: 20px;
+    right: 20px;
+  }
+}
