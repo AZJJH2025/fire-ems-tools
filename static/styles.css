@@ -73,28 +73,10 @@ button:hover {
   margin-bottom: 20px;
 }
 
-#file-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  margin-top: 10px;
-}
-
-.stat-item {
-  background-color: white;
-  padding: 10px 15px;
-  border-radius: 4px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.dashboard-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
+/* Set fixed height for charts to avoid excess scrolling */
 .dashboard-card {
+  max-height: 400px;
+  overflow: auto;
   flex: 1;
   min-width: 300px;
   background-color: white;
@@ -103,15 +85,78 @@ button:hover {
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
+/* Height constraints for chart containers */
+#incident-map {
+  height: 300px !important;  /* For map */
+}
+
+#time-heatmap {
+  height: 200px !important;  /* For time heatmap */
+}
+
+canvas {
+  max-height: 250px !important;  /* For all Chart.js canvases */
+}
+
+/* Improvement for chart containers */
+.chart-container {
+  position: relative;
+  height: 250px;
+  width: 100%;
+}
+
+/* Sticky headers for all dashboard cards */
 .dashboard-card h3 {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+  padding: 10px 0;
   margin-top: 0;
   margin-bottom: 15px;
-  padding-bottom: 10px;
   border-bottom: 1px solid #eee;
 }
 
+/* Improve responsiveness */
+.dashboard-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* Full width card should span all columns */
 .full-width {
-  flex: 0 0 100%;
+  grid-column: 1 / -1;
+}
+
+/* Compact table styles for data table */
+#data-table {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+#data-table table {
+  font-size: 12px; /* Smaller font for data table */
+}
+
+#data-table th, #data-table td {
+  padding: 6px; /* Smaller padding */
+}
+
+/* File stats display */
+#file-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.stat-item {
+  background-color: #f8f9fa;
+  border-left: 4px solid #2196f3;
+  padding: 8px 12px;
+  font-size: 14px;
 }
 
 /* Table styling */
@@ -142,11 +187,6 @@ tr:hover {
   background-color: #f1f1f1;
 }
 
-#data-table {
-  max-height: 500px;
-  overflow-y: auto;
-}
-
 /* Status messages */
 .success-message {
   color: #155724;
@@ -166,17 +206,79 @@ tr:hover {
   margin-bottom: 15px;
 }
 
+/* Heatmap styles */
+.heatmap-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.heatmap-table th, .heatmap-table td {
+  text-align: center;
+  padding: 5px 3px;
+  border: 1px solid #eee;
+}
+.heatmap-table th {
+  background-color: #f8f9fa;
+  font-weight: normal;
+}
+.heatmap-table td {
+  color: white;
+  text-shadow: 0 0 2px rgba(0,0,0,0.5);
+  font-size: 11px;
+  font-weight: bold;
+}
+.heatmap-legend {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+  gap: 15px;
+  font-size: 12px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.color-box {
+  width: 15px;
+  height: 15px;
+  border: 1px solid #ddd;
+}
+
+/* Map marker styles */
+.marker-pin {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 30px;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+.incidents-popup {
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.incident-details {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .dashboard-row {
-    flex-direction: column;
-  }
-  
-  .dashboard-card {
-    width: 100%;
+    grid-template-columns: 1fr; /* Single column on small screens */
   }
   
   #file-stats {
-    flex-direction: column;
+    grid-template-columns: 1fr; /* Single column on small screens */
+  }
+  
+  .dashboard-card {
+    max-height: 350px; /* Slightly smaller on mobile */
   }
 }
