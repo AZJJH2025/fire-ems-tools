@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FireEMS.ai - Isochrone Map Generator</title>
+  
+  <!-- External CSS -->
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="stylesheet" href="/static/isochrone-map.css">
+  
+  <!-- Leaflet CSS for Map Visualization -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>🗺️ Isochrone Map Generator</h1>
+      <p>Create and visualize emergency response coverage areas based on travel time</p>
+      <div class="site-nav">
+        <a href="/" class="home-link">◀ Back to FireEMS.ai Tools</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="tool-container">
+      <div class="controls-panel">
+        <h2>Map Controls</h2>
+        
+        <section class="control-section">
+          <h3>Station Location</h3>
+          <div class="input-group">
+            <label for="station-address">Station Address:</label>
+            <input type="text" id="station-address" placeholder="Enter station address">
+            <button id="geocode-button">Find Address</button>
+          </div>
+          <div class="input-group">
+            <p><strong>- OR -</strong></p>
+          </div>
+          <div class="input-group">
+            <label>Click on map to place station:</label>
+            <button id="place-station-button">Place Station</button>
+          </div>
+          <div id="station-coordinates" class="coordinates-display">
+            <p>Latitude: <span id="station-lat">--</span></p>
+            <p>Longitude: <span id="station-lng">--</span></p>
+          </div>
+        </section>
+        
+        <section class="control-section">
+          <h3>Response Time Settings</h3>
+          <div class="input-group">
+            <label for="time-intervals">Time Intervals (minutes):</label>
+            <div class="checkbox-group">
+              <label><input type="checkbox" name="time-interval" value="4" checked> 4 min</label>
+              <label><input type="checkbox" name="time-interval" value="8" checked> 8 min</label>
+              <label><input type="checkbox" name="time-interval" value="12"> 12 min</label>
+            </div>
+          </div>
+          
+          <div class="input-group">
+            <label for="vehicle-type">Vehicle Type:</label>
+            <select id="vehicle-type">
+              <option value="engine">Engine/Pumper</option>
+              <option value="ambulance">Ambulance</option>
+              <option value="ladder">Ladder Truck</option>
+            </select>
+          </div>
+          
+          <div class="input-group">
+            <label for="time-of-day">Time of Day:</label>
+            <select id="time-of-day">
+              <option value="average">Average Conditions</option>
+              <option value="peak">Peak Traffic (Rush Hour)</option>
+              <option value="overnight">Overnight (Minimal Traffic)</option>
+            </select>
+          </div>
+        </section>
+        
+        <section class="control-section">
+          <h3>Map Display</h3>
+          <div class="input-group">
+            <label for="map-style">Map Style:</label>
+            <select id="map-style">
+              <option value="streets">Streets</option>
+              <option value="satellite">Satellite</option>
+              <option value="terrain">Terrain</option>
+            </select>
+          </div>
+          
+          <div class="input-group">
+            <label><input type="checkbox" id="show-population" checked> Show Population Density</label>
+          </div>
+          
+          <div class="input-group">
+            <label><input type="checkbox" id="show-critical-facilities"> Show Critical Facilities</label>
+          </div>
+        </section>
+        
+        <div class="action-buttons">
+          <button id="generate-button" class="primary-button">Generate Isochrone Map</button>
+          <button id="reset-button">Reset</button>
+          <button id="export-button">Export Map</button>
+        </div>
+      </div>
+      
+      <div class="map-container">
+        <div id="isochrone-map"></div>
+        <div id="map-legend">
+          <h4>Response Time Zones</h4>
+          <ul>
+            <li><span class="legend-color" style="background-color: #1a9641;"></span> 0-4 minutes</li>
+            <li><span class="legend-color" style="background-color: #a6d96a;"></span> 4-8 minutes</li>
+            <li><span class="legend-color" style="background-color: #ffffbf;"></span> 8-12 minutes</li>
+            <li><span class="legend-color" style="background-color: #fdae61;"></span> 12+ minutes</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div class="results-container">
+      <h2>Coverage Analysis</h2>
+      <div class="results-grid">
+        <div class="result-card">
+          <h3>Area Coverage</h3>
+          <div class="result-content" id="area-coverage">
+            <p>Generate a map to see coverage statistics</p>
+          </div>
+        </div>
+        
+        <div class="result-card">
+          <h3>Population Coverage</h3>
+          <div class="result-content" id="population-coverage">
+            <p>Generate a map to see population coverage</p>
+          </div>
+        </div>
+        
+        <div class="result-card">
+          <h3>Critical Facilities</h3>
+          <div class="result-content" id="facilities-coverage">
+            <p>Generate a map to see facilities coverage</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <footer>
+    <div class="container">
+      <p>&copy; 2023 FireEMS.ai - Advanced Analytics for Fire & EMS Agencies</p>
+    </div>
+  </footer>
+  
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <!-- Custom Scripts -->
+  <script src="/static/isochrone-map.js"></script>
+</body>
+</html>
