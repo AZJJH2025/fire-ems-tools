@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🚒 Fire & EMS Data Dashboard 🚑</title>
+  <title>🚒 Fire & EMS Data Uploader 🚑</title>
   
   <!-- External CSS for your project -->
   <link rel="stylesheet" href="/static/styles.css" />
@@ -27,26 +27,30 @@
   <!-- File Upload Section -->
   <input type="file" id="fileInput" />
   <button onclick="uploadFile()">Upload & Analyze</button>
-  <div id="loading">⏳ Uploading and analyzing file...</div>
   
-  <!-- Results Section -->
+  <!-- Loading Indicator -->
+  <div id="loading" style="display: none; font-weight: bold;">
+    ⏳ Uploading and analyzing file...
+  </div>
+  
+  <!-- Result Section (for any messages or quick output) -->
   <div id="result"></div>
   
-  <!-- Dashboard Section (Hidden by Default) -->
+  <!-- Dashboard Section (hidden by default) -->
   <div id="dashboard" style="display: none;">
     <h2>📊 Data Analysis Dashboard</h2>
-    
+
     <!-- Map Container -->
     <div id="incident-map" class="map-container"></div>
 
-    <!-- Charts -->
+    <!-- Charts Row -->
     <div class="charts-row">
       <canvas id="time-chart" width="400" height="200"></canvas>
       <canvas id="unit-chart" width="400" height="200"></canvas>
       <canvas id="location-chart" width="400" height="200"></canvas>
     </div>
-    
-    <!-- Data Table -->
+
+    <!-- Data Table Section -->
     <div id="data-table"></div>
   </div>
 
