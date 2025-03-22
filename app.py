@@ -148,6 +148,119 @@ def isochrone_map():
     """Serve the Isochrone Map Generator tool"""
     return render_template("isochrone-map.html")
 
+# Add route for the Call Density Heatmap page
+@app.route('/call-density-heatmap')
+def call_density_heatmap():
+    """Serve the Call Density Heatmap tool"""
+    return render_template('call-density-heatmap.html')
+
+# Add route to handle the call data file upload
+@app.route('/upload-call-data', methods=['POST'])
+def upload_call_data():
+    if 'file' not in request.files:
+        return jsonify({'success': False, 'error': 'No file part'})
+    
+    file = request.files['file']
+    
+    if file.filename == '':
+        return jsonify({'success': False, 'error': 'No selected file'})
+    
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
+        
+        try:
+            # Process the file based on its type
+            if filename.endswith('.csv'):
+                data = pd.read_csv(file_path)
+            elif filename.endswith(('.xlsx', '.xls')):
+                if filename.endswith('.xlsx'):
+                    data = pd.read_excel(file_path, engine="openpyxl")
+                else:
+                    data = pd.read_excel(file_path, engine="xlrd")
+            else:
+                return jsonify({'success': False, 'error': 'Unsupported file format. Please upload CSV or Excel file.'})
+            
+            # Check for required columns
+            required_columns = ['latitude', 'longitude']
+            missing_columns = [col for col in required_columns if col not in data.columns]
+            
+            if missing_columns:
+                return jsonify({
+                    'success': False, 
+                    'error': f'Missing required columns: {", ".join(missing_columns)}'
+                })
+            
+            # Extract the necessary data
+            points = []
+            
+            for index, row in data.iterrows():
+                # Skip rows with missing lat/lng
+                if pd.isna(row['latitude']) or pd.isna(row['longitude']):
+                    continue
+                
+                point = {
+                    'latitude': float(row['latitude']),
+                    'longitude': float(row['longitude'])
+                }
+                
+                # Add optional fields if they exist
+                optional_fields = {
+                    'type': 'call_type',
+                    'hour': 'hour',
+                    'dayOfWeek': 'day_of_week',
+                    'month': 'month',
+                    'intensity': 'intensity'
+                }
+                
+                for dest_key, source_key in optional_fields.items():
+                    if source_key in data.columns and not pd.isna(row[source_key]):
+                        point[dest_key] = row[source_key]
+                
+                # If timestamp or datetime column exists, extract time components
+                datetime_columns = ['timestamp', 'datetime', 'date_time', 'call_time', 'incident_time', 'Reported']
+                
+                for col in datetime_columns:
+                    if col in data.columns and not pd.isna(row[col]):
+                        try:
+                            dt = pd.to_datetime(row[col])
+                            if 'hour' not in point:
+                                point['hour'] = dt.hour
+                            if 'dayOfWeek' not in point:
+                                point['dayOfWeek'] = dt.dayofweek
+                            if 'month' not in point:
+                                point['month'] = dt.month
+                            break
+                        except:
+                            # If datetime conversion fails, continue without these fields
+                            pass
+                
+                points.append(point)
+            
+            # Clean up the uploaded file
+            os.remove(file_path)
+            
+            return jsonify({
+                'success': True,
+                'points': points
+            })
+            
+        except Exception as e:
+            # Clean up the uploaded file if it exists
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            
+            app.logger.error(f"Error processing call data file: {str(e)}")
+            app.logger.error(traceback.format_exc())
+            
+            return jsonify({
+                'success': False,
+                'error': f'Error processing file: {str(e)}'
+            })
+    
+    return jsonify({'success': False, 'error': 'File type not allowed. Only CSV and Excel files are supported.'})
+
 if __name__ == "__main__":
     # For production on Render, consider setting debug to False
     app.run(host="0.0.0.0", port=8000, debug=True)

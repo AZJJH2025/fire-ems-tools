@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call Density Heatmap | FireEMS.ai</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='call-density-heatmap.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">
+            <a href="/">
+                <i class="fas fa-fire"></i> FireEMS.ai
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/fire-ems-dashboard">Response Time Analyzer</a>
+            <a href="/isochrone-map">Isochrone Map Generator</a>
+            <a href="/call-density-heatmap" class="active">Call Density Heatmap</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="panel-container">
+            <div class="left-panel">
+                <h2>Call Density Heatmap</h2>
+                <p>Upload historical call data to visualize incident density patterns across your service area.</p>
+                
+                <div class="upload-section">
+                    <h3>Upload Call Data</h3>
+                    <form id="upload-form" enctype="multipart/form-data">
+                        <div class="file-input-container">
+                            <input type="file" id="call-data-file" name="file" accept=".csv, .xlsx, .xls">
+                            <label for="call-data-file" class="file-input-label">
+                                <i class="fas fa-file-upload"></i> Choose File
+                            </label>
+                            <span id="file-name">No file selected</span>
+                        </div>
+                        <button type="submit" class="primary-button">
+                            <i class="fas fa-upload"></i> Upload
+                        </button>
+                    </form>
+                    <div id="upload-status"></div>
+                </div>
+
+                <div class="filter-section">
+                    <h3>Data Filters</h3>
+                    <div class="filter-group">
+                        <label for="time-filter">Time Period:</label>
+                        <select id="time-filter">
+                            <option value="all">All Time</option>
+                            <option value="hour">Hour of Day</option>
+                            <option value="day">Day of Week</option>
+                            <option value="month">Month</option>
+                        </select>
+                    </div>
+
+                    <div id="hour-filter" class="time-specific-filter hidden">
+                        <label for="hour-range">Hour Range:</label>
+                        <div class="slider-container">
+                            <input type="range" id="hour-range" min="0" max="23" value="0" class="slider">
+                            <span id="hour-value">00:00 - 01:00</span>
+                        </div>
+                    </div>
+
+                    <div id="day-filter" class="time-specific-filter hidden">
+                        <label>Days of Week:</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" value="1" checked> Monday</label>
+                            <label><input type="checkbox" value="2" checked> Tuesday</label>
+                            <label><input type="checkbox" value="3" checked> Wednesday</label>
+                            <label><input type="checkbox" value="4" checked> Thursday</label>
+                            <label><input type="checkbox" value="5" checked> Friday</label>
+                            <label><input type="checkbox" value="6" checked> Saturday</label>
+                            <label><input type="checkbox" value="0" checked> Sunday</label>
+                        </div>
+                    </div>
+
+                    <div id="month-filter" class="time-specific-filter hidden">
+                        <label>Months:</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" value="1" checked> January</label>
+                            <label><input type="checkbox" value="2" checked> February</label>
+                            <label><input type="checkbox" value="3" checked> March</label>
+                            <label><input type="checkbox" value="4" checked> April</label>
+                            <label><input type="checkbox" value="5" checked> May</label>
+                            <label><input type="checkbox" value="6" checked> June</label>
+                            <label><input type="checkbox" value="7" checked> July</label>
+                            <label><input type="checkbox" value="8" checked> August</label>
+                            <label><input type="checkbox" value="9" checked> September</label>
+                            <label><input type="checkbox" value="10" checked> October</label>
+                            <label><input type="checkbox" value="11" checked> November</label>
+                            <label><input type="checkbox" value="12" checked> December</label>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="call-type-filter">Call Type:</label>
+                        <select id="call-type-filter">
+                            <option value="all">All Types</option>
+                            <option value="fire">Fire</option>
+                            <option value="ems">EMS</option>
+                            <option value="hazmat">Hazmat</option>
+                            <option value="rescue">Rescue</option>
+                            <option value="service">Service Call</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>
+                            <input type="checkbox" id="normalize-population"> 
+                            Normalize by Population
+                        </label>
+                    </div>
+
+                    <button id="apply-filters" class="primary-button">
+                        <i class="fas fa-filter"></i> Apply Filters
+                    </button>
+                </div>
+
+                <div class="analysis-section">
+                    <h3>Hotspot Analysis</h3>
+                    <div id="hotspot-results">
+                        <p>Upload and filter data to view hotspot analysis</p>
+                    </div>
+                </div>
+
+                <div class="export-section">
+                    <button id="export-png" class="secondary-button">
+                        <i class="fas fa-image"></i> Export as PNG
+                    </button>
+                    <button id="export-pdf" class="secondary-button">
+                        <i class="fas fa-file-pdf"></i> Export as PDF
+                    </button>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div id="map-container">
+                    <div id="map"></div>
+                    <div class="map-overlay">
+                        <div id="legend" class="legend">
+                            <h4>Call Density</h4>
+                            <div class="legend-scale">
+                                <div class="legend-item">
+                                    <span class="color-box" style="background-color: rgba(0, 0, 255, 0.1);"></span>
+                                    <span>Low</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="color-box" style="background-color: rgba(0, 0, 255, 0.4);"></span>
+                                    <span>Medium</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="color-box" style="background-color: rgba(0, 0, 255, 0.7);"></span>
+                                    <span>High</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="color-box" style="background-color: rgba(255, 0, 0, 0.7);"></span>
+                                    <span>Critical</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 FireEMS.ai - Analytics for Fire and Emergency Services</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="{{ url_for('static', filename='call-density-heatmap.js') }}"></script>
+</body>
+</html>
