@@ -1,0 +1,17 @@
+# Add these routes to your app.py file
+
+@app.route("/")
+def home():
+    """Serve the home page with the tool collection"""
+    return render_template("index.html")
+
+@app.route("/fire-ems-dashboard")
+def fire_ems_dashboard():
+    """Serve the Fire/EMS Dashboard tool"""
+    return render_template("fire-ems-dashboard.html")
+
+# Your existing API route
+@app.route("/api/upload", methods=["POST"])
+def upload_file():
+    # Your existing file upload code
+    # ...
