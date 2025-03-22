@@ -143,6 +143,11 @@ def upload_file():
 
     return jsonify({"error": "File type not allowed. Only CSV and Excel files are supported."}), 400
 
+@app.route("/isochrone-map")
+def isochrone_map():
+    """Serve the Isochrone Map Generator tool"""
+    return render_template("isochrone-map.html")
+
 if __name__ == "__main__":
     # For production on Render, consider setting debug to False
     app.run(host="0.0.0.0", port=8000, debug=True)
