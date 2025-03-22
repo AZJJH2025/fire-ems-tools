@@ -1,17 +1,157 @@
-# Add these routes to your app.py file
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Analysis Tools Collection</title>
+  <link rel="stylesheet" href="/static/home-styles.css">
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Data Analysis Toolkit</h1>
+      <p>A collection of specialized data visualization and analysis tools</p>
+    </div>
+  </header>
 
-@app.route("/")
-def home():
-    """Serve the home page with the tool collection"""
-    return render_template("index.html")
+  <main class="container">
+    <section class="intro">
+      <h2>Welcome to the Data Analysis Toolkit</h2>
+      <p>
+        This collection of tools is designed to help you analyze and visualize different types of data.
+        Each tool is specialized for a specific data domain or analysis need.
+      </p>
+    </section>
 
-@app.route("/fire-ems-dashboard")
-def fire_ems_dashboard():
-    """Serve the Fire/EMS Dashboard tool"""
-    return render_template("fire-ems-dashboard.html")
+    <section class="tools-grid">
+      <!-- Tool 1: Fire/EMS Dashboard (Completed) -->
+      <div class="tool-card completed">
+        <div class="tool-icon">
+          <i class="fas fa-ambulance"></i>
+        </div>
+        <div class="tool-content">
+          <h3>Fire & EMS Dashboard</h3>
+          <p>Upload and analyze Fire/EMS incident data with interactive visualizations including maps, time patterns, and response metrics.</p>
+          <div class="tool-tags">
+            <span class="tag">CSV</span>
+            <span class="tag">Excel</span>
+            <span class="tag">Maps</span>
+            <span class="tag">Analytics</span>
+          </div>
+          <a href="/fire-ems-dashboard" class="tool-link">Open Tool</a>
+        </div>
+        <div class="tool-status">Ready</div>
+      </div>
 
-# Your existing API route
-@app.route("/api/upload", methods=["POST"])
-def upload_file():
-    # Your existing file upload code
-    # ...
+      <!-- Tool 2: Financial Analysis (Planned) -->
+      <div class="tool-card planned">
+        <div class="tool-icon">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="tool-content">
+          <h3>Financial Data Analyzer</h3>
+          <p>Analyze financial data sets with trend analysis, forecasting, and interactive charts for financial decision making.</p>
+          <div class="tool-tags">
+            <span class="tag">CSV</span>
+            <span class="tag">Excel</span>
+            <span class="tag">Forecasting</span>
+          </div>
+          <span class="tool-link disabled">Coming Soon</span>
+        </div>
+        <div class="tool-status">Planned</div>
+      </div>
+
+      <!-- Tool 3: GIS Data Analyzer (Planned) -->
+      <div class="tool-card planned">
+        <div class="tool-icon">
+          <i class="fas fa-map-location-dot"></i>
+        </div>
+        <div class="tool-content">
+          <h3>GIS Data Analyzer</h3>
+          <p>Visualize and analyze geographic data with heat maps, choropleth maps, and spatial analysis tools.</p>
+          <div class="tool-tags">
+            <span class="tag">GeoJSON</span>
+            <span class="tag">Shapefile</span>
+            <span class="tag">Maps</span>
+          </div>
+          <span class="tool-link disabled">Coming Soon</span>
+        </div>
+        <div class="tool-status">Planned</div>
+      </div>
+
+      <!-- Tool 4: Healthcare Analytics (Planned) -->
+      <div class="tool-card planned">
+        <div class="tool-icon">
+          <i class="fas fa-hospital"></i>
+        </div>
+        <div class="tool-content">
+          <h3>Healthcare Analytics</h3>
+          <p>Analyze patient data, hospital metrics, and healthcare outcomes with specialized healthcare visualizations.</p>
+          <div class="tool-tags">
+            <span class="tag">CSV</span>
+            <span class="tag">FHIR</span>
+            <span class="tag">HL7</span>
+          </div>
+          <span class="tool-link disabled">Coming Soon</span>
+        </div>
+        <div class="tool-status">Planned</div>
+      </div>
+
+      <!-- Tool 5: Text Analytics (Planned) -->
+      <div class="tool-card planned">
+        <div class="tool-icon">
+          <i class="fas fa-file-lines"></i>
+        </div>
+        <div class="tool-content">
+          <h3>Text Analytics Tool</h3>
+          <p>Extract insights from text data with sentiment analysis, topic modeling, and word frequency analysis.</p>
+          <div class="tool-tags">
+            <span class="tag">TXT</span>
+            <span class="tag">CSV</span>
+            <span class="tag">NLP</span>
+          </div>
+          <span class="tool-link disabled">Coming Soon</span>
+        </div>
+        <div class="tool-status">Planned</div>
+      </div>
+
+      <!-- Tool 6: Time Series Analyzer (Planned) -->
+      <div class="tool-card planned">
+        <div class="tool-icon">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div class="tool-content">
+          <h3>Time Series Analyzer</h3>
+          <p>Analyze and forecast time series data with seasonal decomposition, trend analysis, and anomaly detection.</p>
+          <div class="tool-tags">
+            <span class="tag">CSV</span>
+            <span class="tag">Forecasting</span>
+            <span class="tag">Analytics</span>
+          </div>
+          <span class="tool-link disabled">Coming Soon</span>
+        </div>
+        <div class="tool-status">Planned</div>
+      </div>
+      
+      <!-- Placeholder for Future Tools -->
+      <div class="tool-card future">
+        <div class="tool-icon">
+          <i class="fas fa-plus"></i>
+        </div>
+        <div class="tool-content">
+          <h3>More Tools Coming</h3>
+          <p>Additional specialized data analysis tools are in development and will be added to this collection soon.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2023 Data Analysis Toolkit. All rights reserved.</p>
+    </div>
+  </footer>
+</body>
+</html>
