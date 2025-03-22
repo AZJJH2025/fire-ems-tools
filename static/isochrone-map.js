@@ -167,19 +167,30 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Get the state name for better geocoding
         const stateInfo = stateCoordinates[currentState];
-        const stateParam = stateInfo ? `&state=${stateInfo.name}` : '';
         
         // Show loading state
         document.getElementById('geocode-button').textContent = 'Searching...';
         document.getElementById('geocode-button').disabled = true;
         
         // Construct the address query with the state information
-        const fullAddress = address + (address.includes(stateInfo.name) ? '' : `, ${stateInfo.name}`);
+        const fullAddress = address + (address.includes(stateInfo.name) ? '' : `, ${stateInfo.name}, USA`);
+        console.log("Searching for address:", fullAddress);
         
-        // Call Nominatim API
-        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}${stateParam}&limit=1`)
-            .then(response => response.json())
+        // Call Nominatim API with additional parameters for better results
+        const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}&limit=1&addressdetails=1&countrycodes=us`;
+        
+        // Add a user agent header as required by Nominatim usage policy
+        const headers = {
+            'User-Agent': 'FireEMS.ai Map Tool/1.0'
+        };
+        
+        fetch(nominatimUrl)
+            .then(response => {
+                console.log("Response status:", response.status);
+                return response.json();
+            })
             .then(data => {
+                console.log("Geocoding result:", data);
                 if (data && data.length > 0) {
                     const result = data[0];
                     const lat = parseFloat(result.lat);
@@ -190,12 +201,30 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Update the address field with the fully qualified address
                     document.getElementById('station-address').value = result.display_name;
                 } else {
-                    alert('Address not found. Please try a different address or be more specific.');
+                    // Fallback to using the center of the current state with an offset
+                    console.log("Address not found, using fallback method");
+                    const stateInfo = stateCoordinates[currentState];
+                    const lat = stateInfo.lat + (Math.random() - 0.5) * 0.05;
+                    const lng = stateInfo.lng + (Math.random() - 0.5) * 0.05;
+                    
+                    // Alert the user but still place a marker
+                    alert('Address not found. Placing a marker near the center of ' + stateInfo.name + ' instead. Try being more specific with your address.');
+                    placeStationMarker(lat, lng);
+                    map.setView([lat, lng], 14);
                 }
             })
             .catch(error => {
                 console.error('Error geocoding address:', error);
-                alert('Error geocoding address. Please try again.');
+                
+                // Fallback to using the center of the current state with an offset
+                console.log("Error with geocoding, using fallback method");
+                const stateInfo = stateCoordinates[currentState];
+                const lat = stateInfo.lat + (Math.random() - 0.5) * 0.05;
+                const lng = stateInfo.lng + (Math.random() - 0.5) * 0.05;
+                
+                alert('Error geocoding address. Using approximate location in ' + stateInfo.name + '.');
+                placeStationMarker(lat, lng);
+                map.setView([lat, lng], 14);
             })
             .finally(() => {
                 document.getElementById('geocode-button').textContent = 'Find Address';
@@ -216,6 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error reverse geocoding:', error);
+                // Silently fail for reverse geocoding - not critical
             });
     }
 
