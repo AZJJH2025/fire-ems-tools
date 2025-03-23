@@ -213,6 +213,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        // Log the first few points to help debug
+        console.log("Sample data points:", data.slice(0, 5));
+        
         // Format data for heatmap (lat, lng, intensity)
         const heatData = [];
         
@@ -221,10 +224,24 @@ document.addEventListener('DOMContentLoaded', function() {
             const lat = parseFloat(point.latitude);
             const lng = parseFloat(point.longitude);
             
+            // Log coordinates for debugging
+            console.log("Processing point:", {
+                original: { lat: point.latitude, lng: point.longitude },
+                parsed: { lat, lng },
+                address: point.address || point['Full Address'] || "No address"
+            });
+            
             // Skip invalid coordinates
             if (isNaN(lat) || isNaN(lng) || !isFinite(lat) || !isFinite(lng)) {
                 console.warn('Invalid coordinates:', point);
                 continue;
+            }
+            
+            // Check if coordinates seem reasonable
+            if (lat > -90 && lat < 90 && lng > -180 && lng < 180) {
+                console.log("Coordinates appear to be in valid range");
+            } else {
+                console.warn("Coordinates outside normal range:", { lat, lng });
             }
             
             // Use provided intensity or default to 1
@@ -236,7 +253,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            heatData.push([lat, lng, intensity]);
+            // Use swapped coordinates to see if that fixes the location issue
+            // Note: Normally [lat, lng] is correct, but if your locations are showing in wrong places,
+            // try [lng, lat] instead
+            heatData.push([lng, lat, intensity]); // SWAPPED COORDINATES 
+            
+            // If the above doesn't work, comment it out and uncomment this original version:
+            // heatData.push([lat, lng, intensity]); // NORMAL COORDINATES
         }
         
         if (heatData.length === 0) {
