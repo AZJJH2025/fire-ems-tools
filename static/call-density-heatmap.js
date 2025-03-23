@@ -295,16 +295,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const intensity = location.count / maxCount;
             let color;
             
-            if (intensity < 0.2) {
-                color = '#4575b4'; // Blue for very low intensity
-            } else if (intensity < 0.4) {
-                color = '#91bfdb'; // Light blue for low intensity
-            } else if (intensity < 0.6) {
-                color = '#ff9e63'; // Light orange for medium intensity
+            // Match the colors to the legend
+            if (intensity < 0.25) {
+                color = '#a6cee3'; // Light blue for Low
+            } else if (intensity < 0.5) {
+                color = '#6495ed'; // Medium blue for Medium
             } else if (intensity < 0.8) {
-                color = '#fc8d59'; // Orange for medium-high intensity
+                color = '#1f4eb0'; // Dark blue for High
             } else {
-                color = '#d73027'; // Red for high intensity
+                color = '#d73027'; // Red for Critical
             }
             
             // Create a circle marker with size and color based on count
@@ -348,6 +347,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 busiestHourText = `${hourFormatted}:00 - ${nextHourFormatted}:00`;
             }
             
+            // Determine call density category for display
+            let densityCategory = "Low";
+            if (intensity >= 0.8) {
+                densityCategory = "Critical";
+            } else if (intensity >= 0.5) {
+                densityCategory = "High";
+            } else if (intensity >= 0.25) {
+                densityCategory = "Medium";
+            }
+            
             // Add popup with detailed info
             marker.bindPopup(`
                 <div style="min-width: 200px;">
@@ -360,6 +369,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         <tr>
                             <td style="padding: 3px 0; font-weight: bold;">Call Count:</td>
                             <td style="padding: 3px 0;">${location.count}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 3px 0; font-weight: bold;">Density Level:</td>
+                            <td style="padding: 3px 0;">${densityCategory}</td>
                         </tr>
                         <tr>
                             <td style="padding: 3px 0; font-weight: bold;">Most Common Type:</td>
