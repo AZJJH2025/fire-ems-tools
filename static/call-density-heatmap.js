@@ -207,6 +207,11 @@ document.addEventListener('DOMContentLoaded', function() {
             map.removeLayer(heatLayer);
         }
         
+        // Remove any existing marker groups
+        if (window.markerGroup) {
+            map.removeLayer(window.markerGroup);
+        }
+        
         console.log(`Total data points received: ${data.length}`);
         
         if (data.length === 0) {
@@ -218,8 +223,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Log the first few points to help debug
         console.log("Sample data points:", data.slice(0, 5));
         
-        // Format data for heatmap (lat, lng, intensity)
+        // Format data for heatmap and markers
         const heatData = [];
+        window.markerGroup = L.layerGroup().addTo(map);
         let validPointCount = 0;
         
         for (const point of data) {
@@ -233,31 +239,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 continue;
             }
             
-            // Check if coordinates seem reasonable
-            if (lat > -90 && lat < 90 && lng > -180 && lng < 180) {
-                console.log("Coordinates appear to be in valid range");
-            } else {
-                console.warn("Coordinates outside normal range:", { lat, lng });
-            }
+            // Log each point we're processing
+            console.log(`Processing point at: ${lat}, ${lng}`);
+            
+            // Add a visible marker for each point
+            const marker = L.marker([lat, lng]).addTo(window.markerGroup);
+            marker.bindPopup(`Location: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
             
             // Use provided intensity or default to 1
-            let intensity = 1;
-            if (point.intensity !== undefined) {
-                const parsedIntensity = parseFloat(point.intensity);
-                if (!isNaN(parsedIntensity) && isFinite(parsedIntensity)) {
-                    intensity = parsedIntensity;
-                }
-            }
+            let intensity = 5; // Use high intensity for visibility
             
-            // Increase intensity to make points more visible
-            intensity = Math.max(intensity, 1.5);
-            
-            // Use swapped coordinates to see if that fixes the location issue
-            heatData.push([lng, lat, intensity]); // SWAPPED COORDINATES
+            // Add point to heatmap data with swapped coordinates
+            heatData.push([lng, lat, intensity]);
             validPointCount++;
         }
         
-        console.log(`Valid points for heatmap: ${validPointCount}`);
+        console.log(`Added ${validPointCount} markers to the map`);
         
         if (heatData.length === 0) {
             document.getElementById('hotspot-results').innerHTML = 
@@ -273,19 +270,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Create and add the heat layer with more prominent settings
                 heatLayer = L.heatLayer(heatData, {
-                    radius: 30,  // Increased from 25
-                    blur: 20,    // Increased from 15
+                    radius: 70,         // Very large radius
+                    blur: 40,           // Heavy blur
                     maxZoom: 17,
-                    minOpacity: 0.4, // Set minimum opacity
+                    minOpacity: 0.8,    // Very high opacity
+                    max: 1.0,
                     gradient: {
-                        0.1: 'rgba(0, 0, 255, 0.5)',  // Increased opacity
-                        0.4: 'rgba(0, 0, 255, 0.7)',
-                        0.7: 'rgba(0, 0, 255, 0.8)',
-                        0.9: 'rgba(255, 0, 0, 0.9)'
+                        0.0: 'blue',
+                        0.3: 'lime',
+                        0.6: 'yellow',
+                        0.9: 'red'
                     }
                 }).addTo(map);
                 
-                console.log("Heatmap created successfully with radius:", 30);
+                console.log("Heatmap created successfully with radius:", 70);
             } catch (error) {
                 console.error('Error creating heatmap:', error);
                 document.getElementById('hotspot-results').innerHTML = 
