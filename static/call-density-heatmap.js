@@ -244,12 +244,37 @@ document.addEventListener('DOMContentLoaded', function() {
             // Count occurrences at this location
             if (locationCounts[locationKey]) {
                 locationCounts[locationKey].count++;
+                // Track call types if available
+                if (point.type && point.type !== '') {
+                    locationCounts[locationKey].types[point.type] = 
+                        (locationCounts[locationKey].types[point.type] || 0) + 1;
+                }
+                // Track time periods if available
+                if (point.hour !== undefined) {
+                    const hour = parseInt(point.hour);
+                    if (!isNaN(hour)) {
+                        locationCounts[locationKey].hours[hour] = 
+                            (locationCounts[locationKey].hours[hour] || 0) + 1;
+                    }
+                }
             } else {
                 locationCounts[locationKey] = {
                     lat: lat,
                     lng: lng,
-                    count: 1
+                    count: 1,
+                    types: {},
+                    hours: {}
                 };
+                // Initialize with first point's data
+                if (point.type && point.type !== '') {
+                    locationCounts[locationKey].types[point.type] = 1;
+                }
+                if (point.hour !== undefined) {
+                    const hour = parseInt(point.hour);
+                    if (!isNaN(hour)) {
+                        locationCounts[locationKey].hours[hour] = 1;
+                    }
+                }
             }
         }
         
@@ -264,17 +289,19 @@ document.addEventListener('DOMContentLoaded', function() {
         locations.forEach(location => {
             // Calculate the size based on count relative to max
             const sizeFactor = Math.max(0.3, location.count / maxCount);
-            const radius = 5 + (sizeFactor * 20); // Scale radius between 5 and 25
+            const radius = 5 + (sizeFactor * 25); // Scale radius between 5 and 30
             
             // Calculate color intensity based on count
             const intensity = location.count / maxCount;
             let color;
             
-            if (intensity < 0.25) {
-                color = '#4575b4'; // Blue for low intensity
-            } else if (intensity < 0.5) {
-                color = '#91bfdb'; // Light blue for medium-low intensity
-            } else if (intensity < 0.75) {
+            if (intensity < 0.2) {
+                color = '#4575b4'; // Blue for very low intensity
+            } else if (intensity < 0.4) {
+                color = '#91bfdb'; // Light blue for low intensity
+            } else if (intensity < 0.6) {
+                color = '#ff9e63'; // Light orange for medium intensity
+            } else if (intensity < 0.8) {
                 color = '#fc8d59'; // Orange for medium-high intensity
             } else {
                 color = '#d73027'; // Red for high intensity
@@ -285,15 +312,65 @@ document.addEventListener('DOMContentLoaded', function() {
                 radius: radius,
                 fillColor: color,
                 color: '#fff',
-                weight: 1,
+                weight: 2,
                 opacity: 1,
                 fillOpacity: 0.8
             }).addTo(window.markerGroup);
             
-            // Add popup with info
+            // Determine most common call type
+            let mostCommonType = 'Unknown';
+            let maxTypeCount = 0;
+            
+            for (const [type, count] of Object.entries(location.types)) {
+                if (count > maxTypeCount) {
+                    maxTypeCount = count;
+                    mostCommonType = type;
+                }
+            }
+            
+            // Determine busiest hour
+            let busiestHour = null;
+            let maxHourCount = 0;
+            
+            for (const [hour, count] of Object.entries(location.hours)) {
+                if (count > maxHourCount) {
+                    maxHourCount = count;
+                    busiestHour = parseInt(hour);
+                }
+            }
+            
+            // Format busiest hour for display (if available)
+            let busiestHourText = 'Unknown';
+            if (busiestHour !== null) {
+                const hourFormatted = busiestHour.toString().padStart(2, '0');
+                const nextHour = (busiestHour + 1) % 24;
+                const nextHourFormatted = nextHour.toString().padStart(2, '0');
+                busiestHourText = `${hourFormatted}:00 - ${nextHourFormatted}:00`;
+            }
+            
+            // Add popup with detailed info
             marker.bindPopup(`
-                <b>Location:</b> ${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}<br>
-                <b>Number of calls:</b> ${location.count}
+                <div style="min-width: 200px;">
+                    <h4 style="margin: 0 0 8px 0;">Call Density Information</h4>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="padding: 3px 0; font-weight: bold;">Location:</td>
+                            <td style="padding: 3px 0;">${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 3px 0; font-weight: bold;">Call Count:</td>
+                            <td style="padding: 3px 0;">${location.count}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 3px 0; font-weight: bold;">Most Common Type:</td>
+                            <td style="padding: 3px 0;">${mostCommonType}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 3px 0; font-weight: bold;">Busiest Time:</td>
+                            <td style="padding: 3px 0;">${busiestHourText}</td>
+                        </tr>
+                    </table>
+                </div>
             `);
         });
         
