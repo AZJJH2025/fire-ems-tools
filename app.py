@@ -223,6 +223,32 @@ def upload_call_data():
             else:
                 return jsonify({'success': False, 'error': 'Unsupported file format. Please upload CSV or Excel file.'})
             
+            # Print all columns for debugging
+            app.logger.info(f"Available columns in file: {list(data.columns)}")
+
+            # If it's an Excel file, try to read all sheets
+            if filename.endswith(('.xlsx', '.xls')):
+                try:
+                    # Get all sheet names
+                    if filename.endswith('.xlsx'):
+                        xl = pd.ExcelFile(file_path, engine="openpyxl")
+                    else:
+                        xl = pd.ExcelFile(file_path, engine="xlrd")
+                    
+                    sheet_names = xl.sheet_names
+                    app.logger.info(f"Available sheets: {sheet_names}")
+                    
+                    # If there are multiple sheets, log columns from each sheet
+                    if len(sheet_names) > 1:
+                        for sheet in sheet_names:
+                            if filename.endswith('.xlsx'):
+                                sheet_data = pd.read_excel(file_path, sheet_name=sheet, engine="openpyxl")
+                            else:
+                                sheet_data = pd.read_excel(file_path, sheet_name=sheet, engine="xlrd")
+                            app.logger.info(f"Sheet '{sheet}' columns: {list(sheet_data.columns)}")
+                except Exception as e:
+                    app.logger.error(f"Error inspecting Excel sheets: {str(e)}")
+            
             # Check for required columns
             required_columns = ['latitude', 'longitude']
             missing_columns = [col for col in required_columns if col not in data.columns]
@@ -239,6 +265,15 @@ def upload_call_data():
                 if addr_col in data.columns:
                     found_address_column = addr_col
                     break
+
+            # Log info about found address column
+            if found_address_column:
+                # Get the first non-empty address for testing
+                sample_addresses = data[found_address_column].dropna().head(1).tolist()
+                if sample_addresses:
+                    app.logger.info(f"Sample address from column '{found_address_column}': {sample_addresses[0]}")
+            else:
+                app.logger.info("No address column found among the known column names")
 
             # If latitude and longitude are missing but some form of address column is present, try geocoding
             if missing_columns and found_address_column:
