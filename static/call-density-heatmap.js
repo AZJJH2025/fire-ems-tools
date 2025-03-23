@@ -207,6 +207,8 @@ document.addEventListener('DOMContentLoaded', function() {
             map.removeLayer(heatLayer);
         }
         
+        console.log(`Total data points received: ${data.length}`);
+        
         if (data.length === 0) {
             document.getElementById('hotspot-results').innerHTML = 
                 '<p>No data points match the current filters</p>';
@@ -218,18 +220,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Format data for heatmap (lat, lng, intensity)
         const heatData = [];
+        let validPointCount = 0;
         
         for (const point of data) {
             // Validate coordinates
             const lat = parseFloat(point.latitude);
             const lng = parseFloat(point.longitude);
-            
-            // Log coordinates for debugging
-            console.log("Processing point:", {
-                original: { lat: point.latitude, lng: point.longitude },
-                parsed: { lat, lng },
-                address: point.address || point['Full Address'] || "No address"
-            });
             
             // Skip invalid coordinates
             if (isNaN(lat) || isNaN(lng) || !isFinite(lat) || !isFinite(lng)) {
@@ -253,14 +249,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Use swapped coordinates to see if that fixes the location issue
-            // Note: Normally [lat, lng] is correct, but if your locations are showing in wrong places,
-            // try [lng, lat] instead
-            heatData.push([lng, lat, intensity]); // SWAPPED COORDINATES 
+            // Increase intensity to make points more visible
+            intensity = Math.max(intensity, 1.5);
             
-            // If the above doesn't work, comment it out and uncomment this original version:
-            // heatData.push([lat, lng, intensity]); // NORMAL COORDINATES
+            // Use swapped coordinates to see if that fixes the location issue
+            heatData.push([lng, lat, intensity]); // SWAPPED COORDINATES
+            validPointCount++;
         }
+        
+        console.log(`Valid points for heatmap: ${validPointCount}`);
         
         if (heatData.length === 0) {
             document.getElementById('hotspot-results').innerHTML = 
@@ -274,18 +271,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Make sure map is visible and has proper dimensions
                 map.invalidateSize();
                 
-                // Create and add the heat layer
+                // Create and add the heat layer with more prominent settings
                 heatLayer = L.heatLayer(heatData, {
-                    radius: 25,
-                    blur: 15, 
+                    radius: 30,  // Increased from 25
+                    blur: 20,    // Increased from 15
                     maxZoom: 17,
+                    minOpacity: 0.4, // Set minimum opacity
                     gradient: {
-                        0.1: 'rgba(0, 0, 255, 0.1)',
-                        0.4: 'rgba(0, 0, 255, 0.4)',
-                        0.7: 'rgba(0, 0, 255, 0.7)',
-                        0.9: 'rgba(255, 0, 0, 0.7)'
+                        0.1: 'rgba(0, 0, 255, 0.5)',  // Increased opacity
+                        0.4: 'rgba(0, 0, 255, 0.7)',
+                        0.7: 'rgba(0, 0, 255, 0.8)',
+                        0.9: 'rgba(255, 0, 0, 0.9)'
                     }
                 }).addTo(map);
+                
+                console.log("Heatmap created successfully with radius:", 30);
             } catch (error) {
                 console.error('Error creating heatmap:', error);
                 document.getElementById('hotspot-results').innerHTML = 
@@ -424,6 +424,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 padding: [50, 50],
                 maxZoom: 13
             });
+            
+            // Ensure we're not zoomed out too far or in too close
+            if (map.getZoom() > 12) {
+                map.setZoom(12); // Limit max zoom to prevent over-zooming
+            } else if (map.getZoom() < 7) {
+                map.setZoom(7); // Ensure we're zoomed in enough to see points
+            }
+            
+            console.log("Map zoomed to fit data points at zoom level:", map.getZoom());
         } catch (error) {
             console.error("Error fitting map to data:", error);
             // Fall back to default view
