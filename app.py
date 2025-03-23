@@ -454,6 +454,222 @@ def incident_logger_static():
     """Serve the static version of the incident logger"""
     return send_from_directory('static', 'incident-logger-static.html')
 
+# Station Overview route
+@app.route('/station-overview')
+def station_overview():
+    """Serve the Station Overview tool"""
+    return render_template('station-overview.html')
+
+# API endpoint for Station Overview data
+@app.route('/api/station-data', methods=['POST'])
+def process_station_data():
+    """Process station data file and return processed data"""
+    if "file" not in request.files:
+        return jsonify({"success": False, "error": "No file part"}), 400
+
+    file = request.files["file"]
+    if file.filename == "":
+        return jsonify({"success": False, "error": "No selected file"}), 400
+
+    if file and allowed_file(file.filename):
+        try:
+            # Process based on file type: CSV, XLSX, or XLS
+            if file.filename.lower().endswith(".csv"):
+                df = pd.read_csv(file)
+            elif file.filename.lower().endswith(".xlsx"):
+                df = pd.read_excel(file, engine="openpyxl")
+            elif file.filename.lower().endswith(".xls"):
+                df = pd.read_excel(file, engine="xlrd")
+            else:
+                return jsonify({"success": False, "error": "Unsupported file extension"}), 400
+
+            # Print columns for debugging
+            app.logger.info(f"Columns in uploaded file: {df.columns.tolist()}")
+            
+            # Create a case-insensitive column map
+            column_map = {col.lower(): col for col in df.columns}
+            
+            # Map Phoenix Fire Department data to expected format
+            # Station field mapping
+            station_columns = ['station', 'station_number', 'station_id', 'station_num', 'fire_station']
+            found_station_col = None
+            
+            for col in station_columns:
+                if col in df.columns:
+                    found_station_col = col
+                    break
+                elif col.lower() in column_map:
+                    found_station_col = column_map[col.lower()]
+                    break
+            
+            if found_station_col:
+                df['station'] = df[found_station_col]
+            
+            # Unit field mapping - look for primary unit or responding unit
+            unit_columns = ['primaryunit', 'unit', 'primary_unit', 'responding_unit', 'apparatus']
+            found_unit_col = None
+            
+            for col in unit_columns:
+                if col in df.columns:
+                    found_unit_col = col
+                    break
+                elif col.lower() in column_map:
+                    found_unit_col = column_map[col.lower()]
+                    break
+            
+            if found_unit_col:
+                df['unit'] = df[found_unit_col]
+            
+            # Response time mapping
+            response_time_columns = ['responsetimesec', 'response_time', 'response_time_sec', 
+                                    'response_minutes', 'total_response_time', 'response_seconds']
+            found_time_col = None
+            
+            for col in response_time_columns:
+                if col in df.columns:
+                    found_time_col = col
+                    break
+                elif col.lower() in column_map:
+                    found_time_col = column_map[col.lower()]
+                    break
+            
+            if found_time_col:
+                # Convert to numeric and handle seconds vs minutes
+                df['response_time'] = pd.to_numeric(df[found_time_col], errors='coerce')
+                
+                # If average is very large, assume seconds and convert to minutes
+                if df['response_time'].mean() > 100:  # If mean is > 100, likely seconds
+                    df['response_time'] = df['response_time'] / 60  # Convert to minutes
+            
+            # Call type mapping
+            call_type_columns = ['calltype', 'call_type', 'incident_type', 'type', 'nature']
+            found_call_type_col = None
+            
+            for col in call_type_columns:
+                if col in df.columns:
+                    found_call_type_col = col
+                    break
+                elif col.lower() in column_map:
+                    found_call_type_col = column_map[col.lower()]
+                    break
+            
+            if found_call_type_col:
+                df['call_type'] = df[found_call_type_col]
+            
+            # Date/time field mapping
+            datetime_columns = ['datetime', 'date_time', 'timestamp', 'incident_datetime']
+            date_columns = ['date', 'incident_date', 'call_date']
+            time_columns = ['time', 'incident_time', 'call_time']
+            
+            # Try to create a timestamp from datetime columns
+            timestamp_created = False
+            
+            # First try combined datetime columns
+            for col in datetime_columns:
+                if col in df.columns:
+                    try:
+                        df['timestamp'] = pd.to_datetime(df[col])
+                        timestamp_created = True
+                        break
+                    except:
+                        continue
+                elif col.lower() in column_map:
+                    try:
+                        df['timestamp'] = pd.to_datetime(df[column_map[col.lower()]])
+                        timestamp_created = True
+                        break
+                    except:
+                        continue
+            
+            # If no datetime column, try combining date and time columns
+            if not timestamp_created:
+                found_date_col = None
+                found_time_col = None
+                
+                for col in date_columns:
+                    if col in df.columns:
+                        found_date_col = col
+                        break
+                    elif col.lower() in column_map:
+                        found_date_col = column_map[col.lower()]
+                        break
+                
+                for col in time_columns:
+                    if col in df.columns:
+                        found_time_col = col
+                        break
+                    elif col.lower() in column_map:
+                        found_time_col = column_map[col.lower()]
+                        break
+                
+                if found_date_col and found_time_col:
+                    try:
+                        # Combine date and time columns
+                        df['timestamp'] = pd.to_datetime(df[found_date_col] + ' ' + df[found_time_col])
+                        timestamp_created = True
+                    except:
+                        # If combination fails, just use the date
+                        try:
+                            df['timestamp'] = pd.to_datetime(df[found_date_col])
+                            timestamp_created = True
+                        except:
+                            pass
+                elif found_date_col:
+                    try:
+                        df['timestamp'] = pd.to_datetime(df[found_date_col])
+                        timestamp_created = True
+                    except:
+                        pass
+            
+            # Set standard format for timestamp
+            if timestamp_created:
+                df['timestamp'] = df['timestamp'].dt.strftime('%Y-%m-%dT%H:%M:%S')
+            
+            # Coordinates mapping
+            coord_cols = {
+                'latitude': ['latitude', 'lat', 'y'],
+                'longitude': ['longitude', 'long', 'lon', 'lng', 'x']
+            }
+            
+            for target, source_options in coord_cols.items():
+                found_col = None
+                for col in source_options:
+                    if col in df.columns:
+                        found_col = col
+                        break
+                    elif col.lower() in column_map:
+                        found_col = column_map[col.lower()]
+                        break
+                
+                if found_col:
+                    df[target] = df[found_col]
+            
+            # Fill NaN values with empty strings for JSON serialization
+            df = df.fillna('')
+            
+            # Convert DataFrame to list of dictionaries
+            processed_data = df.to_dict(orient="records")
+            
+            # Create response
+            response = {
+                "success": True,
+                "message": "File processed successfully",
+                "data": processed_data
+            }
+            
+            return jsonify(response)
+            
+        except Exception as e:
+            app.logger.error(f"Error processing station data: {str(e)}")
+            app.logger.error(traceback.format_exc())
+            return jsonify({
+                "success": False,
+                "error": str(e),
+                "message": "Error processing file. Please check the file format."
+            }), 500
+    
+    return jsonify({"success": False, "error": "File type not allowed. Only CSV and Excel files are supported."}), 400
+
 # API endpoints for Incident Logger
 @app.route('/api/incident/create', methods=['POST'])
 def create_incident():
