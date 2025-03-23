@@ -32,6 +32,9 @@ function generateExport() {
     const dateFrom = document.getElementById("export-date-from").value;
     const dateTo = document.getElementById("export-date-to").value;
     
+    // Get HIPAA compliance option
+    const hipaaCompliant = document.getElementById("export-hipaa-compliant").checked;
+    
     // Filter incidents based on selection
     let incidents = [];
     
@@ -77,16 +80,21 @@ function generateExport() {
         return;
     }
     
+    // Apply HIPAA de-identification if selected
+    if (hipaaCompliant) {
+        incidents = incidents.map(incident => deidentifyIncident(incident));
+    }
+    
     // Generate export based on format
     switch (format) {
         case "csv":
-            exportCSV(incidents);
+            exportCSV(incidents, hipaaCompliant);
             break;
         case "pdf":
-            exportPDF(incidents);
+            exportPDF(incidents, hipaaCompliant);
             break;
         case "json":
-            exportJSON(incidents);
+            exportJSON(incidents, hipaaCompliant);
             break;
         default:
             showToast("Unsupported export format", "error");
@@ -96,10 +104,11 @@ function generateExport() {
 /**
  * Export incidents as CSV
  * @param {Array} incidents - The incidents to export
+ * @param {boolean} hipaaCompliant - Whether export is HIPAA compliant
  */
-function exportCSV(incidents) {
+function exportCSV(incidents, hipaaCompliant = false) {
     // Define CSV headers
-    const headers = [
+    let headers = [
         "ID",
         "Date/Time",
         "Status",
@@ -112,13 +121,26 @@ function exportCSV(incidents) {
         "Time Received",
         "Time Arrived",
         "Response Time (min)",
-        "Patient Count",
-        "Transported",
-        "Destination",
-        "Narrative",
-        "Created By",
-        "Last Modified"
+        "Patient Count"
     ];
+    
+    // Add PHI fields only for non-HIPAA compliant exports
+    if (!hipaaCompliant) {
+        headers = headers.concat([
+            "Transported",
+            "Destination",
+            "Narrative",
+            "Created By",
+            "Last Modified"
+        ]);
+    } else {
+        // Add de-identified fields for HIPAA compliant exports
+        headers = headers.concat([
+            "Transported",
+            "Narrative (De-identified)",
+            "De-identification Date"
+        ]);
+    }
     
     // Create CSV content
     let csvContent = headers.join(",") + "\n";
@@ -141,8 +163,8 @@ function exportCSV(incidents) {
             incident.incident_type?.specific
         ].filter(Boolean).join(" - ");
         
-        // Create row with proper CSV escaping
-        const row = [
+        // Create row array
+        const rowData = [
             escapeCsvValue(incident.id),
             escapeCsvValue(incident.timestamp),
             escapeCsvValue(incident.status),
@@ -150,26 +172,43 @@ function exportCSV(incidents) {
             escapeCsvValue(incident.location?.address),
             incident.location?.latitude,
             incident.location?.longitude,
-            escapeCsvValue(incident.caller_info?.name),
-            escapeCsvValue(incident.caller_info?.phone),
+            escapeCsvValue(hipaaCompliant ? "[REDACTED]" : incident.caller_info?.name),
+            escapeCsvValue(hipaaCompliant ? "[REDACTED]" : incident.caller_info?.phone),
             escapeCsvValue(incident.dispatch?.time_received),
             escapeCsvValue(incident.dispatch?.time_arrived),
             responseTime,
-            incident.patient_info?.count || 0,
-            incident.disposition?.transported ? "Yes" : "No",
-            escapeCsvValue(incident.disposition?.destination),
-            escapeCsvValue(incident.narrative),
-            escapeCsvValue(incident.created_by),
-            escapeCsvValue(incident.last_modified)
-        ].join(",");
+            incident.patient_info?.count || 0
+        ];
         
-        csvContent += row + "\n";
+        // Add PHI fields only for non-HIPAA compliant exports
+        if (!hipaaCompliant) {
+            rowData.push(
+                incident.disposition?.transported ? "Yes" : "No",
+                escapeCsvValue(incident.disposition?.destination),
+                escapeCsvValue(incident.narrative),
+                escapeCsvValue(incident.audit?.created_by),
+                escapeCsvValue(incident.audit?.last_modified)
+            );
+        } else {
+            // Add de-identified fields for HIPAA compliant exports
+            rowData.push(
+                incident.disposition?.transported ? "Yes" : "No",
+                escapeCsvValue(incident.narrative),  // Already de-identified
+                escapeCsvValue(incident.meta?.deidentification_date)
+            );
+        }
+        
+        // Join row and add to CSV
+        csvContent += rowData.join(",") + "\n";
     });
     
-    // Create download link
-    downloadFile(csvContent, "incidents.csv", "text/csv");
+    // Create file name with hipaa indicator
+    const fileName = hipaaCompliant ? "incidents-deidentified.csv" : "incidents.csv";
     
-    showToast(`Exported ${incidents.length} incidents to CSV`, "success");
+    // Create download link
+    downloadFile(csvContent, fileName, "text/csv");
+    
+    showToast(`Exported ${incidents.length} incidents to CSV${hipaaCompliant ? " (HIPAA compliant)" : ""}`, "success");
 }
 
 /**
@@ -197,13 +236,14 @@ function escapeCsvValue(value) {
 /**
  * Export incidents as PDF
  * @param {Array} incidents - The incidents to export
+ * @param {boolean} hipaaCompliant - Whether export is HIPAA compliant
  */
-function exportPDF(incidents) {
+function exportPDF(incidents, hipaaCompliant = false) {
     // Create modal with loading message
     showModal("Generating PDF", 
         `<div class="export-loading">
             <i class="fas fa-spinner fa-spin"></i>
-            <p>Generating PDF export...</p>
+            <p>Generating ${hipaaCompliant ? "HIPAA-compliant " : ""}PDF export...</p>
         </div>`, 
         null, null);
     
@@ -223,8 +263,9 @@ function exportPDF(incidents) {
     // Add title and date
     tempContainer.innerHTML = `
         <div class="pdf-header">
-            <h1>Incident Report</h1>
+            <h1>Incident Report${hipaaCompliant ? " (De-identified)" : ""}</h1>
             <p>Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
+            ${hipaaCompliant ? '<p class="hipaa-notice">This report has been de-identified according to HIPAA Safe Harbor Method</p>' : ''}
         </div>
     `;
     
@@ -293,6 +334,7 @@ function exportPDF(incidents) {
                 incident.incident_type?.specific
             ].filter(Boolean).join(" - ");
             
+            // Add basic information section
             incidentDetail.innerHTML = `
                 <h2>Incident ${incident.id}</h2>
                 <div class="pdf-detail-grid">
@@ -317,17 +359,108 @@ function exportPDF(incidents) {
                         <div class="pdf-detail-value">${incident.units?.map(u => u.id).join(', ') || 'None'}</div>
                     </div>
                 </div>
+            `;
+            
+            // Add patient information if not HIPAA compliant, or de-identified if HIPAA compliant
+            if (incident.patient_info && incident.patient_info.details && incident.patient_info.details.length > 0) {
+                const patientSection = document.createElement('div');
+                patientSection.className = 'pdf-patient-section';
                 
-                <h3>Narrative</h3>
+                if (hipaaCompliant) {
+                    patientSection.innerHTML = `
+                        <h3>Patient Information (De-identified)</h3>
+                        <p>This section has been de-identified in accordance with HIPAA regulations.</p>
+                        <div class="pdf-patient-count">
+                            <strong>Patient Count:</strong> ${incident.patient_info.count}
+                        </div>
+                    `;
+                    
+                    // Add de-identified treatment information
+                    const treatments = [];
+                    incident.patient_info.details.forEach(patient => {
+                        if (patient.treatment && patient.treatment.length) {
+                            patient.treatment.forEach(t => {
+                                treatments.push(t.procedure);
+                            });
+                        }
+                    });
+                    
+                    if (treatments.length > 0) {
+                        patientSection.innerHTML += `
+                            <div class="pdf-treatments">
+                                <strong>Treatments Provided:</strong> ${treatments.join(', ')}
+                            </div>
+                        `;
+                    }
+                } else {
+                    // Full patient information for non-HIPAA compliant exports
+                    patientSection.innerHTML = `<h3>Patient Information</h3>`;
+                    
+                    incident.patient_info.details.forEach((patient, index) => {
+                        patientSection.innerHTML += `
+                            <div class="pdf-patient">
+                                <h4>Patient #${index + 1}</h4>
+                                <div class="pdf-detail-grid">
+                                    <div class="pdf-detail-row">
+                                        <div class="pdf-detail-label">Age/Gender:</div>
+                                        <div class="pdf-detail-value">${patient.age || 'Unknown'} ${patient.gender || ''}</div>
+                                    </div>
+                                    <div class="pdf-detail-row">
+                                        <div class="pdf-detail-label">Chief Complaint:</div>
+                                        <div class="pdf-detail-value">${patient.chief_complaint || 'None reported'}</div>
+                                    </div>
+                                    ${patient.vitals && patient.vitals.length ? `
+                                        <div class="pdf-detail-row">
+                                            <div class="pdf-detail-label">Last Vitals:</div>
+                                            <div class="pdf-detail-value">
+                                                BP: ${patient.vitals[patient.vitals.length-1].bp || 'N/A'}, 
+                                                Pulse: ${patient.vitals[patient.vitals.length-1].pulse || 'N/A'}, 
+                                                Resp: ${patient.vitals[patient.vitals.length-1].respiration || 'N/A'}, 
+                                                SpO2: ${patient.vitals[patient.vitals.length-1].spo2 || 'N/A'}%
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                incidentDetail.appendChild(patientSection);
+            }
+            
+            // Add narrative section
+            const narrativeSection = document.createElement('div');
+            narrativeSection.innerHTML = `
+                <h3>Narrative${hipaaCompliant ? ' (De-identified)' : ''}</h3>
                 <div class="pdf-narrative">
                     ${incident.narrative || "No narrative provided"}
                 </div>
             `;
             
+            incidentDetail.appendChild(narrativeSection);
+            
             detailsContainer.appendChild(incidentDetail);
         });
         
         tempContainer.appendChild(detailsContainer);
+    }
+    
+    // Add HIPAA compliance footer if applicable
+    if (hipaaCompliant) {
+        const complianceFooter = document.createElement('div');
+        complianceFooter.className = 'pdf-compliance-footer';
+        complianceFooter.innerHTML = `
+            <div class="hipaa-disclaimer">
+                <h3>HIPAA Compliance Statement</h3>
+                <p>This report has been de-identified in accordance with the HIPAA Privacy Rule's Safe Harbor Method, 
+                removing all 18 types of identifiers. This data is no longer Protected Health Information (PHI) and 
+                can be shared for operational, quality improvement, and research purposes without patient authorization.</p>
+                <p>De-identification date: ${new Date().toLocaleDateString()}</p>
+            </div>
+        `;
+        
+        tempContainer.appendChild(complianceFooter);
     }
     
     // Use html2canvas and jsPDF to generate PDF
@@ -345,8 +478,9 @@ function exportPDF(incidents) {
             
             pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
             
-            // Save the PDF
-            pdf.save('incidents.pdf');
+            // Save the PDF with appropriate filename
+            const fileName = hipaaCompliant ? 'incidents-deidentified.pdf' : 'incidents.pdf';
+            pdf.save(fileName);
             
             // Remove temp container
             document.body.removeChild(tempContainer);
@@ -354,7 +488,7 @@ function exportPDF(incidents) {
             // Close modal
             closeModal();
             
-            showToast(`Exported ${incidents.length} incidents to PDF`, "success");
+            showToast(`Exported ${incidents.length} incidents to PDF${hipaaCompliant ? " (HIPAA compliant)" : ""}`, "success");
         }).catch(error => {
             console.error("PDF generation error:", error);
             closeModal();
@@ -367,15 +501,29 @@ function exportPDF(incidents) {
 /**
  * Export incidents as JSON
  * @param {Array} incidents - The incidents to export
+ * @param {boolean} hipaaCompliant - Whether export is HIPAA compliant
  */
-function exportJSON(incidents) {
+function exportJSON(incidents, hipaaCompliant = false) {
+    // Add metadata to the export
+    const exportData = {
+        meta: {
+            exportDate: new Date().toISOString(),
+            totalIncidents: incidents.length,
+            hipaaCompliant: hipaaCompliant
+        },
+        incidents: incidents
+    };
+    
     // Convert to pretty-printed JSON
-    const jsonContent = JSON.stringify(incidents, null, 2);
+    const jsonContent = JSON.stringify(exportData, null, 2);
+    
+    // Create file name with hipaa indicator
+    const fileName = hipaaCompliant ? "incidents-deidentified.json" : "incidents.json";
     
     // Create download link
-    downloadFile(jsonContent, "incidents.json", "application/json");
+    downloadFile(jsonContent, fileName, "application/json");
     
-    showToast(`Exported ${incidents.length} incidents to JSON`, "success");
+    showToast(`Exported ${incidents.length} incidents to JSON${hipaaCompliant ? " (HIPAA compliant)" : ""}`, "success");
 }
 
 /**

@@ -14,11 +14,11 @@
         <div class="header-container">
             <div class="logo">
                 <a href="/">
-                    <h1>FireEMS.ai</h1>
+                    <h1><i class="fas fa-fire-extinguisher"></i> FireEMS.ai</h1>
                 </a>
             </div>
             <nav>
-                <ul>
+                <ul class="nav-links">
                     <li><a href="/">Home</a></li>
                     <li><a href="/fire-ems-dashboard">Response Time</a></li>
                     <li><a href="/isochrone-map">Isochrone Map</a></li>
@@ -41,6 +41,9 @@
                 <button id="view-incidents-btn" class="secondary-btn">
                     <i class="fas fa-list"></i> View Incidents
                 </button>
+                <button id="cad-import-btn" class="cad-import-btn">
+                    <i class="fas fa-file-import"></i> Import CAD Data
+                </button>
                 <button id="export-btn" class="secondary-btn">
                     <i class="fas fa-file-export"></i> Export
                 </button>
@@ -50,6 +53,57 @@
             </div>
 
             <div id="incident-form-container" class="card">
+                <form id="incident-form">
+                    <!-- Form content goes here -->
+                </form>
+            </div>
+            
+            <div id="cad-import-container" class="card" style="display:none;">
+                <h3>Import Data from CAD System</h3>
+                
+                <div class="cad-import-form">
+                    <div class="form-group">
+                        <label for="cad-file">CAD Export File</label>
+                        <input type="file" id="cad-file" accept=".csv,.json,.xml">
+                        <p class="file-hint">Supported formats: CSV, JSON, XML</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cad-import-mode">Import Mode</label>
+                        <select id="cad-import-mode">
+                            <option value="new">Create New Incidents</option>
+                            <option value="update">Update Existing Incident</option>
+                        </select>
+                    </div>
+                    
+                    <div id="cad-match-container" style="display:none;">
+                        <div class="form-group">
+                            <label for="cad-match-id">Incident ID to Update</label>
+                            <input type="text" id="cad-match-id" placeholder="e.g., INC-20250322-001">
+                        </div>
+                    </div>
+                    
+                    <div class="cad-import-actions">
+                        <button id="cad-import-run-btn" class="primary-btn">
+                            <i class="fas fa-file-import"></i> Import CAD Data
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="cad-import-preview" style="display:none;">
+                    <h4>Import Preview</h4>
+                    <div id="cad-preview-content"></div>
+                    
+                    <div class="cad-import-actions">
+                        <button id="cad-apply-btn" class="primary-btn">
+                            <i class="fas fa-check"></i> Apply CAD Data
+                        </button>
+                        <button id="cad-cancel-btn" class="secondary-btn">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
                 <form id="incident-form">
                     <div class="form-progress">
                         <div class="progress-step active" data-step="1">Basic Info</div>
@@ -323,6 +377,43 @@
                     <div class="form-step" data-step="5" style="display:none;">
                         <h3>Patient Information</h3>
                         
+                        <div class="hipaa-privacy-banner">
+                            <div class="privacy-icon"><i class="fas fa-shield-alt"></i></div>
+                            <div class="privacy-message">
+                                <strong>PHI Warning:</strong> This section contains Protected Health Information (PHI).
+                                HIPAA compliance requires proper handling, consent, and access controls.
+                            </div>
+                        </div>
+                        
+                        <div class="hipaa-consent-form">
+                            <h4>HIPAA Consent</h4>
+                            <div class="form-group">
+                                <label for="hipaa-consent-obtained">Consent Obtained</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="hipaa-consent-obtained" name="hipaa-consent-obtained">
+                                    <label for="hipaa-consent-obtained" class="switch-label"></label>
+                                </div>
+                            </div>
+                            
+                            <div id="consent-details" style="display:none;">
+                                <div class="form-group">
+                                    <label for="hipaa-consent-type">Consent Type</label>
+                                    <select id="hipaa-consent-type" name="hipaa-consent-type">
+                                        <option value="">Select Type</option>
+                                        <option value="verbal">Verbal</option>
+                                        <option value="written">Written</option>
+                                        <option value="implied">Implied</option>
+                                        <option value="emergency">Emergency (no consent possible)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="hipaa-consent-obtained-by">Consent Obtained By</label>
+                                    <input type="text" id="hipaa-consent-obtained-by" name="hipaa-consent-obtained-by">
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="form-group">
                             <label for="patient-count">Number of Patients</label>
                             <input type="number" id="patient-count" name="patient-count" min="0" value="1">
@@ -356,6 +447,36 @@
                                 <div class="form-group">
                                     <label for="patient-complaint-1">Chief Complaint</label>
                                     <textarea id="patient-complaint-1" name="patient-complaint-1"></textarea>
+                                </div>
+                                
+                                <!-- PHI fields - Personal Identifiers -->
+                                <div class="form-section">
+                                    <h5>Personal Information (PHI)</h5>
+                                    
+                                    <div class="form-group">
+                                        <label for="patient-name-first-1" class="phi-label">First Name</label>
+                                        <input type="text" id="patient-name-first-1" name="patient-name-first-1" class="phi-field">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="patient-name-last-1" class="phi-label">Last Name</label>
+                                        <input type="text" id="patient-name-last-1" name="patient-name-last-1" class="phi-field">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="patient-dob-1" class="phi-label">Date of Birth</label>
+                                        <input type="date" id="patient-dob-1" name="patient-dob-1" class="phi-field">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="patient-phone-1" class="phi-label">Phone</label>
+                                        <input type="tel" id="patient-phone-1" name="patient-phone-1" class="phi-field">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="patient-address-1" class="phi-label">Address</label>
+                                        <input type="text" id="patient-address-1" name="patient-address-1" class="phi-field">
+                                    </div>
                                 </div>
                                 
                                 <div class="form-section">
@@ -692,6 +813,19 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <div class="export-section hipaa-section">
+                        <h4>HIPAA Compliance</h4>
+                        <div class="form-group">
+                            <input type="checkbox" id="export-hipaa-compliant" name="export-hipaa-compliant">
+                            <label for="export-hipaa-compliant">De-identify PHI (HIPAA Safe Harbor Method)</label>
+                            <p class="hipaa-info">
+                                <i class="fas fa-info-circle"></i> 
+                                De-identified data will have Protected Health Information (PHI) removed according to 
+                                HIPAA's Safe Harbor Method, which requires removal of 18 types of identifiers.
+                            </p>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="export-actions">
@@ -833,6 +967,36 @@
                 <textarea id="patient-complaint-{{index}}" name="patient-complaint-{{index}}"></textarea>
             </div>
             
+            <!-- PHI fields - Personal Identifiers -->
+            <div class="form-section">
+                <h5>Personal Information (PHI)</h5>
+                
+                <div class="form-group">
+                    <label for="patient-name-first-{{index}}" class="phi-label">First Name</label>
+                    <input type="text" id="patient-name-first-{{index}}" name="patient-name-first-{{index}}" class="phi-field">
+                </div>
+                
+                <div class="form-group">
+                    <label for="patient-name-last-{{index}}" class="phi-label">Last Name</label>
+                    <input type="text" id="patient-name-last-{{index}}" name="patient-name-last-{{index}}" class="phi-field">
+                </div>
+                
+                <div class="form-group">
+                    <label for="patient-dob-{{index}}" class="phi-label">Date of Birth</label>
+                    <input type="date" id="patient-dob-{{index}}" name="patient-dob-{{index}}" class="phi-field">
+                </div>
+                
+                <div class="form-group">
+                    <label for="patient-phone-{{index}}" class="phi-label">Phone</label>
+                    <input type="tel" id="patient-phone-{{index}}" name="patient-phone-{{index}}" class="phi-field">
+                </div>
+                
+                <div class="form-group">
+                    <label for="patient-address-{{index}}" class="phi-label">Address</label>
+                    <input type="text" id="patient-address-{{index}}" name="patient-address-{{index}}" class="phi-field">
+                </div>
+            </div>
+            
             <div class="form-section">
                 <h5>Vitals</h5>
                 <div class="vitals-table">
@@ -861,6 +1025,104 @@
                                 </td>
                                 <td>
                                     <input type="number" name="vital-resp-{{index}}-1" min="4" max="60">
+                                </td>
+                                <td>
+                                    <input type="number" name="vital-spo2-{{index}}-1" min="50" max="100">
+                                </td>
+                                <td>
+                                    <input type="number" name="vital-gcs-{{index}}-1" min="3" max="15">
+                                </td>
+                                <td>
+                                    <button type="button" class="remove-vital-btn secondary-btn small-btn">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <button type="button" class="add-vital-btn secondary-btn small-btn" data-patient="{{index}}">
+                    <i class="fas fa-plus"></i> Add Vital Signs
+                </button>
+            </div>
+            
+            <div class="form-section">
+                <h5>Treatments</h5>
+                <div id="treatments-container-{{index}}">
+                    <div class="treatment-entry">
+                        <div class="form-group">
+                            <label for="treatment-time-{{index}}-1">Time</label>
+                            <input type="datetime-local" id="treatment-time-{{index}}-1" name="treatment-time-{{index}}-1">
+                        </div>
+                        <div class="form-group">
+                            <label for="treatment-procedure-{{index}}-1">Procedure</label>
+                            <input type="text" id="treatment-procedure-{{index}}-1" name="treatment-procedure-{{index}}-1">
+                        </div>
+                        <div class="form-group">
+                            <label for="treatment-notes-{{index}}-1">Notes</label>
+                            <textarea id="treatment-notes-{{index}}-1" name="treatment-notes-{{index}}-1"></textarea>
+                        </div>
+                        <button type="button" class="remove-treatment-btn secondary-btn small-btn">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="button" class="add-treatment-btn secondary-btn small-btn" data-patient="{{index}}">
+                    <i class="fas fa-plus"></i> Add Treatment
+                </button>
+            </div>
+        </div>
+    </template>>
+                                <td>
+                                    <input type="number" name="vital-resp-{{index}}-1" min="4" max="60">
+                                </td>
+                                <td>
+                                    <input type="number" name="vital-spo2-{{index}}-1" min="50" max="100">
+                                </td>
+                                <td>
+                                    <input type="number" name="vital-gcs-{{index}}-1" min="3" max="15">
+                                </td>
+                                <td>
+                                    <button type="button" class="remove-vital-btn secondary-btn small-btn">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <button type="button" class="add-vital-btn secondary-btn small-btn" data-patient="{{index}}">
+                    <i class="fas fa-plus"></i> Add Vital Signs
+                </button>
+            </div>
+            
+            <div class="form-section">
+                <h5>Treatments</h5>
+                <div id="treatments-container-{{index}}">
+                    <div class="treatment-entry">
+                        <div class="form-group">
+                            <label for="treatment-time-{{index}}-1">Time</label>
+                            <input type="datetime-local" id="treatment-time-{{index}}-1" name="treatment-time-{{index}}-1">
+                        </div>
+                        <div class="form-group">
+                            <label for="treatment-procedure-{{index}}-1">Procedure</label>
+                            <input type="text" id="treatment-procedure-{{index}}-1" name="treatment-procedure-{{index}}-1">
+                        </div>
+                        <div class="form-group">
+                            <label for="treatment-notes-{{index}}-1">Notes</label>
+                            <textarea id="treatment-notes-{{index}}-1" name="treatment-notes-{{index}}-1"></textarea>
+                        </div>
+                        <button type="button" class="remove-treatment-btn secondary-btn small-btn">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="button" class="add-treatment-btn secondary-btn small-btn" data-patient="{{index}}">
+                    <i class="fas fa-plus"></i> Add Treatment
+                </button>
+            </div>
+        </div>
+    </template>" name="vital-resp-{{index}}-1" min="4" max="60">
                                 </td>
                                 <td>
                                     <input type="number" name="vital-spo2-{{index}}-1" min="50" max="100">
@@ -937,11 +1199,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.11.9/dayjs.min.js"></script>
-    <script src="{{ url_for('static', filename='js/components/incident-form.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/components/incident-validator.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/components/incident-list.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/components/incident-map.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/components/incident-export.js') }}"></script>
-    <script src="{{ url_for('static', filename='incident-logger.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/components/incident-form.js') }}" type="module"></script>
+    <script src="{{ url_for('static', filename='js/components/incident-validator.js') }}" type="module"></script>
+    <script src="{{ url_for('static', filename='js/components/incident-list.js') }}" type="module"></script>
+    <script src="{{ url_for('static', filename='js/components/incident-map.js') }}" type="module"></script>
+    <script src="{{ url_for('static', filename='js/components/incident-export.js') }}" type="module"></script>
+    <script src="{{ url_for('static', filename='js/components/hipaa-compliance.js') }}" type="module"></script>
+    <script src="{{ url_for('static', filename='js/components/cad-integration.js') }}" type="module"></script>
+    <script src="{{ url_for('static', filename='incident-logger.js') }}" type="module"></script>
 </body>
 </html>

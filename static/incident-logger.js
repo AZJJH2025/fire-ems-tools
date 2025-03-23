@@ -1,4 +1,205 @@
 /**
+ * Show CAD import interface
+ */
+function showCadImport() {
+    // Hide other containers
+    document.getElementById("incident-form-container").style.display = "none";
+    document.getElementById("incident-list-container").style.display = "none";
+    document.getElementById("export-container").style.display = "none";
+    document.getElementById("settings-container").style.display = "none";
+    
+    // Show CAD import container
+    document.getElementById("cad-import-container").style.display = "block";
+    
+    // Reset the form
+    document.getElementById("cad-file").value = "";
+    document.getElementById("cad-import-mode").value = "new";
+    document.getElementById("cad-match-container").style.display = "none";
+    document.getElementById("cad-import-preview").style.display = "none";
+    
+    // Initialize CAD import events if needed
+    initializeCadImportListeners();
+}
+
+/**
+ * Initialize CAD import event listeners
+ */
+function initializeCadImportListeners() {
+    // Check if listeners already initialized
+    if (window.cadImportInitialized) return;
+    
+    // Import mode toggle
+    document.getElementById("cad-import-mode").addEventListener("change", function() {
+        document.getElementById("cad-match-container").style.display = 
+            this.value === "update" ? "block" : "none";
+    });
+    
+    // Import button
+    document.getElementById("cad-import-run-btn").addEventListener("click", async function() {
+        const fileInput = document.getElementById("cad-file");
+        
+        if (!fileInput.files || !fileInput.files[0]) {
+            showToast("Please select a CAD file to import", "error");
+            return;
+        }
+        
+        try {
+            // Show loading state
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            
+            // Import the CAD data
+            const importModule = await import('./js/components/cad-integration.js');
+            const cadData = await importModule.importCadData(fileInput.files[0]);
+            
+            // Show preview
+            const previewSection = document.getElementById("cad-import-preview");
+            const previewContent = document.getElementById("cad-preview-content");
+            previewSection.style.display = "block";
+            
+            // Create preview content
+            let previewHtml = '';
+            
+            if (cadData.length === 0) {
+                previewHtml = '<p>No incidents found in the CAD data.</p>';
+            } else {
+                previewHtml = `<p>Found ${cadData.length} incident(s) in the CAD data.</p>`;
+                
+                // Show preview table for the first few incidents
+                const previewCount = Math.min(cadData.length, 5);
+                previewHtml += '<div class="preview-table-container"><table class="preview-table">';
+                previewHtml += '<thead><tr><th>CAD ID</th><th>Time</th><th>Type</th><th>Address</th></tr></thead><tbody>';
+                
+                for (let i = 0; i < previewCount; i++) {
+                    const incident = cadData[i];
+                    previewHtml += `<tr>
+                        <td>${incident.cad_info.cad_incident_id || 'N/A'}</td>
+                        <td>${formatDate(new Date(incident.timestamp))}</td>
+                        <td>${incident.incident_type.primary} - ${incident.incident_type.specific}</td>
+                        <td>${incident.location.address}</td>
+                    </tr>`;
+                }
+                
+                previewHtml += '</tbody></table></div>';
+                
+                if (cadData.length > previewCount) {
+                    previewHtml += `<p>...and ${cadData.length - previewCount} more.</p>`;
+                }
+            }
+            
+            previewContent.innerHTML = previewHtml;
+            
+            // Store the imported data for later use
+            window.importedCadData = cadData;
+            
+        } catch (error) {
+            console.error('CAD import error:', error);
+            showToast(`Error importing CAD data: ${error.message}`, "error");
+            document.getElementById("cad-import-preview").style.display = "none";
+        } finally {
+            // Reset button
+            this.disabled = false;
+            this.innerHTML = '<i class="fas fa-file-import"></i> Import CAD Data';
+        }
+    });
+    
+    // Apply button
+    document.getElementById("cad-apply-btn").addEventListener("click", async function() {
+        const importMode = document.getElementById("cad-import-mode").value;
+        const matchId = document.getElementById("cad-match-id")?.value;
+        
+        if (!window.importedCadData || window.importedCadData.length === 0) {
+            showToast('No CAD data to apply', 'error');
+            return;
+        }
+        
+        try {
+            const importModule = await import('./js/components/cad-integration.js');
+            
+            if (importMode === "update") {
+                // Update existing incident
+                if (!matchId) {
+                    showToast('Please enter an incident ID to update', 'error');
+                    return;
+                }
+                
+                // Find current incident
+                const currentIncident = getIncidentById(matchId);
+                if (!currentIncident) {
+                    showToast(`Incident ${matchId} not found`, 'error');
+                    return;
+                }
+                
+                // Find matching CAD data (use first record for now)
+                const cadData = window.importedCadData[0];
+                
+                // Apply CAD data to current incident
+                const updatedIncident = importModule.applyCadToIncident(currentIncident, cadData);
+                
+                // Save the updated incident
+                saveIncident(updatedIncident);
+                
+                showToast(`Incident ${matchId} updated with CAD data`, 'success');
+                
+                // Reload the form if we're editing this incident
+                if (window.currentIncident && window.currentIncident.id === matchId) {
+                    loadIncidentIntoForm(updatedIncident);
+                }
+                
+                // Show form with updated incident
+                showNewIncidentForm();
+                loadIncidentIntoForm(updatedIncident);
+                
+            } else {
+                // Create new incidents
+                const created = [];
+                
+                // Create each incident from CAD data
+                for (const cadData of window.importedCadData) {
+                    // Add to incident list
+                    incidentList.push(cadData);
+                    created.push(cadData.id);
+                }
+                
+                // Save all incidents
+                saveIncidents();
+                
+                showToast(`Created ${created.length} new incidents from CAD data`, 'success');
+                
+                // Refresh the incident list
+                showIncidentList();
+            }
+            
+            // Hide the preview section
+            document.getElementById("cad-import-preview").style.display = "none";
+            
+            // Clear the imported data
+            window.importedCadData = null;
+            
+            // Clear the file input
+            document.getElementById("cad-file").value = "";
+            
+        } catch (error) {
+            console.error('Error applying CAD data:', error);
+            showToast(`Error applying CAD data: ${error.message}`, 'error');
+        }
+    });
+    
+    // Cancel button
+    document.getElementById("cad-cancel-btn").addEventListener("click", function() {
+        // Hide the preview section
+        document.getElementById("cad-import-preview").style.display = "none";
+        
+        // Clear the imported data
+        window.importedCadData = null;
+        
+        // Clear the file input
+        document.getElementById("cad-file").value = "";
+    });
+    
+    // Mark as initialized
+    window.cadImportInitialized = true;
+}/**
  * FireEMS.ai Incident Logger - Main JavaScript File
  * Version: 1.0.0
  * 
@@ -100,6 +301,7 @@ function initializeEventListeners() {
     document.getElementById("view-incidents-btn").addEventListener("click", showIncidentList);
     document.getElementById("export-btn").addEventListener("click", showExportOptions);
     document.getElementById("settings-btn").addEventListener("click", showSettings);
+    document.getElementById("cad-import-btn").addEventListener("click", showCadImport);
     
     // Form navigation buttons
     const nextButtons = document.querySelectorAll(".next-btn");
@@ -125,6 +327,14 @@ function initializeEventListeners() {
             navigateToStep(parseInt(step.dataset.step));
         });
     });
+    
+    // HIPAA consent form toggle
+    const consentToggle = document.getElementById("hipaa-consent-obtained");
+    if (consentToggle) {
+        consentToggle.addEventListener("change", function() {
+            document.getElementById("consent-details").style.display = this.checked ? "block" : "none";
+        });
+    }
     
     // Form submission
     document.getElementById("incident-form").addEventListener("submit", handleFormSubmit);
@@ -532,3 +742,15 @@ function navigateToStep(stepNumber) {
             step.classList.add("completed");
         }
     });
+    
+    // Special actions for specific steps
+    if (stepNumber === 2 && typeof updateMap === 'function') {
+        // Refresh map when showing location step
+        setTimeout(updateMap, 100);
+    }
+    
+    if (stepNumber === 3) {
+        // Recalculate times when showing dispatch step
+        calculateResponseTimes();
+    }
+}

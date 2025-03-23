@@ -10,6 +10,24 @@ let marker = null;
 let defaultLocation = [33.4484, -112.0740]; // Phoenix, AZ
 
 /**
+ * Get color based on density value
+ * @param {number} value - The density value
+ * @returns {string} - Color code
+ */
+function getDensityColor(value) {
+    // Using FireEMS.ai map visualization colors
+    if (value < 0.25) {
+        return '#a6cee3'; // Low density (light blue)
+    } else if (value < 0.5) {
+        return '#6495ed'; // Medium density (medium blue)
+    } else if (value < 0.75) {
+        return '#1f4eb0'; // High density (dark blue)
+    } else {
+        return '#d73027'; // Critical density (red)
+    }
+}
+
+/**
  * Initialize the map in the specified container
  * @param {string} containerId - The ID of the map container element
  */
