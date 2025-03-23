@@ -3,5 +3,7 @@ gunicorn
 flask-cors
 pandas
 openpyxl
-openpyxl
+werkzeug
 requests
+sqlalchemy
+psycopg2-binary
