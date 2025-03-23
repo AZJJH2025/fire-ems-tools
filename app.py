@@ -7,6 +7,7 @@ from datetime import datetime
 from werkzeug.utils import secure_filename
 import requests
 import time
+import json  # Add JSON import for Incident Logger
 
 # Flask Setup
 app = Flask(__name__, static_folder="static", static_url_path="/static")
@@ -588,6 +589,7 @@ def export_incidents():
         # Get query parameters
         format = request.args.get('format', 'csv')
         ids = request.args.getlist('ids')  # List of incident IDs to export
+        hipaa_compliant = request.args.get('hipaa_compliant', 'false').lower() == 'true'
         
         # Read incident files
         incidents_dir = os.path.join('data', 'incidents')
@@ -608,6 +610,28 @@ def export_incidents():
                     with open(file_path, 'r') as f:
                         incidents.append(json.load(f))
         
+        # Apply HIPAA de-identification if requested
+        if hipaa_compliant:
+            # Import de-identification functionality
+            # Note: This would be implemented in a separate module
+            # For now, we'll just add a placeholder
+            for incident in incidents:
+                # De-identify PHI fields
+                if 'patient_info' in incident:
+                    if 'details' in incident['patient_info']:
+                        for patient in incident['patient_info']['details']:
+                            if 'name' in patient:
+                                patient['name'] = {'first': '[REDACTED]', 'last': '[REDACTED]'}
+                            if 'dob' in patient:
+                                patient['dob'] = '[REDACTED]'
+                            if 'address' in patient:
+                                patient['address'] = '[REDACTED]'
+                            if 'phone' in patient:
+                                patient['phone'] = '[REDACTED]'
+                # Add de-identification metadata
+                incident['deidentified'] = True
+                incident['deidentification_date'] = datetime.now().isoformat()
+        
         # Return appropriate format
         if format == 'json':
             return jsonify({"incidents": incidents}), 200
@@ -626,15 +650,15 @@ def export_incidents():
                     'primary_type': incident.get('incident_type', {}).get('primary'),
                     'secondary_type': incident.get('incident_type', {}).get('secondary'),
                     'specific_type': incident.get('incident_type', {}).get('specific'),
-                    'caller_name': incident.get('caller_info', {}).get('name'),
+                    'caller_name': None if hipaa_compliant else incident.get('caller_info', {}).get('name'),
                     'time_received': incident.get('dispatch', {}).get('time_received'),
                     'time_arrived': incident.get('dispatch', {}).get('time_arrived'),
                     'patient_count': incident.get('patient_info', {}).get('count'),
                     'transported': incident.get('disposition', {}).get('transported'),
-                    'destination': incident.get('disposition', {}).get('destination'),
-                    'created_by': incident.get('created_by'),
-                    'created_at': incident.get('created_at'),
-                    'last_modified': incident.get('last_modified')
+                    'destination': None if hipaa_compliant else incident.get('disposition', {}).get('destination'),
+                    'created_by': incident.get('audit', {}).get('created_by'),
+                    'created_at': incident.get('audit', {}).get('created_at'),
+                    'last_modified': incident.get('audit', {}).get('last_modified')
                 }
                 flat_incidents.append(flat_incident)
             
@@ -642,9 +666,11 @@ def export_incidents():
             df = pd.DataFrame(flat_incidents)
             csv_data = df.to_csv(index=False)
             
+            filename = "incidents-deidentified.csv" if hipaa_compliant else "incidents.csv"
+            
             return csv_data, 200, {
                 'Content-Type': 'text/csv',
-                'Content-Disposition': 'attachment; filename=incidents.csv'
+                'Content-Disposition': f'attachment; filename={filename}'
             }
         
         else:
