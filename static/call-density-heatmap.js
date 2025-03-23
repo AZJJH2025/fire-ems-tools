@@ -344,20 +344,49 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to fit the map to data points
     function fitMapToData(data) {
-        if (data.length === 0) {
+        if (!data || data.length === 0) {
+            console.log("No data to fit map to");
             return;
         }
         
-        // Create bounds
-        const bounds = L.latLngBounds(
-            data.map(point => [point.latitude, point.longitude])
-        );
-        
-        // Fit the map to these bounds
-        map.fitBounds(bounds, {
-            padding: [50, 50],
-            maxZoom: 13
-        });
+        try {
+            // Filter out any invalid coordinates
+            const validPoints = data.filter(point => {
+                const lat = parseFloat(point.latitude);
+                const lng = parseFloat(point.longitude);
+                return !isNaN(lat) && !isNaN(lng) && isFinite(lat) && isFinite(lng);
+            });
+            
+            if (validPoints.length === 0) {
+                console.log("No valid coordinates to fit map to");
+                return;
+            }
+            
+            // Create bounds from valid points
+            const validLatLngs = validPoints.map(point => [
+                parseFloat(point.latitude), 
+                parseFloat(point.longitude)
+            ]);
+            
+            // Create bounds
+            const bounds = L.latLngBounds(validLatLngs);
+            
+            // Check if bounds are valid
+            if (!bounds.isValid()) {
+                console.log("Generated bounds are invalid");
+                return;
+            }
+            
+            // Fit the map to these bounds
+            map.fitBounds(bounds, {
+                padding: [50, 50],
+                maxZoom: 13
+            });
+        } catch (error) {
+            console.error("Error fitting map to data:", error);
+            // Fall back to default view
+            map.setView([39.8283, -98.5795], 4);
+        }
     }
 
     // Export as PNG button
