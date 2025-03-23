@@ -201,26 +201,55 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Format data for heatmap (lat, lng, intensity)
-        const heatData = data.map(point => {
-            return [
-                point.latitude, 
-                point.longitude, 
-                point.intensity || 1 // Use provided intensity or default to 1
-            ];
-        });
+        const heatData = [];
+        
+        for (const point of data) {
+            // Validate coordinates
+            const lat = parseFloat(point.latitude);
+            const lng = parseFloat(point.longitude);
+            
+            // Skip invalid coordinates
+            if (isNaN(lat) || isNaN(lng) || !isFinite(lat) || !isFinite(lng)) {
+                console.warn('Invalid coordinates:', point);
+                continue;
+            }
+            
+            // Use provided intensity or default to 1
+            let intensity = 1;
+            if (point.intensity !== undefined) {
+                const parsedIntensity = parseFloat(point.intensity);
+                if (!isNaN(parsedIntensity) && isFinite(parsedIntensity)) {
+                    intensity = parsedIntensity;
+                }
+            }
+            
+            heatData.push([lat, lng, intensity]);
+        }
+        
+        if (heatData.length === 0) {
+            document.getElementById('hotspot-results').innerHTML = 
+                '<p>No valid data points to display heatmap</p>';
+            return;
+        }
         
         // Create and add the heat layer
-        heatLayer = L.heatLayer(heatData, {
-            radius: 25,
-            blur: 15, 
-            maxZoom: 17,
-            gradient: {
-                0.1: 'rgba(0, 0, 255, 0.1)',
-                0.4: 'rgba(0, 0, 255, 0.4)',
-                0.7: 'rgba(0, 0, 255, 0.7)',
-                0.9: 'rgba(255, 0, 0, 0.7)'
-            }
-        }).addTo(map);
+        try {
+            heatLayer = L.heatLayer(heatData, {
+                radius: 25,
+                blur: 15, 
+                maxZoom: 17,
+                gradient: {
+                    0.1: 'rgba(0, 0, 255, 0.1)',
+                    0.4: 'rgba(0, 0, 255, 0.4)',
+                    0.7: 'rgba(0, 0, 255, 0.7)',
+                    0.9: 'rgba(255, 0, 0, 0.7)'
+                }
+            }).addTo(map);
+        } catch (error) {
+            console.error('Error creating heatmap:', error);
+            document.getElementById('hotspot-results').innerHTML = 
+                `<p>Error creating heatmap: ${error.message}</p>`;
+        }
     }
 
     // Function to update hotspot analysis section
