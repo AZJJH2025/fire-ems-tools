@@ -1,6 +1,19 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize the map
-    const map = L.map('map').setView([39.8283, -98.5795], 4); // Default center of US
+    // Make sure the map container has a proper height
+    const mapContainer = document.getElementById('map');
+    if (mapContainer) {
+        mapContainer.style.height = '500px'; // Set a fixed height
+    }
+
+    // Initialize the map with animations disabled to prevent rendering issues
+    const map = L.map('map', {
+        fadeAnimation: false // Disable animations which can cause issues
+    }).setView([39.8283, -98.5795], 4); // Default center of US
+
+    // Make sure map is ready
+    map.whenReady(() => {
+        console.log("Map is ready");
+    });
 
     // Add the base tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -232,24 +245,30 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Create and add the heat layer
-        try {
-            heatLayer = L.heatLayer(heatData, {
-                radius: 25,
-                blur: 15, 
-                maxZoom: 17,
-                gradient: {
-                    0.1: 'rgba(0, 0, 255, 0.1)',
-                    0.4: 'rgba(0, 0, 255, 0.4)',
-                    0.7: 'rgba(0, 0, 255, 0.7)',
-                    0.9: 'rgba(255, 0, 0, 0.7)'
-                }
-            }).addTo(map);
-        } catch (error) {
-            console.error('Error creating heatmap:', error);
-            document.getElementById('hotspot-results').innerHTML = 
-                `<p>Error creating heatmap: ${error.message}</p>`;
-        }
+        // Wait a moment to ensure the map is ready
+        setTimeout(() => {
+            try {
+                // Make sure map is visible and has proper dimensions
+                map.invalidateSize();
+                
+                // Create and add the heat layer
+                heatLayer = L.heatLayer(heatData, {
+                    radius: 25,
+                    blur: 15, 
+                    maxZoom: 17,
+                    gradient: {
+                        0.1: 'rgba(0, 0, 255, 0.1)',
+                        0.4: 'rgba(0, 0, 255, 0.4)',
+                        0.7: 'rgba(0, 0, 255, 0.7)',
+                        0.9: 'rgba(255, 0, 0, 0.7)'
+                    }
+                }).addTo(map);
+            } catch (error) {
+                console.error('Error creating heatmap:', error);
+                document.getElementById('hotspot-results').innerHTML = 
+                    `<p>Error creating heatmap: ${error.message}</p>`;
+            }
+        }, 300); // Small delay to ensure map is ready
     }
 
     // Function to update hotspot analysis section
