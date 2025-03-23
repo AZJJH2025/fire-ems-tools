@@ -226,85 +226,115 @@ def upload_call_data():
             # Print all columns for debugging
             app.logger.info(f"Available columns in file: {list(data.columns)}")
 
-            # If it's an Excel file, try to read all sheets
-            if filename.endswith(('.xlsx', '.xls')):
-                try:
-                    # Get all sheet names
-                    if filename.endswith('.xlsx'):
-                        xl = pd.ExcelFile(file_path, engine="openpyxl")
-                    else:
-                        xl = pd.ExcelFile(file_path, engine="xlrd")
-                    
-                    sheet_names = xl.sheet_names
-                    app.logger.info(f"Available sheets: {sheet_names}")
-                    
-                    # If there are multiple sheets, log columns from each sheet
-                    if len(sheet_names) > 1:
-                        for sheet in sheet_names:
-                            if filename.endswith('.xlsx'):
-                                sheet_data = pd.read_excel(file_path, sheet_name=sheet, engine="openpyxl")
-                            else:
-                                sheet_data = pd.read_excel(file_path, sheet_name=sheet, engine="xlrd")
-                            app.logger.info(f"Sheet '{sheet}' columns: {list(sheet_data.columns)}")
-                except Exception as e:
-                    app.logger.error(f"Error inspecting Excel sheets: {str(e)}")
+            # Create a case-insensitive mapping of column names
+            column_map = {col.lower(): col for col in data.columns}
+            app.logger.info(f"Case-insensitive column map: {column_map}")
             
-            # Check for required columns
-            required_columns = ['latitude', 'longitude']
-            missing_columns = [col for col in required_columns if col not in data.columns]
+            # Check for coordinates columns (case-insensitive)
+            coordinate_fields = {
+                'latitude': ['latitude', 'lat', 'y', 'Latitude', 'LAT', 'Y'],
+                'longitude': ['longitude', 'long', 'lon', 'lng', 'x', 'Longitude', 'LONGITUDE', 'LONG', 'LON', 'LNG', 'X']
+            }
             
-            # Define possible address column names (add any others that might be in your files)
-            address_column_names = ['address', 'location', 'site_address', 'full_address', 'street_address', 
-                                   'location_address', 'site', 'incident_address', 'incident_location',
-                                   'Address', 'Location', 'LOCATION', 'ADDRESS', 'Incident Address', 
-                                   'Street', 'Street Address', 'Addr', 'FullAddress', 'Full_Address']
-
-            # Check if any of these columns exist in the data
-            found_address_column = None
-            for addr_col in address_column_names:
-                if addr_col in data.columns:
-                    found_address_column = addr_col
+            found_lat_col = None
+            found_lng_col = None
+            
+            # Check for coordinate fields with exact match
+            for lat_name in coordinate_fields['latitude']:
+                if lat_name in data.columns:
+                    found_lat_col = lat_name
                     break
-
-            # Log info about found address column
-            if found_address_column:
-                # Get the first non-empty address for testing
-                sample_addresses = data[found_address_column].dropna().head(1).tolist()
-                if sample_addresses:
-                    app.logger.info(f"Sample address from column '{found_address_column}': {sample_addresses[0]}")
+            
+            for lng_name in coordinate_fields['longitude']:
+                if lng_name in data.columns:
+                    found_lng_col = lng_name
+                    break
+            
+            # If not found with exact match, try case-insensitive match
+            if not found_lat_col:
+                for lat_name in coordinate_fields['latitude']:
+                    if lat_name.lower() in column_map:
+                        found_lat_col = column_map[lat_name.lower()]
+                        break
+            
+            if not found_lng_col:
+                for lng_name in coordinate_fields['longitude']:
+                    if lng_name.lower() in column_map:
+                        found_lng_col = column_map[lng_name.lower()]
+                        break
+            
+            app.logger.info(f"Found latitude column: {found_lat_col}")
+            app.logger.info(f"Found longitude column: {found_lng_col}")
+            
+            # If we found coordinate columns, rename them to expected names
+            if found_lat_col and found_lng_col:
+                data['latitude'] = data[found_lat_col]
+                data['longitude'] = data[found_lng_col]
+                app.logger.info("Mapped coordinate columns to latitude/longitude")
+                
+                # Check for required columns (should be present now after mapping)
+                required_columns = ['latitude', 'longitude']
+                missing_columns = [col for col in required_columns if col not in data.columns]
             else:
-                app.logger.info("No address column found among the known column names")
-
-            # If latitude and longitude are missing but some form of address column is present, try geocoding
-            if missing_columns and found_address_column:
-                app.logger.info(f"Attempting to geocode addresses from column '{found_address_column}' since lat/lng columns are missing")
+                # Define possible address column names (add any others that might be in your files)
+                address_column_names = ['address', 'location', 'site_address', 'full_address', 'street_address', 
+                                      'location_address', 'site', 'incident_address', 'incident_location',
+                                      'full address', 'Address', 'Location', 'LOCATION', 'ADDRESS', 'Incident Address', 
+                                      'Street', 'Street Address', 'Addr', 'FullAddress', 'Full_Address', 'Full Address']
                 
-                # Create new latitude and longitude columns
-                data['latitude'] = None
-                data['longitude'] = None
+                # Try to find address column (case-insensitive)
+                found_address_column = None
+                for addr_col in address_column_names:
+                    if addr_col in data.columns:
+                        found_address_column = addr_col
+                        break
                 
-                # Number of addresses to geocode
-                total_addresses = data[found_address_column].count()
-                geocoded_count = 0
+                # If not found with exact match, try case-insensitive match
+                if not found_address_column:
+                    for addr_col in address_column_names:
+                        if addr_col.lower() in column_map:
+                            found_address_column = column_map[addr_col.lower()]
+                            break
                 
-                # Loop through addresses and geocode them
-                for index, row in data.iterrows():
-                    if not pd.isna(row[found_address_column]):
-                        lat, lng = geocode_address(row[found_address_column])
-                        if lat and lng:
-                            data.at[index, 'latitude'] = lat
-                            data.at[index, 'longitude'] = lng
-                            geocoded_count += 1
+                app.logger.info(f"Found address column: {found_address_column}")
                 
-                # If we successfully geocoded at least some addresses, we can proceed
-                if geocoded_count > 0:
-                    app.logger.info(f"Successfully geocoded {geocoded_count} out of {total_addresses} addresses")
-                    missing_columns = []  # Clear missing columns since we now have lat/lng
-                else:
-                    return jsonify({
-                        'success': False,
-                        'error': f"Unable to geocode any addresses. Please provide a file with latitude and longitude columns."
-                    })
+                # Check for required columns 
+                required_columns = ['latitude', 'longitude']
+                missing_columns = [col for col in required_columns if col not in data.columns]
+                
+                # If we found an address column but no coordinates, try geocoding
+                if found_address_column and missing_columns:
+                    # Log sample address
+                    sample_addresses = data[found_address_column].dropna().head(1).tolist()
+                    if sample_addresses:
+                        app.logger.info(f"Sample address from column '{found_address_column}': {sample_addresses[0]}")
+                    
+                    # Create new latitude and longitude columns
+                    data['latitude'] = None
+                    data['longitude'] = None
+                    
+                    # Number of addresses to geocode
+                    total_addresses = data[found_address_column].count()
+                    geocoded_count = 0
+                    
+                    # Loop through addresses and geocode them
+                    for index, row in data.iterrows():
+                        if not pd.isna(row[found_address_column]):
+                            lat, lng = geocode_address(row[found_address_column])
+                            if lat and lng:
+                                data.at[index, 'latitude'] = lat
+                                data.at[index, 'longitude'] = lng
+                                geocoded_count += 1
+                    
+                    # If we successfully geocoded at least some addresses, we can proceed
+                    if geocoded_count > 0:
+                        app.logger.info(f"Successfully geocoded {geocoded_count} out of {total_addresses} addresses")
+                        missing_columns = []  # Clear missing columns since we now have lat/lng
+                    else:
+                        return jsonify({
+                            'success': False,
+                            'error': f"Unable to geocode any addresses. Please provide a file with latitude and longitude columns."
+                        })
             
             if missing_columns:
                 return jsonify({
@@ -325,26 +355,46 @@ def upload_call_data():
                     'longitude': float(row['longitude'])
                 }
                 
-                # Add optional fields if they exist
+                # Add optional fields if they exist (case-insensitive)
                 optional_fields = {
-                    'type': 'call_type',
-                    'hour': 'hour',
-                    'dayOfWeek': 'day_of_week',
-                    'month': 'month',
-                    'intensity': 'intensity'
+                    'type': ['call_type', 'incident_type', 'type', 'call type', 'incident type', 'Type', 'CALL_TYPE'],
+                    'hour': ['hour', 'hour_of_day', 'Hour'],
+                    'dayOfWeek': ['day_of_week', 'weekday', 'day', 'Day', 'DayOfWeek'],
+                    'month': ['month', 'Month'],
+                    'intensity': ['intensity', 'weight', 'count', 'Intensity', 'Weight', 'Count']
                 }
                 
-                for dest_key, source_key in optional_fields.items():
-                    if source_key in data.columns and not pd.isna(row[source_key]):
-                        point[dest_key] = row[source_key]
+                for dest_key, source_keys in optional_fields.items():
+                    # Check for exact match
+                    found_field = False
+                    for source_key in source_keys:
+                        if source_key in data.columns and not pd.isna(row[source_key]):
+                            point[dest_key] = row[source_key]
+                            found_field = True
+                            break
+                    
+                    # If not found, try case-insensitive match
+                    if not found_field:
+                        for source_key in source_keys:
+                            if source_key.lower() in column_map and not pd.isna(row[column_map[source_key.lower()]]):
+                                point[dest_key] = row[column_map[source_key.lower()]]
+                                break
                 
                 # If timestamp or datetime column exists, extract time components
-                datetime_columns = ['timestamp', 'datetime', 'date_time', 'call_time', 'incident_time', 'Reported']
+                datetime_columns = ['timestamp', 'datetime', 'date_time', 'call_time', 'incident_time', 'Reported', 'reported', 'date', 'time']
                 
                 for col in datetime_columns:
-                    if col in data.columns and not pd.isna(row[col]):
+                    found_col = None
+                    # Check for exact match
+                    if col in data.columns:
+                        found_col = col
+                    # If not found, try case-insensitive match
+                    elif col.lower() in column_map:
+                        found_col = column_map[col.lower()]
+                    
+                    if found_col and not pd.isna(row[found_col]):
                         try:
-                            dt = pd.to_datetime(row[col])
+                            dt = pd.to_datetime(row[found_col])
                             if 'hour' not in point:
                                 point['hour'] = dt.hour
                             if 'dayOfWeek' not in point:
