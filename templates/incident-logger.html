@@ -6,8 +6,122 @@
     <title>Incident Logger - FireEMS.ai</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='incident-logger.css') }}">
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/incident-logger.css">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    
+    <style>
+    /* Fallback styles in case the CSS files don't load properly */
+    body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        margin: 0;
+        padding: 20px;
+        background-color: #f8f9fa;
+    }
+    
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    header {
+        background-color: white;
+        padding: 15px 0;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+    
+    button {
+        background-color: #4a89dc;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    
+    .secondary-btn {
+        background-color: #f0f0f0;
+        color: #333;
+    }
+    
+    .card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .form-step {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    
+    input, select, textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .nav-links {
+        display: flex;
+        list-style: none;
+        gap: 20px;
+    }
+    
+    .nav-links a {
+        text-decoration: none;
+        color: #333;
+    }
+    
+    .nav-links a.active {
+        color: #4a89dc;
+        font-weight: bold;
+    }
+    
+    .form-progress {
+        display: flex;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .progress-step {
+        padding: 10px 15px;
+        cursor: pointer;
+    }
+    
+    .progress-step.active {
+        color: #4a89dc;
+        border-bottom: 3px solid #4a89dc;
+    }
+    </style>
 </head>
 <body>
     <header>
@@ -53,57 +167,6 @@
             </div>
 
             <div id="incident-form-container" class="card">
-                <form id="incident-form">
-                    <!-- Form content goes here -->
-                </form>
-            </div>
-            
-            <div id="cad-import-container" class="card" style="display:none;">
-                <h3>Import Data from CAD System</h3>
-                
-                <div class="cad-import-form">
-                    <div class="form-group">
-                        <label for="cad-file">CAD Export File</label>
-                        <input type="file" id="cad-file" accept=".csv,.json,.xml">
-                        <p class="file-hint">Supported formats: CSV, JSON, XML</p>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="cad-import-mode">Import Mode</label>
-                        <select id="cad-import-mode">
-                            <option value="new">Create New Incidents</option>
-                            <option value="update">Update Existing Incident</option>
-                        </select>
-                    </div>
-                    
-                    <div id="cad-match-container" style="display:none;">
-                        <div class="form-group">
-                            <label for="cad-match-id">Incident ID to Update</label>
-                            <input type="text" id="cad-match-id" placeholder="e.g., INC-20250322-001">
-                        </div>
-                    </div>
-                    
-                    <div class="cad-import-actions">
-                        <button id="cad-import-run-btn" class="primary-btn">
-                            <i class="fas fa-file-import"></i> Import CAD Data
-                        </button>
-                    </div>
-                </div>
-                
-                <div id="cad-import-preview" style="display:none;">
-                    <h4>Import Preview</h4>
-                    <div id="cad-preview-content"></div>
-                    
-                    <div class="cad-import-actions">
-                        <button id="cad-apply-btn" class="primary-btn">
-                            <i class="fas fa-check"></i> Apply CAD Data
-                        </button>
-                        <button id="cad-cancel-btn" class="secondary-btn">
-                            <i class="fas fa-times"></i> Cancel
-                        </button>
-                    </div>
-                </div>
-            </div>
                 <form id="incident-form">
                     <div class="form-progress">
                         <div class="progress-step active" data-step="1">Basic Info</div>
@@ -835,6 +898,53 @@
                 </div>
             </div>
             
+            <div id="cad-import-container" class="card" style="display:none;">
+                <h3>Import Data from CAD System</h3>
+                
+                <div class="cad-import-form">
+                    <div class="form-group">
+                        <label for="cad-file">CAD Export File</label>
+                        <input type="file" id="cad-file" accept=".csv,.json,.xml">
+                        <p class="file-hint">Supported formats: CSV, JSON, XML</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cad-import-mode">Import Mode</label>
+                        <select id="cad-import-mode">
+                            <option value="new">Create New Incidents</option>
+                            <option value="update">Update Existing Incident</option>
+                        </select>
+                    </div>
+                    
+                    <div id="cad-match-container" style="display:none;">
+                        <div class="form-group">
+                            <label for="cad-match-id">Incident ID to Update</label>
+                            <input type="text" id="cad-match-id" placeholder="e.g., INC-20250322-001">
+                        </div>
+                    </div>
+                    
+                    <div class="cad-import-actions">
+                        <button id="cad-import-run-btn" class="primary-btn">
+                            <i class="fas fa-file-import"></i> Import CAD Data
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="cad-import-preview" style="display:none;">
+                    <h4>Import Preview</h4>
+                    <div id="cad-preview-content"></div>
+                    
+                    <div class="cad-import-actions">
+                        <button id="cad-apply-btn" class="primary-btn">
+                            <i class="fas fa-check"></i> Apply CAD Data
+                        </button>
+                        <button id="cad-cancel-btn" class="secondary-btn">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
             <div id="settings-container" class="card" style="display:none;">
                 <h3>Settings</h3>
                 
@@ -1072,104 +1182,6 @@
                 </button>
             </div>
         </div>
-    </template>>
-                                <td>
-                                    <input type="number" name="vital-resp-{{index}}-1" min="4" max="60">
-                                </td>
-                                <td>
-                                    <input type="number" name="vital-spo2-{{index}}-1" min="50" max="100">
-                                </td>
-                                <td>
-                                    <input type="number" name="vital-gcs-{{index}}-1" min="3" max="15">
-                                </td>
-                                <td>
-                                    <button type="button" class="remove-vital-btn secondary-btn small-btn">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <button type="button" class="add-vital-btn secondary-btn small-btn" data-patient="{{index}}">
-                    <i class="fas fa-plus"></i> Add Vital Signs
-                </button>
-            </div>
-            
-            <div class="form-section">
-                <h5>Treatments</h5>
-                <div id="treatments-container-{{index}}">
-                    <div class="treatment-entry">
-                        <div class="form-group">
-                            <label for="treatment-time-{{index}}-1">Time</label>
-                            <input type="datetime-local" id="treatment-time-{{index}}-1" name="treatment-time-{{index}}-1">
-                        </div>
-                        <div class="form-group">
-                            <label for="treatment-procedure-{{index}}-1">Procedure</label>
-                            <input type="text" id="treatment-procedure-{{index}}-1" name="treatment-procedure-{{index}}-1">
-                        </div>
-                        <div class="form-group">
-                            <label for="treatment-notes-{{index}}-1">Notes</label>
-                            <textarea id="treatment-notes-{{index}}-1" name="treatment-notes-{{index}}-1"></textarea>
-                        </div>
-                        <button type="button" class="remove-treatment-btn secondary-btn small-btn">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-                <button type="button" class="add-treatment-btn secondary-btn small-btn" data-patient="{{index}}">
-                    <i class="fas fa-plus"></i> Add Treatment
-                </button>
-            </div>
-        </div>
-    </template>" name="vital-resp-{{index}}-1" min="4" max="60">
-                                </td>
-                                <td>
-                                    <input type="number" name="vital-spo2-{{index}}-1" min="50" max="100">
-                                </td>
-                                <td>
-                                    <input type="number" name="vital-gcs-{{index}}-1" min="3" max="15">
-                                </td>
-                                <td>
-                                    <button type="button" class="remove-vital-btn secondary-btn small-btn">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <button type="button" class="add-vital-btn secondary-btn small-btn" data-patient="{{index}}">
-                    <i class="fas fa-plus"></i> Add Vital Signs
-                </button>
-            </div>
-            
-            <div class="form-section">
-                <h5>Treatments</h5>
-                <div id="treatments-container-{{index}}">
-                    <div class="treatment-entry">
-                        <div class="form-group">
-                            <label for="treatment-time-{{index}}-1">Time</label>
-                            <input type="datetime-local" id="treatment-time-{{index}}-1" name="treatment-time-{{index}}-1">
-                        </div>
-                        <div class="form-group">
-                            <label for="treatment-procedure-{{index}}-1">Procedure</label>
-                            <input type="text" id="treatment-procedure-{{index}}-1" name="treatment-procedure-{{index}}-1">
-                        </div>
-                        <div class="form-group">
-                            <label for="treatment-notes-{{index}}-1">Notes</label>
-                            <textarea id="treatment-notes-{{index}}-1" name="treatment-notes-{{index}}-1"></textarea>
-                        </div>
-                        <button type="button" class="remove-treatment-btn secondary-btn small-btn">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-                <button type="button" class="add-treatment-btn secondary-btn small-btn" data-patient="{{index}}">
-                    <i class="fas fa-plus"></i> Add Treatment
-                </button>
-            </div>
-        </div>
     </template>
 
     <!-- Modal templates -->
@@ -1199,13 +1211,38 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.11.9/dayjs.min.js"></script>
-    <script src="{{ url_for('static', filename='js/components/incident-form.js') }}" type="module"></script>
-    <script src="{{ url_for('static', filename='js/components/incident-validator.js') }}" type="module"></script>
-    <script src="{{ url_for('static', filename='js/components/incident-list.js') }}" type="module"></script>
-    <script src="{{ url_for('static', filename='js/components/incident-map.js') }}" type="module"></script>
-    <script src="{{ url_for('static', filename='js/components/incident-export.js') }}" type="module"></script>
-    <script src="{{ url_for('static', filename='js/components/hipaa-compliance.js') }}" type="module"></script>
-    <script src="{{ url_for('static', filename='js/components/cad-integration.js') }}" type="module"></script>
-    <script src="{{ url_for('static', filename='incident-logger.js') }}" type="module"></script>
+    
+    <!-- Component scripts - changed from type="module" to normal scripts -->
+    <script src="/static/js/components/incident-form.js"></script>
+    <script src="/static/js/components/incident-validator.js"></script>
+    <script src="/static/js/components/incident-list.js"></script>
+    <script src="/static/js/components/incident-map.js"></script>
+    <script src="/static/js/components/incident-export.js"></script>
+    <script src="/static/js/components/hipaa-compliance.js"></script>
+    <script src="/static/js/components/cad-integration.js"></script>
+    
+    <!-- Main script file -->
+    <script src="/static/incident-logger.js"></script>
+    <script>
+    // Add console logging to debug module loading
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOMContentLoaded event fired');
+        console.log('Document ready, trying to initialize page');
+        setTimeout(() => {
+            console.log('Checking if all elements loaded correctly');
+            const containers = [
+                'incident-form-container', 
+                'cad-import-container', 
+                'incident-list-container',
+                'export-container', 
+                'settings-container'
+            ];
+            containers.forEach(id => {
+                const el = document.getElementById(id);
+                console.log(`Container #${id}: ${el ? 'Found' : 'NOT FOUND'}`);
+            });
+        }, 1000);
+    });
+    </script>
 </body>
 </html>

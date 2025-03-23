@@ -438,6 +438,22 @@ def incident_logger():
     """Serve the Incident Logger tool"""
     return render_template('incident-logger.html')
 
+# Simple test routes for debugging
+@app.route('/simple-test')
+def simple_test():
+    """Serve a simple test page"""
+    return send_from_directory('static', 'simple-test.html')
+
+@app.route('/simple-incident-logger')
+def simple_incident_logger():
+    """Serve a simplified incident logger page"""
+    return send_from_directory('static', 'simple-incident-logger.html')
+
+@app.route('/incident-logger-static')
+def incident_logger_static():
+    """Serve the static version of the incident logger"""
+    return send_from_directory('static', 'incident-logger-static.html')
+
 # API endpoints for Incident Logger
 @app.route('/api/incident/create', methods=['POST'])
 def create_incident():
@@ -684,3 +700,7 @@ def export_incidents():
 if __name__ == "__main__":
     # For production on Render, consider setting debug to False
     app.run(host="0.0.0.0", port=8000, debug=True)
+else:
+    # When run via flask command
+    app.config['ENV'] = 'development'
+    app.config['DEBUG'] = True

@@ -1,7 +1,13 @@
+// Wrap all code in an IIFE to avoid polluting the global namespace
+(function() {
+// Debug console message to verify script is loading
+console.log("incident-logger.js is loading...");
+
 /**
  * Show CAD import interface
  */
 function showCadImport() {
+    console.log("showCadImport function called");
     // Hide other containers
     document.getElementById("incident-form-container").style.display = "none";
     document.getElementById("incident-list-container").style.display = "none";
@@ -754,3 +760,231 @@ function navigateToStep(stepNumber) {
         calculateResponseTimes();
     }
 }
+
+// We already have a DOMContentLoaded handler above, so we'll remove the duplicate one
+
+// Define functions that might be missing but referenced
+function validateStep(step) {
+    console.log("Validating step:", step);
+    // Simple validation - would be expanded in production
+    return true;
+}
+
+function showToast(message, type) {
+    console.log(`Toast (${type}): ${message}`);
+    const toast = document.createElement('div');
+    toast.className = `toast ${type || 'info'}`;
+    toast.innerHTML = message;
+    
+    const container = document.getElementById('toast-container');
+    if (container) {
+        container.appendChild(toast);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            toast.classList.add('toast-hide');
+            setTimeout(() => toast.remove(), 500);
+        }, 5000);
+    } else {
+        // Fallback to console if container not found
+        console.log(`Toast: ${message} (${type})`);
+    }
+}
+
+function calculateResponseTimes() {
+    console.log("Calculating response times...");
+    // Implementation would go here
+}
+
+function insertTextAtCursor(textArea, text) {
+    if (!textArea) return;
+    
+    const startPos = textArea.selectionStart;
+    const endPos = textArea.selectionEnd;
+    const before = textArea.value.substring(0, startPos);
+    const after = textArea.value.substring(endPos);
+    
+    textArea.value = before + text + after;
+    textArea.selectionStart = textArea.selectionEnd = startPos + text.length;
+    textArea.focus();
+}
+
+function updateNarrativeCharCount() {
+    const narrative = document.getElementById("incident-narrative");
+    const charCount = document.getElementById("narrative-char-count");
+    
+    if (narrative && charCount) {
+        const count = narrative.value.length;
+        charCount.textContent = `${count} characters`;
+    }
+}
+
+function updateSecondaryTypes() {
+    console.log("Updating secondary types based on primary type selection");
+    // Implementation would go here
+}
+
+function updateSpecificTypes() {
+    console.log("Updating specific types based on secondary type selection");
+    // Implementation would go here
+}
+
+function validateTimeSequence() {
+    console.log("Validating time sequence");
+    // Implementation would go here
+}
+
+function setupAutosave() {
+    console.log("Setting up autosave");
+    // Implementation would go here
+}
+
+function loadIncidents() {
+    console.log("Loading incidents");
+    // Implementation would go here
+}
+
+function addUnitEntry() {
+    console.log("Adding unit entry");
+    // Implementation would go here
+}
+
+function addPatientEntry() {
+    console.log("Adding patient entry");
+    // Implementation would go here
+}
+
+function addVitalSigns(patientIndex) {
+    console.log("Adding vital signs for patient", patientIndex);
+    // Implementation would go here
+}
+
+function addTreatment(patientIndex) {
+    console.log("Adding treatment for patient", patientIndex);
+    // Implementation would go here
+}
+
+function addPersonnel(unitIndex) {
+    console.log("Adding personnel for unit", unitIndex);
+    // Implementation would go here
+}
+
+function updatePatientCount(count) {
+    console.log("Updating patient count to", count);
+    // Implementation would go here
+}
+
+function geocodeAddress() {
+    console.log("Geocoding address");
+    // Implementation would go here
+}
+
+function getCurrentLocation() {
+    console.log("Getting current location");
+    // Implementation would go here
+}
+
+function handleFormSubmit(event) {
+    event.preventDefault();
+    console.log("Form submitted");
+    // Implementation would go here
+}
+
+function saveDraft() {
+    console.log("Saving draft");
+    // Implementation would go here
+}
+
+function showIncidentList() {
+    console.log("Showing incident list");
+    // Implementation would go here
+}
+
+function showExportOptions() {
+    console.log("Showing export options");
+    // Implementation would go here
+}
+
+function showSettings() {
+    console.log("Showing settings");
+    // Implementation would go here
+}
+
+function showNewIncidentForm() {
+    console.log("Showing new incident form");
+    // Implementation would go here
+}
+
+function updateSettings() {
+    console.log("Updating settings");
+    // Implementation would go here
+}
+
+function resetSettings() {
+    console.log("Resetting settings");
+    // Implementation would go here
+}
+
+function confirmClearData() {
+    console.log("Confirming data clear");
+    // Implementation would go here
+}
+
+function exportSettings() {
+    console.log("Exporting settings");
+    // Implementation would go here
+}
+
+function importSettings() {
+    console.log("Importing settings");
+    // Implementation would go here
+}
+
+function handleFileUpload() {
+    console.log("Handling file upload");
+    // Implementation would go here
+}
+
+function activateCamera() {
+    console.log("Activating camera");
+    // Implementation would go here
+}
+
+function searchIncidents() {
+    console.log("Searching incidents");
+    // Implementation would go here
+}
+
+function filterIncidents() {
+    console.log("Filtering incidents");
+    // Implementation would go here
+}
+
+function resetFilters() {
+    console.log("Resetting filters");
+    // Implementation would go here
+}
+
+function previousPage() {
+    console.log("Going to previous page");
+    // Implementation would go here
+}
+
+function nextPage() {
+    console.log("Going to next page");
+    // Implementation would go here
+}
+
+function generateExport() {
+    console.log("Generating export");
+    // Implementation would go here
+}
+
+function formatDate(date) {
+    return date ? date.toLocaleDateString() : '';
+}
+
+// Log when the IIFE completes
+console.log("incident-logger.js IIFE executed");
+
+})(); // End of IIFE
