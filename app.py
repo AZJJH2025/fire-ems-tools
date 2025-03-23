@@ -431,6 +431,230 @@ def upload_call_data():
     
     return jsonify({'success': False, 'error': 'File type not allowed. Only CSV and Excel files are supported.'})
 
+# Incident Logger routes
+@app.route('/incident-logger')
+def incident_logger():
+    """Serve the Incident Logger tool"""
+    return render_template('incident-logger.html')
+
+# API endpoints for Incident Logger
+@app.route('/api/incident/create', methods=['POST'])
+def create_incident():
+    """Create a new incident"""
+    try:
+        data = request.get_json()
+        
+        # Validate the required fields
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+        
+        # Create a unique ID if not provided
+        if not data.get('id'):
+            now = datetime.now()
+            date_str = now.strftime('%Y%m%d')
+            random_id = str(int(time.time() * 1000) % 10000).zfill(4)
+            data['id'] = f"INC-{date_str}-{random_id}"
+        
+        # Add metadata
+        data['created_at'] = datetime.now().isoformat()
+        data['last_modified'] = datetime.now().isoformat()
+        
+        # Create data directory if it doesn't exist
+        incidents_dir = os.path.join('data', 'incidents')
+        os.makedirs(incidents_dir, exist_ok=True)
+        
+        # Save to file
+        file_path = os.path.join(incidents_dir, f"{data['id']}.json")
+        with open(file_path, 'w') as f:
+            json.dump(data, f, indent=2)
+        
+        return jsonify({"success": True, "id": data['id']}), 201
+    
+    except Exception as e:
+        app.logger.error(f"Error creating incident: {str(e)}")
+        app.logger.error(traceback.format_exc())
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/incident/update/<id>', methods=['PUT'])
+def update_incident(id):
+    """Update an existing incident"""
+    try:
+        data = request.get_json()
+        
+        # Validate the required fields
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+        
+        # Check if incident exists
+        incidents_dir = os.path.join('data', 'incidents')
+        file_path = os.path.join(incidents_dir, f"{id}.json")
+        
+        if not os.path.exists(file_path):
+            return jsonify({"error": f"Incident {id} not found"}), 404
+        
+        # Update metadata
+        data['last_modified'] = datetime.now().isoformat()
+        
+        # Save to file
+        with open(file_path, 'w') as f:
+            json.dump(data, f, indent=2)
+        
+        return jsonify({"success": True, "id": id}), 200
+    
+    except Exception as e:
+        app.logger.error(f"Error updating incident: {str(e)}")
+        app.logger.error(traceback.format_exc())
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/incident/get/<id>', methods=['GET'])
+def get_incident(id):
+    """Get a specific incident by ID"""
+    try:
+        # Check if incident exists
+        incidents_dir = os.path.join('data', 'incidents')
+        file_path = os.path.join(incidents_dir, f"{id}.json")
+        
+        if not os.path.exists(file_path):
+            return jsonify({"error": f"Incident {id} not found"}), 404
+        
+        # Read from file
+        with open(file_path, 'r') as f:
+            incident = json.load(f)
+        
+        return jsonify(incident), 200
+    
+    except Exception as e:
+        app.logger.error(f"Error getting incident: {str(e)}")
+        app.logger.error(traceback.format_exc())
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/incident/list', methods=['GET'])
+def list_incidents():
+    """List all incidents with optional filtering"""
+    try:
+        # Get query parameters for filtering
+        status = request.args.get('status')
+        type = request.args.get('type')
+        date_from = request.args.get('date_from')
+        date_to = request.args.get('date_to')
+        
+        # Read all incident files
+        incidents_dir = os.path.join('data', 'incidents')
+        if not os.path.exists(incidents_dir):
+            os.makedirs(incidents_dir, exist_ok=True)
+            return jsonify({"incidents": []}), 200
+        
+        incidents = []
+        for filename in os.listdir(incidents_dir):
+            if filename.endswith('.json'):
+                file_path = os.path.join(incidents_dir, filename)
+                with open(file_path, 'r') as f:
+                    incident = json.load(f)
+                
+                # Apply filters
+                include = True
+                
+                if status and incident.get('status') != status:
+                    include = False
+                
+                if type and incident.get('incident_type', {}).get('primary') != type:
+                    include = False
+                
+                if date_from or date_to:
+                    incident_date = incident.get('timestamp')
+                    if incident_date:
+                        if date_from and incident_date < date_from:
+                            include = False
+                        if date_to and incident_date > date_to:
+                            include = False
+                
+                if include:
+                    incidents.append(incident)
+        
+        # Sort by timestamp (newest first)
+        incidents.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+        
+        return jsonify({"incidents": incidents}), 200
+    
+    except Exception as e:
+        app.logger.error(f"Error listing incidents: {str(e)}")
+        app.logger.error(traceback.format_exc())
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/incident/export', methods=['GET'])
+def export_incidents():
+    """Export incidents in various formats"""
+    try:
+        # Get query parameters
+        format = request.args.get('format', 'csv')
+        ids = request.args.getlist('ids')  # List of incident IDs to export
+        
+        # Read incident files
+        incidents_dir = os.path.join('data', 'incidents')
+        incidents = []
+        
+        # If specific IDs are requested, only load those
+        if ids:
+            for id in ids:
+                file_path = os.path.join(incidents_dir, f"{id}.json")
+                if os.path.exists(file_path):
+                    with open(file_path, 'r') as f:
+                        incidents.append(json.load(f))
+        else:
+            # Otherwise load all incidents
+            for filename in os.listdir(incidents_dir):
+                if filename.endswith('.json'):
+                    file_path = os.path.join(incidents_dir, filename)
+                    with open(file_path, 'r') as f:
+                        incidents.append(json.load(f))
+        
+        # Return appropriate format
+        if format == 'json':
+            return jsonify({"incidents": incidents}), 200
+        
+        elif format == 'csv':
+            # Convert to DataFrame for CSV export
+            flat_incidents = []
+            for incident in incidents:
+                flat_incident = {
+                    'id': incident.get('id'),
+                    'timestamp': incident.get('timestamp'),
+                    'status': incident.get('status'),
+                    'address': incident.get('location', {}).get('address'),
+                    'latitude': incident.get('location', {}).get('latitude'),
+                    'longitude': incident.get('location', {}).get('longitude'),
+                    'primary_type': incident.get('incident_type', {}).get('primary'),
+                    'secondary_type': incident.get('incident_type', {}).get('secondary'),
+                    'specific_type': incident.get('incident_type', {}).get('specific'),
+                    'caller_name': incident.get('caller_info', {}).get('name'),
+                    'time_received': incident.get('dispatch', {}).get('time_received'),
+                    'time_arrived': incident.get('dispatch', {}).get('time_arrived'),
+                    'patient_count': incident.get('patient_info', {}).get('count'),
+                    'transported': incident.get('disposition', {}).get('transported'),
+                    'destination': incident.get('disposition', {}).get('destination'),
+                    'created_by': incident.get('created_by'),
+                    'created_at': incident.get('created_at'),
+                    'last_modified': incident.get('last_modified')
+                }
+                flat_incidents.append(flat_incident)
+            
+            # Convert to CSV
+            df = pd.DataFrame(flat_incidents)
+            csv_data = df.to_csv(index=False)
+            
+            return csv_data, 200, {
+                'Content-Type': 'text/csv',
+                'Content-Disposition': 'attachment; filename=incidents.csv'
+            }
+        
+        else:
+            return jsonify({"error": f"Unsupported format: {format}"}), 400
+    
+    except Exception as e:
+        app.logger.error(f"Error exporting incidents: {str(e)}")
+        app.logger.error(traceback.format_exc())
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     # For production on Render, consider setting debug to False
     app.run(host="0.0.0.0", port=8000, debug=True)
