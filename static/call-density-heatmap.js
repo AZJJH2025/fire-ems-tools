@@ -220,13 +220,11 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Log the first few points to help debug
-        console.log("Sample data points:", data.slice(0, 5));
-        
-        // Format data for heatmap and markers
-        const heatData = [];
+        // Create new marker group
         window.markerGroup = L.layerGroup().addTo(map);
-        let validPointCount = 0;
+        
+        // Count the occurrences of each location to determine hotspots
+        const locationCounts = {};
         
         for (const point of data) {
             // Validate coordinates
@@ -235,60 +233,84 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Skip invalid coordinates
             if (isNaN(lat) || isNaN(lng) || !isFinite(lat) || !isFinite(lng)) {
-                console.warn('Invalid coordinates:', point);
                 continue;
             }
             
-            // Log each point we're processing
-            console.log(`Processing point at: ${lat}, ${lng}`);
+            // Round coordinates to 4 decimal places for grouping nearby points
+            const roundedLat = Math.round(lat * 10000) / 10000;
+            const roundedLng = Math.round(lng * 10000) / 10000;
+            const locationKey = `${roundedLat},${roundedLng}`;
             
-            // Add a visible marker for each point
-            const marker = L.marker([lat, lng]).addTo(window.markerGroup);
-            marker.bindPopup(`Location: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
-            
-            // Use very high intensity for heatmap
-            let intensity = 10; // Extremely high intensity for visibility
-            
-            // Add point to heatmap data with swapped coordinates
-            heatData.push([lng, lat, intensity]);
-            validPointCount++;
-        }
-        
-        console.log(`Added ${validPointCount} markers to the map`);
-        
-        if (heatData.length === 0) {
-            document.getElementById('hotspot-results').innerHTML = 
-                '<p>No valid data points to display heatmap</p>';
-            return;
-        }
-        
-        // Wait a moment to ensure the map is ready
-        setTimeout(() => {
-            try {
-                // Make sure map is visible and has proper dimensions
-                map.invalidateSize();
-                
-                // Create and add the heat layer with more prominent settings
-                heatLayer = L.heatLayer(heatData, {
-                    radius: 100,        // Much larger radius
-                    blur: 60,           // More blur
-                    maxZoom: 17,
-                    minOpacity: 0.8,    // High minimum opacity
-                    gradient: {
-                        0.0: 'rgba(0, 0, 255, 0.7)',
-                        0.3: 'rgba(0, 255, 0, 0.7)',
-                        0.6: 'rgba(255, 255, 0, 0.8)',
-                        0.9: 'rgba(255, 0, 0, 0.9)'
-                    }
-                }).addTo(map);
-                
-                console.log("Heatmap created successfully with radius:", 100);
-            } catch (error) {
-                console.error('Error creating heatmap:', error);
-                document.getElementById('hotspot-results').innerHTML = 
-                    `<p>Error creating heatmap: ${error.message}</p>`;
+            // Count occurrences at this location
+            if (locationCounts[locationKey]) {
+                locationCounts[locationKey].count++;
+            } else {
+                locationCounts[locationKey] = {
+                    lat: lat,
+                    lng: lng,
+                    count: 1
+                };
             }
-        }, 300); // Small delay to ensure map is ready
+        }
+        
+        // Convert the location counts to an array
+        const locations = Object.values(locationCounts);
+        
+        // Find the maximum count to scale sizes and colors
+        const maxCount = Math.max(...locations.map(loc => loc.count));
+        console.log(`Maximum count at any location: ${maxCount}`);
+        
+        // Add markers with size and color based on count
+        locations.forEach(location => {
+            // Calculate the size based on count relative to max
+            const sizeFactor = Math.max(0.3, location.count / maxCount);
+            const radius = 5 + (sizeFactor * 20); // Scale radius between 5 and 25
+            
+            // Calculate color intensity based on count
+            const intensity = location.count / maxCount;
+            let color;
+            
+            if (intensity < 0.25) {
+                color = '#4575b4'; // Blue for low intensity
+            } else if (intensity < 0.5) {
+                color = '#91bfdb'; // Light blue for medium-low intensity
+            } else if (intensity < 0.75) {
+                color = '#fc8d59'; // Orange for medium-high intensity
+            } else {
+                color = '#d73027'; // Red for high intensity
+            }
+            
+            // Create a circle marker with size and color based on count
+            const marker = L.circleMarker([location.lat, location.lng], {
+                radius: radius,
+                fillColor: color,
+                color: '#fff',
+                weight: 1,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(window.markerGroup);
+            
+            // Add popup with info
+            marker.bindPopup(`
+                <b>Location:</b> ${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}<br>
+                <b>Number of calls:</b> ${location.count}
+            `);
+        });
+        
+        console.log(`Added ${locations.length} heat markers to the map`);
+        
+        // Ensure the map view includes all the markers
+        if (locations.length > 0) {
+            try {
+                const bounds = L.latLngBounds(locations.map(loc => [loc.lat, loc.lng]));
+                map.fitBounds(bounds, {
+                    padding: [50, 50],
+                    maxZoom: 13
+                });
+            } catch (error) {
+                console.error("Error fitting map to markers:", error);
+            }
+        }
     }
 
     // Function to update hotspot analysis section
