@@ -246,8 +246,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const marker = L.marker([lat, lng]).addTo(window.markerGroup);
             marker.bindPopup(`Location: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
             
-            // Use provided intensity or default to 1
-            let intensity = 5; // Use high intensity for visibility
+            // Use very high intensity for heatmap
+            let intensity = 10; // Extremely high intensity for visibility
             
             // Add point to heatmap data with swapped coordinates
             heatData.push([lng, lat, intensity]);
@@ -270,20 +270,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Create and add the heat layer with more prominent settings
                 heatLayer = L.heatLayer(heatData, {
-                    radius: 70,         // Very large radius
-                    blur: 40,           // Heavy blur
+                    radius: 100,        // Much larger radius
+                    blur: 60,           // More blur
                     maxZoom: 17,
-                    minOpacity: 0.8,    // Very high opacity
-                    max: 1.0,
+                    minOpacity: 0.8,    // High minimum opacity
                     gradient: {
-                        0.0: 'blue',
-                        0.3: 'lime',
-                        0.6: 'yellow',
-                        0.9: 'red'
+                        0.0: 'rgba(0, 0, 255, 0.7)',
+                        0.3: 'rgba(0, 255, 0, 0.7)',
+                        0.6: 'rgba(255, 255, 0, 0.8)',
+                        0.9: 'rgba(255, 0, 0, 0.9)'
                     }
                 }).addTo(map);
                 
-                console.log("Heatmap created successfully with radius:", 70);
+                console.log("Heatmap created successfully with radius:", 100);
             } catch (error) {
                 console.error('Error creating heatmap:', error);
                 document.getElementById('hotspot-results').innerHTML = 
