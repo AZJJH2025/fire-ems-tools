@@ -86,8 +86,20 @@ function initializeMap() {
     
     // Ensure the map adjusts to container size after load
     setTimeout(function() {
-        map.invalidateSize();
-    }, 300);
+        if (map) {
+            map.invalidateSize();
+            console.log('Map size invalidated');
+        } else {
+            console.error('Map not initialized properly');
+        }
+    }, 500);
+    
+    // Additional size adjustment when window is resized
+    window.addEventListener('resize', function() {
+        if (map) {
+            map.invalidateSize();
+        }
+    });
 }
 
 /**
@@ -163,14 +175,26 @@ function setupEventListeners() {
     });
     
     document.getElementById('icon-tool').addEventListener('click', function() {
+        console.log('Icon tool clicked, toggling icon panel');
         togglePanel('icon-container');
         toggleToolActive('icon-tool');
         
         // Initialize drag and drop functionality if it hasn't been set up yet
         if (!window.dragDropInitialized) {
+            console.log('Initializing drag and drop functionality');
             initializeDragAndDrop();
             window.dragDropInitialized = true;
+        } else {
+            console.log('Drag and drop already initialized');
         }
+        
+        // Ensure map is properly sized and visible
+        setTimeout(function() {
+            if (map) {
+                map.invalidateSize();
+                console.log('Map size invalidated after icon tool click');
+            }
+        }, 200);
     });
     
     document.getElementById('clear-map').addEventListener('click', function() {
@@ -1357,6 +1381,14 @@ function togglePanel(panelId) {
     
     // Show the selected panel
     document.getElementById(panelId).style.display = 'block';
+    
+    // Fix for map visibility - invalidate size after panel toggle
+    setTimeout(function() {
+        if (map) {
+            map.invalidateSize();
+            console.log('Map size invalidated after panel toggle');
+        }
+    }, 100);
 }
 
 /**
@@ -1444,6 +1476,19 @@ function initializeDragAndDrop() {
  * @returns {L.Marker} - The created marker
  */
 function createCustomMarker(iconType, latlng, iconColor) {
+    console.log(`Creating marker of type: ${iconType}, at: ${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}, color: ${iconColor}`);
+    
+    // Ensure map and iconLayer exist
+    if (!map) {
+        console.error('Map is not initialized!');
+        return null;
+    }
+    
+    if (!window.iconLayer) {
+        console.log('Creating new icon layer');
+        window.iconLayer = L.layerGroup().addTo(map);
+    }
+    
     // Create a custom icon
     const icon = createCustomMarkerIcon(iconType, iconColor);
     
@@ -1542,6 +1587,15 @@ function createCustomMarker(iconType, latlng, iconColor) {
     
     // Add the marker to the custom layer
     window.iconLayer.addLayer(marker);
+    
+    // Show brief notification
+    const uploadStatus = document.getElementById('upload-status');
+    if (uploadStatus) {
+        uploadStatus.innerHTML = `<div class="success-message">Added ${title} marker to map</div>`;
+        setTimeout(() => {
+            uploadStatus.innerHTML = '';
+        }, 3000);
+    }
     
     return marker;
 }
