@@ -5,20 +5,21 @@
  * underserved areas in emergency response coverage.
  */
 
-// Wrap everything in an IIFE to avoid global scope pollution
+// Global variables (for better access from debugging and in direct initialization)
+var map; // Leaflet map instance
+var drawControl; // Leaflet draw control
+var boundaryLayer; // Jurisdiction boundary layer
+var stationMarkers = []; // Array of station markers
+var stationLayers = []; // Array of station coverage layers
+var suggestedStationMarkers = []; // Array of suggested new station markers
+var heatmapLayer; // For incident density heatmap
+var incidentData = []; // Stored incident data
+var stationData = []; // Stored station data
+var jurisdictionBoundary; // GeoJSON of jurisdiction boundary
+var populationLayer; // Population density layer
+
+// Wrap most functionality in an IIFE to organize the code but expose key functions
 (function() {
-    // Global variables
-    let map; // Leaflet map instance
-    let drawControl; // Leaflet draw control
-    let boundaryLayer; // Jurisdiction boundary layer
-    let stationMarkers = []; // Array of station markers
-    let stationLayers = []; // Array of station coverage layers
-    let suggestedStationMarkers = []; // Array of suggested new station markers
-    let heatmapLayer; // For incident density heatmap
-    let incidentData = []; // Stored incident data
-    let stationData = []; // Stored station data
-    let jurisdictionBoundary; // GeoJSON of jurisdiction boundary
-    let populationLayer; // Population density layer
     
     // DOM References
     const mapElement = document.getElementById('coverageMap');
@@ -76,11 +77,13 @@
     
     /**
      * Initializes the application once the DOM is loaded
+     * Note: This may be called directly from the HTML page
      */
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('Coverage Gap Finder initialized');
-        initializeMap();
-        setupEventListeners();
+        console.log('Coverage Gap Finder initialized via auto-load');
+        // The initialization is now handled in the HTML to ensure proper loading order
+        // initializeMap();
+        // setupEventListeners();
     });
     
     /**
@@ -1770,4 +1773,7 @@
         link.click();
         document.body.removeChild(link);
     }
+    // Expose the initialization functions globally
+    window.initializeMap = initializeMap;
+    window.setupEventListeners = setupEventListeners;
 })();

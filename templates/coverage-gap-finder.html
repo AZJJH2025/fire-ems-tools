@@ -964,7 +964,10 @@
         window.jspdf = window.jspdf || {};
     </script>
     
-    <!-- Custom JS directly embedded -->
+    <!-- Direct Script Reference -->
+    <script src="static/coverage-gap-finder.js"></script>
+    
+    <!-- Bootstrap & Init Script -->
     <script>
         // Verify required libraries are loaded
         function verifyLibraries() {
@@ -985,9 +988,9 @@
             };
         }
         
-        // Coverage Gap Finder JavaScript will be loaded dynamically
+        // Initialize when the DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
-            // Add a message to show loading status
+            // Show a loading message
             const loadingMsg = document.createElement('div');
             loadingMsg.id = 'loading-status';
             loadingMsg.style.position = 'fixed';
@@ -998,41 +1001,43 @@
             loadingMsg.style.padding = '10px';
             loadingMsg.style.borderRadius = '5px';
             loadingMsg.style.zIndex = '9999';
-            loadingMsg.textContent = 'Loading application scripts...';
+            loadingMsg.textContent = 'Initializing application...';
             document.body.appendChild(loadingMsg);
             
-            // Make sure all required libraries are loaded
-            setTimeout(function() {
-                const libraryStatus = verifyLibraries();
-                
-                if (!libraryStatus.allLoaded) {
-                    console.warn('Missing libraries:', libraryStatus.missing.join(', '));
-                    loadingMsg.innerHTML = `Warning: Some libraries may not be loaded properly.<br>Missing: ${libraryStatus.missing.join(', ')}`;
-                    loadingMsg.style.backgroundColor = '#f39c12';
+            // Check library loading status
+            const libraryStatus = verifyLibraries();
+            if (!libraryStatus.allLoaded) {
+                console.warn('Missing libraries:', libraryStatus.missing.join(', '));
+                loadingMsg.innerHTML = `Warning: Some libraries may not be loaded properly.<br>Missing: ${libraryStatus.missing.join(', ')}`;
+                loadingMsg.style.backgroundColor = '#f39c12';
+                return; // Don't proceed if libraries are missing
+            }
+            
+            // Create global jspdf variable if needed
+            if (typeof window.jspdf === 'undefined' && typeof jspdf !== 'undefined') {
+                window.jspdf = jspdf;
+            }
+            
+            try {
+                // Directly initialize map and event listeners
+                console.log('Coverage Gap Finder initializing directly');
+                if (typeof initializeMap === 'function') {
+                    initializeMap();
+                    setupEventListeners();
+                    
+                    // Update loading message
+                    loadingMsg.textContent = 'Application loaded successfully!';
+                    loadingMsg.style.backgroundColor = '#28a745';
+                    setTimeout(() => loadingMsg.remove(), 2000);
+                } else {
+                    loadingMsg.textContent = 'Error: Application functions not found. Please refresh.';
+                    loadingMsg.style.backgroundColor = '#dc3545';
                 }
-                
-                // Create global jspdf variable if needed
-                if (typeof window.jspdf === 'undefined' && typeof jspdf !== 'undefined') {
-                    window.jspdf = jspdf;
-                }
-            }, 1000);
-            
-            // Load the JavaScript dynamically to avoid potential loading issues
-            var script = document.createElement('script');
-            script.src = 'static/coverage-gap-finder.js?' + new Date().getTime(); // Add timestamp to prevent caching
-            document.body.appendChild(script);
-            
-            // Remove the message after script loads or after 5 seconds
-            script.onload = function() {
-                loadingMsg.textContent = 'Application loaded successfully!';
-                loadingMsg.style.backgroundColor = '#28a745';
-                setTimeout(() => loadingMsg.remove(), 2000);
-            };
-            
-            script.onerror = function() {
-                loadingMsg.textContent = 'Error loading scripts. Please refresh the page.';
+            } catch (err) {
+                console.error('Error initializing the application:', err);
+                loadingMsg.textContent = 'Application initialization error. Please refresh.';
                 loadingMsg.style.backgroundColor = '#dc3545';
-            };
+            }
             
             // Fallback timeout
             setTimeout(() => {
