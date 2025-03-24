@@ -243,6 +243,31 @@ input[type="file"] {
     margin-top: 10px;
 }
 
+/* CSV Configuration Section */
+.csv-config-section {
+    margin-top: 15px;
+    background-color: rgba(25, 118, 210, 0.05);
+    border: 1px solid rgba(25, 118, 210, 0.2);
+    padding: 12px;
+    border-radius: 6px;
+}
+
+.csv-config-section h4 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: var(--secondary-color);
+    font-size: 0.95rem;
+}
+
+.info-text {
+    margin-top: 12px;
+    padding: 8px;
+    background-color: rgba(255, 193, 7, 0.1);
+    border-left: 3px solid var(--warning-color);
+    font-size: 0.85rem;
+    border-radius: 0 4px 4px 0;
+}
+
 /* Map Tools */
 .map-tools {
     display: grid;

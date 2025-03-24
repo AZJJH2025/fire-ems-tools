@@ -24,6 +24,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize tools
     initializeDrawingTools();
     initializeSearchControl();
+    
+    // Initialize CSV settings
+    initializeCSVSettings();
 });
 
 /**
@@ -460,7 +463,12 @@ function handleFileUpload(file, type) {
                     loadGeoJSON(e.target.result, file.name);
                     break;
                 case 'csv':
-                    loadCSV(e.target.result, file.name);
+                    // For CSV files, add a preview step if it's a large file
+                    if (e.target.result.split('\n').length > 20) {
+                        previewCSV(e.target.result, file.name);
+                    } else {
+                        loadCSV(e.target.result, file.name);
+                    }
                     break;
                 case 'image':
                     loadImageOverlay(e.target.result, file.name);
@@ -486,6 +494,321 @@ function handleFileUpload(file, type) {
     } else {
         reader.readAsText(file);
     }
+}
+
+/**
+ * Preview CSV data before loading it on the map
+ * @param {string} content - The CSV content
+ * @param {string} filename - The name of the file
+ */
+function previewCSV(content, filename) {
+    // Get coordinate format preference
+    const coordFormat = document.getElementById('csv-coord-format') ? 
+                        document.getElementById('csv-coord-format').value : 
+                        'lat_lng';
+    
+    // Get header detection preference
+    const detectHeaders = document.getElementById('csv-header-detection') ? 
+                         document.getElementById('csv-header-detection').checked : 
+                         true;
+    
+    // Parse CSV
+    const lines = content.split('\n');
+    const headers = lines[0].split(',');
+    
+    // Find lat/lon columns
+    let latIndex = -1;
+    let lngIndex = -1;
+    
+    if (detectHeaders) {
+        headers.forEach((header, index) => {
+            const headerLower = header.toLowerCase().trim();
+            if (headerLower === 'latitude' || headerLower === 'lat' || headerLower === 'y') {
+                latIndex = index;
+            }
+            if (headerLower === 'longitude' || headerLower === 'lon' || headerLower === 'lng' || headerLower === 'x') {
+                lngIndex = index;
+            }
+        });
+    } else {
+        // Assume the first two columns are coordinates
+        latIndex = 0;
+        lngIndex = 1;
+    }
+    
+    if (latIndex === -1 || lngIndex === -1) {
+        throw new Error('Could not find latitude and longitude columns in CSV.');
+    }
+    
+    // Determine which columns contain which coordinate based on the format setting
+    let latDisplay, lngDisplay, latColumnName, lngColumnName;
+    if (coordFormat === 'lat_lng') {
+        latColumnName = headers[latIndex];
+        lngColumnName = headers[lngIndex];
+        latDisplay = latIndex;
+        lngDisplay = lngIndex;
+    } else {
+        // In lng_lat format, the columns are swapped
+        latColumnName = headers[lngIndex];
+        lngColumnName = headers[latIndex];
+        latDisplay = lngIndex;
+        lngDisplay = latIndex;
+    }
+    
+    // Calculate a few sample coordinates to show preview
+    const previewCoords = [];
+    for (let i = 1; i < Math.min(4, lines.length); i++) {
+        if (!lines[i].trim()) continue;
+        const columns = lines[i].split(',');
+        
+        let lat, lng;
+        if (coordFormat === 'lat_lng') {
+            lat = parseFloat(columns[latIndex]);
+            lng = parseFloat(columns[lngIndex]);
+        } else {
+            lng = parseFloat(columns[latIndex]);
+            lat = parseFloat(columns[lngIndex]);
+        }
+        
+        if (!isNaN(lat) && !isNaN(lng)) {
+            previewCoords.push([lat, lng]);
+        }
+    }
+    
+    // Create a preview modal
+    const previewContainer = document.createElement('div');
+    previewContainer.className = 'csv-preview-container';
+    previewContainer.innerHTML = `
+        <div class="csv-preview-content">
+            <h3>Preview CSV: ${filename}</h3>
+            <div class="coord-format-info">
+                <p>Based on your settings:</p>
+                <ul>
+                    <li>Latitude will be read from: <strong>${latColumnName}</strong> (column ${latDisplay + 1})</li>
+                    <li>Longitude will be read from: <strong>${lngColumnName}</strong> (column ${lngDisplay + 1})</li>
+                    <li>Coordinate format: <strong>${coordFormat === 'lat_lng' ? 'Latitude, Longitude' : 'Longitude, Latitude'}</strong></li>
+                </ul>
+                <p>First few coordinates will appear at: ${previewCoords.map(c => `[${c[0].toFixed(5)}, ${c[1].toFixed(5)}]`).join(', ')}</p>
+            </div>
+            <div class="csv-preview-table-container">
+                <table class="csv-preview-table">
+                    <thead>
+                        <tr>
+                            ${headers.map((header, idx) => {
+                                let headerClass = '';
+                                let headerPrefix = '';
+                                
+                                if (coordFormat === 'lat_lng') {
+                                    if (idx === latIndex) {
+                                        headerClass = 'lat-column';
+                                        headerPrefix = '📍 Lat: ';
+                                    } else if (idx === lngIndex) {
+                                        headerClass = 'lng-column';
+                                        headerPrefix = '📍 Lng: ';
+                                    }
+                                } else {
+                                    if (idx === latIndex) {
+                                        headerClass = 'lng-column';
+                                        headerPrefix = '📍 Lng: ';
+                                    } else if (idx === lngIndex) {
+                                        headerClass = 'lat-column';
+                                        headerPrefix = '📍 Lat: ';
+                                    }
+                                }
+                                
+                                return `<th class="${headerClass}">${headerPrefix}${header}</th>`;
+                            }).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${lines.slice(1, 6).map(line => {
+                            const columns = line.split(',');
+                            return `<tr>
+                                ${columns.map((column, idx) => {
+                                    let cellClass = '';
+                                    
+                                    if (coordFormat === 'lat_lng') {
+                                        if (idx === latIndex) cellClass = 'lat-column';
+                                        else if (idx === lngIndex) cellClass = 'lng-column';
+                                    } else {
+                                        if (idx === latIndex) cellClass = 'lng-column';
+                                        else if (idx === lngIndex) cellClass = 'lat-column';
+                                    }
+                                    
+                                    return `<td class="${cellClass}">${column}</td>`;
+                                }).join('')}
+                            </tr>`;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+            <div class="coordinate-format-section">
+                <div class="format-option">
+                    <input type="radio" id="preview-format-lat-lng" name="preview-format" value="lat_lng" ${coordFormat === 'lat_lng' ? 'checked' : ''}>
+                    <label for="preview-format-lat-lng">Standard: Latitude, Longitude</label>
+                </div>
+                <div class="format-option">
+                    <input type="radio" id="preview-format-lng-lat" name="preview-format" value="lng_lat" ${coordFormat === 'lng_lat' ? 'checked' : ''}>
+                    <label for="preview-format-lng-lat">Reversed: Longitude, Latitude (for Phoenix data)</label>
+                </div>
+            </div>
+            <div class="csv-preview-actions">
+                <button id="csv-preview-confirm">Load Data</button>
+                <button id="csv-preview-cancel">Cancel</button>
+            </div>
+        </div>
+    `;
+    
+    // Add styles for the preview
+    const previewStyles = document.createElement('style');
+    previewStyles.textContent = `
+        .csv-preview-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .csv-preview-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            max-width: 90%;
+            max-height: 90%;
+            overflow: auto;
+        }
+        .csv-preview-content h3 {
+            margin-top: 0;
+            color: #1976d2;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .coord-format-info {
+            background-color: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 4px solid #1976d2;
+        }
+        .coord-format-info p {
+            margin: 5px 0;
+        }
+        .coord-format-info ul {
+            margin: 8px 0;
+            padding-left: 25px;
+        }
+        .csv-preview-table-container {
+            max-height: 300px;
+            overflow: auto;
+            margin: 15px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .csv-preview-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .csv-preview-table th, .csv-preview-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .csv-preview-table th {
+            background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
+        }
+        .lat-column {
+            background-color: #e3f2fd;
+        }
+        .lng-column {
+            background-color: #ede7f6;
+        }
+        .coordinate-format-section {
+            margin: 15px 0;
+            padding: 12px;
+            background-color: #fff3e0;
+            border-radius: 6px;
+            border: 1px solid #ffe0b2;
+        }
+        .format-option {
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+        }
+        .format-option input {
+            margin-right: 8px;
+        }
+        .csv-preview-actions {
+            margin-top: 15px;
+            text-align: right;
+        }
+        .csv-preview-actions button {
+            padding: 10px 20px;
+            margin-left: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        #csv-preview-confirm {
+            background-color: #1976d2;
+            color: white;
+            border: none;
+        }
+        #csv-preview-confirm:hover {
+            background-color: #1565c0;
+        }
+        #csv-preview-cancel {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            color: #333;
+        }
+        #csv-preview-cancel:hover {
+            background-color: #e5e5e5;
+        }
+    `;
+    
+    document.head.appendChild(previewStyles);
+    document.body.appendChild(previewContainer);
+    
+    // Add event listeners for the format radio buttons
+    document.getElementById('preview-format-lat-lng').addEventListener('change', function() {
+        if (this.checked && document.getElementById('csv-coord-format')) {
+            document.getElementById('csv-coord-format').value = 'lat_lng';
+        }
+    });
+    
+    document.getElementById('preview-format-lng-lat').addEventListener('change', function() {
+        if (this.checked && document.getElementById('csv-coord-format')) {
+            document.getElementById('csv-coord-format').value = 'lng_lat';
+        }
+    });
+    
+    // Add event listeners for buttons
+    document.getElementById('csv-preview-confirm').addEventListener('click', function() {
+        // Update the coordinate format based on the preview selection
+        const selectedFormat = document.querySelector('input[name="preview-format"]:checked').value;
+        if (document.getElementById('csv-coord-format')) {
+            document.getElementById('csv-coord-format').value = selectedFormat;
+        }
+        
+        document.body.removeChild(previewContainer);
+        document.head.removeChild(previewStyles);
+        loadCSV(content, filename);
+    });
+    
+    document.getElementById('csv-preview-cancel').addEventListener('click', function() {
+        document.body.removeChild(previewContainer);
+        document.head.removeChild(previewStyles);
+        document.getElementById('upload-status').textContent = 'CSV loading cancelled.';
+        document.getElementById('upload-status').className = '';
+    });
 }
 
 /**
@@ -547,6 +870,24 @@ function loadGeoJSON(content, filename) {
  * @param {string} filename - The name of the file
  */
 function loadCSV(content, filename) {
+    // Check for preview preference
+    const showPreview = document.getElementById('csv-preview-enable') && document.getElementById('csv-preview-enable').checked;
+    
+    if (showPreview && content.split('\n').length > 5) {
+        previewCSV(content, filename);
+        return;
+    }
+    
+    // Get coordinate format preference
+    const coordFormat = document.getElementById('csv-coord-format') ? 
+                        document.getElementById('csv-coord-format').value : 
+                        'lat_lng';
+    
+    // Get header detection preference
+    const detectHeaders = document.getElementById('csv-header-detection') ? 
+                         document.getElementById('csv-header-detection').checked : 
+                         true;
+    
     // Parse CSV
     const lines = content.split('\n');
     const headers = lines[0].split(',');
@@ -555,19 +896,29 @@ function loadCSV(content, filename) {
     let latIndex = -1;
     let lngIndex = -1;
     
-    headers.forEach((header, index) => {
-        const headerLower = header.toLowerCase().trim();
-        if (headerLower === 'latitude' || headerLower === 'lat' || headerLower === 'y') {
-            latIndex = index;
-        }
-        if (headerLower === 'longitude' || headerLower === 'lon' || headerLower === 'lng' || headerLower === 'x') {
-            lngIndex = index;
-        }
-    });
+    if (detectHeaders) {
+        headers.forEach((header, index) => {
+            const headerLower = header.toLowerCase().trim();
+            if (headerLower === 'latitude' || headerLower === 'lat' || headerLower === 'y') {
+                latIndex = index;
+            }
+            if (headerLower === 'longitude' || headerLower === 'lon' || headerLower === 'lng' || headerLower === 'x') {
+                lngIndex = index;
+            }
+        });
+    } else {
+        // Assume the first two columns are coordinates
+        latIndex = 0;
+        lngIndex = 1;
+    }
     
     if (latIndex === -1 || lngIndex === -1) {
         throw new Error('Could not find latitude and longitude columns in CSV.');
     }
+    
+    // Debug info for CSV loading
+    console.log(`CSV Loading - Found lat column at index ${latIndex}, lng column at index ${lngIndex}`);
+    console.log(`Using coordinate format: ${coordFormat}`);
     
     // Create markers
     const markers = [];
@@ -577,10 +928,33 @@ function loadCSV(content, filename) {
         
         const columns = lines[i].split(',');
         
-        const lat = parseFloat(columns[latIndex]);
-        const lng = parseFloat(columns[lngIndex]);
+        // Parse coordinates and ensure they're valid numbers
+        let lat, lng;
         
-        if (isNaN(lat) || isNaN(lng)) continue;
+        if (coordFormat === 'lat_lng') {
+            lat = parseFloat(columns[latIndex]);
+            lng = parseFloat(columns[lngIndex]);
+        } else {
+            // Order is switched for lng_lat format
+            lng = parseFloat(columns[latIndex]);
+            lat = parseFloat(columns[lngIndex]);
+        }
+        
+        if (isNaN(lat) || isNaN(lng)) {
+            console.warn(`Skipping row ${i}: Invalid coordinate values`);
+            continue;
+        }
+        
+        // Skip invalid coordinates (common errors in data)
+        if (Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+            console.warn(`Skipping invalid coordinates: ${lat}, ${lng} at line ${i}`);
+            continue;
+        }
+        
+        // Debug specific row if needed
+        if (i < 5) {
+            console.log(`Row ${i}: lat=${lat}, lng=${lng}`);
+        }
         
         // Create popup content with all data
         let popupContent = '<div class="custom-popup"><table>';
@@ -593,7 +967,7 @@ function loadCSV(content, filename) {
         
         popupContent += '</table></div>';
         
-        // Create marker
+        // Create marker with [lat, lng] order for Leaflet (this order is always required by Leaflet)
         const marker = L.circleMarker([lat, lng], {
             radius: 6,
             fillColor: '#d32f2f',
@@ -1658,6 +2032,72 @@ function createSampleHydrantsLayer() {
     });
     
     return L.layerGroup(markers);
+}
+
+/**
+ * Initialize CSV settings and event listeners
+ */
+function initializeCSVSettings() {
+    // Check if the elements exist
+    const coordFormatSelect = document.getElementById('csv-coord-format');
+    const headerDetectionCheckbox = document.getElementById('csv-header-detection');
+    const previewEnableCheckbox = document.getElementById('csv-preview-enable');
+    
+    if (coordFormatSelect) {
+        // Add event listener for format change
+        coordFormatSelect.addEventListener('change', function() {
+            const formatValue = this.value;
+            const infoText = document.querySelector('.info-text');
+            
+            if (infoText) {
+                if (formatValue === 'lng_lat') {
+                    infoText.innerHTML = '<i class="fas fa-info-circle"></i> Using "Longitude, Latitude" format for Phoenix data';
+                    infoText.style.backgroundColor = 'rgba(255, 193, 7, 0.1)';
+                    infoText.style.borderLeftColor = '#ff9800';
+                } else {
+                    infoText.innerHTML = '<i class="fas fa-info-circle"></i> Using standard "Latitude, Longitude" format';
+                    infoText.style.backgroundColor = 'rgba(25, 118, 210, 0.05)';
+                    infoText.style.borderLeftColor = '#1976d2';
+                }
+            }
+            
+            // Store the setting in localStorage for persistence
+            localStorage.setItem('csv-coord-format', formatValue);
+        });
+        
+        // Load saved preference if any
+        const savedFormat = localStorage.getItem('csv-coord-format');
+        if (savedFormat) {
+            coordFormatSelect.value = savedFormat;
+            // Trigger the change event to update UI
+            const event = new Event('change');
+            coordFormatSelect.dispatchEvent(event);
+        }
+    }
+    
+    // Setup header detection checkbox
+    if (headerDetectionCheckbox) {
+        headerDetectionCheckbox.addEventListener('change', function() {
+            localStorage.setItem('csv-header-detection', this.checked);
+        });
+        
+        const savedHeaderDetection = localStorage.getItem('csv-header-detection');
+        if (savedHeaderDetection !== null) {
+            headerDetectionCheckbox.checked = savedHeaderDetection === 'true';
+        }
+    }
+    
+    // Setup preview checkbox
+    if (previewEnableCheckbox) {
+        previewEnableCheckbox.addEventListener('change', function() {
+            localStorage.setItem('csv-preview-enable', this.checked);
+        });
+        
+        const savedPreviewEnable = localStorage.getItem('csv-preview-enable');
+        if (savedPreviewEnable !== null) {
+            previewEnableCheckbox.checked = savedPreviewEnable === 'true';
+        }
+    }
 }
 
 /**

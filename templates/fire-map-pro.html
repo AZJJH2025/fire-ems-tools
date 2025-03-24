@@ -115,6 +115,32 @@
                             <input type="file" id="image-upload" accept="image/*">
                         </div>
                         <div id="upload-status"></div>
+                        
+                        <!-- CSV Configuration Options -->
+                        <div class="csv-config-section">
+                            <h4>CSV Import Settings</h4>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="csv-preview-enable" checked>
+                                <label for="csv-preview-enable">Show preview before import</label>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="csv-coord-format">Coordinate Format:</label>
+                                <select id="csv-coord-format">
+                                    <option value="lat_lng">Latitude, Longitude</option>
+                                    <option value="lng_lat">Longitude, Latitude</option>
+                                </select>
+                            </div>
+                            
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="csv-header-detection" checked>
+                                <label for="csv-header-detection">Auto-detect headers</label>
+                            </div>
+                            
+                            <div class="info-text">
+                                <i class="fas fa-info-circle"></i> Set coordinate format to "Longitude, Latitude" for Phoenix data
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
