@@ -1824,10 +1824,12 @@ var populationLayer; // Population density layer
                 // Population score decreases with distance from center
                 populationScore = 10 * (1 - centerDistance);
                 
-                // Incident score - based on nearby uncovered incidents
+                // Incident score - based on nearby uncovered incidents with distance weighting
                 if (uncoveredIncidents.length > 0) {
-                    // Count incidents within coverage radius
+                    // Count incidents within coverage radius with distance weighting
                     let nearbyIncidents = 0;
+                    let weightedIncidentValue = 0;
+                    
                     uncoveredIncidents.forEach(incident => {
                         const distance = turf.distance(
                             turf.point([lng, lat]),
@@ -1837,11 +1839,26 @@ var populationLayer; // Population density layer
                         
                         if (distance <= radiusInMiles) {
                             nearbyIncidents++;
+                            
+                            // Apply distance weighting: closer incidents count more
+                            // At distance=0, weight=1, at distance=radiusInMiles, weight=0.25
+                            const weight = 1 - (0.75 * distance / radiusInMiles);
+                            weightedIncidentValue += weight;
                         }
                     });
                     
-                    // Scale incident score based on number of covered incidents
-                    incidentScore = Math.min(20, nearbyIncidents * 1.5);
+                    // Scale incident score based on number of covered incidents and their proximity
+                    // This prioritizes locations that cover more incidents more centrally
+                    if (nearbyIncidents > 0) {
+                        const avgValue = weightedIncidentValue / nearbyIncidents;
+                        
+                        // Base score on number of covered incidents
+                        const countFactor = Math.min(1, nearbyIncidents / 10); // Saturates at 10 incidents
+                        
+                        // Combine count and weighted value for final score
+                        // This balances between covering many incidents and being central to them
+                        incidentScore = 20 * countFactor * avgValue;
+                    }
                 }
                 
                 // Calculate total score based on optimization target
@@ -1877,8 +1894,87 @@ var populationLayer; // Population density layer
         // Sort by score (highest first)
         suggestedLocations.sort((a, b) => b.score - a.score);
         
-        // Take top N locations based on stationsToAdd
-        const topLocations = suggestedLocations.slice(0, Math.min(stationsToAdd, suggestedLocations.length));
+        // Better algorithm: select locations iteratively to ensure distribution
+        const topLocations = [];
+        const MIN_STATION_DISTANCE = radiusInMiles * 1.5; // Minimum distance between stations (in miles)
+        
+        console.log(`Using minimum distance between stations of ${MIN_STATION_DISTANCE.toFixed(2)} miles`);
+        
+        // Function to check if a location is too close to existing stations and selections
+        const isTooClose = (location) => {
+            // Check distance to existing stations
+            for (const station of stationMarkers) {
+                const distance = turf.distance(
+                    turf.point([location.lng, location.lat]),
+                    turf.point([station.data.longitude, station.data.latitude]),
+                    {units: 'miles'}
+                );
+                
+                if (distance < MIN_STATION_DISTANCE) {
+                    return true;
+                }
+            }
+            
+            // Check distance to already selected locations
+            for (const selected of topLocations) {
+                const distance = turf.distance(
+                    turf.point([location.lng, location.lat]),
+                    turf.point([selected.lng, selected.lat]),
+                    {units: 'miles'}
+                );
+                
+                if (distance < MIN_STATION_DISTANCE) {
+                    return true;
+                }
+            }
+            
+            return false;
+        };
+        
+        // Select locations one by one, ensuring minimum distance
+        let candidateIndex = 0;
+        let attemptsLeft = 1000; // Safety limit to prevent infinite loops
+        
+        while (topLocations.length < stationsToAdd && candidateIndex < suggestedLocations.length && attemptsLeft > 0) {
+            const candidate = suggestedLocations[candidateIndex];
+            
+            if (!isTooClose(candidate)) {
+                // This location is far enough from other stations, add it
+                topLocations.push(candidate);
+                console.log(`Selected station location ${topLocations.length} with score ${candidate.score.toFixed(1)}`);
+            }
+            
+            candidateIndex++;
+            attemptsLeft--;
+            
+            // If we've gone through all candidates once but still need more stations,
+            // reduce the minimum distance requirement by 10% and start over
+            if (candidateIndex >= suggestedLocations.length && topLocations.length < stationsToAdd) {
+                console.log(`Only found ${topLocations.length} of ${stationsToAdd} stations, reducing distance requirement`);
+                MIN_STATION_DISTANCE *= 0.9;
+                candidateIndex = 0;
+            }
+        }
+        
+        console.log(`Selected ${topLocations.length} station locations out of ${stationsToAdd} requested`);
+        
+        // If we couldn't find enough stations with the spacing algorithm, fall back to the top scores
+        if (topLocations.length < stationsToAdd) {
+            console.log(`Falling back to score-based selection for remaining ${stationsToAdd - topLocations.length} stations`);
+            
+            // Find the locations not already selected
+            const remainingLocations = suggestedLocations.filter(loc => {
+                return !topLocations.some(selected => 
+                    selected.lat === loc.lat && selected.lng === loc.lng
+                );
+            });
+            
+            // Add as many as needed to reach the requested number
+            const additionalNeeded = stationsToAdd - topLocations.length;
+            const additionalLocations = remainingLocations.slice(0, additionalNeeded);
+            
+            topLocations.push(...additionalLocations);
+        }
         
         // Add markers for suggested locations
         topLocations.forEach((location, index) => {
