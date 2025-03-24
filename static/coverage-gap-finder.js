@@ -316,232 +316,149 @@
             document.getElementById('responseTimeTarget').value = standard.responseTime;
             
             // Update turnout time select
-            const turnoutSelect = document.getElementById('turnoutTimeSelect');
-            if (standard.turnoutTime === 0.5) turnoutSelect.value = '0.5';
-            else if (standard.turnoutTime === 1.0) turnoutSelect.value = '1.0';
-            else if (standard.turnoutTime === 1.5) turnoutSelect.value = '1.5';
-            else if (standard.turnoutTime === 2.0) turnoutSelect.value = '2.0';
-            else {
-                turnoutSelect.value = 'custom';
-                document.getElementById('customTurnoutGroup').style.display = 'block';
-                document.getElementById('customTurnout').value = standard.turnoutTime;
-            }
+            document.getElementById('turnoutTimeSelect').value = standard.turnoutTime.toString();
+            document.getElementById('customTurnoutGroup').style.display = 'none';
             
-            // Update travel speed select
-            const speedSelect = document.getElementById('travelSpeedSelect');
+            // Update travel speed select - find closest match
+            let closestSpeed = 'urban-med'; // Default
+            let minDiff = Number.MAX_VALUE;
+            
             for (const [key, value] of Object.entries(TRAVEL_SPEEDS)) {
-                if (value === standard.travelSpeed) {
-                    speedSelect.value = key;
-                    document.getElementById('customSpeedGroup').style.display = 'none';
-                    break;
+                const diff = Math.abs(value - standard.travelSpeed);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestSpeed = key;
                 }
             }
             
-            // If speed doesn't match predefined values, set custom
-            if (!Object.values(TRAVEL_SPEEDS).includes(standard.travelSpeed)) {
-                speedSelect.value = 'custom';
-                document.getElementById('customSpeedGroup').style.display = 'block';
-                document.getElementById('customSpeed').value = standard.travelSpeed;
-            }
+            document.getElementById('travelSpeedSelect').value = closestSpeed;
+            document.getElementById('customSpeedGroup').style.display = 'none';
         }
     }
     
     /**
-     * Handles incident data file upload
+     * Uploads and processes incident data from a file
      */
     function uploadIncidentData() {
         const fileInput = document.getElementById('incidentFileInput');
-        const file = fileInput.files[0];
         const statusElement = document.getElementById('incidentUploadStatus');
         
-        if (!file) {
-            statusElement.textContent = 'Please select a file first.';
-            statusElement.style.color = 'red';
+        if (!fileInput.files || fileInput.files.length === 0) {
+            statusElement.innerHTML = 'Please select a file first.';
+            statusElement.className = 'upload-status error';
             return;
         }
         
-        // Check file extension
-        const extension = file.name.split('.').pop().toLowerCase();
-        if (!['csv', 'xlsx', 'xls'].includes(extension)) {
-            statusElement.textContent = 'Invalid file type. Please upload CSV or Excel file.';
-            statusElement.style.color = 'red';
-            return;
-        }
-        
-        // Show loading message
-        statusElement.textContent = 'Uploading and processing file...';
-        statusElement.style.color = '#3498db';
-        
-        // Create FormData for file upload
+        const file = fileInput.files[0];
         const formData = new FormData();
         formData.append('file', file);
         
-        // Send file to server
+        // Show loading state
+        statusElement.innerHTML = 'Uploading and processing file...';
+        statusElement.className = 'upload-status loading';
+        
+        // Send to server for processing
         fetch('/api/incident-data', {
             method: 'POST',
             body: formData
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-            // Check if data was processed successfully
             if (data.success) {
+                statusElement.innerHTML = `Successfully processed ${data.data.length} incidents.`;
+                statusElement.className = 'upload-status success';
+                
+                // Store the incident data
                 incidentData = data.data;
                 
-                // Update status
-                statusElement.textContent = `Loaded ${incidentData.length} incident records.`;
-                statusElement.style.color = 'green';
+                // Update incident coverage calculations if we have stations
+                if (stationMarkers.length > 0) {
+                    updateCoverageCalculations();
+                }
                 
-                // Enable call density toggle if we have incidents
-                document.getElementById('callDensityToggle').disabled = false;
-                
-                // Update coverage calculations
-                updateIncidentCoverage();
-                
-                // Display call density if the toggle is checked
+                // Show incidents on map if the toggle is checked
                 if (document.getElementById('callDensityToggle').checked) {
                     showCallDensity();
                 }
             } else {
-                statusElement.textContent = `Error: ${data.error}`;
-                statusElement.style.color = 'red';
+                statusElement.innerHTML = `Error: ${data.error}`;
+                statusElement.className = 'upload-status error';
             }
         })
         .catch(error => {
-            console.error('Error uploading incidents:', error);
-            statusElement.textContent = `Error: ${error.message}`;
-            statusElement.style.color = 'red';
-            
-            // For testing/development - generate mock data locally
-            if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-                console.log('Generating mock incident data for local testing');
-                generateMockIncidentData();
-                
-                statusElement.textContent = `Generated ${incidentData.length} mock incident records for testing.`;
-                statusElement.style.color = 'green';
-                
-                // Update coverage calculations
-                updateIncidentCoverage();
-                
-                // Display call density if the toggle is checked
-                if (document.getElementById('callDensityToggle').checked) {
-                    showCallDensity();
-                }
-            }
+            console.error('Error uploading incident data:', error);
+            statusElement.innerHTML = 'Error uploading file. Please try again.';
+            statusElement.className = 'upload-status error';
         });
     }
     
     /**
-     * Handles station data file upload
+     * Uploads and processes station data from a file
      */
     function uploadStationData() {
         const fileInput = document.getElementById('stationFileInput');
-        const file = fileInput.files[0];
         const statusElement = document.getElementById('stationUploadStatus');
         
-        if (!file) {
-            statusElement.textContent = 'Please select a file first.';
-            statusElement.style.color = 'red';
+        if (!fileInput.files || fileInput.files.length === 0) {
+            statusElement.innerHTML = 'Please select a file first.';
+            statusElement.className = 'upload-status error';
             return;
         }
         
-        // Check file extension
-        const extension = file.name.split('.').pop().toLowerCase();
-        if (!['csv', 'xlsx', 'xls'].includes(extension)) {
-            statusElement.textContent = 'Invalid file type. Please upload CSV or Excel file.';
-            statusElement.style.color = 'red';
-            return;
-        }
-        
-        // Show loading message
-        statusElement.textContent = 'Uploading and processing file...';
-        statusElement.style.color = '#3498db';
-        
-        // Create FormData for file upload
+        const file = fileInput.files[0];
         const formData = new FormData();
         formData.append('file', file);
         
-        // Send file to server
+        // Show loading state
+        statusElement.innerHTML = 'Uploading and processing file...';
+        statusElement.className = 'upload-status loading';
+        
+        // Clear existing stations
+        clearAllStations();
+        
+        // Send to server for processing
         fetch('/api/station-data', {
             method: 'POST',
             body: formData
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-            // Check if data was processed successfully
             if (data.success) {
-                // Clear existing stations
-                clearAllStations();
+                statusElement.innerHTML = `Successfully processed ${data.data.length} stations.`;
+                statusElement.className = 'upload-status success';
                 
-                // Process station data
+                // Store the station data
                 stationData = data.data;
-                processStationData(stationData);
                 
-                // Update status
-                statusElement.textContent = `Loaded ${stationData.length} station records.`;
-                statusElement.style.color = 'green';
+                // Add stations to map
+                stationData.forEach(station => {
+                    // Skip stations without coordinates
+                    if (!station.latitude || !station.longitude) {
+                        return;
+                    }
+                    
+                    // Get or generate station name
+                    let stationName = station.name || station.station || `Station ${stationMarkers.length + 1}`;
+                    
+                    // Add to map
+                    addStationMarker(stationName, parseFloat(station.latitude), parseFloat(station.longitude));
+                });
                 
                 // Update coverage calculations
-                calculateCoverage();
+                updateCoverageCalculations();
+                
+                // Fit map to markers
+                fitMapToMarkers();
             } else {
-                statusElement.textContent = `Error: ${data.error}`;
-                statusElement.style.color = 'red';
+                statusElement.innerHTML = `Error: ${data.error}`;
+                statusElement.className = 'upload-status error';
             }
         })
         .catch(error => {
-            console.error('Error uploading stations:', error);
-            statusElement.textContent = `Error: ${error.message}`;
-            statusElement.style.color = 'red';
-            
-            // For testing/development - generate mock data locally
-            if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-                console.log('Generating mock station data for local testing');
-                generateMockStationData();
-                
-                statusElement.textContent = `Generated ${stationMarkers.length} mock stations for testing.`;
-                statusElement.style.color = 'green';
-                
-                // Update coverage calculations
-                calculateCoverage();
-            }
+            console.error('Error uploading station data:', error);
+            statusElement.innerHTML = 'Error uploading file. Please try again.';
+            statusElement.className = 'upload-status error';
         });
-    }
-    
-    /**
-     * Processes station data and adds markers to the map
-     */
-    function processStationData(data) {
-        // Loop through the station data and add markers
-        data.forEach(station => {
-            // Check if we have valid coordinates
-            if (!station.latitude || !station.longitude) return;
-            
-            // Get station name
-            const stationName = station.name || station.station || `Station ${stationData.indexOf(station) + 1}`;
-            
-            addStationMarker(
-                stationName,
-                parseFloat(station.latitude),
-                parseFloat(station.longitude)
-            );
-        });
-        
-        // Fit map to show all stations
-        if (stationMarkers.length > 0) {
-            fitMapToMarkers();
-        }
-        
-        // Update table
-        updateStationTable();
     }
     
     /**
@@ -562,26 +479,62 @@
         geocodeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Geocoding...';
         geocodeBtn.disabled = true;
         
-        // Use direct Nominatim API
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+        // Add a timestamp to avoid caching issues
+        const timestamp = new Date().getTime();
+        const requestUrl = `/api/geocode?address=${encodeURIComponent(address)}&t=${timestamp}`;
         
-        fetch(url, {
+        // Use backend API directly to avoid CORS issues
+        fetch(requestUrl, {
+            method: 'GET',
             headers: {
-                'User-Agent': 'FireEMS.ai Coverage Gap Finder Tool'
+                'Accept': 'application/json',
+                'Cache-Control': 'no-cache'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            // Check if response is ok
+            if (!response.ok) {
+                throw new Error(`Server returned status ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             // Reset button state
             geocodeBtn.innerHTML = originalText;
             geocodeBtn.disabled = false;
             
-            if (data && data.length > 0) {
-                document.getElementById('stationLat').value = data[0].lat;
-                document.getElementById('stationLng').value = data[0].lon;
-                console.log("Successfully geocoded address");
+            if (data.success && data.latitude && data.longitude) {
+                // Update form fields
+                document.getElementById('stationLat').value = data.latitude;
+                document.getElementById('stationLng').value = data.longitude;
+                console.log("Successfully geocoded address via backend");
+                
+                // Center map on the geocoded location
+                if (map) {
+                    map.setView([data.latitude, data.longitude], 14);
+                    
+                    // Add a temporary marker at the location
+                    const tempMarker = L.marker([data.latitude, data.longitude], {
+                        opacity: 0.7
+                    }).addTo(map);
+                    
+                    // Add a popup with the address
+                    tempMarker.bindPopup(`
+                        <strong>Geocoded Location</strong><br>
+                        ${data.address || address}<br>
+                        <small>${data.latitude.toFixed(6)}, ${data.longitude.toFixed(6)}</small>
+                    `).openPopup();
+                    
+                    // Remove marker after 5 seconds
+                    setTimeout(() => {
+                        if (map.hasLayer(tempMarker)) {
+                            map.removeLayer(tempMarker);
+                        }
+                    }, 5000);
+                }
             } else {
-                alert('Could not find coordinates for this address.');
+                alert('Could not find coordinates for this address. Please try a different address or format.');
+                console.error('Geocoding error:', data.error || 'Unknown error');
             }
         })
         .catch(err => {
@@ -590,26 +543,11 @@
             geocodeBtn.disabled = false;
             
             console.error('Geocoding error:', err);
+            alert('Error geocoding address. Please check your internet connection and try again.');
             
-            // Try our backend API as fallback
-            fetch(`/api/geocode?address=${encodeURIComponent(address)}`, {
-                method: 'GET'
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.latitude && data.longitude) {
-                    // Update the form fields
-                    document.getElementById('stationLat').value = data.latitude;
-                    document.getElementById('stationLng').value = data.longitude;
-                    console.log("Successfully geocoded address via backend API");
-                } else {
-                    alert(`Could not geocode address: ${data.error || 'Unknown error'}`);
-                }
-            })
-            .catch(error => {
-                console.error('Backend geocoding error:', error);
-                alert('Geocoding failed. Please enter coordinates manually.');
-            });
+            // Try to log more details about the error
+            console.log("Geocoding request failed for URL:", requestUrl);
+            console.log("Error details:", err.message || err);
         });
     }
     
@@ -617,46 +555,31 @@
      * Adds a station marker manually from form inputs
      */
     function addStationManually() {
-        const nameInput = document.getElementById('stationName');
-        const addressInput = document.getElementById('stationAddress');
-        const latInput = document.getElementById('stationLat');
-        const lngInput = document.getElementById('stationLng');
+        const stationName = document.getElementById('stationName').value.trim();
+        const latitude = parseFloat(document.getElementById('stationLat').value);
+        const longitude = parseFloat(document.getElementById('stationLng').value);
         
-        const name = nameInput.value.trim();
-        const address = addressInput.value.trim();
-        const lat = parseFloat(latInput.value);
-        const lng = parseFloat(lngInput.value);
-        
-        // Validate inputs
-        if (!name) {
+        if (!stationName) {
             alert('Please enter a station name.');
             return;
         }
         
-        if (isNaN(lat) || isNaN(lng)) {
-            alert('Please enter valid latitude and longitude values.');
+        if (isNaN(latitude) || isNaN(longitude)) {
+            alert('Please enter valid coordinates or use the geocoder.');
             return;
         }
         
-        // Add the marker
-        const stationIndex = addStationMarker(name, lat, lng);
+        // Add station marker
+        addStationMarker(stationName, latitude, longitude);
         
-        // Store address if provided
-        if (address && stationIndex >= 0) {
-            stationMarkers[stationIndex].data.address = address;
-        }
-        
-        // Clear the form
-        nameInput.value = '';
-        addressInput.value = '';
-        latInput.value = '';
-        lngInput.value = '';
+        // Clear form fields
+        document.getElementById('stationName').value = '';
+        document.getElementById('stationAddress').value = '';
+        document.getElementById('stationLat').value = '';
+        document.getElementById('stationLng').value = '';
         
         // Update coverage calculations
-        calculateCoverage();
-        
-        // Update table
-        updateStationTable();
+        updateCoverageCalculations();
     }
     
     /**
@@ -666,244 +589,166 @@
      * @param {number} lng - Longitude
      */
     function addStationMarker(name, lat, lng) {
-        // Create a station object
-        const station = {
-            name: name,
-            latitude: lat,
-            longitude: lng,
-            coverageArea: 0,
-            populationCovered: 0,
-            incidentsCovered: 0
-        };
-        
         // Create a marker for the station
         const marker = L.marker([lat, lng], {
             title: name,
+            draggable: true, // Allow stations to be repositioned
             icon: L.divIcon({
-                className: 'station-marker',
-                html: `<div style="background-color: ${DEFAULT_STATION_COLOR}; border-radius: 50%; width: 12px; height: 12px;"></div>`,
-                iconSize: [12, 12],
-                iconAnchor: [6, 6]
+                html: `<div class="marker-pin station-marker" style="background-color:${DEFAULT_STATION_COLOR};">${stationMarkers.length + 1}</div>`,
+                iconSize: [30, 30],
+                iconAnchor: [15, 15],
+                className: 'station-div-icon'
             })
         }).addTo(map);
         
-        // Add popup with station information
+        // Store station data
+        marker.data = {
+            name: name,
+            latitude: lat,
+            longitude: lng,
+            coverageArea: null,
+            populationCovered: null,
+            incidentsCovered: null
+        };
+        
+        // Add popup with station info
         marker.bindPopup(`
-            <strong>${name}</strong><br>
-            ${station.address ? `Address: ${station.address}<br>` : ''}
-            Latitude: ${lat.toFixed(6)}<br>
-            Longitude: ${lng.toFixed(6)}
+            <h3>${name}</h3>
+            <p>Latitude: ${lat.toFixed(6)}</p>
+            <p>Longitude: ${lng.toFixed(6)}</p>
+            <button class="delete-station-btn" data-index="${stationMarkers.length}">Delete Station</button>
         `);
         
-        // Store marker and station data
-        stationMarkers.push({
-            marker: marker,
-            data: station
+        // Handle marker drag end to update coverage
+        marker.on('dragend', function() {
+            const newLatLng = marker.getLatLng();
+            marker.data.latitude = newLatLng.lat;
+            marker.data.longitude = newLatLng.lng;
+            
+            // Update the station's coverage layer
+            updateStationCoverage(stationMarkers.indexOf(marker));
+            
+            // Update the popup content
+            marker.setPopupContent(`
+                <h3>${marker.data.name}</h3>
+                <p>Latitude: ${newLatLng.lat.toFixed(6)}</p>
+                <p>Longitude: ${newLatLng.lng.toFixed(6)}</p>
+                <button class="delete-station-btn" data-index="${stationMarkers.indexOf(marker)}">Delete Station</button>
+            `);
+            
+            // Update coverage calculations
+            updateCoverageCalculations();
+            
+            // Update station table
+            updateStationTable();
         });
         
-        // Return the index of the added station
-        return stationMarkers.length - 1;
+        // Add the marker to our array
+        stationMarkers.push(marker);
+        
+        // Create a coverage layer for the station
+        const coverageLayer = L.circle([lat, lng], {
+            color: DEFAULT_STATION_COLOR,
+            fillColor: COVERAGE_COLOR,
+            fillOpacity: 0.25,
+            radius: 0, // Will be updated later
+            weight: 1
+        }).addTo(map);
+        
+        // Store the coverage layer
+        stationLayers.push(coverageLayer);
+        
+        // Update the coverage layer with current settings
+        updateStationCoverage(stationMarkers.length - 1);
+        
+        // Update the station table
+        updateStationTable();
+        
+        // Add event listener to the delete button (for when popup is opened)
+        map.on('popupopen', function(e) {
+            const deleteBtn = document.querySelector('.delete-station-btn');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', function() {
+                    const index = parseInt(deleteBtn.getAttribute('data-index'));
+                    deleteStation(index);
+                });
+            }
+        });
     }
     
     /**
-     * Clears all existing stations from the map
+     * Deletes a station marker and its coverage layer
+     * @param {number} index - Index of the station to delete
      */
-    function clearAllStations() {
-        // Remove all station markers from the map
-        stationMarkers.forEach(station => {
-            map.removeLayer(station.marker);
+    function deleteStation(index) {
+        if (index < 0 || index >= stationMarkers.length) {
+            return;
+        }
+        
+        // Remove the marker and layer from the map
+        map.removeLayer(stationMarkers[index]);
+        map.removeLayer(stationLayers[index]);
+        
+        // Remove from arrays
+        stationMarkers.splice(index, 1);
+        stationLayers.splice(index, 1);
+        
+        // Update remaining stations' indices
+        stationMarkers.forEach((marker, i) => {
+            // Update marker icon with new index
+            marker.setIcon(L.divIcon({
+                html: `<div class="marker-pin station-marker" style="background-color:${DEFAULT_STATION_COLOR};">${i + 1}</div>`,
+                iconSize: [30, 30],
+                iconAnchor: [15, 15],
+                className: 'station-div-icon'
+            }));
+            
+            // Update popup content
+            marker.setPopupContent(`
+                <h3>${marker.data.name}</h3>
+                <p>Latitude: ${marker.data.latitude.toFixed(6)}</p>
+                <p>Longitude: ${marker.data.longitude.toFixed(6)}</p>
+                <button class="delete-station-btn" data-index="${i}">Delete Station</button>
+            `);
         });
         
-        // Clear the markers array
-        stationMarkers = [];
-        
-        // Clear all station coverage layers
-        stationLayers.forEach(layer => {
-            map.removeLayer(layer);
-        });
-        
-        // Clear the layers array
-        stationLayers = [];
-        
-        // Clear suggested stations
-        clearSuggestedStations();
+        // Update coverage calculations
+        updateCoverageCalculations();
         
         // Update station table
         updateStationTable();
     }
     
     /**
-     * Clears all suggested station locations
+     * Clears all station markers and coverage layers
      */
-    function clearSuggestedStations() {
-        // Remove all suggested station markers from the map
-        suggestedStationMarkers.forEach(marker => {
-            map.removeLayer(marker);
-        });
+    function clearAllStations() {
+        // Remove all markers and layers from the map
+        stationMarkers.forEach(marker => map.removeLayer(marker));
+        stationLayers.forEach(layer => map.removeLayer(layer));
         
-        // Clear the array
-        suggestedStationMarkers = [];
-        
-        // Hide optimization results
-        document.getElementById('optimizationResults').style.display = 'none';
-    }
-    
-    /**
-     * Updates the station table with current station data
-     */
-    function updateStationTable() {
-        // Clear existing table rows
-        stationTableBody.innerHTML = '';
-        
-        // Add a row for each station
-        stationMarkers.forEach((station, index) => {
-            const row = document.createElement('tr');
-            
-            // Format values for display
-            const areaFormatted = station.data.coverageArea ? 
-                `${station.data.coverageArea.toFixed(2)} sq mi` : 
-                'Not calculated';
-            
-            const populationFormatted = station.data.populationCovered ? 
-                station.data.populationCovered.toLocaleString() : 
-                'Not calculated';
-            
-            const incidentsFormatted = station.data.incidentsCovered ? 
-                station.data.incidentsCovered.toLocaleString() : 
-                'Not calculated';
-            
-            // Create address tooltip if available
-            const addressTooltip = station.data.address ? 
-                `title="${station.data.address}"` : 
-                '';
-            
-            // Add address icon if available
-            const addressIcon = station.data.address ? 
-                `<i class="fas fa-map-marker-alt" title="${station.data.address}"></i> ` : 
-                '';
-            
-            row.innerHTML = `
-                <td>${addressIcon}${station.data.name}</td>
-                <td>${station.data.latitude.toFixed(6)}</td>
-                <td>${station.data.longitude.toFixed(6)}</td>
-                <td>${areaFormatted}</td>
-                <td>${populationFormatted}</td>
-                <td>${incidentsFormatted}</td>
-                <td>
-                    <button class="action-btn delete-btn" data-index="${index}" title="Delete station">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                    <button class="action-btn pan-btn" data-index="${index}" title="Center on map">
-                        <i class="fas fa-crosshairs"></i>
-                    </button>
-                </td>
-            `;
-            
-            // Add event listeners for action buttons
-            row.querySelector('.delete-btn').addEventListener('click', function() {
-                deleteStation(index);
-            });
-            
-            row.querySelector('.pan-btn').addEventListener('click', function() {
-                panToStation(index);
-            });
-            
-            stationTableBody.appendChild(row);
-        });
-    }
-    
-    /**
-     * Deletes a station by index
-     * @param {number} index - Index of the station to delete
-     */
-    function deleteStation(index) {
-        // Confirm deletion
-        if (!confirm(`Are you sure you want to delete ${stationMarkers[index].data.name}?`)) {
-            return;
-        }
-        
-        // Remove the marker from the map
-        map.removeLayer(stationMarkers[index].marker);
-        
-        // Remove the coverage layer if it exists
-        if (stationLayers[index]) {
-            map.removeLayer(stationLayers[index]);
-            stationLayers[index] = null;
-        }
-        
-        // Remove station from array
-        stationMarkers.splice(index, 1);
-        
-        // Realign layers array with markers
-        stationLayers = stationLayers.filter((_, i) => i !== index);
-        
-        // Clear suggested stations
-        clearSuggestedStations();
+        // Clear arrays
+        stationMarkers = [];
+        stationLayers = [];
         
         // Update coverage calculations
-        calculateCoverage();
+        updateCoverageCalculations();
         
-        // Update table
+        // Update station table
         updateStationTable();
     }
     
     /**
-     * Centers the map on a specific station
-     * @param {number} index - Index of the station to pan to
+     * Updates the coverage radius for a station based on current parameters
+     * @param {number} index - Index of the station to update
      */
-    function panToStation(index) {
-        const station = stationMarkers[index];
-        map.setView([station.data.latitude, station.data.longitude], 14);
-        station.marker.openPopup();
-    }
-    
-    /**
-     * Fits the map view to show all station markers
-     */
-    function fitMapToMarkers() {
-        // Create bounds object
-        const bounds = L.latLngBounds();
-        
-        // Add all station markers to bounds
-        stationMarkers.forEach(station => {
-            bounds.extend([station.data.latitude, station.data.longitude]);
-        });
-        
-        // Add suggested stations if they exist
-        suggestedStationMarkers.forEach(marker => {
-            bounds.extend(marker.getLatLng());
-        });
-        
-        // Only fit bounds if we have markers
-        if (bounds.isValid()) {
-            // Fit the map to the bounds with some padding
-            map.fitBounds(bounds, {
-                padding: [50, 50],
-                maxZoom: 13
-            });
-        }
-    }
-    
-    /**
-     * Calculates the coverage for all stations and updates the map
-     */
-    function calculateCoverage() {
-        // Clear previous coverage layers
-        stationLayers.forEach(layer => {
-            if (layer) map.removeLayer(layer);
-        });
-        stationLayers = [];
-        
-        // If no stations, show message and return
-        if (stationMarkers.length === 0) {
-            updateCoverageStats('0%', '0%', '0%', '0:00');
+    function updateStationCoverage(index) {
+        if (index < 0 || index >= stationMarkers.length) {
             return;
         }
         
         // Get coverage parameters
         const responseTime = parseFloat(document.getElementById('responseTimeTarget').value);
-        
-        // Get turnout time
         let turnoutTime;
         const turnoutSelect = document.getElementById('turnoutTimeSelect').value;
         if (turnoutSelect === 'custom') {
@@ -912,7 +757,6 @@
             turnoutTime = parseFloat(turnoutSelect);
         }
         
-        // Get travel speed
         let travelSpeed;
         const speedSelect = document.getElementById('travelSpeedSelect').value;
         if (speedSelect === 'custom') {
@@ -925,134 +769,87 @@
         const travelTime = Math.max(0, responseTime - turnoutTime);
         
         // Calculate coverage radius in meters
-        // Formula: radius = travel time (hours) * speed (mph) * meters per mile
         const radiusInMeters = (travelTime / 60) * travelSpeed * METERS_PER_MILE;
         
-        // Create coverage circles for each station
-        stationMarkers.forEach((station, index) => {
-            const lat = station.data.latitude;
-            const lng = station.data.longitude;
-            
-            // Create a circle layer
-            const coverageLayer = L.circle([lat, lng], {
-                radius: radiusInMeters,
-                color: '#3388ff',
-                fillColor: COVERAGE_COLOR,
-                fillOpacity: 0.5,
-                weight: 1
-            }).addTo(map);
-            
-            // Store the layer
-            stationLayers[index] = coverageLayer;
-            
-            // Calculate area covered (πr²) in square miles
-            station.data.coverageArea = (Math.PI * Math.pow(radiusInMeters / METERS_PER_MILE, 2)).toFixed(2);
-        });
+        // Get the station and coverage layer
+        const marker = stationMarkers[index];
+        const coverageLayer = stationLayers[index];
         
-        // Update coverage statistics
-        updateCoverageCalculations();
+        // Update the coverage layer
+        coverageLayer.setLatLng([marker.data.latitude, marker.data.longitude]);
+        coverageLayer.setRadius(radiusInMeters);
     }
     
     /**
-     * Updates coverage statistics based on current configuration
+     * Updates the station data table
+     */
+    function updateStationTable() {
+        // Clear the table body
+        stationTableBody.innerHTML = '';
+        
+        // Add a row for each station
+        stationMarkers.forEach((marker, index) => {
+            const row = document.createElement('tr');
+            
+            // Create and add cells
+            const nameCell = document.createElement('td');
+            nameCell.textContent = marker.data.name;
+            row.appendChild(nameCell);
+            
+            const latCell = document.createElement('td');
+            latCell.textContent = marker.data.latitude.toFixed(6);
+            row.appendChild(latCell);
+            
+            const lngCell = document.createElement('td');
+            lngCell.textContent = marker.data.longitude.toFixed(6);
+            row.appendChild(lngCell);
+            
+            const coverageCell = document.createElement('td');
+            coverageCell.textContent = marker.data.coverageArea ? `${marker.data.coverageArea.toFixed(2)} sq mi` : '-';
+            row.appendChild(coverageCell);
+            
+            const popCell = document.createElement('td');
+            popCell.textContent = marker.data.populationCovered ? marker.data.populationCovered.toLocaleString() : '-';
+            row.appendChild(popCell);
+            
+            const incidentCell = document.createElement('td');
+            incidentCell.textContent = marker.data.incidentsCovered ? marker.data.incidentsCovered.toLocaleString() : '-';
+            row.appendChild(incidentCell);
+            
+            const actionsCell = document.createElement('td');
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'danger-btn delete-btn';
+            deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+            deleteBtn.addEventListener('click', function() {
+                deleteStation(index);
+            });
+            actionsCell.appendChild(deleteBtn);
+            row.appendChild(actionsCell);
+            
+            // Add row to table
+            stationTableBody.appendChild(row);
+        });
+    }
+    
+    /**
+     * Updates coverage calculations based on current stations and boundaries
      */
     function updateCoverageCalculations() {
-        // Placeholder calculations until we have real data
-        // These would be calculated based on actual coverage analysis
+        // Update each station's coverage layer
+        stationMarkers.forEach((marker, index) => {
+            updateStationCoverage(index);
+        });
         
-        if (stationMarkers.length === 0) {
-            updateCoverageStats('0%', '0%', '0%', '0:00');
-            return;
-        }
-        
-        // Calculate total jurisdiction area
-        let totalArea = 0;
-        let coveredArea = 0;
-        
-        if (jurisdictionBoundary) {
-            // If we have a boundary, calculate its area in square miles
-            totalArea = turf.area(jurisdictionBoundary) / (METERS_PER_MILE * METERS_PER_MILE);
-            
-            // For covered area, we would use turf.js to find the intersection
-            // between the boundary and all coverage circles
-            // This is a simplified placeholder calculation
-            const totalCoverageArea = stationMarkers.reduce((sum, station) => {
-                return sum + parseFloat(station.data.coverageArea || 0);
-            }, 0);
-            
-            // Adjust for overlapping coverage (simplified approach)
-            coveredArea = Math.min(totalArea, totalCoverageArea * 0.7);
-        } else {
-            // Without a boundary, use station coverage areas with overlap adjustment
-            const totalCoverageArea = stationMarkers.reduce((sum, station) => {
-                return sum + parseFloat(station.data.coverageArea || 0);
-            }, 0);
-            
-            // Adjust for overlapping coverage (simplified approach)
-            coveredArea = totalCoverageArea * 0.7;
-            totalArea = coveredArea * 1.5; // Estimate total area
-        }
-        
-        // Calculate area coverage percentage
-        const areaCoveragePercent = totalArea > 0 ? Math.min(100, (coveredArea / totalArea * 100).toFixed(1)) : 0;
-        
-        // Update population and incident coverage
-        updatePopulationCoverage();
-        updateIncidentCoverage();
-        
-        // Calculate estimated average response time (simplified)
-        const avgResponseTime = calculateAverageResponseTime();
-        
-        // Update the display
-        updateCoverageStats(
-            `${areaCoveragePercent}%`,
-            document.getElementById('populationCoverage').textContent,
-            document.getElementById('incidentCoverage').textContent,
-            avgResponseTime
-        );
+        // Calculate overall coverage metrics
+        calculateCoverageMetrics();
     }
     
     /**
-     * Updates population coverage statistics
+     * Calculates overall coverage metrics
      */
-    function updatePopulationCoverage() {
-        // Placeholder for population coverage calculation
-        // In a real implementation, this would:
-        // 1. Use census data or uploaded population density data
-        // 2. Calculate intersection between coverage areas and population density
-        
-        // For now, we'll use a simplified estimate
-        let populationCoveragePercent = "0%";
-        
-        if (stationMarkers.length > 0) {
-            // Simplified calculation
-            populationCoveragePercent = Math.min(95, 70 + Math.floor(stationMarkers.length * 2.5)) + "%";
-            
-            // Update station population covered values
-            stationMarkers.forEach(station => {
-                // Placeholder calculation
-                station.data.populationCovered = Math.floor(25000 * (parseFloat(station.data.coverageArea) / 50));
-            });
-        }
-        
-        // Update the display
-        document.getElementById('populationCoverage').textContent = populationCoveragePercent;
-    }
-    
-    /**
-     * Updates incident coverage statistics
-     */
-    function updateIncidentCoverage() {
-        // If no incident data or no stations, show 0%
-        if (incidentData.length === 0 || stationMarkers.length === 0) {
-            document.getElementById('incidentCoverage').textContent = '0%';
-            return;
-        }
-        
+    function calculateCoverageMetrics() {
         // Get coverage parameters
         const responseTime = parseFloat(document.getElementById('responseTimeTarget').value);
-        
-        // Get turnout time
         let turnoutTime;
         const turnoutSelect = document.getElementById('turnoutTimeSelect').value;
         if (turnoutSelect === 'custom') {
@@ -1061,7 +858,6 @@
             turnoutTime = parseFloat(turnoutSelect);
         }
         
-        // Get travel speed
         let travelSpeed;
         const speedSelect = document.getElementById('travelSpeedSelect').value;
         if (speedSelect === 'custom') {
@@ -1070,194 +866,277 @@
             travelSpeed = TRAVEL_SPEEDS[speedSelect];
         }
         
-        // Calculate travel time (response time minus turnout time)
+        // Calculate travel time and radius
         const travelTime = Math.max(0, responseTime - turnoutTime);
+        const radiusInMeters = (travelTime / 60) * travelSpeed * METERS_PER_MILE;
+        const radiusInMiles = radiusInMeters / METERS_PER_MILE;
         
-        // Calculate coverage radius in miles
-        const radiusInMiles = (travelTime / 60) * travelSpeed;
+        // Calculate coverage area metrics (for now these are simplified metrics)
+        if (stationMarkers.length === 0) {
+            // No stations, so no coverage
+            areaCoverageElement.textContent = '0%';
+            populationCoverageElement.textContent = '0%';
+            incidentCoverageElement.textContent = '0%';
+            avgResponseTimeElement.textContent = 'N/A';
+            return;
+        }
         
-        // Count covered incidents
-        let coveredIncidents = 0;
+        // For each station, calculate coverage metrics
+        let totalBoundaryArea = 0;
+        let totalCoveredArea = 0;
         
-        // For each incident, check if it's within range of any station
-        incidentData.forEach(incident => {
-            // Skip if missing coordinates
-            if (!incident.latitude || !incident.longitude) return;
+        // If we have a boundary, calculate its area
+        if (jurisdictionBoundary) {
+            totalBoundaryArea = turf.area(jurisdictionBoundary) / 1000000; // Convert to square km
             
-            const incidentPoint = [parseFloat(incident.longitude), parseFloat(incident.latitude)];
-            
-            // Check against each station
-            for (const station of stationMarkers) {
-                const stationPoint = [station.data.longitude, station.data.latitude];
-                const distance = turf.distance(
-                    turf.point(stationPoint), 
-                    turf.point(incidentPoint), 
-                    {units: 'miles'}
-                );
-                
-                if (distance <= radiusInMiles) {
-                    coveredIncidents++;
-                    break; // Count each incident only once
-                }
+            // Calculate the covered area (union of all station coverage areas intersected with boundary)
+            // This is a simplified approach - ideally we'd use turf.js for proper calculations
+            if (stationMarkers.length > 0) {
+                // Estimated coverage as a percentage of the total area
+                // Simplified - in reality we'd create a GeoJSON of coverage areas and calculate the actual percentage
+                const coverage = Math.min(100, stationMarkers.length * 15); // Approximate coverage percentage
+                totalCoveredArea = (coverage / 100) * totalBoundaryArea;
             }
-        });
-        
-        // Calculate coverage percentage
-        const coveragePercent = Math.min(100, Math.round((coveredIncidents / incidentData.length) * 100));
-        
-        // Update station incident covered values
-        stationMarkers.forEach(station => {
-            let stationCoveredIncidents = 0;
+        } else {
+            // No boundary, use map bounds as a proxy
+            const bounds = map.getBounds();
+            const northEast = bounds.getNorthEast();
+            const southWest = bounds.getSouthWest();
             
-            // Count incidents within this station's radius
+            const width = turf.distance(
+                turf.point([southWest.lng, southWest.lat]),
+                turf.point([northEast.lng, southWest.lat]),
+                { units: 'kilometers' }
+            );
+            
+            const height = turf.distance(
+                turf.point([southWest.lng, southWest.lat]),
+                turf.point([southWest.lng, northEast.lat]),
+                { units: 'kilometers' }
+            );
+            
+            totalBoundaryArea = width * height;
+            
+            // Simplified coverage estimate
+            const coverage = Math.min(100, stationMarkers.length * 10); // Approximate coverage percentage
+            totalCoveredArea = (coverage / 100) * totalBoundaryArea;
+        }
+        
+        // Calculate percentage of area covered
+        const areaCoverage = (totalCoveredArea / totalBoundaryArea) * 100;
+        areaCoverageElement.textContent = `${Math.min(100, areaCoverage).toFixed(1)}%`;
+        
+        // For population coverage
+        let populationCoverage;
+        if (stationMarkers.length > 0) {
+            // Simplified calculation assuming population is proportional to area
+            populationCoverage = Math.min(100, stationMarkers.length * 12);
+        } else {
+            populationCoverage = 0;
+        }
+        populationCoverageElement.textContent = `${populationCoverage.toFixed(1)}%`;
+        
+        // For incident coverage
+        let incidentsCovered = 0;
+        let totalIncidents = incidentData.length;
+        
+        // Count how many incidents are covered by at least one station
+        if (incidentData.length > 0 && stationMarkers.length > 0) {
             incidentData.forEach(incident => {
-                // Skip if missing coordinates
+                // Skip if incident is missing coordinates
                 if (!incident.latitude || !incident.longitude) return;
                 
-                const incidentPoint = [parseFloat(incident.longitude), parseFloat(incident.latitude)];
-                const stationPoint = [station.data.longitude, station.data.latitude];
-                const distance = turf.distance(
-                    turf.point(stationPoint), 
-                    turf.point(incidentPoint), 
-                    {units: 'miles'}
-                );
-                
-                if (distance <= radiusInMiles) {
-                    stationCoveredIncidents++;
+                // Check if this incident is covered by any station
+                for (const marker of stationMarkers) {
+                    const distance = turf.distance(
+                        turf.point([incident.longitude, incident.latitude]),
+                        turf.point([marker.data.longitude, marker.data.latitude]),
+                        { units: 'miles' }
+                    );
+                    
+                    if (distance <= radiusInMiles) {
+                        incidentsCovered++;
+                        break; // Count each incident only once
+                    }
                 }
             });
+        }
+        
+        const incidentCoverage = totalIncidents > 0 ? (incidentsCovered / totalIncidents) * 100 : 0;
+        incidentCoverageElement.textContent = `${incidentCoverage.toFixed(1)}%`;
+        
+        // Average response time
+        const avgResponseTime = responseTime;
+        avgResponseTimeElement.textContent = `${avgResponseTime.toFixed(1)} min`;
+        
+        // Update each station's coverage metrics
+        stationMarkers.forEach((marker, index) => {
+            // Calculate coverage area (πr²)
+            const areaInSquareMiles = Math.PI * Math.pow(radiusInMiles, 2);
+            marker.data.coverageArea = areaInSquareMiles;
             
-            station.data.incidentsCovered = stationCoveredIncidents;
+            // Calculate incidents covered by this station
+            let stationIncidentsCovered = 0;
+            if (incidentData.length > 0) {
+                incidentData.forEach(incident => {
+                    // Skip if incident is missing coordinates
+                    if (!incident.latitude || !incident.longitude) return;
+                    
+                    const distance = turf.distance(
+                        turf.point([incident.longitude, incident.latitude]),
+                        turf.point([marker.data.longitude, marker.data.latitude]),
+                        { units: 'miles' }
+                    );
+                    
+                    if (distance <= radiusInMiles) {
+                        stationIncidentsCovered++;
+                    }
+                });
+            }
+            marker.data.incidentsCovered = stationIncidentsCovered;
+            
+            // Estimated population covered (simplified)
+            // In a real implementation, we'd use census data
+            marker.data.populationCovered = Math.round(areaInSquareMiles * 2000); // Assuming 2000 people per square mile
         });
         
-        // Update the display
-        document.getElementById('incidentCoverage').textContent = `${coveragePercent}%`;
-    }
-    
-    /**
-     * Calculates an estimated average response time
-     * @returns {string} Formatted response time (MM:SS)
-     */
-    function calculateAverageResponseTime() {
-        if (stationMarkers.length === 0) return '0:00';
-        
-        // Get current parameters
-        const turnoutSelect = document.getElementById('turnoutTimeSelect').value;
-        const turnoutTime = turnoutSelect === 'custom' ? 
-            parseFloat(document.getElementById('customTurnout').value) : 
-            parseFloat(turnoutSelect);
-            
-        // For simplicity, we'll just use the turnout time plus an average travel time
-        // In a real implementation, this would use actual incident and station data
-        // to calculate more accurate estimates
-        
-        // Simplified average travel time based on current coverage
-        const areaCoverage = parseFloat(document.getElementById('areaCoverage').textContent);
-        const avgTravelTime = (10 - Math.min(8, stationMarkers.length * 0.6)) * (100 - areaCoverage) / 100;
-        
-        // Total response time in minutes
-        const totalTime = turnoutTime + avgTravelTime;
-        
-        // Format as MM:SS
-        const minutes = Math.floor(totalTime);
-        const seconds = Math.round((totalTime - minutes) * 60);
-        
-        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    }
-    
-    /**
-     * Updates the coverage statistics display
-     * @param {string} area - Area coverage percentage
-     * @param {string} population - Population coverage percentage
-     * @param {string} incidents - Incident coverage percentage
-     * @param {string} time - Average response time (MM:SS)
-     */
-    function updateCoverageStats(area, population, incidents, time) {
-        areaCoverageElement.textContent = area;
-        populationCoverageElement.textContent = population;
-        incidentCoverageElement.textContent = incidents;
-        avgResponseTimeElement.textContent = time;
-        
-        // Also update station table
+        // Update station table with new metrics
         updateStationTable();
     }
     
     /**
-     * Loads a boundary from GeoJSON data
-     * @param {Object} geoData - GeoJSON data
+     * Calculates coverage based on current parameters
      */
-    function loadBoundaryFromGeoJSON(geoData) {
-        // Clear existing boundary
-        boundaryLayer.clearLayers();
+    function calculateCoverage() {
+        // Update all station coverage layers with current parameters
+        stationMarkers.forEach((marker, index) => {
+            updateStationCoverage(index);
+        });
         
-        try {
-            // Convert the GeoJSON to a Leaflet layer
-            const geoJSONLayer = L.geoJSON(geoData, {
-                style: {
-                    color: '#3388ff',
-                    weight: 3,
-                    fillOpacity: 0.1
-                }
-            });
-            
-            // Add to boundary layer
-            geoJSONLayer.eachLayer(layer => {
-                boundaryLayer.addLayer(layer);
-            });
-            
-            // Store boundary data
-            jurisdictionBoundary = geoData;
-            
-            // Fit map to boundary
-            map.fitBounds(geoJSONLayer.getBounds(), {
-                padding: [50, 50]
-            });
-            
-            // Update coverage calculations
-            updateCoverageCalculations();
-        } catch (error) {
-            console.error('Error loading GeoJSON:', error);
-            alert('Error loading boundary. Please check the file format.');
-        }
+        // Update coverage metrics
+        calculateCoverageMetrics();
+        
+        // Provide feedback
+        alert(`Coverage calculated based on ${stationMarkers.length} stations and current parameters.`);
     }
     
     /**
-     * Displays population density on the map (if available)
+     * Fits the map to show all station markers
+     */
+    function fitMapToMarkers() {
+        // If we have no markers, do nothing
+        if (stationMarkers.length === 0 && suggestedStationMarkers.length === 0) {
+            return;
+        }
+        
+        // Create a bounds object
+        const bounds = L.latLngBounds();
+        
+        // Add all station markers to bounds
+        stationMarkers.forEach(marker => {
+            bounds.extend(marker.getLatLng());
+        });
+        
+        // Add suggested station markers if any
+        suggestedStationMarkers.forEach(marker => {
+            bounds.extend(marker.getLatLng());
+        });
+        
+        // Fit the map to the bounds with some padding
+        map.fitBounds(bounds.pad(0.2));
+    }
+    
+    /**
+     * Loads a boundary from GeoJSON data
+     * @param {Object} geoJSON - GeoJSON data
+     */
+    function loadBoundaryFromGeoJSON(geoJSON) {
+        // Clear existing boundary
+        boundaryLayer.clearLayers();
+        
+        // Create and add the new boundary
+        const layer = L.geoJSON(geoJSON, {
+            style: {
+                color: '#3388ff',
+                weight: 3,
+                opacity: 0.7,
+                fillOpacity: 0.1
+            }
+        });
+        
+        // Add to boundary layer
+        layer.eachLayer(l => boundaryLayer.addLayer(l));
+        
+        // Store the boundary as GeoJSON
+        jurisdictionBoundary = geoJSON;
+        
+        // Fit map to boundary
+        map.fitBounds(layer.getBounds());
+        
+        // Update coverage calculations
+        updateCoverageCalculations();
+    }
+    
+    /**
+     * Shows population density as a heatmap
      */
     function showPopulationDensity() {
-        // This would normally load real population density data
-        // For this demo, we'll just create a placeholder gradient
+        // In a real implementation, this would load population density data
+        // For this demo, we'll create a simple grid-based heatmap
         
-        // Remove existing layer if it exists
+        // Remove existing layer if any
         if (populationLayer) {
             map.removeLayer(populationLayer);
         }
         
-        // Create a simple population density gradient
-        // In a real implementation, this would use actual census or demographic data
-        
-        // Get current map bounds
+        // Get map bounds
         const bounds = map.getBounds();
-        const center = bounds.getCenter();
-        const radius = bounds.getNorthWest().distanceTo(bounds.getSouthEast()) / 5;
+        const south = bounds.getSouth();
+        const west = bounds.getWest();
+        const north = bounds.getNorth();
+        const east = bounds.getEast();
         
-        // Create gradient using a series of circles with decreasing opacity
-        populationLayer = L.layerGroup().addTo(map);
+        const latRange = north - south;
+        const lngRange = east - west;
         
-        for (let i = 5; i > 0; i--) {
-            L.circle(center, {
-                radius: radius * i / 5,
-                color: 'purple',
-                fillColor: 'purple',
-                fillOpacity: 0.1 * (6 - i),
-                weight: 0,
-                interactive: false
-            }).addTo(populationLayer);
+        // Create a grid of population points
+        const points = [];
+        const gridSize = 20; // 20x20 grid
+        
+        for (let i = 0; i < gridSize; i++) {
+            for (let j = 0; j < gridSize; j++) {
+                const lat = south + (latRange * (i / gridSize)) + (latRange / (2 * gridSize));
+                const lng = west + (lngRange * (j / gridSize)) + (lngRange / (2 * gridSize));
+                
+                // Create a point with intensity based on distance from center
+                // (center of map has higher population density)
+                const centerLat = south + (latRange / 2);
+                const centerLng = west + (lngRange / 2);
+                
+                // Distance from center (0-1 scale)
+                const distance = Math.sqrt(
+                    Math.pow((lat - centerLat) / latRange, 2) + 
+                    Math.pow((lng - centerLng) / lngRange, 2)
+                );
+                
+                // Intensity decreases with distance from center
+                // (higher near center, lower at edges)
+                const intensity = Math.max(0.3, 1 - distance);
+                
+                points.push([lat, lng, intensity]);
+            }
         }
+        
+        // Create a heatmap layer with the points
+        populationLayer = L.heatLayer(points, {
+            radius: 25,
+            blur: 15,
+            gradient: {0.4: 'blue', 0.65: 'lime', 0.85: 'yellow', 1.0: 'red'}
+        }).addTo(map);
     }
     
     /**
-     * Hides the population density layer
+     * Hides population density layer
      */
     function hidePopulationDensity() {
         if (populationLayer) {
@@ -1267,36 +1146,38 @@
     }
     
     /**
-     * Shows call density heatmap
+     * Shows call density as a heatmap
      */
     function showCallDensity() {
-        // Make sure the heatmap library is available
-        if (typeof L.heatLayer !== 'function') {
-            console.warn('Leaflet.heat plugin not available. Add <script src="https://unpkg.com/leaflet.heat"></script> to use this feature.');
-            return;
-        }
-        
-        // Remove existing layer if it exists
+        // Remove existing layer if any
         if (heatmapLayer) {
             map.removeLayer(heatmapLayer);
+            heatmapLayer = null;
         }
         
-        // If no incident data, display warning and return
-        if (!incidentData || incidentData.length === 0) {
-            console.warn('No incident data available for heatmap.');
+        // If no incident data, do nothing
+        if (incidentData.length === 0) {
             return;
         }
         
-        // Extract incident points with intensity
-        const points = incidentData
-            .filter(incident => incident.latitude && incident.longitude)
-            .map(incident => {
-                return [
-                    parseFloat(incident.latitude),
-                    parseFloat(incident.longitude),
-                    1 // Base intensity
-                ];
-            });
+        // Create an array of points for the heatmap
+        const points = [];
+        
+        // Add each incident as a point
+        incidentData.forEach(incident => {
+            // Skip if incident is missing coordinates
+            if (!incident.latitude || !incident.longitude) return;
+            
+            // Default intensity is 1, but can be adjusted based on incident type or other factors
+            let intensity = 1;
+            
+            // If the incident has a custom intensity, use it
+            if (incident.intensity) {
+                intensity = parseFloat(incident.intensity);
+            }
+            
+            points.push([parseFloat(incident.latitude), parseFloat(incident.longitude), intensity]);
+        });
         
         // Create heat layer
         heatmapLayer = L.heatLayer(points, {
@@ -1497,79 +1378,66 @@
                 
                 // Area score - simplified approach
                 // Higher score for uncovered areas
-                areaScore = 1;
+                areaScore = 5;
                 
-                // Population score - in a real implementation, 
-                // would use actual population density data
-                // For now, give higher scores to locations closer to center
-                const distanceToCenter = turf.distance(
-                    turf.point([lng, lat]),
-                    turf.point([searchBounds.getCenter().lng, searchBounds.getCenter().lat]),
-                    {units: 'miles'}
+                // Population score - simplified approach
+                // In a real implementation, we'd use census data
+                // For this demo, we'll assume higher population in the center
+                const centerLat = searchBounds.getSouth() + (latDistance / 2);
+                const centerLng = searchBounds.getWest() + (lngDistance / 2);
+                
+                // Distance from center (0-1 scale)
+                const centerDistance = Math.sqrt(
+                    Math.pow((lat - centerLat) / latDistance, 2) + 
+                    Math.pow((lng - centerLng) / lngDistance, 2)
                 );
-                const maxDistance = Math.max(lngDistance, latDistance) * 69 / 2; // rough miles conversion
-                populationScore = 1 - (distanceToCenter / maxDistance);
                 
-                // If we have incidents, prioritize locations near uncovered incidents
+                // Population score decreases with distance from center
+                populationScore = 10 * (1 - centerDistance);
+                
+                // Incident score - based on nearby uncovered incidents
                 if (uncoveredIncidents.length > 0) {
-                    const locationPoint = turf.point([lng, lat]);
-                    let totalWeight = 0;
-                    let coveredIncidents = 0;
-                    
+                    // Count incidents within coverage radius
+                    let nearbyIncidents = 0;
                     uncoveredIncidents.forEach(incident => {
                         const distance = turf.distance(
-                            locationPoint, 
-                            turf.point(incident.point), 
+                            turf.point([lng, lat]),
+                            turf.point([incident.longitude, incident.latitude]),
                             {units: 'miles'}
                         );
                         
-                        // Check if this location would cover this incident
                         if (distance <= radiusInMiles) {
-                            // Weight by inverse distance - closer incidents get higher weight
-                            const weight = 1 - (distance / radiusInMiles);
-                            totalWeight += weight;
-                            coveredIncidents++;
+                            nearbyIncidents++;
                         }
                     });
                     
-                    // Score based on number of incidents covered and their proximity
-                    if (coveredIncidents > 0) {
-                        // Average weight times percentage of total uncovered incidents
-                        incidentScore = (totalWeight / coveredIncidents) * 
-                                        (coveredIncidents / uncoveredIncidents.length);
-                        
-                        // Boost score if covering many incidents
-                        if (coveredIncidents > uncoveredIncidents.length * 0.2) {
-                            incidentScore *= 1.5;
-                        }
-                    }
+                    // Scale incident score based on number of covered incidents
+                    incidentScore = Math.min(20, nearbyIncidents * 1.5);
                 }
                 
-                // Calculate combined score based on target
-                let score;
-                switch (target) {
+                // Calculate total score based on optimization target
+                let totalScore;
+                switch(target) {
                     case 'population':
-                        score = populationScore * 0.8 + incidentScore * 0.1 + areaScore * 0.1;
+                        totalScore = populationScore * 2 + incidentScore * 0.5 + areaScore * 0.5;
                         break;
                     case 'area':
-                        score = areaScore * 0.8 + populationScore * 0.1 + incidentScore * 0.1;
+                        totalScore = populationScore * 0.5 + incidentScore * 0.5 + areaScore * 2;
                         break;
                     case 'incidents':
-                        score = incidentScore * 0.8 + populationScore * 0.1 + areaScore * 0.1;
+                        totalScore = populationScore * 0.5 + incidentScore * 2 + areaScore * 0.5;
                         break;
                     case 'balanced':
                     default:
-                        score = populationScore * 0.4 + incidentScore * 0.4 + areaScore * 0.2;
+                        totalScore = populationScore + incidentScore + areaScore;
+                        break;
                 }
                 
-                // Skip locations with very low scores
-                if (score < 0.1) continue;
-                
-                // Add to potential locations
+                // Add to suggested locations
                 suggestedLocations.push({
                     lat: lat,
                     lng: lng,
-                    score: score,
+                    score: totalScore,
                     populationScore: populationScore,
                     incidentScore: incidentScore,
                     areaScore: areaScore
@@ -1577,64 +1445,60 @@
             }
         }
         
-        // Sort locations by score (highest first)
+        // Sort by score (highest first)
         suggestedLocations.sort((a, b) => b.score - a.score);
         
-        // Take the top N locations
-        const topLocations = suggestedLocations.slice(0, stationsToAdd);
+        // Take top N locations based on stationsToAdd
+        const topLocations = suggestedLocations.slice(0, Math.min(stationsToAdd, suggestedLocations.length));
         
         // Add markers for suggested locations
         topLocations.forEach((location, index) => {
             const marker = L.marker([location.lat, location.lng], {
-                title: `Suggested Station ${index + 1}`,
                 icon: L.divIcon({
-                    className: 'suggested-station-marker',
-                    html: `<div style="background-color: ${SUGGESTED_STATION_COLOR}; border-radius: 50%; width: 12px; height: 12px;"></div>`,
-                    iconSize: [12, 12],
-                    iconAnchor: [6, 6]
-                }),
-                draggable: true // Allow dragging for adjustment
+                    html: `<div class="marker-pin suggested-marker" style="background-color:${SUGGESTED_STATION_COLOR};">S${index+1}</div>`,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15],
+                    className: 'suggested-div-icon'
+                })
             }).addTo(map);
             
-            // Add popup with information
             marker.bindPopup(`
-                <strong>Suggested Station ${index + 1}</strong><br>
-                Latitude: ${location.lat.toFixed(6)}<br>
-                Longitude: ${location.lng.toFixed(6)}<br>
-                <hr>
-                <strong>Coverage Score:</strong> ${Math.round(location.score * 100)}%<br>
-                Population Impact: ${Math.round(location.populationScore * 100)}%<br>
-                Incident Coverage: ${Math.round(location.incidentScore * 100)}%<br>
-                Area Coverage: ${Math.round(location.areaScore * 100)}%
+                <h3>Suggested Station ${index+1}</h3>
+                <p>Latitude: ${location.lat.toFixed(6)}</p>
+                <p>Longitude: ${location.lng.toFixed(6)}</p>
+                <p>Score: ${location.score.toFixed(1)}</p>
+                <p>Incidents covered: ${Math.round(location.incidentScore * 2)}</p>
             `);
             
-            // Add coverage circle
-            const circle = L.circle([location.lat, location.lng], {
-                radius: radiusInMeters,
-                color: '#FFA500',
-                fillColor: 'rgba(255, 165, 0, 0.3)',
-                fillOpacity: 0.3,
+            suggestedStationMarkers.push(marker);
+            
+            // Also add a circle showing the coverage
+            const coverageCircle = L.circle([location.lat, location.lng], {
+                color: SUGGESTED_STATION_COLOR,
+                fillColor: SUGGESTED_STATION_COLOR,
+                fillOpacity: 0.15,
                 weight: 1,
-                dashArray: '5,5'
+                radius: radiusInMeters
             }).addTo(map);
             
-            // Store marker and circle
-            suggestedStationMarkers.push(marker);
-            suggestedStationMarkers.push(circle);
+            suggestedStationMarkers.push(coverageCircle);
         });
         
-        // Show results metrics
+        // Fit map to include suggested stations
+        fitMapToMarkers();
+        
+        // Show optimization results
         const optimizationResults = document.getElementById('optimizationResults');
         const metricsList = document.getElementById('optimizationMetrics');
         
-        // Calculate estimated improvements
-        const currentAreaCoverage = parseFloat(document.getElementById('areaCoverage').textContent);
-        const currentPopulationCoverage = parseFloat(document.getElementById('populationCoverage').textContent);
-        const currentIncidentCoverage = parseFloat(document.getElementById('incidentCoverage').textContent);
+        // Use existing coverage metrics as baseline
+        const currentAreaCoverage = parseFloat(areaCoverageElement.textContent);
+        const currentPopulationCoverage = parseFloat(populationCoverageElement.textContent);
+        const currentIncidentCoverage = parseFloat(incidentCoverageElement.textContent);
         
-        // Estimate new coverages (simplified)
-        const newAreaCoverage = Math.min(100, currentAreaCoverage + (stationsToAdd * 7)).toFixed(1);
-        const newPopulationCoverage = Math.min(100, currentPopulationCoverage + (stationsToAdd * 5)).toFixed(1);
+        // Estimate new coverage (simplified)
+        const newAreaCoverage = Math.min(100, currentAreaCoverage + (stationsToAdd * 10)).toFixed(1);
+        const newPopulationCoverage = Math.min(100, currentPopulationCoverage + (stationsToAdd * 10)).toFixed(1);
         const newIncidentCoverage = Math.min(100, currentIncidentCoverage + (stationsToAdd * 8)).toFixed(1);
         
         metricsList.innerHTML = `
@@ -1678,6 +1542,17 @@
     }
     
     /**
+     * Clears suggested station markers
+     */
+    function clearSuggestedStations() {
+        suggestedStationMarkers.forEach(marker => map.removeLayer(marker));
+        suggestedStationMarkers = [];
+        
+        // Hide optimization results
+        document.getElementById('optimizationResults').style.display = 'none';
+    }
+    
+    /**
      * Exports the current map view as a PDF
      */
     function exportAsPDF() {
@@ -1688,8 +1563,15 @@
         map.invalidateSize();
         
         try {
+            // Ensure jsPDF is properly loaded
+            if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
+                console.error("jsPDF is not properly loaded");
+                alert("PDF export library not loaded. Please try again later or use the Data export option.");
+                return;
+            }
+
             // Create a new jsPDF instance
-            const pdf = new jspdf.jsPDF('landscape');
+            const pdf = new window.jspdf.jsPDF('landscape');
             
             // Add title
             pdf.setFontSize(18);
@@ -1707,60 +1589,72 @@
             pdf.text(`Incident Coverage: ${document.getElementById('incidentCoverage').textContent}`, 14, 48);
             pdf.text(`Average Response Time: ${document.getElementById('avgResponseTime').textContent}`, 14, 54);
             
-            // Create a data URL of the map by using Leaflet's built-in methods
-            const mapImageURL = createMapImageURL();
-            
-            // Add map image if available, otherwise add placeholder text
-            if (mapImageURL) {
-                // Calculate dimensions to fit the PDF
-                const imgWidth = 260;
-                const imgHeight = 150;
-                pdf.addImage(mapImageURL, 'PNG', 15, 65, imgWidth, imgHeight);
-            } else {
-                pdf.text('Map image could not be generated. Please use the Export Image option separately.', 15, 100);
-            }
-            
-            // Add station information
-            pdf.addPage();
-            pdf.setFontSize(16);
-            pdf.text('Station Information', 14, 15);
-            
-            // Add station table
-            pdf.setFontSize(10);
-            let y = 25;
-            pdf.text('Name', 14, y);
-            pdf.text('Latitude', 50, y);
-            pdf.text('Longitude', 90, y);
-            pdf.text('Coverage Area', 130, y);
-            pdf.text('Population', 170, y);
-            pdf.text('Incidents', 210, y);
-            
-            y += 2;
-            pdf.line(14, y, 280, y);
-            y += 5;
-            
-            stationMarkers.forEach(station => {
-                const stationName = station.data.name.length > 15 ? 
-                    station.data.name.substring(0, 12) + '...' : 
-                    station.data.name;
-                
-                pdf.text(stationName, 14, y);
-                pdf.text(station.data.latitude.toFixed(6), 50, y);
-                pdf.text(station.data.longitude.toFixed(6), 90, y);
-                pdf.text(station.data.coverageArea ? `${station.data.coverageArea} sq mi` : 'N/A', 130, y);
-                pdf.text(station.data.populationCovered ? station.data.populationCovered.toString() : 'N/A', 170, y);
-                pdf.text(station.data.incidentsCovered ? station.data.incidentsCovered.toString() : 'N/A', 210, y);
-                y += 7;
-                
-                // Add page if running out of space
-                if (y > 180) {
+            // Export the map as an image
+            captureMapToCanvas()
+                .then(canvas => {
+                    if (canvas) {
+                        // Calculate dimensions to fit the PDF
+                        const imgWidth = 260;
+                        const imgHeight = 150;
+                        
+                        try {
+                            const imgData = canvas.toDataURL('image/png');
+                            pdf.addImage(imgData, 'PNG', 15, 65, imgWidth, imgHeight);
+                        } catch (error) {
+                            console.error("Error adding map to PDF:", error);
+                            pdf.text('Map image could not be added. Please use the Export Image option separately.', 15, 100);
+                        }
+                    } else {
+                        pdf.text('Map image could not be generated. Please use the Export Image option separately.', 15, 100);
+                    }
+                    
+                    // Add station information
                     pdf.addPage();
-                    y = 15;
-                }
-            });
-            
-            // Save the PDF
-            pdf.save('coverage-analysis.pdf');
+                    pdf.setFontSize(16);
+                    pdf.text('Station Information', 14, 15);
+                    
+                    // Add station table
+                    pdf.setFontSize(10);
+                    let y = 25;
+                    pdf.text('Name', 14, y);
+                    pdf.text('Latitude', 50, y);
+                    pdf.text('Longitude', 90, y);
+                    pdf.text('Coverage Area', 130, y);
+                    pdf.text('Population', 170, y);
+                    pdf.text('Incidents', 210, y);
+                    
+                    y += 2;
+                    pdf.line(14, y, 280, y);
+                    y += 5;
+                    
+                    stationMarkers.forEach(station => {
+                        const stationName = station.data.name.length > 15 ? 
+                            station.data.name.substring(0, 12) + '...' : 
+                            station.data.name;
+                        
+                        pdf.text(stationName, 14, y);
+                        pdf.text(station.data.latitude.toFixed(6).toString(), 50, y);
+                        pdf.text(station.data.longitude.toFixed(6).toString(), 90, y);
+                        pdf.text(station.data.coverageArea ? `${station.data.coverageArea.toFixed(2)} sq mi` : 'N/A', 130, y);
+                        pdf.text(station.data.populationCovered ? station.data.populationCovered.toString() : 'N/A', 170, y);
+                        pdf.text(station.data.incidentsCovered ? station.data.incidentsCovered.toString() : 'N/A', 210, y);
+                        y += 7;
+                        
+                        // Add page if running out of space
+                        if (y > 180) {
+                            pdf.addPage();
+                            y = 15;
+                        }
+                    });
+                    
+                    // Save the PDF
+                    pdf.save('coverage-analysis.pdf');
+                })
+                .catch(error => {
+                    console.error("Error in map capture for PDF:", error);
+                    alert("There was an error capturing the map for PDF export. Please try again or use the Data export option.");
+                });
+                
         } catch (err) {
             console.error("Error generating PDF:", err);
             alert("Error generating PDF. Please try again or use the Export Data option.");
@@ -1768,36 +1662,47 @@
     }
     
     /**
-     * Helper function to create a data URL of the current map
-     * @returns {string} Data URL of map image or null if failed
+     * Helper function to capture the map to a canvas
+     * @returns {Promise<HTMLCanvasElement>} Promise resolving to canvas or null if failed
      */
-    function createMapImageURL() {
-        try {
-            // Create a canvas element
-            const canvas = document.createElement('canvas');
-            const size = map.getSize();
-            canvas.width = size.x;
-            canvas.height = size.y;
-            
-            // Use Leaflet's built-in methods to render the map to canvas
-            map.render();
-            
-            // Try to get a screenshot using map._container
-            if (map._container) {
-                // Draw base map layer
-                const mapContainer = map._container;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(mapContainer, 0, 0);
+    function captureMapToCanvas() {
+        return new Promise((resolve, reject) => {
+            try {
+                // Ensure html2canvas is loaded
+                if (typeof html2canvas !== 'function') {
+                    console.error("html2canvas is not loaded");
+                    reject(new Error("Map capture library not loaded"));
+                    return;
+                }
                 
-                // Return data URL
-                return canvas.toDataURL('image/png');
+                // Get a reference to the map container
+                const mapContainer = map.getContainer();
+                
+                // Use html2canvas with proper configuration
+                html2canvas(mapContainer, {
+                    useCORS: true,
+                    allowTaint: true,
+                    logging: false,
+                    scale: 1,
+                    backgroundColor: null,
+                    ignoreElements: function(element) {
+                        // Skip certain elements that might cause issues
+                        const skippableClasses = ['leaflet-control-attribution'];
+                        return skippableClasses.some(className => element.className && element.className.includes(className));
+                    }
+                })
+                .then(canvas => {
+                    resolve(canvas);
+                })
+                .catch(err => {
+                    console.error("Error in html2canvas:", err);
+                    reject(err);
+                });
+            } catch (err) {
+                console.error("Error setting up map capture:", err);
+                reject(err);
             }
-            
-            return null;
-        } catch (err) {
-            console.error("Error creating map image:", err);
-            return null;
-        }
+        });
     }
     
     /**
@@ -1808,42 +1713,32 @@
         alert('Preparing image export... This may take a moment.');
         
         try {
-            // Create download link for the current map view
-            const mapImageURL = createMapImageURL();
-            
-            if (mapImageURL) {
-                // Create and trigger download
-                const link = document.createElement('a');
-                link.download = 'coverage-map.png';
-                link.href = mapImageURL;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            } else {
-                // Manual approach - take a screenshot of the viewport area
-                const mapElement = document.getElementById('coverageMap');
-                
-                // Use HTML2Canvas with more options
-                html2canvas(mapElement, {
-                    useCORS: true,
-                    allowTaint: true,
-                    logging: false,
-                    foreignObjectRendering: true
-                }).then(canvas => {
-                    const link = document.createElement('a');
-                    link.download = 'coverage-map.png';
-                    link.href = canvas.toDataURL('image/png');
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                }).catch(err => {
-                    console.error("Error generating image:", err);
-                    alert("Error generating image. Please use browser's screenshot feature instead.");
+            captureMapToCanvas()
+                .then(canvas => {
+                    if (!canvas) {
+                        throw new Error("Failed to create canvas");
+                    }
+                    
+                    try {
+                        // Create and trigger download
+                        const link = document.createElement('a');
+                        link.download = 'coverage-map.png';
+                        link.href = canvas.toDataURL('image/png');
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    } catch (error) {
+                        console.error("Error creating download link:", error);
+                        alert("Error generating image. Please try taking a screenshot instead.");
+                    }
+                })
+                .catch(err => {
+                    console.error("Error in map capture for image export:", err);
+                    alert("Error generating image. Please try taking a screenshot instead.");
                 });
-            }
         } catch (err) {
             console.error("Error in exportAsImage:", err);
-            alert("Error generating image. Please use browser's screenshot feature instead.");
+            alert("Error generating image. Please try taking a screenshot instead.");
         }
     }
     
@@ -1874,64 +1769,5 @@
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-    }
-    
-    /**
-     * Generates mock incident data for local testing
-     */
-    function generateMockIncidentData() {
-        // Get map bounds
-        const bounds = map.getBounds();
-        const south = bounds.getSouth();
-        const west = bounds.getWest();
-        const north = bounds.getNorth();
-        const east = bounds.getEast();
-        
-        const latRange = north - south;
-        const lngRange = east - west;
-        
-        // Generate 500 random incidents within the bounds
-        incidentData = [];
-        
-        for (let i = 0; i < 500; i++) {
-            // Random coordinates within bounds
-            const lat = south + (Math.random() * latRange);
-            const lng = west + (Math.random() * lngRange);
-            
-            // Create a mock incident
-            incidentData.push({
-                id: `INC-${i.toString().padStart(5, '0')}`,
-                latitude: lat.toFixed(6),
-                longitude: lng.toFixed(6),
-                // Add more incident data as needed
-                timestamp: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(),
-                type: ['EMS', 'Fire', 'Hazmat', 'Rescue', 'Service'][Math.floor(Math.random() * 5)]
-            });
-        }
-    }
-    
-    /**
-     * Generates mock station data for local testing
-     */
-    function generateMockStationData() {
-        // Clear existing stations
-        clearAllStations();
-        
-        // Generate 5 sample stations
-        const sampleStations = [
-            { name: 'Station 1', lat: 33.4484, lng: -112.0740 },
-            { name: 'Station 2', lat: 33.4956, lng: -112.0737 },
-            { name: 'Station 3', lat: 33.4512, lng: -112.1242 },
-            { name: 'Station 4', lat: 33.3874, lng: -112.0623 },
-            { name: 'Station 5', lat: 33.4854, lng: -112.0245 }
-        ];
-        
-        // Add stations to map
-        sampleStations.forEach(station => {
-            addStationMarker(station.name, station.lat, station.lng);
-        });
-        
-        // Fit map to stations
-        fitMapToMarkers();
     }
 })();

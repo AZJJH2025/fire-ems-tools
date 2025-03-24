@@ -958,15 +958,35 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
+    <!-- Additional libraries needed - make sure these load before our JavaScript -->
+    <script>
+        // Create global jspdf variable that matches how it's accessed in our code
+        window.jspdf = window.jspdf || {};
+    </script>
+    
     <!-- Custom JS directly embedded -->
     <script>
+        // Verify required libraries are loaded
+        function verifyLibraries() {
+            const libraryChecks = [
+                { name: 'Leaflet', check: () => typeof L !== 'undefined' && typeof L.map === 'function' },
+                { name: 'Turf.js', check: () => typeof turf !== 'undefined' && typeof turf.distance === 'function' },
+                { name: 'html2canvas', check: () => typeof html2canvas === 'function' },
+                { name: 'jsPDF', check: () => typeof window.jspdf !== 'undefined' && typeof window.jspdf.jsPDF === 'function' },
+                { name: 'Leaflet.Draw', check: () => typeof L.Draw !== 'undefined' },
+                { name: 'Leaflet.heat', check: () => typeof L.heatLayer === 'function' }
+            ];
+            
+            const missingLibraries = libraryChecks.filter(lib => !lib.check());
+            
+            return {
+                allLoaded: missingLibraries.length === 0,
+                missing: missingLibraries.map(lib => lib.name)
+            };
+        }
+        
         // Coverage Gap Finder JavaScript will be loaded dynamically
         document.addEventListener('DOMContentLoaded', function() {
-            // Load the JavaScript dynamically to avoid potential loading issues
-            var script = document.createElement('script');
-            script.src = 'static/coverage-gap-finder.js?' + new Date().getTime(); // Add timestamp to prevent caching
-            document.body.appendChild(script);
-            
             // Add a message to show loading status
             const loadingMsg = document.createElement('div');
             loadingMsg.id = 'loading-status';
@@ -980,6 +1000,27 @@
             loadingMsg.style.zIndex = '9999';
             loadingMsg.textContent = 'Loading application scripts...';
             document.body.appendChild(loadingMsg);
+            
+            // Make sure all required libraries are loaded
+            setTimeout(function() {
+                const libraryStatus = verifyLibraries();
+                
+                if (!libraryStatus.allLoaded) {
+                    console.warn('Missing libraries:', libraryStatus.missing.join(', '));
+                    loadingMsg.innerHTML = `Warning: Some libraries may not be loaded properly.<br>Missing: ${libraryStatus.missing.join(', ')}`;
+                    loadingMsg.style.backgroundColor = '#f39c12';
+                }
+                
+                // Create global jspdf variable if needed
+                if (typeof window.jspdf === 'undefined' && typeof jspdf !== 'undefined') {
+                    window.jspdf = jspdf;
+                }
+            }, 1000);
+            
+            // Load the JavaScript dynamically to avoid potential loading issues
+            var script = document.createElement('script');
+            script.src = 'static/coverage-gap-finder.js?' + new Date().getTime(); // Add timestamp to prevent caching
+            document.body.appendChild(script);
             
             // Remove the message after script loads or after 5 seconds
             script.onload = function() {
