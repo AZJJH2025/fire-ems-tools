@@ -235,8 +235,16 @@ var populationLayer; // Population density layer
         
         document.getElementById('callDensityToggle').addEventListener('change', function() {
             // Toggle call density heatmap visibility
-            if (this.checked && incidentData.length > 0) {
-                showCallDensity();
+            console.log(`Call density toggle changed. Checked: ${this.checked}, Incident data length: ${incidentData ? incidentData.length : 0}`);
+            if (this.checked) {
+                if (incidentData && incidentData.length > 0) {
+                    showCallDensity();
+                } else {
+                    console.warn("No incident data available to display. Please upload incident data first.");
+                    alert("No incident data available to display. Please upload incident data first.");
+                    // Revert toggle if no data
+                    this.checked = false;
+                }
             } else {
                 hideCallDensity();
             }
@@ -394,16 +402,154 @@ var populationLayer; // Population density layer
                 
                 console.log(`Incidents with valid coordinates: ${validCoords.length} out of ${data.data.length}`);
                 
+                // If no valid coordinates found, show a warning alert
+                if (validCoords.length === 0) {
+                    alert(`WARNING: None of the ${data.data.length} incidents have valid coordinates. Please check your data format.`);
+                    statusElement.innerHTML += ` <strong style="color:red;">No valid coordinates found!</strong>`;
+                }
+                
+                // Auto-enable the call density toggle if we have valid data
+                if (validCoords.length > 0) {
+                    const callDensityToggle = document.getElementById('callDensityToggle');
+                    if (!callDensityToggle.checked) {
+                        console.log('Auto-enabling call density toggle');
+                        callDensityToggle.checked = true;
+                    }
+                    
+                    // Create a direct reference for debugging
+                    console.log("Creating direct point array for debugging");
+                    const directPoints = [];
+                    
+                    validCoords.forEach(incident => {
+                        const lat = parseFloat(incident.latitude);
+                        const lng = parseFloat(incident.longitude);
+                        let intensity = 1;
+                        
+                        // If the incident has a custom intensity, use it
+                        if (incident.intensity) {
+                            intensity = parseFloat(incident.intensity);
+                            if (isNaN(intensity)) intensity = 1;
+                        }
+                        
+                        directPoints.push([lat, lng, intensity]);
+                    });
+                    
+                    console.log(`Created ${directPoints.length} direct points for heatmap`);
+                    
+                    // Create a direct visualization of the points
+                    console.log("Creating direct visualization of incident points");
+                    
+                    // First try to use the heatmap
+                    try {
+                        console.log("Attempting to create heatmap layer directly");
+                        if (typeof L.heatLayer === 'function' && directPoints.length > 0 && map) {
+                            // Remove existing layer if any
+                            if (heatmapLayer) {
+                                try {
+                                    map.removeLayer(heatmapLayer);
+                                } catch (e) {
+                                    console.warn("Error removing existing layer:", e);
+                                }
+                                heatmapLayer = null;
+                            }
+                            
+                            // Force map invalidation to ensure proper state
+                            map.invalidateSize();
+                            
+                            // Sample the points if there are too many
+                            let testPoints = directPoints;
+                            if (directPoints.length > 2000) {
+                                testPoints = directPoints.slice(0, 2000);
+                                console.log(`Using a sample of ${testPoints.length} points out of ${directPoints.length}`);
+                            }
+                            
+                            // Create the heatmap layer
+                            heatmapLayer = L.heatLayer(testPoints, {
+                                radius: 25,
+                                blur: 15,
+                                maxZoom: 17,
+                                max: 10, // Adjust this based on intensity distribution
+                                gradient: {0.4: 'blue', 0.65: 'lime', 0.85: 'yellow', 1.0: 'red'}
+                            });
+                            
+                            // Add to map
+                            heatmapLayer.addTo(map);
+                            console.log("Heatmap layer added directly");
+                            
+                            // Force map update
+                            setTimeout(() => {
+                                map.invalidateSize();
+                                map.panBy([1, 1]); // Tiny pan to force redraw
+                                
+                                // Update status
+                                statusElement.innerHTML += ' <span style="color:green;">(Heatmap displayed)</span>';
+                            }, 200);
+                        } else {
+                            throw new Error("Heatmap functionality not available");
+                        }
+                    } catch (err) {
+                        console.error("Error creating direct heatmap:", err);
+                        
+                        // If heatmap fails, use our fallback emergency points renderer
+                        try {
+                            console.log("Falling back to emergency points display");
+                            if (typeof window.displayEmergencyPoints === 'function') {
+                                // Remove existing layer
+                                if (heatmapLayer) {
+                                    try {
+                                        map.removeLayer(heatmapLayer);
+                                    } catch (e) {
+                                        console.warn("Error removing existing layer:", e);
+                                    }
+                                }
+                                
+                                // Use the fallback function to display emergency points
+                                heatmapLayer = window.displayEmergencyPoints(map, directPoints, 1000);
+                                
+                                // Update status
+                                statusElement.innerHTML += ' <span style="color:orange;">(Fallback mode: showing individual points)</span>';
+                                
+                                console.log("Used fallback emergency points display");
+                            } else {
+                                console.error("Emergency points fallback not available");
+                                alert("Could not display incidents. Please check browser console for errors.");
+                            }
+                        } catch (fallbackErr) {
+                            console.error("Error with fallback display:", fallbackErr);
+                        }
+                    }
+                }
+                
                 // Update incident coverage calculations if we have stations
                 if (stationMarkers.length > 0) {
                     console.log(`Updating coverage calculations with ${stationMarkers.length} stations`);
                     updateCoverageCalculations();
                 }
                 
-                // Show incidents on map if the toggle is checked
-                if (document.getElementById('callDensityToggle').checked) {
+                // Show incidents on map if the toggle is checked or we just enabled it
+                const callDensityToggle = document.getElementById('callDensityToggle');
+                if (callDensityToggle.checked) {
                     console.log('Call density toggle is checked, showing heatmap');
-                    showCallDensity();
+                    setTimeout(() => {
+                        // Attempt to show call density with 3 retries
+                        const retryShowCallDensity = (retries = 3) => {
+                            showCallDensity();
+                            
+                            // If no heatmap layer was created and we have retries left
+                            if (!heatmapLayer && retries > 0) {
+                                console.log(`Retrying showCallDensity (${retries} attempts left)`);
+                                setTimeout(() => retryShowCallDensity(retries - 1), 300);
+                            } else {
+                                // Force map invalidation to ensure heatmap displays
+                                if (map) {
+                                    console.log('Forcing map invalidation');
+                                    map.invalidateSize();
+                                }
+                            }
+                        };
+                        
+                        retryShowCallDensity();
+                    }, 200); // Short delay to ensure DOM is ready
                 } else {
                     console.log('Call density toggle is not checked, skipping heatmap');
                 }
@@ -1277,43 +1423,198 @@ var populationLayer; // Population density layer
      * Shows call density as a heatmap
      */
     function showCallDensity() {
+        console.log("Starting showCallDensity function...");
+        
         // Remove existing layer if any
         if (heatmapLayer) {
-            map.removeLayer(heatmapLayer);
+            console.log("Removing existing heatmap layer");
+            try {
+                map.removeLayer(heatmapLayer);
+            } catch (e) {
+                console.warn("Error removing existing heatmap layer:", e);
+            }
             heatmapLayer = null;
         }
         
         // If no incident data, do nothing
-        if (incidentData.length === 0) {
+        if (!incidentData || incidentData.length === 0) {
+            console.warn("No incident data available for heatmap");
             return;
         }
         
+        console.log(`Creating heatmap with ${incidentData.length} incidents`);
+        
         // Create an array of points for the heatmap
         const points = [];
+        let validCount = 0;
         
         // Add each incident as a point
         incidentData.forEach(incident => {
             // Skip if incident is missing coordinates
-            if (!incident.latitude || !incident.longitude) return;
-            
-            // Default intensity is 1, but can be adjusted based on incident type or other factors
-            let intensity = 1;
-            
-            // If the incident has a custom intensity, use it
-            if (incident.intensity) {
-                intensity = parseFloat(incident.intensity);
+            if (!incident.latitude || !incident.longitude) {
+                return;
             }
             
-            points.push([parseFloat(incident.latitude), parseFloat(incident.longitude), intensity]);
+            try {
+                // Parse coordinates as floats and verify they're valid numbers
+                const lat = parseFloat(incident.latitude);
+                const lng = parseFloat(incident.longitude);
+                
+                if (isNaN(lat) || isNaN(lng)) {
+                    console.warn(`Invalid coordinates: ${incident.latitude}, ${incident.longitude}`);
+                    return;
+                }
+                
+                // Additional validity check - coords must be in reasonable range
+                if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+                    console.warn(`Coordinates out of range: ${lat}, ${lng}`);
+                    return;
+                }
+                
+                // Default intensity is 1, but can be adjusted based on incident type or other factors
+                let intensity = 1;
+                
+                // If the incident has a custom intensity, use it
+                if (incident.intensity) {
+                    intensity = parseFloat(incident.intensity);
+                    if (isNaN(intensity)) intensity = 1;
+                }
+                
+                points.push([lat, lng, intensity]);
+                validCount++;
+            } catch (err) {
+                console.error("Error processing incident for heatmap:", err);
+            }
         });
         
-        // Create heat layer
-        heatmapLayer = L.heatLayer(points, {
-            radius: 25,
-            blur: 15,
-            maxZoom: 17,
-            gradient: {0.4: 'blue', 0.65: 'lime', 0.85: 'yellow', 1.0: 'red'}
-        }).addTo(map);
+        console.log(`Prepared ${validCount} valid points for heatmap`);
+        
+        // Check if we have any valid points
+        if (points.length === 0) {
+            console.warn("No valid points for heatmap");
+            alert("No valid incident coordinates found for heatmap. Please check your data format.");
+            return;
+        }
+        
+        // Verify Leaflet.heat is available
+        if (typeof L.heatLayer !== 'function') {
+            console.error("L.heatLayer is not a function. Leaflet.heat plugin may not be loaded correctly");
+            
+            // Try to reload the Leaflet.heat plugin as a fallback
+            console.log("Attempting to reload Leaflet.heat plugin...");
+            
+            const script = document.createElement('script');
+            script.src = "https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js";
+            script.onload = function() {
+                console.log("Leaflet.heat plugin loaded dynamically");
+                
+                // Retry creating heatmap after script loads
+                setTimeout(function() {
+                    if (typeof L.heatLayer === 'function') {
+                        createHeatmapLayer(points);
+                    } else {
+                        alert("Error: Heatmap functionality not available after reload. Please refresh the page and try again.");
+                    }
+                }, 500);
+            };
+            
+            script.onerror = function() {
+                alert("Error: Failed to load heatmap plugin. Please refresh the page and try again.");
+            };
+            
+            document.head.appendChild(script);
+            return;
+        }
+        
+        // Create the heatmap layer
+        createHeatmapLayer(points);
+        
+        function createHeatmapLayer(dataPoints) {
+            try {
+                // Create heat layer with clear options
+                console.log("Creating Leaflet.heat layer with", dataPoints.length, "points");
+                
+                // If we have too many points, use a smaller sample for better performance
+                let pointsToUse = dataPoints;
+                if (dataPoints.length > 2000) {
+                    console.log(`Using a sample of 2000 points from ${dataPoints.length} total points for better performance`);
+                    pointsToUse = dataPoints.slice(0, 2000);
+                }
+                
+                heatmapLayer = L.heatLayer(pointsToUse, {
+                    radius: 25,
+                    blur: 15,
+                    maxZoom: 17,
+                    gradient: {0.4: 'blue', 0.65: 'lime', 0.85: 'yellow', 1.0: 'red'}
+                });
+                
+                // Add to map
+                console.log("Adding heatmap layer to map");
+                heatmapLayer.addTo(map);
+                
+                // Ensure the map is updated after adding the layer
+                map.invalidateSize();
+                
+                console.log("Heatmap layer added successfully");
+            } catch (err) {
+                console.error("Error creating heatmap layer:", err);
+                
+                // Try our dedicated emergency points fallback
+                try {
+                    console.log("Using dedicated emergency points fallback");
+                    
+                    if (typeof window.displayEmergencyPoints === 'function') {
+                        console.log("Found displayEmergencyPoints function");
+                        // Use the specialized fallback function
+                        heatmapLayer = window.displayEmergencyPoints(map, dataPoints, 1000);
+                        console.log("Emergency points display layer created");
+                        
+                        // Ensure the map is updated
+                        setTimeout(() => {
+                            if (map) {
+                                map.invalidateSize();
+                                map.panBy([1, 1]); // Tiny pan to force redraw
+                            }
+                        }, 200);
+                        
+                        // Inform the user
+                        alert("Heatmap could not be created. Showing sample incidents as individual points instead.");
+                    } else {
+                        console.error("Emergency points display function not available");
+                        
+                        // Fallback to simple markers
+                        console.log("Falling back to simple markers");
+                        heatmapLayer = L.layerGroup();
+                        
+                        // Use a small sample to avoid overwhelming the map
+                        const sampleSize = Math.min(dataPoints.length, 300);
+                        console.log(`Using ${sampleSize} marker points as fallback`);
+                        
+                        for (let i = 0; i < sampleSize; i++) {
+                            const point = dataPoints[i];
+                            const circle = L.circleMarker([point[0], point[1]], {
+                                radius: 5,
+                                color: 'red',
+                                fillColor: '#f03',
+                                fillOpacity: 0.5,
+                                className: 'incident-point'
+                            });
+                            
+                            heatmapLayer.addLayer(circle);
+                        }
+                        
+                        heatmapLayer.addTo(map);
+                        console.log("Simple marker fallback layer added");
+                        
+                        // Alert the user
+                        alert("Heatmap could not be created. Showing a sample of incidents as markers instead.");
+                    }
+                } catch (markerErr) {
+                    console.error("Error creating fallback markers:", markerErr);
+                    alert("Error displaying incidents. Please check console for details.");
+                }
+            }
+        }
     }
     
     /**
@@ -1684,22 +1985,44 @@ var populationLayer; // Population density layer
      * Exports the current map view as a PDF
      */
     function exportAsPDF() {
-        // Show loading message
-        alert('Preparing PDF export... This may take a moment.');
+        // Show loading message with more specific information
+        alert('Preparing PDF export... This may take up to 10-15 seconds. Please wait.');
         
-        // Force map to update
+        // Force map to update before capture
         map.invalidateSize();
         
         try {
-            // Ensure jsPDF is properly loaded
-            if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
-                console.error("jsPDF is not properly loaded");
+            // Ensure jsPDF is properly loaded - with more detailed error reporting
+            if (typeof window.jspdf === 'undefined') {
+                console.error("jsPDF global object is undefined");
                 alert("PDF export library not loaded. Please try again later or use the Data export option.");
                 return;
             }
+            
+            if (typeof window.jspdf.jsPDF !== 'function') {
+                console.error("jsPDF constructor is not available", window.jspdf);
+                alert("PDF export library not initialized correctly. Please try again later or use the Data export option.");
+                return;
+            }
 
+            // Create a progress indicator
+            const progressIndicator = document.createElement('div');
+            progressIndicator.style.position = 'fixed';
+            progressIndicator.style.top = '10px';
+            progressIndicator.style.right = '10px';
+            progressIndicator.style.backgroundColor = '#333';
+            progressIndicator.style.color = 'white';
+            progressIndicator.style.padding = '10px';
+            progressIndicator.style.borderRadius = '5px';
+            progressIndicator.style.zIndex = '9999';
+            progressIndicator.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+            progressIndicator.textContent = 'Preparing PDF...';
+            document.body.appendChild(progressIndicator);
+            
             // Create a new jsPDF instance
             const pdf = new window.jspdf.jsPDF('landscape');
+            
+            progressIndicator.textContent = 'Adding PDF content...';
             
             // Add title
             pdf.setFontSize(18);
@@ -1717,24 +2040,36 @@ var populationLayer; // Population density layer
             pdf.text(`Incident Coverage: ${document.getElementById('incidentCoverage').textContent}`, 14, 48);
             pdf.text(`Average Response Time: ${document.getElementById('avgResponseTime').textContent}`, 14, 54);
             
-            // Export the map as an image
+            progressIndicator.textContent = 'Capturing map...';
+            
+            // Export the map as an image with improved error handling
             captureMapToCanvas()
                 .then(canvas => {
+                    progressIndicator.textContent = 'Processing map image...';
+                    
                     if (canvas) {
                         // Calculate dimensions to fit the PDF
                         const imgWidth = 260;
                         const imgHeight = 150;
                         
                         try {
+                            // Use a try-catch for the data URL conversion specifically
                             const imgData = canvas.toDataURL('image/png');
                             pdf.addImage(imgData, 'PNG', 15, 65, imgWidth, imgHeight);
+                            progressIndicator.textContent = 'Map added to PDF...';
                         } catch (error) {
-                            console.error("Error adding map to PDF:", error);
-                            pdf.text('Map image could not be added. Please use the Export Image option separately.', 15, 100);
+                            console.error("Error converting canvas to data URL:", error);
+                            pdf.text('Map image could not be added due to a technical issue.', 15, 100);
+                            pdf.text('Please use the Export Image option separately.', 15, 110);
+                            progressIndicator.textContent = 'Map capture failed...';
                         }
                     } else {
                         pdf.text('Map image could not be generated. Please use the Export Image option separately.', 15, 100);
+                        progressIndicator.textContent = 'Map capture failed...';
                     }
+                    
+                    // Continue with the rest of the PDF generation
+                    progressIndicator.textContent = 'Adding station information...';
                     
                     // Add station information
                     pdf.addPage();
@@ -1755,37 +2090,78 @@ var populationLayer; // Population density layer
                     pdf.line(14, y, 280, y);
                     y += 5;
                     
-                    stationMarkers.forEach(station => {
-                        const stationName = station.data.name.length > 15 ? 
-                            station.data.name.substring(0, 12) + '...' : 
-                            station.data.name;
-                        
-                        pdf.text(stationName, 14, y);
-                        pdf.text(station.data.latitude.toFixed(6).toString(), 50, y);
-                        pdf.text(station.data.longitude.toFixed(6).toString(), 90, y);
-                        pdf.text(station.data.coverageArea ? `${station.data.coverageArea.toFixed(2)} sq mi` : 'N/A', 130, y);
-                        pdf.text(station.data.populationCovered ? station.data.populationCovered.toString() : 'N/A', 170, y);
-                        pdf.text(station.data.incidentsCovered ? station.data.incidentsCovered.toString() : 'N/A', 210, y);
-                        y += 7;
-                        
-                        // Add page if running out of space
-                        if (y > 180) {
-                            pdf.addPage();
-                            y = 15;
-                        }
-                    });
+                    // Add station data
+                    if (stationMarkers.length === 0) {
+                        pdf.text('No stations have been added yet.', 14, y);
+                    } else {
+                        stationMarkers.forEach(station => {
+                            try {
+                                const stationName = station.data.name.length > 15 ? 
+                                    station.data.name.substring(0, 12) + '...' : 
+                                    station.data.name;
+                                
+                                pdf.text(stationName || 'Unnamed', 14, y);
+                                pdf.text(station.data.latitude ? station.data.latitude.toFixed(6).toString() : 'N/A', 50, y);
+                                pdf.text(station.data.longitude ? station.data.longitude.toFixed(6).toString() : 'N/A', 90, y);
+                                pdf.text(station.data.coverageArea ? `${station.data.coverageArea.toFixed(2)} sq mi` : 'N/A', 130, y);
+                                pdf.text(station.data.populationCovered ? station.data.populationCovered.toString() : 'N/A', 170, y);
+                                pdf.text(station.data.incidentsCovered ? station.data.incidentsCovered.toString() : 'N/A', 210, y);
+                                y += 7;
+                                
+                                // Add page if running out of space
+                                if (y > 180) {
+                                    pdf.addPage();
+                                    y = 15;
+                                }
+                            } catch (stationErr) {
+                                console.error("Error adding station to PDF:", stationErr);
+                                // Continue with next station
+                            }
+                        });
+                    }
                     
-                    // Save the PDF
-                    pdf.save('coverage-analysis.pdf');
+                    progressIndicator.textContent = 'Saving PDF...';
+                    
+                    // Add incident statistics if available
+                    if (incidentData && incidentData.length > 0) {
+                        pdf.addPage();
+                        pdf.setFontSize(16);
+                        pdf.text('Incident Data Summary', 14, 15);
+                        
+                        pdf.setFontSize(12);
+                        pdf.text(`Total Incidents: ${incidentData.length}`, 14, 25);
+                        
+                        const validCoords = incidentData.filter(item => 
+                            item.latitude && item.longitude && 
+                            !isNaN(parseFloat(item.latitude)) && 
+                            !isNaN(parseFloat(item.longitude))
+                        );
+                        
+                        pdf.text(`Incidents with Valid Coordinates: ${validCoords.length}`, 14, 35);
+                        pdf.text(`Covered Incidents: ${document.getElementById('incidentCoverage').textContent}`, 14, 45);
+                    }
+                    
+                    // Save the PDF with a more specific filename including date
+                    const datePart = new Date().toISOString().slice(0, 10);
+                    pdf.save(`coverage-analysis-${datePart}.pdf`);
+                    
+                    // Remove progress indicator
+                    document.body.removeChild(progressIndicator);
+                    
+                    // Alert success
+                    alert('PDF exported successfully!');
                 })
                 .catch(error => {
                     console.error("Error in map capture for PDF:", error);
                     alert("There was an error capturing the map for PDF export. Please try again or use the Data export option.");
+                    
+                    // Remove progress indicator even if there's an error
+                    document.body.removeChild(progressIndicator);
                 });
                 
         } catch (err) {
             console.error("Error generating PDF:", err);
-            alert("Error generating PDF. Please try again or use the Export Data option.");
+            alert("Error generating PDF. Please try again or use the Export Data export option.");
         }
     }
     
@@ -1806,6 +2182,27 @@ var populationLayer; // Population density layer
                 // Get a reference to the map container
                 const mapContainer = map.getContainer();
                 
+                // Helper function to safely check if an element has a specific class
+                const hasClass = (element, className) => {
+                    if (!element || !className) return false;
+                    
+                    // Handle both string and DOMTokenList className types
+                    if (typeof element.className === 'string') {
+                        return element.className.split(' ').indexOf(className) !== -1;
+                    } else if (element.classList && typeof element.classList.contains === 'function') {
+                        return element.classList.contains(className);
+                    } else {
+                        // Fallback for other cases
+                        try {
+                            const classStr = String(element.className);
+                            return classStr.split(' ').indexOf(className) !== -1;
+                        } catch (e) {
+                            console.warn("Could not check class", e);
+                            return false;
+                        }
+                    }
+                };
+                
                 // Use html2canvas with proper configuration
                 html2canvas(mapContainer, {
                     useCORS: true,
@@ -1815,8 +2212,10 @@ var populationLayer; // Population density layer
                     backgroundColor: null,
                     ignoreElements: function(element) {
                         // Skip certain elements that might cause issues
-                        const skippableClasses = ['leaflet-control-attribution'];
-                        return skippableClasses.some(className => element.className && element.className.includes(className));
+                        const skippableClasses = ['leaflet-control-attribution', 'leaflet-control-scale'];
+                        
+                        // Check if the element has any of the skippable classes
+                        return skippableClasses.some(className => hasClass(element, className));
                     }
                 })
                 .then(canvas => {
@@ -1837,36 +2236,77 @@ var populationLayer; // Population density layer
      * Exports the current map view as an image
      */
     function exportAsImage() {
-        // Show loading message
-        alert('Preparing image export... This may take a moment.');
+        // Show loading message with better information
+        alert('Preparing image export... This may take up to 10 seconds. Please wait.');
+        
+        // Force map to update before capture
+        map.invalidateSize();
+        
+        // Create a progress indicator
+        const progressIndicator = document.createElement('div');
+        progressIndicator.style.position = 'fixed';
+        progressIndicator.style.top = '10px';
+        progressIndicator.style.right = '10px';
+        progressIndicator.style.backgroundColor = '#333';
+        progressIndicator.style.color = 'white';
+        progressIndicator.style.padding = '10px';
+        progressIndicator.style.borderRadius = '5px';
+        progressIndicator.style.zIndex = '9999';
+        progressIndicator.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+        progressIndicator.textContent = 'Capturing map...';
+        document.body.appendChild(progressIndicator);
         
         try {
             captureMapToCanvas()
                 .then(canvas => {
+                    progressIndicator.textContent = 'Processing image...';
+                    
                     if (!canvas) {
                         throw new Error("Failed to create canvas");
                     }
                     
                     try {
+                        // Attempt to create an image with a timestamp in the name
+                        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+                        const filename = `coverage-map-${timestamp}.png`;
+                        
+                        // Convert canvas to data URL - handle potential errors
+                        progressIndicator.textContent = 'Converting image...';
+                        const dataUrl = canvas.toDataURL('image/png');
+                        
                         // Create and trigger download
+                        progressIndicator.textContent = 'Creating download...';
                         const link = document.createElement('a');
-                        link.download = 'coverage-map.png';
-                        link.href = canvas.toDataURL('image/png');
+                        link.download = filename;
+                        link.href = dataUrl;
                         document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
+                        
+                        // Short delay before click to ensure browser has processed the data URL
+                        setTimeout(() => {
+                            link.click();
+                            document.body.removeChild(link);
+                            
+                            // Remove progress indicator
+                            document.body.removeChild(progressIndicator);
+                            
+                            // Show success message
+                            alert('Image exported successfully!');
+                        }, 200);
                     } catch (error) {
                         console.error("Error creating download link:", error);
                         alert("Error generating image. Please try taking a screenshot instead.");
+                        document.body.removeChild(progressIndicator);
                     }
                 })
                 .catch(err => {
                     console.error("Error in map capture for image export:", err);
                     alert("Error generating image. Please try taking a screenshot instead.");
+                    document.body.removeChild(progressIndicator);
                 });
         } catch (err) {
             console.error("Error in exportAsImage:", err);
             alert("Error generating image. Please try taking a screenshot instead.");
+            document.body.removeChild(progressIndicator);
         }
     }
     

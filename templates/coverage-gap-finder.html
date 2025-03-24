@@ -358,6 +358,72 @@
             color: var(--gray-700);
         }
         
+        /* Custom marker styles */
+        .marker-pin {
+            width: 30px !important;
+            height: 30px !important;
+            border-radius: 50% 50% 50% 0 !important;
+            position: absolute !important;
+            transform: rotate(-45deg) !important;
+            left: 50% !important;
+            top: 50% !important;
+            margin: -15px 0 0 -15px !important;
+            background-color: #0000FF !important; /* Default blue */
+            z-index: 100 !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            color: white !important;
+            font-weight: bold !important;
+        }
+        
+        /* Incident point styles for fallback display */
+        .incident-point {
+            width: 8px !important;
+            height: 8px !important;
+            border-radius: 50% !important;
+            background-color: red !important;
+            border: 1px solid #900 !important;
+            opacity: 0.7 !important;
+        }
+        
+        .marker-pin::after {
+            content: "";
+            width: 22px !important;
+            height: 22px !important;
+            margin: 4px 0 0 4px !important;
+            background: white !important;
+            position: absolute !important;
+            border-radius: 50% !important;
+            z-index: -1 !important;
+        }
+        
+        .station-marker {
+            background-color: #0000FF !important; /* Blue */
+            color: white !important;
+            font-weight: bold !important;
+            text-align: center !important;
+            line-height: 30px !important;
+            transform: rotate(45deg) !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            font-size: 12px !important;
+        }
+        
+        .suggested-marker {
+            background-color: #FFA500 !important; /* Orange */
+            color: white !important;
+            font-weight: bold !important;
+            text-align: center !important;
+            line-height: 30px !important;
+            transform: rotate(45deg) !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            font-size: 12px !important;
+        }
+        
         /* Boundary Tools */
         .boundary-tools {
             display: flex;
@@ -962,7 +1028,17 @@
     <script>
         // Create global jspdf variable that matches how it's accessed in our code
         window.jspdf = window.jspdf || {};
+        
+        // Ensure Leaflet.heat is available globally
+        if (typeof L.heatLayer !== 'function') {
+            console.error("Leaflet.heat plugin not properly loaded!");
+        } else {
+            console.log("Leaflet.heat plugin successfully loaded");
+        }
     </script>
+    
+    <!-- Emergency Points Fallback Script -->
+    <script src="static/emergency-points.js"></script>
     
     <!-- Direct Script Reference -->
     <script src="static/coverage-gap-finder.js"></script>
