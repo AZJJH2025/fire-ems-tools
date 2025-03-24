@@ -11,7 +11,11 @@ import json  # Add JSON import for Incident Logger
 
 # Flask Setup
 app = Flask(__name__, static_folder="static", static_url_path="/static")
-CORS(app)
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Disable caching for development
+app.config['TEMPLATES_AUTO_RELOAD'] = True  # Auto-reload templates
+
+# Enhanced CORS settings
+CORS(app, resources={r"/*": {"origins": "*", "supports_credentials": True}})
 
 # Upload Folder Configuration
 UPLOAD_FOLDER = "uploads"
@@ -444,6 +448,26 @@ def simple_test():
     """Serve a simple test page"""
     return send_from_directory('static', 'simple-test.html')
 
+@app.route('/test-static')
+def test_static():
+    """Serve a simple test page for static files"""
+    return send_from_directory('static', 'test-static.html')
+
+@app.route('/css-test')
+def css_test():
+    """Serve a CSS test page"""
+    return render_template('css-test.html')
+
+@app.route('/direct-test')
+def direct_test():
+    """Serve a direct simple test page"""
+    return render_template('direct-test.html')
+
+@app.route('/pure-test')
+def pure_test():
+    """Serve a pure HTML test page with no templating"""
+    return send_from_directory('static', 'pure-html-test.html')
+
 @app.route('/simple-incident-logger')
 def simple_incident_logger():
     """Serve a simplified incident logger page"""
@@ -459,6 +483,49 @@ def incident_logger_static():
 def station_overview():
     """Serve the Station Overview tool"""
     return render_template('station-overview.html')
+
+# Coverage Gap Finder route
+@app.route('/coverage-gap-finder')
+def coverage_gap_finder():
+    """Serve the Coverage Gap Finder tool"""
+    return render_template('coverage-gap-finder.html')
+
+# Geocoding endpoint for Coverage Gap Finder
+@app.route('/api/geocode')
+def geocode_endpoint():
+    """Geocode an address to latitude and longitude"""
+    address = request.args.get('address')
+    
+    if not address:
+        return jsonify({
+            "success": False,
+            "error": "No address provided"
+        }), 400
+    
+    try:
+        latitude, longitude = geocode_address(address)
+        
+        if latitude and longitude:
+            return jsonify({
+                "success": True,
+                "latitude": latitude,
+                "longitude": longitude,
+                "address": address
+            })
+        else:
+            return jsonify({
+                "success": False,
+                "error": "Could not geocode address. Please check the address and try again."
+            }), 404
+    
+    except Exception as e:
+        app.logger.error(f"Error geocoding address: {str(e)}")
+        app.logger.error(traceback.format_exc())
+        
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
 
 # API endpoint for Station Overview data
 @app.route('/api/station-data', methods=['POST'])
@@ -669,6 +736,240 @@ def process_station_data():
             }), 500
     
     return jsonify({"success": False, "error": "File type not allowed. Only CSV and Excel files are supported."}), 400
+
+@app.route('/api/incident-data', methods=['POST'])
+def process_incident_data():
+    """Process incident data file and return processed data for Coverage Gap Finder"""
+    if "file" not in request.files:
+        return jsonify({"success": False, "error": "No file part"}), 400
+
+    file = request.files["file"]
+    if file.filename == "":
+        return jsonify({"success": False, "error": "No selected file"}), 400
+
+    if file and allowed_file(file.filename):
+        try:
+            # Save the file temporarily
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
+            
+            # Process based on file type: CSV, XLSX, or XLS
+            if filename.lower().endswith(".csv"):
+                df = pd.read_csv(file_path)
+            elif filename.lower().endswith(".xlsx"):
+                df = pd.read_excel(file_path, engine="openpyxl")
+            elif filename.lower().endswith(".xls"):
+                df = pd.read_excel(file_path, engine="xlrd")
+            else:
+                # Clean up
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                return jsonify({"success": False, "error": "Unsupported file extension"}), 400
+
+            # Print columns for debugging
+            app.logger.info(f"Incident data columns: {df.columns.tolist()}")
+            
+            # Create a case-insensitive mapping of column names
+            column_map = {col.lower(): col for col in df.columns}
+            app.logger.info(f"Case-insensitive incident column map: {column_map}")
+            
+            # Check for coordinates columns (case-insensitive)
+            coordinate_fields = {
+                'latitude': ['latitude', 'lat', 'y', 'Latitude', 'LAT', 'Y'],
+                'longitude': ['longitude', 'long', 'lon', 'lng', 'x', 'Longitude', 'LONGITUDE', 'LONG', 'LON', 'LNG', 'X']
+            }
+            
+            found_lat_col = None
+            found_lng_col = None
+            
+            # Check for coordinate fields with exact match
+            for lat_name in coordinate_fields['latitude']:
+                if lat_name in df.columns:
+                    found_lat_col = lat_name
+                    break
+            
+            for lng_name in coordinate_fields['longitude']:
+                if lng_name in df.columns:
+                    found_lng_col = lng_name
+                    break
+            
+            # If not found with exact match, try case-insensitive match
+            if not found_lat_col:
+                for lat_name in coordinate_fields['latitude']:
+                    if lat_name.lower() in column_map:
+                        found_lat_col = column_map[lat_name.lower()]
+                        break
+            
+            if not found_lng_col:
+                for lng_name in coordinate_fields['longitude']:
+                    if lng_name.lower() in column_map:
+                        found_lng_col = column_map[lng_name.lower()]
+                        break
+            
+            app.logger.info(f"Found incident latitude column: {found_lat_col}")
+            app.logger.info(f"Found incident longitude column: {found_lng_col}")
+            
+            # If we found coordinate columns, rename them to expected names
+            if found_lat_col and found_lng_col:
+                df['latitude'] = df[found_lat_col]
+                df['longitude'] = df[found_lng_col]
+                app.logger.info("Mapped incident coordinate columns to latitude/longitude")
+                
+                # Check for required columns (should be present now after mapping)
+                required_columns = ['latitude', 'longitude']
+                missing_columns = [col for col in required_columns if col not in df.columns]
+            else:
+                # Define possible address column names
+                address_column_names = ['address', 'location', 'site_address', 'full_address', 'street_address', 
+                                      'location_address', 'site', 'incident_address', 'incident_location',
+                                      'full address', 'Address', 'Location', 'LOCATION', 'ADDRESS', 'Incident Address', 
+                                      'Street', 'Street Address', 'Addr', 'FullAddress', 'Full_Address', 'Full Address']
+                
+                # Try to find address column (case-insensitive)
+                found_address_column = None
+                for addr_col in address_column_names:
+                    if addr_col in df.columns:
+                        found_address_column = addr_col
+                        break
+                
+                # If not found with exact match, try case-insensitive match
+                if not found_address_column:
+                    for addr_col in address_column_names:
+                        if addr_col.lower() in column_map:
+                            found_address_column = column_map[addr_col.lower()]
+                            break
+                
+                app.logger.info(f"Found incident address column: {found_address_column}")
+                
+                # Check for required columns 
+                required_columns = ['latitude', 'longitude']
+                missing_columns = [col for col in required_columns if col not in df.columns]
+                
+                # If we found an address column but no coordinates, try geocoding
+                if found_address_column and missing_columns:
+                    # Log sample address
+                    sample_addresses = df[found_address_column].dropna().head(1).tolist()
+                    if sample_addresses:
+                        app.logger.info(f"Sample address from column '{found_address_column}': {sample_addresses[0]}")
+                    
+                    # Create new latitude and longitude columns
+                    df['latitude'] = None
+                    df['longitude'] = None
+                    
+                    # Number of addresses to geocode (limit to 50 for demonstration)
+                    limit = min(50, df[found_address_column].count())
+                    geocoded_count = 0
+                    
+                    # Loop through addresses and geocode them
+                    for index, row in df.iloc[:limit].iterrows():
+                        if not pd.isna(row[found_address_column]):
+                            lat, lng = geocode_address(row[found_address_column])
+                            if lat and lng:
+                                df.at[index, 'latitude'] = lat
+                                df.at[index, 'longitude'] = lng
+                                geocoded_count += 1
+                    
+                    # If we successfully geocoded at least some addresses, we can proceed
+                    if geocoded_count > 0:
+                        app.logger.info(f"Successfully geocoded {geocoded_count} out of {limit} addresses")
+                        missing_columns = []  # Clear missing columns since we now have lat/lng
+                    else:
+                        # Clean up
+                        if os.path.exists(file_path):
+                            os.remove(file_path)
+                        return jsonify({
+                            'success': False,
+                            'error': f"Unable to geocode any addresses. Please provide a file with latitude and longitude columns."
+                        })
+            
+            if missing_columns:
+                # Clean up
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                return jsonify({
+                    'success': False, 
+                    'error': f'Missing required columns: {", ".join(missing_columns)}. Please make sure your file includes latitude and longitude, or an address column that can be geocoded.'
+                })
+            
+            # Extract the necessary data
+            processed_data = []
+            
+            # Map incident types
+            type_columns = ['type', 'incident_type', 'call_type', 'nature', 'problem']
+            found_type_col = None
+            for col in type_columns:
+                if col in df.columns:
+                    found_type_col = col
+                    break
+                elif col.lower() in column_map:
+                    found_type_col = column_map[col.lower()]
+                    break
+            
+            # Map timestamp
+            datetime_columns = ['timestamp', 'datetime', 'date_time', 'incident_time', 'call_time', 'reported', 'date']
+            found_datetime_col = None
+            for col in datetime_columns:
+                if col in df.columns:
+                    found_datetime_col = col
+                    break
+                elif col.lower() in column_map:
+                    found_datetime_col = column_map[col.lower()]
+                    break
+            
+            # Process each incident
+            for index, row in df.iterrows():
+                # Skip rows with missing lat/lng
+                if pd.isna(row['latitude']) or pd.isna(row['longitude']):
+                    continue
+                
+                incident = {
+                    'latitude': float(row['latitude']),
+                    'longitude': float(row['longitude'])
+                }
+                
+                # Add incident type if available
+                if found_type_col and not pd.isna(row[found_type_col]):
+                    incident['type'] = row[found_type_col]
+                
+                # Try to parse datetime if available
+                if found_datetime_col and not pd.isna(row[found_datetime_col]):
+                    try:
+                        dt = pd.to_datetime(row[found_datetime_col])
+                        incident['timestamp'] = dt.strftime('%Y-%m-%dT%H:%M:%S')
+                        incident['hour'] = dt.hour
+                        incident['dayOfWeek'] = dt.dayofweek
+                        incident['month'] = dt.month
+                    except:
+                        # If datetime conversion fails, continue without these fields
+                        pass
+                
+                processed_data.append(incident)
+            
+            # Clean up the uploaded file
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            
+            return jsonify({
+                'success': True,
+                'message': f'Successfully processed {len(processed_data)} incidents with location data',
+                'data': processed_data
+            })
+            
+        except Exception as e:
+            app.logger.error(f"Error processing incident data: {str(e)}")
+            app.logger.error(traceback.format_exc())
+            
+            # Clean up the uploaded file if it exists
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            
+            return jsonify({
+                'success': False,
+                'error': f'Error processing file: {str(e)}'
+            })
+    
+    return jsonify({'success': False, 'error': 'File type not allowed. Only CSV and Excel files are supported.'})
 
 # API endpoints for Incident Logger
 @app.route('/api/incident/create', methods=['POST'])
@@ -914,8 +1215,20 @@ def export_incidents():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    # For production on Render, consider setting debug to False
-    app.run(host="0.0.0.0", port=8000, debug=True)
+    # Try multiple ports in case some are blocked
+    ports_to_try = [8080, 3000, 4000, 5000, 7000, 9000]
+    
+    for port in ports_to_try:
+        try:
+            print(f"Trying to run on port {port}...")
+            app.run(host="0.0.0.0", port=port, debug=True)
+            break  # If successful, exit the loop
+        except OSError as e:
+            print(f"Port {port} unavailable: {e}")
+            if port == ports_to_try[-1]:
+                print("All ports failed. Please check your network configuration.")
+            else:
+                continue
 else:
     # When run via flask command
     app.config['ENV'] = 'development'

@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coverage Gap Finder - FireEMS.ai</title>
+    
+    <!-- Embedded CSS styles instead of external files -->
+    <style>
+        /* Basic styles */
+        body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 20px;
+          line-height: 1.6;
+          color: #333;
+          background-color: #f8f9fa;
+        }
+        
+        header {
+          margin-bottom: 30px;
+        }
+        
+        header h1 {
+          color: #d32f2f;
+          margin-bottom: 5px;
+        }
+        
+        /* File upload area */
+        .file-upload-container {
+          background-color: white;
+          border-radius: 8px;
+          padding: 20px;
+          margin-bottom: 20px;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .file-input-wrapper {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          margin-bottom: 10px;
+        }
+        
+        #fileInput {
+          flex: 1;
+          padding: 10px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+        }
+        
+        button {
+          background-color: #2196f3;
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 4px;
+          cursor: pointer;
+          font-weight: bold;
+        }
+        
+        button:hover {
+          background-color: #0d8aee;
+        }
+        
+        /* Coverage Gap Finder Specific Styles */
+        :root {
+            /* Color palette */
+            --primary-color: #4a89dc;
+            --secondary-color: #dc4a4a;
+            --accent-color: #50c878;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --info-color: #3498db;
+            
+            /* Neutral colors */
+            --gray-50: #f9fafb;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-400: #ced4da;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-700: #495057;
+            --gray-800: #343a40;
+            --gray-900: #212529;
+        }
+        
+        /* Container and Layout */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .tool-description {
+            color: var(--gray-600);
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .tool-layout {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        /* Control Panel */
+        .control-panel {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: auto;
+            max-height: 800px;
+        }
+        
+        .panel-section {
+            padding: 20px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .panel-section:last-child {
+            border-bottom: none;
+        }
+        
+        .panel-section h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .panel-section h3 i {
+            color: var(--primary-color);
+            font-size: 1rem;
+        }
+        
+        .panel-section h4 {
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+        
+        /* Upload Container */
+        .upload-container {
+            margin-bottom: 20px;
+        }
+        
+        .upload-container .description {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            margin-bottom: 10px;
+        }
+        
+        .file-input-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .file-input-wrapper input[type="file"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--gray-300);
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        .upload-status {
+            font-size: 0.9rem;
+            margin-top: 5px;
+            min-height: 20px;
+        }
+        
+        /* Manual Entry Section */
+        .manual-entry {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--gray-50);
+            border-radius: 4px;
+            border: 1px solid var(--gray-200);
+        }
+        
+        .input-group {
+            margin-bottom: 10px;
+        }
+        
+        .input-group label {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--gray-300);
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        /* Parameter Group */
+        .parameter-group {
+            margin-bottom: 15px;
+        }
+        
+        .parameter-group label {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+        
+        .parameter-group select, 
+        .parameter-group input[type="number"] {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--gray-300);
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--gray-300);
+            transition: .4s;
+            border-radius: 22px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--primary-color);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(22px);
+        }
+        
+        /* Map Panel */
+        .map-panel {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Coverage Stats */
+        .coverage-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            padding: 15px;
+            background-color: var(--gray-50);
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: 6px;
+            padding: 15px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .stat-title {
+            font-size: 0.85rem;
+            color: var(--gray-600);
+            margin-bottom: 8px;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+        
+        /* Map Container */
+        .map-container {
+            height: 600px;
+            width: 100%;
+            z-index: 1;
+            position: relative;
+        }
+        
+        /* Map Legend */
+        .map-legend {
+            position: absolute;
+            bottom: 60px;
+            right: 10px;
+            background-color: white;
+            border-radius: 4px;
+            padding: 10px;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            margin-right: 8px;
+        }
+        
+        .legend-label {
+            font-size: 0.85rem;
+            color: var(--gray-700);
+        }
+        
+        /* Boundary Tools */
+        .boundary-tools {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background-color: var(--gray-50);
+            border-top: 1px solid var(--gray-200);
+            position: relative;
+            z-index: 5;
+        }
+        
+        .tool-btn {
+            background-color: white;
+            border: 1px solid var(--gray-300);
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s;
+        }
+        
+        .tool-btn:hover {
+            background-color: var(--gray-100);
+            border-color: var(--gray-400);
+        }
+        
+        .tool-btn i {
+            color: var(--primary-color);
+        }
+        
+        /* Station List */
+        .station-list-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .station-list-container h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .station-list-container h3 i {
+            color: var(--primary-color);
+            font-size: 1rem;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        table th, table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        table th {
+            background-color: var(--gray-50);
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--gray-700);
+        }
+        
+        table td {
+            font-size: 0.95rem;
+            color: var(--gray-800);
+        }
+        
+        table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        table tr:hover {
+            background-color: var(--gray-50);
+        }
+        
+        /* Button Styles */
+        .primary-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.2s;
+        }
+        
+        .primary-btn:hover {
+            background-color: #3a70b9;
+        }
+        
+        .secondary-btn {
+            background-color: var(--gray-200);
+            color: var(--gray-700);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.2s;
+        }
+        
+        .secondary-btn:hover {
+            background-color: var(--gray-300);
+        }
+        
+        .danger-btn {
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.2s;
+        }
+        
+        .danger-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .export-btn {
+            width: 100%;
+            background-color: white;
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+        
+        .export-btn:hover {
+            background-color: var(--gray-100);
+            border-color: var(--gray-400);
+        }
+        
+        .export-btn i {
+            color: var(--primary-color);
+        }
+        
+        /* Results Container */
+        .results-container {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: var(--gray-50);
+            border-radius: 4px;
+            border: 1px solid var(--gray-200);
+        }
+        
+        .results-container h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+        
+        .metrics-list {
+            margin-bottom: 15px;
+        }
+        
+        /* Leaflet Map Controls */
+        .leaflet-control-container .leaflet-top,
+        .leaflet-control-container .leaflet-bottom {
+            z-index: 10;
+            pointer-events: auto;
+        }
+        
+        .leaflet-popup-content {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        /* Responsiveness */
+        @media (max-width: 1200px) {
+            .tool-layout {
+                grid-template-columns: 350px 1fr;
+            }
+            
+            .coverage-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .tool-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-panel {
+                order: 2;
+                max-height: none;
+            }
+            
+            .map-panel {
+                order: 1;
+            }
+            
+            .coverage-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .coverage-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .map-container {
+                height: 450px;
+            }
+            
+            .panel-section {
+                padding: 15px;
+            }
+        }
+    </style>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Favicon - inline using data URI if available -->
+    <link rel="icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAMMOAADDDgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJlmMwCZZjMBmWYzEJlmMzmZZjNHmWYzOZlmMxCZZjMBmWYzAAAAAAAAAAAAAAAAAAAAAAAAAAAAmWYzAJlmMwCZZjMRmWYzaJlmM7qZZjPrmWYz9plmM+uZZjO6mWYzaJlmMxGZZjMAmWYzAAAAAAAAAAAAAAAAAJlmMwCZZjMRmWYzj5lmM+aZZjP/mWYz/5lmM/+ZZjP/mWYz/5lmM+aZZjOPmWYzEZlmMwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==" type="image/x-icon">
+    
+    <!-- Leaflet CSS for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+          crossorigin="">
+    
+    <!-- Leaflet Draw Plugin for drawing shapes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
+    
+    <!-- Turf.js for spatial analysis -->
+    <script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
+    
+    <!-- Date Range Picker -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.css" />
+    
+    <!-- Leaflet.heat plugin for heatmaps -->
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <a href="/">
+                    <h1><i class="fas fa-fire-extinguisher"></i> FireEMS.ai</h1>
+                </a>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/fire-ems-dashboard">Response Time</a></li>
+                    <li><a href="/isochrone-map">Isochrone Map</a></li>
+                    <li><a href="/call-density-heatmap">Density Map</a></li>
+                    <li><a href="/incident-logger">Incident Logger</a></li>
+                    <li><a href="/station-overview">Station Overview</a></li>
+                    <li><a href="/coverage-gap-finder" class="active">Coverage Gap Finder</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <h2>Coverage Gap Finder</h2>
+            <p class="tool-description">Identify underserved areas in your jurisdiction to optimize station locations and resource deployment.</p>
+            
+            <div class="tool-layout">
+                <!-- Control Panel -->
+                <div class="control-panel">
+                    <!-- Data Upload Section -->
+                    <div class="panel-section">
+                        <h3><i class="fas fa-upload"></i> Data Upload</h3>
+                        
+                        <!-- Incident Data Upload -->
+                        <div class="upload-container">
+                            <h4>Incident Data (Optional)</h4>
+                            <p class="description">Upload historical incident data to identify demand patterns.</p>
+                            <div class="file-input-wrapper">
+                                <input type="file" id="incidentFileInput" accept=".csv, .xlsx, .xls">
+                                <button id="uploadIncidentBtn" class="secondary-btn">
+                                    <i class="fas fa-file-upload"></i> Upload Incidents
+                                </button>
+                            </div>
+                            <div id="incidentUploadStatus" class="upload-status"></div>
+                        </div>
+                        
+                        <!-- Station Data Upload -->
+                        <div class="upload-container">
+                            <h4>Station Locations</h4>
+                            <p class="description">Upload station locations with coordinates.</p>
+                            <div class="file-input-wrapper">
+                                <input type="file" id="stationFileInput" accept=".csv, .xlsx, .xls">
+                                <button id="uploadStationBtn" class="secondary-btn">
+                                    <i class="fas fa-building"></i> Upload Stations
+                                </button>
+                            </div>
+                            <div id="stationUploadStatus" class="upload-status"></div>
+                        </div>
+                        
+                        <!-- Manual Station Entry -->
+                        <div class="manual-entry">
+                            <h4>Manual Station Entry</h4>
+                            <p class="description">Add stations by clicking on the map or entering coordinates.</p>
+                            <div class="input-group">
+                                <label for="stationName">Station Name:</label>
+                                <input type="text" id="stationName" placeholder="e.g., Station 1">
+                            </div>
+                            <div class="input-group">
+                                <label for="stationAddress">Address:</label>
+                                <input type="text" id="stationAddress" placeholder="e.g., 123 Main St, Phoenix, AZ">
+                            </div>
+                            <div class="input-group">
+                                <label for="stationLat">Latitude:</label>
+                                <input type="number" id="stationLat" step="0.000001" placeholder="e.g., 38.9072">
+                            </div>
+                            <div class="input-group">
+                                <label for="stationLng">Longitude:</label>
+                                <input type="number" id="stationLng" step="0.000001" placeholder="e.g., -77.0369">
+                            </div>
+                            <button id="geocodeAddressBtn" class="secondary-btn">
+                                <i class="fas fa-map-marker-alt"></i> Geocode Address
+                            </button>
+                            <button id="addStationBtn" class="primary-btn">
+                                <i class="fas fa-plus-circle"></i> Add Station
+                            </button>
+                            <button id="clearStationsBtn" class="danger-btn">
+                                <i class="fas fa-trash"></i> Clear All Stations
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Coverage Parameters -->
+                    <div class="panel-section">
+                        <h3><i class="fas fa-sliders"></i> Coverage Parameters</h3>
+                        
+                        <div class="parameter-group">
+                            <label for="standardSelect">Response Standard:</label>
+                            <select id="standardSelect">
+                                <option value="nfpa1710">NFPA 1710 (Urban)</option>
+                                <option value="nfpa1720-urban">NFPA 1720 (Urban, >1000/mi²)</option>
+                                <option value="nfpa1720-suburban">NFPA 1720 (Suburban, 500-1000/mi²)</option>
+                                <option value="nfpa1720-rural">NFPA 1720 (Rural, <500/mi²)</option>
+                                <option value="nfpa1720-remote">NFPA 1720 (Remote, >8mi Travel)</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </div>
+                        
+                        <div class="parameter-group">
+                            <label for="responseTimeTarget">Response Time Target (min):</label>
+                            <input type="number" id="responseTimeTarget" value="4" min="1" max="30" step="0.5">
+                        </div>
+                        
+                        <div class="parameter-group">
+                            <label for="travelSpeedSelect">Average Travel Speed:</label>
+                            <select id="travelSpeedSelect">
+                                <option value="urban-slow">Urban (20 mph)</option>
+                                <option value="urban-med" selected>Urban (25 mph)</option>
+                                <option value="urban-fast">Urban (30 mph)</option>
+                                <option value="suburban">Suburban (35 mph)</option>
+                                <option value="rural">Rural (45 mph)</option>
+                                <option value="highway">Highway (55+ mph)</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </div>
+                        
+                        <div class="parameter-group" id="customSpeedGroup" style="display: none;">
+                            <label for="customSpeed">Custom Speed (mph):</label>
+                            <input type="number" id="customSpeed" value="25" min="5" max="70" step="1">
+                        </div>
+                        
+                        <div class="parameter-group">
+                            <label for="turnoutTimeSelect">Turnout Time (min):</label>
+                            <select id="turnoutTimeSelect">
+                                <option value="0.5">0.5 min (30 sec)</option>
+                                <option value="1.0" selected>1.0 min (60 sec)</option>
+                                <option value="1.5">1.5 min (90 sec)</option>
+                                <option value="2.0">2.0 min (120 sec)</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </div>
+                        
+                        <div class="parameter-group" id="customTurnoutGroup" style="display: none;">
+                            <label for="customTurnout">Custom Turnout (min):</label>
+                            <input type="number" id="customTurnout" value="1.0" min="0.1" max="5.0" step="0.1">
+                        </div>
+                        
+                        <!-- Additional Parameters -->
+                        <div class="parameter-group">
+                            <label for="populationDensityToggle">Show Population Density:</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="populationDensityToggle">
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="parameter-group">
+                            <label for="callDensityToggle">Show Call Density:</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="callDensityToggle">
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                        
+                        <button id="calculateBtn" class="primary-btn">
+                            <i class="fas fa-calculator"></i> Calculate Coverage
+                        </button>
+                    </div>
+                    
+                    <!-- Optimization Section -->
+                    <div class="panel-section">
+                        <h3><i class="fas fa-map-marker-alt"></i> Coverage Optimization</h3>
+                        
+                        <div class="parameter-group">
+                            <label for="optimizationTarget">Optimization Target:</label>
+                            <select id="optimizationTarget">
+                                <option value="population">Population Coverage</option>
+                                <option value="area">Area Coverage</option>
+                                <option value="incidents">Incident Coverage</option>
+                                <option value="balanced" selected>Balanced Approach</option>
+                            </select>
+                        </div>
+                        
+                        <div class="parameter-group">
+                            <label for="stationsToAdd">New Stations to Suggest:</label>
+                            <input type="number" id="stationsToAdd" value="1" min="1" max="10" step="1">
+                        </div>
+                        
+                        <button id="optimizeBtn" class="primary-btn">
+                            <i class="fas fa-magic"></i> Suggest New Locations
+                        </button>
+                        
+                        <div id="optimizationResults" class="results-container" style="display: none;">
+                            <h4>Optimization Results</h4>
+                            <div id="optimizationMetrics" class="metrics-list"></div>
+                            <button id="applyOptimizationBtn" class="secondary-btn">
+                                <i class="fas fa-check"></i> Apply Suggestions
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Export Section -->
+                    <div class="panel-section">
+                        <h3><i class="fas fa-download"></i> Export Results</h3>
+                        
+                        <button id="exportPdfBtn" class="export-btn">
+                            <i class="fas fa-file-pdf"></i> Export as PDF
+                        </button>
+                        
+                        <button id="exportImageBtn" class="export-btn">
+                            <i class="fas fa-file-image"></i> Export as Image
+                        </button>
+                        
+                        <button id="exportDataBtn" class="export-btn">
+                            <i class="fas fa-file-csv"></i> Export Data
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Map and Results Panel -->
+                <div class="map-panel">
+                    <!-- Coverage Stats -->
+                    <div class="coverage-stats">
+                        <div class="stat-card">
+                            <div class="stat-title">Area Coverage</div>
+                            <div class="stat-value" id="areaCoverage">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-title">Population Coverage</div>
+                            <div class="stat-value" id="populationCoverage">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-title">Incident Coverage</div>
+                            <div class="stat-value" id="incidentCoverage">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-title">Average Response Time</div>
+                            <div class="stat-value" id="avgResponseTime">-</div>
+                        </div>
+                    </div>
+                
+                    <!-- Map Container -->
+                    <div id="coverageMap" class="map-container"></div>
+                    
+                    <!-- Legend -->
+                    <div class="map-legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(0, 128, 0, 0.5);"></div>
+                            <div class="legend-label">Coverage Area</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(255, 0, 0, 0.5);"></div>
+                            <div class="legend-label">Coverage Gap</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(0, 0, 255, 0.7);"></div>
+                            <div class="legend-label">Existing Station</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(255, 165, 0, 0.7);"></div>
+                            <div class="legend-label">Suggested Station</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Jurisdiction Boundary Tools -->
+                    <div class="boundary-tools">
+                        <button id="drawBoundaryBtn" class="tool-btn">
+                            <i class="fas fa-draw-polygon"></i> Draw Boundary
+                        </button>
+                        <button id="uploadBoundaryBtn" class="tool-btn">
+                            <i class="fas fa-upload"></i> Upload Boundary
+                        </button>
+                        <button id="clearBoundaryBtn" class="tool-btn">
+                            <i class="fas fa-trash"></i> Clear Boundary
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Station List -->
+            <div class="station-list-container">
+                <h3><i class="fas fa-list"></i> Station List</h3>
+                <div class="table-container">
+                    <table id="stationTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Latitude</th>
+                                <th>Longitude</th>
+                                <th>Coverage Area</th>
+                                <th>Population Covered</th>
+                                <th>Incidents Covered</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Station rows will be added dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <div class="footer-container">
+            <p>&copy; 2025 FireEMS.ai - Coverage Gap Finder v1.0</p>
+        </div>
+    </footer>
+
+    <!-- External JS Libraries -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- Custom JS directly embedded -->
+    <script>
+        // Coverage Gap Finder JavaScript will be loaded dynamically
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load the JavaScript dynamically to avoid potential loading issues
+            var script = document.createElement('script');
+            script.src = 'static/coverage-gap-finder.js?' + new Date().getTime(); // Add timestamp to prevent caching
+            document.body.appendChild(script);
+            
+            // Add a message to show loading status
+            const loadingMsg = document.createElement('div');
+            loadingMsg.id = 'loading-status';
+            loadingMsg.style.position = 'fixed';
+            loadingMsg.style.top = '10px';
+            loadingMsg.style.right = '10px';
+            loadingMsg.style.backgroundColor = '#333';
+            loadingMsg.style.color = 'white';
+            loadingMsg.style.padding = '10px';
+            loadingMsg.style.borderRadius = '5px';
+            loadingMsg.style.zIndex = '9999';
+            loadingMsg.textContent = 'Loading application scripts...';
+            document.body.appendChild(loadingMsg);
+            
+            // Remove the message after script loads or after 5 seconds
+            script.onload = function() {
+                loadingMsg.textContent = 'Application loaded successfully!';
+                loadingMsg.style.backgroundColor = '#28a745';
+                setTimeout(() => loadingMsg.remove(), 2000);
+            };
+            
+            script.onerror = function() {
+                loadingMsg.textContent = 'Error loading scripts. Please refresh the page.';
+                loadingMsg.style.backgroundColor = '#dc3545';
+            };
+            
+            // Fallback timeout
+            setTimeout(() => {
+                if(document.getElementById('loading-status')) {
+                    loadingMsg.remove();
+                }
+            }, 5000);
+        });
+    </script>
+</body>
+</html>
