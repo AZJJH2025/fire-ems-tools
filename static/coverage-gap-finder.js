@@ -353,6 +353,8 @@ var populationLayer; // Population density layer
         }
         
         const file = fileInput.files[0];
+        console.log(`Processing incident file: ${file.name} (${file.size} bytes)`);
+        
         const formData = new FormData();
         formData.append('file', file);
         
@@ -365,8 +367,13 @@ var populationLayer; // Population density layer
             method: 'POST',
             body: formData
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log(`Incident upload response status: ${response.status}`);
+            return response.json();
+        })
         .then(data => {
+            console.log(`Incident data processed, success: ${data.success}, count: ${data.data ? data.data.length : 0}`);
+            
             if (data.success) {
                 statusElement.innerHTML = `Successfully processed ${data.data.length} incidents.`;
                 statusElement.className = 'upload-status success';
@@ -374,16 +381,43 @@ var populationLayer; // Population density layer
                 // Store the incident data
                 incidentData = data.data;
                 
+                // Log a sample of the data for debugging
+                console.log(`Sample incident data (first 2 records):`, 
+                    data.data.slice(0, 2));
+                
+                // Check if we have valid coordinates in the imported data
+                const validCoords = data.data.filter(item => 
+                    item.latitude && item.longitude && 
+                    !isNaN(parseFloat(item.latitude)) && 
+                    !isNaN(parseFloat(item.longitude))
+                );
+                
+                console.log(`Incidents with valid coordinates: ${validCoords.length} out of ${data.data.length}`);
+                
                 // Update incident coverage calculations if we have stations
                 if (stationMarkers.length > 0) {
+                    console.log(`Updating coverage calculations with ${stationMarkers.length} stations`);
                     updateCoverageCalculations();
                 }
                 
                 // Show incidents on map if the toggle is checked
                 if (document.getElementById('callDensityToggle').checked) {
+                    console.log('Call density toggle is checked, showing heatmap');
                     showCallDensity();
+                } else {
+                    console.log('Call density toggle is not checked, skipping heatmap');
                 }
+                
+                // Verify map is visible
+                if (map) {
+                    console.log('Map is available, refreshing view');
+                    map.invalidateSize();
+                } else {
+                    console.error('Map is not initialized!');
+                }
+                
             } else {
+                console.error(`Error from server:`, data.error);
                 statusElement.innerHTML = `Error: ${data.error}`;
                 statusElement.className = 'upload-status error';
             }
@@ -409,6 +443,8 @@ var populationLayer; // Population density layer
         }
         
         const file = fileInput.files[0];
+        console.log(`Processing station file: ${file.name} (${file.size} bytes)`);
+        
         const formData = new FormData();
         formData.append('file', file);
         
@@ -417,6 +453,7 @@ var populationLayer; // Population density layer
         statusElement.className = 'upload-status loading';
         
         // Clear existing stations
+        console.log('Clearing existing stations...');
         clearAllStations();
         
         // Send to server for processing
@@ -424,8 +461,13 @@ var populationLayer; // Population density layer
             method: 'POST',
             body: formData
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log(`Station upload response status: ${response.status}`);
+            return response.json();
+        })
         .then(data => {
+            console.log(`Station data processed, success: ${data.success}, count: ${data.data ? data.data.length : 0}`);
+            
             if (data.success) {
                 statusElement.innerHTML = `Successfully processed ${data.data.length} stations.`;
                 statusElement.className = 'upload-status success';
@@ -433,26 +475,83 @@ var populationLayer; // Population density layer
                 // Store the station data
                 stationData = data.data;
                 
-                // Add stations to map
-                stationData.forEach(station => {
-                    // Skip stations without coordinates
-                    if (!station.latitude || !station.longitude) {
-                        return;
+                // Log a sample of the data for debugging
+                console.log(`Sample station data (first 2 records):`, 
+                    data.data.slice(0, 2));
+                
+                // Check for valid coordinates
+                const validStations = data.data.filter(station => 
+                    station.latitude && station.longitude && 
+                    !isNaN(parseFloat(station.latitude)) && 
+                    !isNaN(parseFloat(station.longitude))
+                );
+                
+                console.log(`Stations with valid coordinates: ${validStations.length} out of ${data.data.length}`);
+                
+                if (validStations.length === 0) {
+                    statusElement.innerHTML = 'No valid station coordinates found in file.';
+                    statusElement.className = 'upload-status error';
+                    return;
+                }
+                
+                // Add stations to map one by one with better error handling
+                let successCount = 0;
+                let errorCount = 0;
+                
+                validStations.forEach(station => {
+                    try {
+                        // Get or generate station name
+                        let stationName = station.name || station.station || `Station ${stationMarkers.length + 1}`;
+                        
+                        // Parse coordinates carefully
+                        const lat = parseFloat(station.latitude);
+                        const lng = parseFloat(station.longitude);
+                        
+                        if (isNaN(lat) || isNaN(lng)) {
+                            console.warn(`Invalid coordinates for station ${stationName}: ${station.latitude}, ${station.longitude}`);
+                            errorCount++;
+                            return;
+                        }
+                        
+                        console.log(`Adding station to map: ${stationName} at ${lat}, ${lng}`);
+                        
+                        // Add to map
+                        const marker = addStationMarker(stationName, lat, lng);
+                        if (marker) {
+                            successCount++;
+                        } else {
+                            errorCount++;
+                        }
+                    } catch (err) {
+                        console.error(`Error adding station:`, err);
+                        errorCount++;
                     }
-                    
-                    // Get or generate station name
-                    let stationName = station.name || station.station || `Station ${stationMarkers.length + 1}`;
-                    
-                    // Add to map
-                    addStationMarker(stationName, parseFloat(station.latitude), parseFloat(station.longitude));
                 });
                 
-                // Update coverage calculations
-                updateCoverageCalculations();
+                console.log(`Station addition complete: ${successCount} added, ${errorCount} errors`);
                 
-                // Fit map to markers
-                fitMapToMarkers();
+                if (successCount > 0) {
+                    // Update status message with detailed info
+                    statusElement.innerHTML = `Processed ${data.data.length} stations: ${successCount} added to map, ${errorCount} errors.`;
+                    
+                    // Update coverage calculations
+                    console.log('Updating coverage calculations...');
+                    updateCoverageCalculations();
+                    
+                    // Fit map to markers
+                    console.log('Fitting map to markers...');
+                    fitMapToMarkers();
+                    
+                    // Force map update
+                    if (map) {
+                        map.invalidateSize();
+                    }
+                } else {
+                    statusElement.innerHTML = 'Failed to add any stations to map. Check console for errors.';
+                    statusElement.className = 'upload-status error';
+                }
             } else {
+                console.error(`Error from server:`, data.error);
                 statusElement.innerHTML = `Error: ${data.error}`;
                 statusElement.className = 'upload-status error';
             }
@@ -592,91 +691,117 @@ var populationLayer; // Population density layer
      * @param {number} lng - Longitude
      */
     function addStationMarker(name, lat, lng) {
-        // Create a marker for the station
-        const marker = L.marker([lat, lng], {
-            title: name,
-            draggable: true, // Allow stations to be repositioned
-            icon: L.divIcon({
-                html: `<div class="marker-pin station-marker" style="background-color:${DEFAULT_STATION_COLOR};">${stationMarkers.length + 1}</div>`,
+        console.log(`Adding station marker: ${name} at ${lat}, ${lng}`);
+        
+        // Verify map is initialized
+        if (!map) {
+            console.error("Map is not initialized. Cannot add marker.");
+            alert("Error: Map is not initialized. Please refresh the page.");
+            return;
+        }
+        
+        try {
+            // Create a marker for the station with a simpler icon first
+            const marker = L.marker([lat, lng], {
+                title: name,
+                draggable: true // Allow stations to be repositioned
+            });
+            
+            // Create the custom icon
+            const customIcon = L.divIcon({
+                html: `<div class="marker-pin station-marker">${stationMarkers.length + 1}</div>`,
                 iconSize: [30, 30],
                 iconAnchor: [15, 15],
                 className: 'station-div-icon'
-            })
-        }).addTo(map);
-        
-        // Store station data
-        marker.data = {
-            name: name,
-            latitude: lat,
-            longitude: lng,
-            coverageArea: null,
-            populationCovered: null,
-            incidentsCovered: null
-        };
-        
-        // Add popup with station info
-        marker.bindPopup(`
-            <h3>${name}</h3>
-            <p>Latitude: ${lat.toFixed(6)}</p>
-            <p>Longitude: ${lng.toFixed(6)}</p>
-            <button class="delete-station-btn" data-index="${stationMarkers.length}">Delete Station</button>
-        `);
-        
-        // Handle marker drag end to update coverage
-        marker.on('dragend', function() {
-            const newLatLng = marker.getLatLng();
-            marker.data.latitude = newLatLng.lat;
-            marker.data.longitude = newLatLng.lng;
+            });
             
-            // Update the station's coverage layer
-            updateStationCoverage(stationMarkers.indexOf(marker));
+            // Set the icon
+            marker.setIcon(customIcon);
             
-            // Update the popup content
-            marker.setPopupContent(`
-                <h3>${marker.data.name}</h3>
-                <p>Latitude: ${newLatLng.lat.toFixed(6)}</p>
-                <p>Longitude: ${newLatLng.lng.toFixed(6)}</p>
-                <button class="delete-station-btn" data-index="${stationMarkers.indexOf(marker)}">Delete Station</button>
+            // Add to map
+            marker.addTo(map);
+            
+            // Store station data
+            marker.data = {
+                name: name,
+                latitude: lat,
+                longitude: lng,
+                coverageArea: null,
+                populationCovered: null,
+                incidentsCovered: null
+            };
+            
+            // Add popup with station info
+            marker.bindPopup(`
+                <h3>${name}</h3>
+                <p>Latitude: ${lat.toFixed(6)}</p>
+                <p>Longitude: ${lng.toFixed(6)}</p>
+                <button class="delete-station-btn" data-index="${stationMarkers.length}">Delete Station</button>
             `);
             
-            // Update coverage calculations
-            updateCoverageCalculations();
+            // Handle marker drag end to update coverage
+            marker.on('dragend', function() {
+                const newLatLng = marker.getLatLng();
+                marker.data.latitude = newLatLng.lat;
+                marker.data.longitude = newLatLng.lng;
+                
+                // Update the station's coverage layer
+                updateStationCoverage(stationMarkers.indexOf(marker));
+                
+                // Update the popup content
+                marker.setPopupContent(`
+                    <h3>${marker.data.name}</h3>
+                    <p>Latitude: ${newLatLng.lat.toFixed(6)}</p>
+                    <p>Longitude: ${newLatLng.lng.toFixed(6)}</p>
+                    <button class="delete-station-btn" data-index="${stationMarkers.indexOf(marker)}">Delete Station</button>
+                `);
+                
+                // Update coverage calculations
+                updateCoverageCalculations();
+                
+                // Update station table
+                updateStationTable();
+            });
             
-            // Update station table
+            // Add the marker to our array
+            stationMarkers.push(marker);
+            
+            // Create a coverage layer for the station
+            const coverageLayer = L.circle([lat, lng], {
+                color: DEFAULT_STATION_COLOR,
+                fillColor: COVERAGE_COLOR,
+                fillOpacity: 0.25,
+                radius: 0, // Will be updated later
+                weight: 1
+            }).addTo(map);
+            
+            // Store the coverage layer
+            stationLayers.push(coverageLayer);
+            
+            // Update the coverage layer with current settings
+            updateStationCoverage(stationMarkers.length - 1);
+            
+            // Update the station table
             updateStationTable();
-        });
-        
-        // Add the marker to our array
-        stationMarkers.push(marker);
-        
-        // Create a coverage layer for the station
-        const coverageLayer = L.circle([lat, lng], {
-            color: DEFAULT_STATION_COLOR,
-            fillColor: COVERAGE_COLOR,
-            fillOpacity: 0.25,
-            radius: 0, // Will be updated later
-            weight: 1
-        }).addTo(map);
-        
-        // Store the coverage layer
-        stationLayers.push(coverageLayer);
-        
-        // Update the coverage layer with current settings
-        updateStationCoverage(stationMarkers.length - 1);
-        
-        // Update the station table
-        updateStationTable();
-        
-        // Add event listener to the delete button (for when popup is opened)
-        map.on('popupopen', function(e) {
-            const deleteBtn = document.querySelector('.delete-station-btn');
-            if (deleteBtn) {
-                deleteBtn.addEventListener('click', function() {
-                    const index = parseInt(deleteBtn.getAttribute('data-index'));
-                    deleteStation(index);
-                });
-            }
-        });
+            
+            // Add event listener to the delete button (for when popup is opened)
+            map.on('popupopen', function(e) {
+                const deleteBtn = document.querySelector('.delete-station-btn');
+                if (deleteBtn) {
+                    deleteBtn.addEventListener('click', function() {
+                        const index = parseInt(deleteBtn.getAttribute('data-index'));
+                        deleteStation(index);
+                    });
+                }
+            });
+            
+            console.log(`Station marker added successfully: ${name} (${lat}, ${lng})`);
+            return marker;
+        } catch (error) {
+            console.error("Error adding station marker:", error);
+            alert(`Error adding station marker: ${error.message}`);
+            return null;
+        }
     }
     
     /**
