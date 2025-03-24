@@ -520,6 +520,104 @@ footer {
     padding: 0 20px;
 }
 
+/* Icon Palette Styles */
+.hint-text {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    padding: 5px 10px;
+    background-color: rgba(25, 118, 210, 0.05);
+    border-radius: 4px;
+    border-left: 3px solid var(--secondary-color);
+}
+
+.icon-palette {
+    background-color: #f5f5f5;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 15px;
+}
+
+.icon-category {
+    margin-bottom: 15px;
+}
+
+.icon-category h4 {
+    font-size: 0.95rem;
+    color: var(--text-color);
+    margin-bottom: 8px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.icon-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.draggable-icon {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px 5px;
+    text-align: center;
+    cursor: grab;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.draggable-icon:hover {
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+}
+
+.draggable-icon:active {
+    cursor: grabbing;
+}
+
+.draggable-icon i {
+    font-size: 1.2rem;
+    color: var(--primary-color);
+}
+
+.draggable-icon span {
+    font-size: 0.8rem;
+    color: var(--text-color);
+}
+
+.icon-options {
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.color-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.color-selector label {
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+.color-selector select {
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+/* Map marker customization */
+.custom-marker-dragging {
+    opacity: 0.6;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
     .panel-container {
@@ -538,6 +636,10 @@ footer {
 
     #map {
         height: 600px;
+    }
+    
+    .icon-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 

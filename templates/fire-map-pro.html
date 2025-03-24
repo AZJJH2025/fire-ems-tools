@@ -163,9 +163,99 @@
                             <i class="fas fa-file-export"></i> Export Map
                         </button>
                         
+                        <button id="icon-tool" class="tool-btn">
+                            <i class="fas fa-icons"></i> Add Icons
+                        </button>
+                        
                         <button id="clear-map" class="tool-btn danger">
                             <i class="fas fa-trash"></i> Clear All
                         </button>
+                    </div>
+                </div>
+                
+                <div id="icon-container" class="tools-section" style="display: none;">
+                    <h3><i class="fas fa-icons"></i> Drag Icons To Map</h3>
+                    <p class="hint-text"><i class="fas fa-info-circle"></i> Drag and drop icons onto the map</p>
+                    <div class="icon-palette">
+                        <div class="icon-category">
+                            <h4>Emergency Services</h4>
+                            <div class="icon-grid">
+                                <div class="draggable-icon" data-icon="fire-station">
+                                    <i class="fas fa-fire-extinguisher"></i>
+                                    <span>Fire Station</span>
+                                </div>
+                                <div class="draggable-icon" data-icon="hospital">
+                                    <i class="fas fa-hospital"></i>
+                                    <span>Hospital</span>
+                                </div>
+                                <div class="draggable-icon" data-icon="ambulance">
+                                    <i class="fas fa-ambulance"></i>
+                                    <span>Ambulance</span>
+                                </div>
+                                <div class="draggable-icon" data-icon="police">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <span>Police</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="icon-category">
+                            <h4>Infrastructure</h4>
+                            <div class="icon-grid">
+                                <div class="draggable-icon" data-icon="hydrant">
+                                    <i class="fas fa-tint"></i>
+                                    <span>Hydrant</span>
+                                </div>
+                                <div class="draggable-icon" data-icon="school">
+                                    <i class="fas fa-school"></i>
+                                    <span>School</span>
+                                </div>
+                                <div class="draggable-icon" data-icon="building">
+                                    <i class="fas fa-building"></i>
+                                    <span>Building</span>
+                                </div>
+                                <div class="draggable-icon" data-icon="landmark">
+                                    <i class="fas fa-landmark"></i>
+                                    <span>Facility</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="icon-category">
+                            <h4>Warnings & Markers</h4>
+                            <div class="icon-grid">
+                                <div class="draggable-icon" data-icon="warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <span>Warning</span>
+                                </div>
+                                <div class="draggable-icon" data-icon="biohazard">
+                                    <i class="fas fa-biohazard"></i>
+                                    <span>Hazard</span>
+                                </div>
+                                <div class="draggable-icon" data-icon="marker">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>Marker</span>
+                                </div>
+                                <div class="draggable-icon" data-icon="target">
+                                    <i class="fas fa-crosshairs"></i>
+                                    <span>Target</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="icon-options">
+                            <div class="color-selector">
+                                <label for="icon-color">Icon Color:</label>
+                                <select id="icon-color">
+                                    <option value="#d32f2f" selected>Red</option>
+                                    <option value="#1976d2">Blue</option>
+                                    <option value="#388e3c">Green</option>
+                                    <option value="#f57c00">Orange</option>
+                                    <option value="#5e35b1">Purple</option>
+                                    <option value="#000000">Black</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 

@@ -162,6 +162,17 @@ function setupEventListeners() {
         toggleToolActive('export-tool');
     });
     
+    document.getElementById('icon-tool').addEventListener('click', function() {
+        togglePanel('icon-container');
+        toggleToolActive('icon-tool');
+        
+        // Initialize drag and drop functionality if it hasn't been set up yet
+        if (!window.dragDropInitialized) {
+            initializeDragAndDrop();
+            window.dragDropInitialized = true;
+        }
+    });
+    
     document.getElementById('clear-map').addEventListener('click', function() {
         clearMap();
     });
@@ -197,6 +208,15 @@ function setupEventListeners() {
     
     document.getElementById('export-geojson').addEventListener('click', function() {
         exportMap('geojson');
+    });
+    
+    // Icon color change
+    document.getElementById('icon-color').addEventListener('change', function() {
+        // Update the color of the icons in the palette to match selected color
+        const selectedColor = this.value;
+        document.querySelectorAll('.draggable-icon i').forEach(icon => {
+            icon.style.color = selectedColor;
+        });
     });
 }
 
@@ -458,13 +478,21 @@ function handleFileUpload(file, type) {
     
     reader.onload = function(e) {
         try {
+            // Save file content for potential reuse (important for CSV preview)
+            window.lastFileContent = e.target.result;
+            window.lastFileName = file.name;
+            window.lastFileType = type;
+            
             switch (type) {
                 case 'geojson':
                     loadGeoJSON(e.target.result, file.name);
                     break;
                 case 'csv':
-                    // For CSV files, add a preview step if it's a large file
-                    if (e.target.result.split('\n').length > 20) {
+                    // For CSV files, add a preview step based on user preference
+                    const showPreview = document.getElementById('csv-preview-enable') && 
+                                       document.getElementById('csv-preview-enable').checked;
+                    
+                    if (showPreview) {
                         previewCSV(e.target.result, file.name);
                     } else {
                         loadCSV(e.target.result, file.name);
@@ -475,8 +503,11 @@ function handleFileUpload(file, type) {
                     break;
             }
             
-            statusElement.textContent = `${file.name} loaded successfully.`;
-            statusElement.className = 'success-message';
+            if (type !== 'csv' || !document.getElementById('csv-preview-enable') || 
+                !document.getElementById('csv-preview-enable').checked) {
+                statusElement.textContent = `${file.name} loaded successfully.`;
+                statusElement.className = 'success-message';
+            }
         } catch (error) {
             console.error('Error loading file:', error);
             statusElement.textContent = `Error loading file: ${error.message}`;
@@ -798,9 +829,23 @@ function previewCSV(content, filename) {
             document.getElementById('csv-coord-format').value = selectedFormat;
         }
         
+        // Store the selected format for subsequent loading
+        localStorage.setItem('csv-coord-format', selectedFormat);
+        
+        // Remove the preview UI
         document.body.removeChild(previewContainer);
         document.head.removeChild(previewStyles);
-        loadCSV(content, filename);
+        
+        // Process the file content directly
+        try {
+            loadCSV(content, filename);
+            document.getElementById('upload-status').textContent = `${filename} loaded successfully.`;
+            document.getElementById('upload-status').className = 'success-message';
+        } catch (error) {
+            console.error('Error loading CSV:', error);
+            document.getElementById('upload-status').textContent = `Error loading file: ${error.message}`;
+            document.getElementById('upload-status').className = 'error-message';
+        }
     });
     
     document.getElementById('csv-preview-cancel').addEventListener('click', function() {
@@ -1153,9 +1198,197 @@ function togglePanel(panelId) {
     document.getElementById('search-container').style.display = 'none';
     document.getElementById('filter-container').style.display = 'none';
     document.getElementById('export-container').style.display = 'none';
+    document.getElementById('icon-container').style.display = 'none';
     
     // Show the selected panel
     document.getElementById(panelId).style.display = 'block';
+}
+
+/**
+ * Initialize drag and drop functionality for icons
+ */
+function initializeDragAndDrop() {
+    // Create a custom layer group for draggable markers
+    if (!window.iconLayer) {
+        window.iconLayer = L.layerGroup().addTo(map);
+    }
+    
+    // Get all draggable icon elements
+    const draggableIcons = document.querySelectorAll('.draggable-icon');
+    
+    // Set up drag event listeners for each icon
+    draggableIcons.forEach(icon => {
+        icon.setAttribute('draggable', 'true');
+        
+        // Drag start event
+        icon.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData('text/plain', icon.getAttribute('data-icon'));
+            e.dataTransfer.effectAllowed = 'copy';
+            
+            // Create a simple ghost image
+            const ghostImage = document.createElement('div');
+            ghostImage.classList.add('drag-ghost');
+            ghostImage.innerHTML = `<i class="${icon.querySelector('i').className}"></i>`;
+            ghostImage.style.position = 'absolute';
+            ghostImage.style.top = '-1000px';
+            document.body.appendChild(ghostImage);
+            e.dataTransfer.setDragImage(ghostImage, 20, 20);
+            
+            // Clean up after drag ends
+            setTimeout(() => {
+                document.body.removeChild(ghostImage);
+            }, 0);
+        });
+    });
+    
+    // Set up drag events on the map
+    const mapContainer = document.getElementById('map');
+    
+    // Prevent default to allow drop
+    mapContainer.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        mapContainer.classList.add('map-drag-over');
+    });
+    
+    // Handle drag leave
+    mapContainer.addEventListener('dragleave', function() {
+        mapContainer.classList.remove('map-drag-over');
+    });
+    
+    // Handle drop event
+    mapContainer.addEventListener('drop', function(e) {
+        e.preventDefault();
+        mapContainer.classList.remove('map-drag-over');
+        
+        // Get the dragged icon type
+        const iconType = e.dataTransfer.getData('text/plain');
+        
+        // Get the color selection
+        const iconColor = document.getElementById('icon-color').value;
+        
+        // Get the coordinates of the drop location
+        const mapRect = mapContainer.getBoundingClientRect();
+        const x = e.clientX - mapRect.left;
+        const y = e.clientY - mapRect.top;
+        
+        // Convert pixel coordinates to map coordinates
+        const point = L.point(x, y);
+        const latlng = map.containerPointToLatLng(point);
+        
+        // Create a marker with the icon at the drop location
+        createCustomMarker(iconType, latlng, iconColor);
+    });
+}
+
+/**
+ * Create a custom marker with the specified icon type at the given location
+ * @param {string} iconType - The type of icon to use
+ * @param {L.LatLng} latlng - The location to place the marker
+ * @param {string} iconColor - The color of the icon
+ * @returns {L.Marker} - The created marker
+ */
+function createCustomMarker(iconType, latlng, iconColor) {
+    // Create a custom icon
+    const icon = createCustomMarkerIcon(iconType, iconColor);
+    
+    // Create a marker with the icon
+    const marker = L.marker(latlng, {
+        icon: icon,
+        draggable: true,
+        autoPan: true
+    });
+    
+    // Add a popup with information about the marker
+    let title = 'Custom Marker';
+    
+    // Set title based on icon type
+    switch (iconType) {
+        case 'fire-station':
+            title = 'Fire Station';
+            break;
+        case 'hospital':
+            title = 'Hospital/Medical Facility';
+            break;
+        case 'ambulance':
+            title = 'Ambulance/EMS Unit';
+            break;
+        case 'police':
+            title = 'Police Station';
+            break;
+        case 'hydrant':
+            title = 'Fire Hydrant';
+            break;
+        case 'school':
+            title = 'School';
+            break;
+        case 'building':
+            title = 'Building';
+            break;
+        case 'landmark':
+            title = 'Critical Facility';
+            break;
+        case 'warning':
+            title = 'Warning Point';
+            break;
+        case 'biohazard':
+            title = 'Hazard Area';
+            break;
+        case 'marker':
+            title = 'Location Marker';
+            break;
+        case 'target':
+            title = 'Target Point';
+            break;
+    }
+    
+    const popupContent = `
+        <div class="custom-popup">
+            <h4>${title}</h4>
+            <p>Position: ${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}</p>
+            <button class="remove-marker-btn">Remove</button>
+        </div>
+    `;
+    
+    marker.bindPopup(popupContent);
+    
+    // Handle popup events
+    marker.on('popupopen', function(e) {
+        // Add event listener to remove button
+        const removeButton = document.querySelector('.remove-marker-btn');
+        if (removeButton) {
+            removeButton.addEventListener('click', function() {
+                window.iconLayer.removeLayer(marker);
+                map.closePopup();
+            });
+        }
+    });
+    
+    // Handle drag events
+    marker.on('dragstart', function() {
+        marker._icon.classList.add('custom-marker-dragging');
+    });
+    
+    marker.on('dragend', function() {
+        marker._icon.classList.remove('custom-marker-dragging');
+        
+        // Update popup content with new position
+        const newLatLng = marker.getLatLng();
+        const popupContent = `
+            <div class="custom-popup">
+                <h4>${title}</h4>
+                <p>Position: ${newLatLng.lat.toFixed(5)}, ${newLatLng.lng.toFixed(5)}</p>
+                <button class="remove-marker-btn">Remove</button>
+            </div>
+        `;
+        
+        marker.setPopupContent(popupContent);
+    });
+    
+    // Add the marker to the custom layer
+    window.iconLayer.addLayer(marker);
+    
+    return marker;
 }
 
 /**
@@ -1178,6 +1411,11 @@ function clearMap() {
     if (activeImageOverlay) {
         map.removeLayer(activeImageOverlay);
         activeImageOverlay = null;
+    }
+    
+    // Clear custom icon layer
+    if (window.iconLayer) {
+        window.iconLayer.clearLayers();
     }
     
     // Clear any custom data layers
