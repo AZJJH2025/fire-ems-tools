@@ -490,6 +490,12 @@ def coverage_gap_finder():
     """Serve the Coverage Gap Finder tool"""
     return render_template('coverage-gap-finder.html')
 
+# FireMapPro route
+@app.route('/fire-map-pro')
+def fire_map_pro():
+    """Serve the FireMapPro tool"""
+    return render_template('fire-map-pro.html')
+
 # Geocoding endpoint for Coverage Gap Finder
 @app.route('/api/geocode')
 def geocode_endpoint():

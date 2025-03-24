@@ -1,0 +1,592 @@
+/* FireMapPro Styles */
+:root {
+    --primary-color: #d32f2f; /* Fire engine red */
+    --primary-dark: #b71c1c;
+    --secondary-color: #1976d2; /* EMS blue */
+    --secondary-dark: #0d47a1;
+    --success-color: #4caf50;
+    --warning-color: #ff9800;
+    --danger-color: #f44336;
+    --light-gray: #f5f5f5;
+    --dark-gray: #333;
+    --border-color: #ddd;
+    --text-color: #333;
+    --text-light: #666;
+    --box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Layout Styles */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f9f9f9;
+    color: var(--text-color);
+}
+
+.container {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.panel-container {
+    display: flex;
+    gap: 20px;
+    height: calc(100vh - 180px);
+    min-height: 650px;
+}
+
+.left-panel {
+    width: 380px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: var(--box-shadow);
+    padding: 20px;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+.right-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+#map-container {
+    position: relative;
+    flex: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--box-shadow);
+}
+
+#map {
+    height: 100%;
+    min-height: 500px;
+    width: 100%;
+    z-index: 1;
+}
+
+/* Navbar Styles */
+.navbar {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 70%);
+    color: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.logo a {
+    color: white;
+    text-decoration: none;
+    font-size: 1.5rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 20px;
+}
+
+.nav-links a {
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: all 0.3s;
+}
+
+.nav-links a:hover {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-links a.active {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.2);
+    font-weight: 500;
+}
+
+/* Panel Content Styles */
+.left-panel h2 {
+    color: var(--primary-color);
+    font-size: 1.8rem;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.left-panel > p {
+    color: var(--text-light);
+    margin-bottom: 25px;
+}
+
+.tools-section {
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tools-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.tools-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--secondary-color);
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+}
+
+.tools-section h4 {
+    font-size: 1rem;
+    color: var(--text-color);
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+/* Layer Controls */
+.layer-controls {
+    margin-bottom: 15px;
+}
+
+.base-layers, .overlay-layers {
+    margin-bottom: 15px;
+    padding: 12px;
+    background-color: var(--light-gray);
+    border-radius: 6px;
+}
+
+.radio-group {
+    display: flex;
+    gap: 15px;
+}
+
+.radio-group input[type="radio"] {
+    margin-right: 5px;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.checkbox-item label {
+    cursor: pointer;
+}
+
+/* Upload Section */
+.upload-section {
+    margin-bottom: 15px;
+}
+
+.file-upload {
+    margin-bottom: 10px;
+}
+
+.upload-btn {
+    display: inline-block;
+    background-color: var(--light-gray);
+    color: var(--text-color);
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    width: 100%;
+    transition: background-color 0.2s;
+}
+
+.upload-btn:hover {
+    background-color: #e6e6e6;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+#upload-status {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    min-height: 20px;
+}
+
+.success-message {
+    color: var(--success-color);
+    padding: 8px 10px;
+    background-color: rgba(76, 175, 80, 0.15);
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+.error-message {
+    color: var(--danger-color);
+    padding: 8px 10px;
+    background-color: rgba(244, 67, 54, 0.15);
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+/* Map Tools */
+.map-tools {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.tool-btn {
+    background-color: white;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.tool-btn:hover {
+    background-color: var(--light-gray);
+}
+
+.tool-btn.active {
+    background-color: var(--secondary-color);
+    color: white;
+    border-color: var(--secondary-dark);
+}
+
+.tool-btn.danger {
+    border-color: var(--danger-color);
+    color: var(--danger-color);
+}
+
+.tool-btn.danger:hover {
+    background-color: rgba(244, 67, 54, 0.1);
+}
+
+/* Button Styles */
+.primary-btn {
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.primary-btn:hover {
+    background-color: var(--secondary-dark);
+}
+
+.secondary-btn {
+    background-color: var(--light-gray);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.secondary-btn:hover {
+    background-color: #e6e6e6;
+}
+
+/* Search Container */
+#search-container {
+    margin-top: 15px;
+}
+
+.search-box {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+#address-search {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.95rem;
+}
+
+#search-results {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 10px;
+}
+
+/* Filter Container */
+.filter-options {
+    padding: 12px;
+    background-color: var(--light-gray);
+    border-radius: 6px;
+}
+
+.filter-group {
+    margin-bottom: 12px;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.filter-group select, 
+.filter-group input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.date-range {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.date-range input {
+    flex: 1;
+}
+
+/* Export Container */
+.export-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.export-btn {
+    background-color: white;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.export-btn:hover {
+    background-color: var(--light-gray);
+}
+
+.export-settings {
+    margin-top: 15px;
+    padding: 12px;
+    background-color: var(--light-gray);
+    border-radius: 6px;
+}
+
+.input-group {
+    margin-top: 10px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+/* Map Overlays */
+.map-overlay-panel {
+    position: absolute;
+    z-index: 1000;
+    background-color: white;
+    padding: 10px;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    font-size: 0.9rem;
+}
+
+#measurement-info {
+    top: 20px;
+    right: 20px;
+    min-width: 200px;
+}
+
+#measurement-info h4 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    color: var(--secondary-color);
+}
+
+#coordinates-display {
+    bottom: 20px;
+    left: 20px;
+    font-size: 0.8rem;
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+/* Data Panel */
+#data-panel {
+    background-color: white;
+    padding: 15px;
+    margin-top: 15px;
+    border-radius: 8px;
+    box-shadow: var(--box-shadow);
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+#data-panel h3 {
+    color: var(--secondary-color);
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+/* Footer Styles */
+footer {
+    background-color: var(--dark-gray);
+    color: white;
+    padding: 20px 0;
+    margin-top: 30px;
+    text-align: center;
+}
+
+.footer-content {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .panel-container {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .left-panel {
+        width: 100%;
+        order: 2;
+    }
+
+    .right-panel {
+        order: 1;
+    }
+
+    #map {
+        height: 600px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    .navbar {
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px;
+    }
+
+    .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    #map {
+        height: 400px;
+    }
+
+    .map-tools {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Leaflet Custom Styles */
+.leaflet-control-layers-toggle {
+    width: 36px;
+    height: 36px;
+    background-size: 20px 20px;
+}
+
+.leaflet-draw-toolbar a {
+    font-size: 1.2rem;
+}
+
+.leaflet-draw-actions a {
+    font-size: 0.9rem;
+}
+
+.leaflet-bar a {
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+}
+
+.leaflet-control-attribution {
+    font-size: 0.7rem;
+}
+
+/* Custom marker popup style */
+.custom-popup {
+    max-width: 300px;
+}
+
+.custom-popup h4 {
+    margin: 0 0 5px 0;
+    color: var(--secondary-color);
+}
+
+.custom-popup table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.custom-popup td {
+    padding: 3px 0;
+}
+
+.custom-popup td:first-child {
+    font-weight: 500;
+    width: 40%;
+}

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FireMapPro | FireEMS.ai</title>
+    
+    <!-- External CSS Libraries -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-search@3.0.2/dist/leaflet-search.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='fire-map-pro.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='fix-ready-status.css') }}">
+    
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">
+            <a href="/">
+                <i class="fas fa-fire"></i> FireEMS.ai
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/fire-ems-dashboard">Response Time Analyzer</a>
+            <a href="/isochrone-map">Isochrone Map Generator</a>
+            <a href="/call-density-heatmap">Call Density Heatmap</a>
+            <a href="/coverage-gap-finder">Coverage Gap Finder</a>
+            <a href="/fire-map-pro" class="active">FireMapPro</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="panel-container">
+            <div class="left-panel">
+                <h2>FireMapPro</h2>
+                <p>Advanced interactive map creator for fire department and EMS planning and analysis.</p>
+                
+                <div class="tools-section">
+                    <h3><i class="fas fa-layer-group"></i> Map Layers</h3>
+                    <div class="layer-controls">
+                        <div class="base-layers">
+                            <h4>Base Maps</h4>
+                            <div class="radio-group">
+                                <input type="radio" id="street-layer" name="base-layer" value="street" checked>
+                                <label for="street-layer">Street</label>
+                                
+                                <input type="radio" id="satellite-layer" name="base-layer" value="satellite">
+                                <label for="satellite-layer">Satellite</label>
+                                
+                                <input type="radio" id="terrain-layer" name="base-layer" value="terrain">
+                                <label for="terrain-layer">Terrain</label>
+                            </div>
+                        </div>
+                        
+                        <div class="overlay-layers">
+                            <h4>Data Overlays</h4>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="stations-layer" value="stations">
+                                    <label for="stations-layer">Fire Stations</label>
+                                </div>
+                                
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="incidents-layer" value="incidents">
+                                    <label for="incidents-layer">Incidents</label>
+                                </div>
+                                
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="response-layer" value="response">
+                                    <label for="response-layer">Response Areas</label>
+                                </div>
+                                
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="population-layer" value="population">
+                                    <label for="population-layer">Population Density</label>
+                                </div>
+                                
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="hydrants-layer" value="hydrants">
+                                    <label for="hydrants-layer">Hydrants</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tools-section">
+                    <h3><i class="fas fa-file-upload"></i> Custom Data</h3>
+                    <div class="upload-section">
+                        <h4>Import Data</h4>
+                        <div class="file-upload">
+                            <label for="geojson-upload" class="upload-btn">
+                                <i class="fas fa-file-import"></i> GeoJSON / KML
+                            </label>
+                            <input type="file" id="geojson-upload" accept=".geojson,.json,.kml">
+                        </div>
+                        
+                        <div class="file-upload">
+                            <label for="csv-upload" class="upload-btn">
+                                <i class="fas fa-table"></i> CSV with Coordinates
+                            </label>
+                            <input type="file" id="csv-upload" accept=".csv">
+                        </div>
+                        
+                        <div class="file-upload">
+                            <label for="image-upload" class="upload-btn">
+                                <i class="fas fa-image"></i> Image Overlay
+                            </label>
+                            <input type="file" id="image-upload" accept="image/*">
+                        </div>
+                        <div id="upload-status"></div>
+                    </div>
+                </div>
+                
+                <div class="tools-section">
+                    <h3><i class="fas fa-tools"></i> Map Tools</h3>
+                    <div class="map-tools">
+                        <button id="draw-tool" class="tool-btn">
+                            <i class="fas fa-draw-polygon"></i> Draw & Measure
+                        </button>
+                        
+                        <button id="search-tool" class="tool-btn">
+                            <i class="fas fa-search-location"></i> Search Address
+                        </button>
+                        
+                        <button id="filter-tool" class="tool-btn">
+                            <i class="fas fa-filter"></i> Filter Data
+                        </button>
+                        
+                        <button id="export-tool" class="tool-btn">
+                            <i class="fas fa-file-export"></i> Export Map
+                        </button>
+                        
+                        <button id="clear-map" class="tool-btn danger">
+                            <i class="fas fa-trash"></i> Clear All
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="search-container" class="tools-section" style="display: none;">
+                    <h3><i class="fas fa-search"></i> Search</h3>
+                    <div class="search-box">
+                        <input type="text" id="address-search" placeholder="Enter an address to search...">
+                        <button id="search-btn" class="primary-btn">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                    <div id="search-results"></div>
+                </div>
+                
+                <div id="filter-container" class="tools-section" style="display: none;">
+                    <h3><i class="fas fa-filter"></i> Filter Data</h3>
+                    <div class="filter-options">
+                        <div class="filter-group">
+                            <label for="filter-type">Type:</label>
+                            <select id="filter-type">
+                                <option value="all">All</option>
+                                <option value="fire">Fire</option>
+                                <option value="ems">EMS</option>
+                                <option value="hazmat">Hazmat</option>
+                                <option value="rescue">Rescue</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="filter-date-range">Date Range:</label>
+                            <div class="date-range">
+                                <input type="date" id="filter-date-start">
+                                <span>to</span>
+                                <input type="date" id="filter-date-end">
+                            </div>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="filter-priority">Priority:</label>
+                            <select id="filter-priority">
+                                <option value="all">All</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                        </div>
+                        
+                        <button id="apply-filter" class="primary-btn">
+                            <i class="fas fa-check"></i> Apply Filter
+                        </button>
+                        <button id="reset-filter" class="secondary-btn">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="export-container" class="tools-section" style="display: none;">
+                    <h3><i class="fas fa-file-export"></i> Export Map</h3>
+                    <div class="export-options">
+                        <button id="export-pdf" class="export-btn">
+                            <i class="fas fa-file-pdf"></i> Export as PDF
+                        </button>
+                        
+                        <button id="export-png" class="export-btn">
+                            <i class="fas fa-file-image"></i> Export as PNG
+                        </button>
+                        
+                        <button id="export-geojson" class="export-btn">
+                            <i class="fas fa-file-code"></i> Export as GeoJSON
+                        </button>
+                        
+                        <div class="export-settings">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="include-legend" checked>
+                                <label for="include-legend">Include Legend</label>
+                            </div>
+                            
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="include-scale" checked>
+                                <label for="include-scale">Include Scale</label>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="export-title">Title:</label>
+                                <input type="text" id="export-title" placeholder="Map Title">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="right-panel">
+                <div id="map-container">
+                    <div id="map"></div>
+                    
+                    <div id="measurement-info" class="map-overlay-panel" style="display: none;">
+                        <h4>Measurement</h4>
+                        <div id="distance-measurement">
+                            <strong>Distance:</strong> <span id="distance-value">0</span> miles
+                        </div>
+                        <div id="area-measurement">
+                            <strong>Area:</strong> <span id="area-value">0</span> sq miles
+                        </div>
+                    </div>
+                    
+                    <div id="coordinates-display" class="map-overlay-panel">
+                        <span id="coordinate-values">Lat: 0.00000, Lng: 0.00000</span>
+                    </div>
+                </div>
+                
+                <div id="data-panel" style="display: none;">
+                    <h3>Selected Feature Details</h3>
+                    <div id="feature-info"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 FireEMS.ai - Advanced Analytics Tools for Fire & EMS Agencies</p>
+        </div>
+    </footer>
+
+    <!-- External JS Libraries -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-search@3.0.2/dist/leaflet-search.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
+    <script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- App JS -->
+    <script src="/static/fire-map-pro.js"></script>
+</body>
+</html>
