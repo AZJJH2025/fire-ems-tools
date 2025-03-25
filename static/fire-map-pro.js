@@ -1056,9 +1056,6 @@ function previewCSV(content, filename) {
         document.body.removeChild(previewContainer);
         document.head.removeChild(previewStyles);
         
-        // Save the format for direct processing
-        const formatToUse = selectedFormat;
-        
         // Store content and filename for processing
         const contentToProcess = content;
         const filenameToProcess = filename;
@@ -1071,10 +1068,12 @@ function previewCSV(content, filename) {
         setTimeout(() => {
             // Process the file content directly without showing the preview again
             try {
-                console.log(`Processing CSV data from ${filenameToProcess} with format ${formatToUse}`);
+                console.log(`Processing CSV data from ${filenameToProcess} with format ${selectedFormat}`);
                 
-                // Call a direct process function that skips the preview check
-                processCSVDirectly(contentToProcess, filenameToProcess, formatToUse);
+                // Process the CSV data directly using our processing function
+                const pointsAdded = processCSVWithoutPreview(contentToProcess, filenameToProcess);
+                statusElement.textContent = `${filenameToProcess} loaded successfully with ${pointsAdded} points.`;
+                statusElement.className = 'success-message';
                 
             } catch (error) {
                 console.error('Error processing CSV after preview:', error);
@@ -1083,131 +1082,131 @@ function previewCSV(content, filename) {
         }, 100);
     });
     
-    // Separate function to process CSV data without showing preview again
-    function processCSVDirectly(csvContent, csvFilename, formatToUse) {
-                    // Get coordinate format from the selected format
-                    const csvFormat = formatToUse;
-                    
-                    // Get header detection preference
-                    const detectHeaders = document.getElementById('csv-header-detection') ? 
-                                        document.getElementById('csv-header-detection').checked : 
-                                        true;
-                    
-                    // Parse CSV
-                    const lines = csvContent.split('\n');
-                    const headers = lines[0].split(',');
-                    
-                    // Find lat/lon columns
-                    let latIndex = -1;
-                    let lngIndex = -1;
-                    
-                    if (detectHeaders) {
-                        headers.forEach((header, index) => {
-                            const headerLower = header.toLowerCase().trim();
-                            if (headerLower === 'latitude' || headerLower === 'lat' || headerLower === 'y') {
-                                latIndex = index;
-                            }
-                            if (headerLower === 'longitude' || headerLower === 'lon' || headerLower === 'lng' || headerLower === 'x') {
-                                lngIndex = index;
-                            }
-                        });
-                    } else {
-                        // Assume the first two columns are coordinates
-                        latIndex = 0;
-                        lngIndex = 1;
-                    }
-                    
-                    if (latIndex === -1 || lngIndex === -1) {
-                        throw new Error('Could not find latitude and longitude columns in CSV.');
-                    }
-                    
-                    // Debug info for CSV loading
-                    console.log(`CSV Processing - Found lat column at index ${latIndex}, lng column at index ${lngIndex}`);
-                    console.log(`Using coordinate format: ${csvFormat}`);
-                    
-                    // Create a layer for the CSV data
-                    const layerName = csvFilename.split('.')[0].replace(/[^a-z0-9]/gi, '_').toLowerCase();
-                    
-                    // Create markers
-                    const markers = [];
-                    
-                    for (let i = 1; i < lines.length; i++) {
-                        if (!lines[i].trim()) continue;
-                        
-                        const columns = lines[i].split(',');
-                        
-                        // Parse coordinates and ensure they're valid numbers
-                        let lat, lng;
-                        
-                        if (csvFormat === 'lat_lng') {
-                            lat = parseFloat(columns[latIndex]);
-                            lng = parseFloat(columns[lngIndex]);
-                        } else {
-                            // Order is switched for lng_lat format
-                            lng = parseFloat(columns[latIndex]);
-                            lat = parseFloat(columns[lngIndex]);
-                        }
-                        
-                        if (isNaN(lat) || isNaN(lng)) {
-                            console.warn(`Skipping row ${i}: Invalid coordinate values`);
-                            continue;
-                        }
-                        
-                        // Skip invalid coordinates (common errors in data)
-                        if (Math.abs(lat) > 90 || Math.abs(lng) > 180) {
-                            console.warn(`Skipping invalid coordinates: ${lat}, ${lng} at line ${i}`);
-                            continue;
-                        }
-                        
-                        // Create popup content with all data
-                        let popupContent = '<div class="custom-popup"><table>';
-                        
-                        headers.forEach((header, index) => {
-                            if (columns[index]) {
-                                popupContent += `<tr><td>${header}:</td><td>${columns[index]}</td></tr>`;
-                            }
-                        });
-                        
-                        popupContent += '</table></div>';
-                        
-                        // Create marker
-                        const marker = L.circleMarker([lat, lng], {
-                            radius: 6,
-                            fillColor: '#d32f2f',
-                            color: '#fff',
-                            weight: 1,
-                            opacity: 1,
-                            fillOpacity: 0.8
-                        }).bindPopup(popupContent);
-                        
-                        markers.push(marker);
-                    }
-                    
-                    // Create a layer group
-                    const layer = L.layerGroup(markers);
-                    
-                    // Add to map and store in custom layers
-                    customDataLayers[layerName] = layer;
-                    map.addLayer(layer);
-                    
-                    // Create a bounds object and fit map to the markers
-                    if (markers.length > 0) {
-                        const group = L.featureGroup(markers);
-                        map.fitBounds(group.getBounds());
-                    }
-                    
-                    return markers.length;
-                }
-                
-                // Execute our direct processing function
-                const pointsAdded = processCSVWithoutPreview(contentToProcess, filenameToProcess);
-                document.getElementById('upload-status').textContent = `${filenameToProcess} loaded successfully with ${pointsAdded} points.`;
-                document.getElementById('upload-status').className = 'success-message';
-            } catch (error) {
-                console.error('Error loading CSV:', error);
-                document.getElementById('upload-status').textContent = `Error loading file: ${error.message}`;
-                document.getElementById('upload-status').className = 'error-message';
+    document.getElementById('csv-preview-cancel').addEventListener('click', function() {
+        document.body.removeChild(previewContainer);
+        document.head.removeChild(previewStyles);
+        document.getElementById('upload-status').textContent = 'CSV loading cancelled.';
+        document.getElementById('upload-status').className = '';
+    });
+}
+
+/**
+ * Process CSV data directly without showing preview
+ * @param {string} content - The CSV content
+ * @param {string} filename - The name of the file
+ * @returns {number} - Number of points added to the map
+ */
+function processCSVWithoutPreview(content, filename) {
+    // Parse CSV
+    const lines = content.split('\n');
+    const headers = lines[0].split(',');
+    
+    // Get coordinate format preference
+    const csvFormat = document.getElementById('csv-coord-format') ? 
+                    document.getElementById('csv-coord-format').value : 
+                    'lat_lng';
+    
+    // Get header detection preference
+    const detectHeaders = document.getElementById('csv-header-detection') ? 
+                         document.getElementById('csv-header-detection').checked : 
+                         true;
+    
+    // Find lat/lon columns
+    let latIndex = -1;
+    let lngIndex = -1;
+    
+    if (detectHeaders) {
+        headers.forEach((header, index) => {
+            const headerLower = header.toLowerCase().trim();
+            if (headerLower === 'latitude' || headerLower === 'lat' || headerLower === 'y') {
+                latIndex = index;
             }
+            if (headerLower === 'longitude' || headerLower === 'lon' || headerLower === 'lng' || headerLower === 'x') {
+                lngIndex = index;
+            }
+        });
+    } else {
+        // Assume the first two columns are coordinates
+        latIndex = 0;
+        lngIndex = 1;
+    }
+    
+    if (latIndex === -1 || lngIndex === -1) {
+        throw new Error('Could not find latitude and longitude columns in CSV.');
+    }
+    
+    // Create a layer for the CSV data
+    const layerName = filename.split('.')[0].replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    
+    const markers = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+        if (!lines[i].trim()) continue;
+        
+        const columns = lines[i].split(',');
+        
+        // Parse coordinates and ensure they're valid numbers
+        let lat, lng;
+        
+        if (csvFormat === 'lat_lng') {
+            lat = parseFloat(columns[latIndex]);
+            lng = parseFloat(columns[lngIndex]);
+        } else {
+            // Order is switched for lng_lat format
+            lng = parseFloat(columns[latIndex]);
+            lat = parseFloat(columns[lngIndex]);
+        }
+        
+        if (isNaN(lat) || isNaN(lng)) {
+            console.warn(`Skipping row ${i}: Invalid coordinate values`);
+            continue;
+        }
+        
+        // Skip invalid coordinates (common errors in data)
+        if (Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+            console.warn(`Skipping invalid coordinates: ${lat}, ${lng} at line ${i}`);
+            continue;
+        }
+        
+        // Create popup content with all data
+        let popupContent = '<div class="custom-popup"><table>';
+        
+        headers.forEach((header, index) => {
+            if (columns[index]) {
+                popupContent += `<tr><td>${header}:</td><td>${columns[index]}</td></tr>`;
+            }
+        });
+        
+        popupContent += '</table></div>';
+        
+        // Create marker
+        const marker = L.circleMarker([lat, lng], {
+            radius: 6,
+            fillColor: '#d32f2f',
+            color: '#fff',
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).bindPopup(popupContent);
+        
+        markers.push(marker);
+    }
+    
+    // Create a layer group
+    const layer = L.layerGroup(markers);
+    
+    // Add to map and store in custom layers
+    customDataLayers[layerName] = layer;
+    map.addLayer(layer);
+    
+    // Create a bounds object and fit map to the markers
+    if (markers.length > 0) {
+        const group = L.featureGroup(markers);
+        map.fitBounds(group.getBounds());
+    }
+    
+    return markers.length;
+}
         }, 100);
     });
     
@@ -1557,6 +1556,38 @@ function toggleDrawControls() {
         }
     } catch (error) {
         console.error('Error in toggleDrawControls:', error);
+    }
+}
+
+/**
+ * Toggle visibility of a panel
+ * @param {string} panelId - The ID of the panel to toggle
+ */
+function togglePanel(panelId) {
+    console.log(`Toggling panel: ${panelId}`);
+    
+    try {
+        // Hide all panels first
+        document.querySelectorAll('.panel').forEach(function(panel) {
+            panel.style.display = 'none';
+            console.log(`Hidden panel: ${panel.id}`);
+        });
+        
+        // Show the selected panel
+        const panel = document.getElementById(panelId);
+        if (panel) {
+            panel.style.display = 'block';
+            console.log(`Shown panel: ${panelId}`);
+            
+            // Ensure map is properly sized when panels change
+            setTimeout(function() {
+                if (map) map.invalidateSize();
+            }, 100);
+        } else {
+            console.error(`Panel with ID ${panelId} not found`);
+        }
+    } catch (error) {
+        console.error(`Error toggling panel ${panelId}:`, error);
     }
 }
 
