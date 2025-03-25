@@ -391,5 +391,32 @@
     
     <!-- App JS -->
     <script src="/static/fire-map-pro.js"></script>
+    
+    <!-- Additional Map Initialization Helper -->
+    <script>
+        // Force map initialization after page loads
+        window.addEventListener('load', function() {
+            console.log('Window fully loaded - forcing map initialization');
+            
+            // Make sure map container and map element are visible
+            const mapContainer = document.getElementById('map-container');
+            const mapElement = document.getElementById('map');
+            
+            if (mapContainer && mapElement) {
+                mapContainer.style.display = 'block';
+                mapElement.style.height = '600px';
+                
+                // Force map refresh with timeout
+                setTimeout(function() {
+                    if (window.map) {
+                        console.log('Forcing map invalidation after window load');
+                        window.map.invalidateSize(true);
+                    } else {
+                        console.error('Map not available for invalidation');
+                    }
+                }, 1000);
+            }
+        });
+    </script>
 </body>
 </html>

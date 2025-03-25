@@ -59,14 +59,18 @@ body {
     border-radius: 8px;
     overflow: hidden;
     box-shadow: var(--box-shadow);
+    display: block !important; /* Force display */
+    height: 700px !important; /* Force height */
+    width: 100% !important;
 }
 
 #map {
-    height: 100%;
-    min-height: 500px;
-    width: 100%;
+    height: 100% !important; /* Force height to 100% */
+    min-height: 500px !important;
+    width: 100% !important;
     z-index: 10; /* Increased z-index */
     position: relative; /* Ensure proper stacking context */
+    display: block !important; /* Force display */
 }
 
 /* Navbar Styles */
