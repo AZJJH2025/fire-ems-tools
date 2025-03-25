@@ -15,18 +15,46 @@ let measurementActive = false;
 
 // Initialize the map when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Create the map
-    initializeMap();
+    console.log('DOM loaded, initializing FireMapPro...');
     
-    // Set up event listeners
-    setupEventListeners();
-    
-    // Initialize tools
-    initializeDrawingTools();
-    initializeSearchControl();
-    
-    // Initialize CSV settings
-    initializeCSVSettings();
+    try {
+        // Create the map
+        initializeMap();
+        console.log('Map initialized');
+        
+        // Set up event listeners
+        setupEventListeners();
+        console.log('Event listeners set up');
+        
+        // Initialize tools
+        initializeDrawingTools();
+        console.log('Drawing tools initialized');
+        
+        initializeSearchControl();
+        console.log('Search control initialized');
+        
+        // Initialize CSV settings
+        initializeCSVSettings();
+        console.log('CSV settings initialized');
+        
+        // Check if buttons have event listeners
+        console.log('Checking button event listeners:');
+        ['draw-tool', 'search-tool', 'filter-tool', 'export-tool', 'icon-tool', 'clear-map'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                console.log(`Button ${id} found in DOM`);
+                // Add a test click handler to verify event binding
+                element.addEventListener('click', function() {
+                    console.log(`Button ${id} was clicked`);
+                });
+            } else {
+                console.error(`Button ${id} not found in DOM`);
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error during initialization:', error);
+    }
 });
 
 /**
@@ -154,52 +182,118 @@ function setupEventListeners() {
     });
     
     // Tool buttons event listeners
-    document.getElementById('draw-tool').addEventListener('click', function() {
-        toggleDrawControls();
-        toggleToolActive('draw-tool');
-    });
-    
-    document.getElementById('search-tool').addEventListener('click', function() {
-        togglePanel('search-container');
-        toggleToolActive('search-tool');
-    });
-    
-    document.getElementById('filter-tool').addEventListener('click', function() {
-        togglePanel('filter-container');
-        toggleToolActive('filter-tool');
-    });
-    
-    document.getElementById('export-tool').addEventListener('click', function() {
-        togglePanel('export-container');
-        toggleToolActive('export-tool');
-    });
-    
-    document.getElementById('icon-tool').addEventListener('click', function() {
-        console.log('Icon tool clicked, toggling icon panel');
-        togglePanel('icon-container');
-        toggleToolActive('icon-tool');
-        
-        // Initialize drag and drop functionality if it hasn't been set up yet
-        if (!window.dragDropInitialized) {
-            console.log('Initializing drag and drop functionality');
-            initializeDragAndDrop();
-            window.dragDropInitialized = true;
-        } else {
-            console.log('Drag and drop already initialized');
+    try {
+        let btn = document.getElementById('draw-tool');
+        if (!btn) {
+            console.error('Draw tool button (with ID draw-tool) not found in DOM');
+            return;
         }
         
-        // Ensure map is properly sized and visible
-        setTimeout(function() {
-            if (map) {
-                map.invalidateSize();
-                console.log('Map size invalidated after icon tool click');
-            }
-        }, 200);
-    });
+        btn.addEventListener('click', function() {
+            console.log('Draw tool clicked');
+            toggleDrawControls();
+            toggleToolActive('draw-tool');
+        });
+        console.log('Draw tool event listener attached successfully');
+    } catch (error) {
+        console.error('Error attaching draw tool event listener:', error);
+    }
     
-    document.getElementById('clear-map').addEventListener('click', function() {
-        clearMap();
-    });
+    try {
+        let btn = document.getElementById('search-tool');
+        if (!btn) {
+            console.error('Search tool button not found in DOM');
+        } else {
+            btn.addEventListener('click', function() {
+                console.log('Search tool clicked');
+                togglePanel('search-container');
+                toggleToolActive('search-tool');
+            });
+            console.log('Search tool event listener attached successfully');
+        }
+    } catch (error) {
+        console.error('Error attaching search tool event listener:', error);
+    }
+    
+    try {
+        let btn = document.getElementById('filter-tool');
+        if (!btn) {
+            console.error('Filter tool button not found in DOM');
+        } else {
+            btn.addEventListener('click', function() {
+                console.log('Filter tool clicked');
+                togglePanel('filter-container');
+                toggleToolActive('filter-tool');
+            });
+            console.log('Filter tool event listener attached successfully');
+        }
+    } catch (error) {
+        console.error('Error attaching filter tool event listener:', error);
+    }
+    
+    try {
+        let btn = document.getElementById('export-tool');
+        if (!btn) {
+            console.error('Export tool button not found in DOM');
+        } else {
+            btn.addEventListener('click', function() {
+                console.log('Export tool clicked');
+                togglePanel('export-container');
+                toggleToolActive('export-tool');
+            });
+            console.log('Export tool event listener attached successfully');
+        }
+    } catch (error) {
+        console.error('Error attaching export tool event listener:', error);
+    }
+    
+    try {
+        let btn = document.getElementById('icon-tool');
+        if (!btn) {
+            console.error('Icon tool button not found in DOM');
+        } else {
+            btn.addEventListener('click', function() {
+                console.log('Icon tool clicked, toggling icon panel');
+                togglePanel('icon-container');
+                toggleToolActive('icon-tool');
+                
+                // Initialize drag and drop functionality if it hasn't been set up yet
+                if (!window.dragDropInitialized) {
+                    console.log('Initializing drag and drop functionality');
+                    initializeDragAndDrop();
+                    window.dragDropInitialized = true;
+                } else {
+                    console.log('Drag and drop already initialized');
+                }
+                
+                // Ensure map is properly sized and visible
+                setTimeout(function() {
+                    if (map) {
+                        map.invalidateSize();
+                        console.log('Map size invalidated after icon tool click');
+                    }
+                }, 200);
+            });
+            console.log('Icon tool event listener attached successfully');
+        }
+    } catch (error) {
+        console.error('Error attaching icon tool event listener:', error);
+    }
+    
+    try {
+        let btn = document.getElementById('clear-map');
+        if (!btn) {
+            console.error('Clear map button not found in DOM');
+        } else {
+            btn.addEventListener('click', function() {
+                console.log('Clear map clicked');
+                clearMap();
+            });
+            console.log('Clear map event listener attached successfully');
+        }
+    } catch (error) {
+        console.error('Error attaching clear map event listener:', error);
+    }
     
     // Search functionality
     document.getElementById('search-btn').addEventListener('click', function() {
@@ -1333,24 +1427,43 @@ function createResizeHandle(latlng) {
  * Toggle the drawing controls
  */
 function toggleDrawControls() {
-    if (map.drawControlAdded) {
-        map.removeControl(drawControl);
-        map.drawControlAdded = false;
-        
-        measurementActive = false;
-        hideMeasurementInfo();
-    } else {
-        map.addControl(drawControl);
-        map.drawControlAdded = true;
-        
-        // Show a prompt
-        let measurementMode = confirm('Do you want to activate measurement mode? Click OK to measure distances and areas, or Cancel to draw features on the map.');
-        
-        measurementActive = measurementMode;
-        
-        if (measurementActive) {
-            showMeasurementInfo();
+    console.log('toggleDrawControls called');
+    
+    try {
+        if (!map) {
+            console.error('Map is not initialized yet');
+            return;
         }
+        
+        if (!drawControl) {
+            console.error('Draw control is not initialized yet');
+            return;
+        }
+        
+        if (map.drawControlAdded) {
+            console.log('Removing draw control');
+            map.removeControl(drawControl);
+            map.drawControlAdded = false;
+            
+            measurementActive = false;
+            hideMeasurementInfo();
+        } else {
+            console.log('Adding draw control');
+            map.addControl(drawControl);
+            map.drawControlAdded = true;
+            
+            // Show a prompt
+            let measurementMode = confirm('Do you want to activate measurement mode? Click OK to measure distances and areas, or Cancel to draw features on the map.');
+            
+            measurementActive = measurementMode;
+            console.log('Measurement mode:', measurementMode);
+            
+            if (measurementActive) {
+                showMeasurementInfo();
+            }
+        }
+    } catch (error) {
+        console.error('Error in toggleDrawControls:', error);
     }
 }
 
@@ -1359,13 +1472,26 @@ function toggleDrawControls() {
  * @param {string} toolId - The ID of the tool button
  */
 function toggleToolActive(toolId) {
-    // Remove active class from all tool buttons
-    document.querySelectorAll('.tool-btn').forEach(function(btn) {
-        btn.classList.remove('active');
-    });
+    console.log(`Toggling active state for tool: ${toolId}`);
     
-    // Add active class to the clicked button
-    document.getElementById(toolId).classList.add('active');
+    try {
+        // Remove active class from all tool buttons
+        document.querySelectorAll('.tool-btn').forEach(function(btn) {
+            btn.classList.remove('active');
+            console.log(`Removed active class from ${btn.id}`);
+        });
+        
+        // Add active class to the clicked button
+        const activeBtn = document.getElementById(toolId);
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+            console.log(`Added active class to ${toolId}`);
+        } else {
+            console.error(`Button with ID ${toolId} not found`);
+        }
+    } catch (error) {
+        console.error('Error in toggleToolActive:', error);
+    }
 }
 
 /**
@@ -1373,22 +1499,43 @@ function toggleToolActive(toolId) {
  * @param {string} panelId - The ID of the panel to toggle
  */
 function togglePanel(panelId) {
-    // Hide all panels
-    document.getElementById('search-container').style.display = 'none';
-    document.getElementById('filter-container').style.display = 'none';
-    document.getElementById('export-container').style.display = 'none';
-    document.getElementById('icon-container').style.display = 'none';
+    console.log(`Toggling panel: ${panelId}`);
     
-    // Show the selected panel
-    document.getElementById(panelId).style.display = 'block';
-    
-    // Fix for map visibility - invalidate size after panel toggle
-    setTimeout(function() {
-        if (map) {
-            map.invalidateSize();
-            console.log('Map size invalidated after panel toggle');
+    try {
+        // Hide all panels
+        const panels = ['search-container', 'filter-container', 'export-container', 'icon-container'];
+        
+        for (const id of panels) {
+            const panel = document.getElementById(id);
+            if (panel) {
+                panel.style.display = 'none';
+                console.log(`Hidden panel: ${id}`);
+            } else {
+                console.error(`Panel with ID ${id} not found`);
+            }
         }
-    }, 100);
+        
+        // Show the selected panel
+        const selectedPanel = document.getElementById(panelId);
+        if (selectedPanel) {
+            selectedPanel.style.display = 'block';
+            console.log(`Shown panel: ${panelId}`);
+        } else {
+            console.error(`Selected panel with ID ${panelId} not found`);
+        }
+        
+        // Fix for map visibility - invalidate size after panel toggle
+        setTimeout(function() {
+            if (map) {
+                map.invalidateSize();
+                console.log('Map size invalidated after panel toggle');
+            } else {
+                console.error('Map is not initialized');
+            }
+        }, 100);
+    } catch (error) {
+        console.error('Error in togglePanel:', error);
+    }
 }
 
 /**
