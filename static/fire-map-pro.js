@@ -1830,42 +1830,7 @@ function calculateArea(polygon) {
     }
 }
 
-/**
- * Show measurement information panel
- */
-function showMeasurementInfo() {
-    const infoDiv = document.createElement('div');
-    infoDiv.id = 'measurement-info';
-    infoDiv.className = 'measurement-info';
-    infoDiv.innerHTML = `
-        <div class="info-content">
-            <h3>Measurement Mode</h3>
-            <p>Draw shapes on the map to measure:</p>
-            <ul>
-                <li>Lines: Distance in kilometers</li>
-                <li>Polygons: Area in square kilometers</li>
-                <li>Circles: Radius and area</li>
-            </ul>
-            <button id="exit-measurement">Exit Measurement Mode</button>
-        </div>
-    `;
-    
-    document.body.appendChild(infoDiv);
-    
-    document.getElementById('exit-measurement').addEventListener('click', function() {
-        toggleDrawControls();
-    });
-}
-
-/**
- * Hide measurement information panel
- */
-function hideMeasurementInfo() {
-    const infoDiv = document.getElementById('measurement-info');
-    if (infoDiv) {
-        document.body.removeChild(infoDiv);
-    }
-}
+// This duplicate has been removed. See the improved implementation at lines ~2926-3008
 
 /**
  * Attach measurement popup to a layer
@@ -2889,34 +2854,68 @@ function calculatePolygonArea(polygon) {
  * @param {string} type - The type of layer
  */
 function updateMeasurementDisplay(layer, type) {
-    // Show the measurement info panel
-    document.getElementById('measurement-info').style.display = 'block';
-    
-    // Update distance measurement
-    if (type === 'polyline') {
-        const distanceMiles = calculatePolylineDistance(layer);
-        document.getElementById('distance-value').textContent = distanceMiles.toFixed(2);
-        document.getElementById('distance-measurement').style.display = 'block';
-    } else {
-        document.getElementById('distance-measurement').style.display = 'none';
-    }
-    
-    // Update area measurement
-    if (type === 'polygon' || type === 'rectangle' || type === 'circle') {
-        let areaMiles;
-        
-        if (type === 'circle') {
-            const radius = layer.getRadius();
-            const radiusMiles = radius / METERS_PER_MILE;
-            areaMiles = Math.PI * Math.pow(radiusMiles, 2);
+    try {
+        // Make sure the measurement panel is visible
+        const infoPanel = document.getElementById('measurement-info');
+        if (!infoPanel) {
+            console.error('Measurement info panel not found');
+            showMeasurementInfo(); // Try to create it
         } else {
-            areaMiles = calculatePolygonArea(layer);
+            infoPanel.style.display = 'block';
+        }
+
+        // Update distance measurement
+        if (type === 'polyline') {
+            const distanceMiles = calculatePolylineDistance(layer);
+            const distanceValue = document.getElementById('distance-value');
+            const distanceMeasurement = document.getElementById('distance-measurement');
+            
+            if (distanceValue) {
+                distanceValue.textContent = distanceMiles.toFixed(2);
+            }
+            
+            if (distanceMeasurement) {
+                distanceMeasurement.style.display = 'block';
+            }
+        } else {
+            const distanceMeasurement = document.getElementById('distance-measurement');
+            if (distanceMeasurement) {
+                distanceMeasurement.style.display = 'none';
+            }
         }
         
-        document.getElementById('area-value').textContent = areaMiles.toFixed(2);
-        document.getElementById('area-measurement').style.display = 'block';
-    } else {
-        document.getElementById('area-measurement').style.display = 'none';
+        // Update area measurement
+        if (type === 'polygon' || type === 'rectangle' || type === 'circle') {
+            let areaMiles;
+            
+            if (type === 'circle') {
+                const radius = layer.getRadius();
+                const radiusMiles = radius / METERS_PER_MILE;
+                areaMiles = Math.PI * Math.pow(radiusMiles, 2);
+            } else {
+                areaMiles = calculatePolygonArea(layer);
+            }
+            
+            const areaValue = document.getElementById('area-value');
+            const areaMeasurement = document.getElementById('area-measurement');
+            
+            if (areaValue) {
+                areaValue.textContent = areaMiles.toFixed(2);
+            }
+            
+            if (areaMeasurement) {
+                areaMeasurement.style.display = 'block';
+            }
+        } else {
+            const areaMeasurement = document.getElementById('area-measurement');
+            if (areaMeasurement) {
+                areaMeasurement.style.display = 'none';
+            }
+        }
+        
+        console.log('Measurement display updated successfully');
+    } catch (error) {
+        console.error('Error updating measurement display:', error);
     }
 }
 
@@ -2924,14 +2923,87 @@ function updateMeasurementDisplay(layer, type) {
  * Show the measurement info panel
  */
 function showMeasurementInfo() {
-    document.getElementById('measurement-info').style.display = 'block';
+    try {
+        // First try to get the panel from the map container (which is the expected location)
+        let infoDiv = document.querySelector('#map-container #measurement-info');
+        
+        if (!infoDiv) {
+            // Then try to get it from anywhere in the document
+            infoDiv = document.getElementById('measurement-info');
+        }
+        
+        if (!infoDiv) {
+            console.log('Creating new measurement info panel');
+            // Create panel if it doesn't exist
+            infoDiv = document.createElement('div');
+            infoDiv.id = 'measurement-info';
+            infoDiv.className = 'map-overlay-panel';
+            infoDiv.innerHTML = `
+                <h4>Measurement</h4>
+                <div id="distance-measurement">
+                    <strong>Distance:</strong> <span id="distance-value">0</span> miles
+                </div>
+                <div id="area-measurement">
+                    <strong>Area:</strong> <span id="area-value">0</span> sq miles
+                </div>
+                <button id="exit-measurement" class="btn-close">Close</button>
+            `;
+            
+            // Add to map container
+            const mapContainer = document.getElementById('map-container');
+            if (mapContainer) {
+                mapContainer.appendChild(infoDiv);
+            } else {
+                // Fallback to adding directly to body
+                document.body.appendChild(infoDiv);
+            }
+            
+            // Add event listener for exit button
+            const exitBtn = infoDiv.querySelector('#exit-measurement');
+            if (exitBtn) {
+                exitBtn.addEventListener('click', function() {
+                    toggleDrawControls();
+                });
+            }
+        }
+        
+        // Make sure it's visible
+        infoDiv.style.display = 'block';
+        console.log('Measurement info panel displayed successfully');
+        
+        return true;
+    } catch (error) {
+        console.error('Error showing measurement info:', error);
+        return false;
+    }
 }
 
 /**
  * Hide the measurement info panel
  */
 function hideMeasurementInfo() {
-    document.getElementById('measurement-info').style.display = 'none';
+    try {
+        // First try to get the panel from the map container
+        let infoDiv = document.querySelector('#map-container #measurement-info');
+        
+        if (!infoDiv) {
+            // Then try to get it from anywhere in the document
+            infoDiv = document.getElementById('measurement-info');
+        }
+        
+        if (infoDiv) {
+            // Just hide it rather than removing it
+            infoDiv.style.display = 'none';
+            console.log('Measurement info panel hidden successfully');
+            return true;
+        } else {
+            console.log('No measurement info panel found to hide');
+            return false;
+        }
+    } catch (error) {
+        console.error('Error hiding measurement info:', error);
+        return false;
+    }
 }
 
 // Utility functions
