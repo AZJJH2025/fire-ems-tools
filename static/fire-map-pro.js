@@ -69,37 +69,24 @@ function initializeMap() {
         try {
             console.log('Leaflet library available, creating map');
             
-            // First define all base layers for proper layer switching
-            const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            // Create the street layer first for initial map display
+            window.streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                 maxZoom: 19
             });
             
-            const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                attribution: 'Imagery &copy; Esri',
-                maxZoom: 19
-            });
-            
-            const terrainLayer = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.png', {
-                attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>',
-                maxZoom: 18
-            });
-            
-            // Store available base layers with REFERENCES to the actual layer objects
-            window.baseLayers = {
-                "Street": streetLayer,
-                "Satellite": satelliteLayer, 
-                "Terrain": terrainLayer
-            };
-            
-            // Create map with first base layer
+            // Create map with street layer
             map = L.map('map', {
                 zoomControl: true,      // Ensures zoom controls are visible
                 scrollWheelZoom: true,  // Enables mouse wheel zoom
                 doubleClickZoom: true,  // Enables double click zoom
                 dragging: true,         // Enables dragging
-                layers: [streetLayer]   // Start with the street layer
+                layers: [window.streetLayer]   // Start with the street layer
             }).setView([39.8283, -98.5795], 4);  // Center of the US
+            
+            console.log('Map created with street layer');
+            
+            // Note: Satellite and terrain layers will be created on demand when needed
             
             console.log('Map instance created successfully with Street layer');
             
@@ -247,71 +234,56 @@ function initializeMap() {
  * Set up all event listeners for the UI
  */
 function setupEventListeners() {
-    // Base layer radio buttons
+    // Base layer radio buttons - simplified and improved
     console.log('Setting up base layer radio button listeners');
     
-    // Use direct ID selectors instead of attribute selectors
-    const streetRadio = document.getElementById('street-layer');
-    const satelliteRadio = document.getElementById('satellite-layer');
-    const terrainRadio = document.getElementById('terrain-layer');
-    
-    if (!streetRadio || !satelliteRadio || !terrainRadio) {
-        console.error('Base layer radio buttons not found in the DOM:', {
-            street: !!streetRadio, 
-            satellite: !!satelliteRadio, 
-            terrain: !!terrainRadio
-        });
-        
-        // Emergency fallback - try to find them again with different selectors
-        const allRadios = document.querySelectorAll('input[type="radio"]');
-        console.log('All radio buttons found:', allRadios.length);
-        allRadios.forEach(radio => {
-            console.log(`Radio button: id=${radio.id}, name=${radio.name}, value=${radio.value}`);
-        });
-    } else {
-        console.log('Base layer radio buttons found, attaching listeners');
-        
-        // Use both change and click event to ensure it works in all browsers
-        streetRadio.addEventListener('change', function() {
-            console.log('Street radio button changed');
-            setBaseLayer('Street');
-        });
-        
-        streetRadio.addEventListener('click', function() {
-            console.log('Street radio button clicked');
-            setBaseLayer('Street');
-        });
-        
-        satelliteRadio.addEventListener('change', function() {
-            console.log('Satellite radio button changed');
-            setBaseLayer('Satellite');
-        });
-        
-        satelliteRadio.addEventListener('click', function() {
-            console.log('Satellite radio button clicked');
-            setBaseLayer('Satellite');
-        });
-        
-        terrainRadio.addEventListener('change', function() {
-            console.log('Terrain radio button changed');
-            setBaseLayer('Terrain');
-        });
-        
-        terrainRadio.addEventListener('click', function() {
-            console.log('Terrain radio button clicked');
-            setBaseLayer('Terrain');
-        });
-        
-        // Add a direct global click handler for all radio buttons as a fallback
+    // Direct and simplified approach with a robust event binding
+    function setupMapLayerRadioButtons() {
+        // Get all radio buttons and set up their event handlers
         document.querySelectorAll('input[name="base-layer"]').forEach(radio => {
-            radio.onclick = function() {
-                console.log(`Radio clicked: ${this.id} with value ${this.value}`);
-                if (this.value === 'street') setBaseLayer('Street');
-                if (this.value === 'satellite') setBaseLayer('Satellite');
-                if (this.value === 'terrain') setBaseLayer('Terrain');
-            };
+            // Print what we found to help debug
+            console.log(`Found radio button: ${radio.id}, value: ${radio.value}`);
+            
+            // Remove any existing handlers first to avoid duplicates
+            radio.removeEventListener('change', handleLayerChange);
+            radio.removeEventListener('click', handleLayerChange);
+            
+            // Add fresh handlers for both events
+            radio.addEventListener('change', handleLayerChange);
+            radio.addEventListener('click', handleLayerChange);
         });
+        
+        console.log('Successfully set up all layer radio buttons');
     }
+    
+    // The actual handler function 
+    function handleLayerChange(event) {
+        const value = event.target.value;
+        console.log(`Layer radio changed: id=${event.target.id}, value=${value}`);
+        
+        if (value === 'street') {
+            setBaseLayer('street');
+        } else if (value === 'satellite') {
+            setBaseLayer('satellite');
+        } else if (value === 'terrain') {
+            setBaseLayer('terrain');
+        }
+    }
+    
+    // Run the setup
+    setupMapLayerRadioButtons();
+    
+    // Also set a global click detector as a fail-safe backup
+    document.addEventListener('click', function(event) {
+        // If a radio button with name="base-layer" was clicked
+        if (event.target.type === 'radio' && event.target.name === 'base-layer') {
+            console.log(`Global detector caught radio button click: ${event.target.id}`);
+            handleLayerChange(event);
+        }
+    });
+    
+    // Ensure street layer is initially selected
+    document.getElementById('street-layer').checked = true;
     
     // Overlay checkboxes
     document.getElementById('stations-layer').addEventListener('change', function() {
@@ -505,103 +477,169 @@ function setupEventListeners() {
 }
 
 /**
- * Initialize Leaflet.Draw tools
+ * Initialize Leaflet.Draw tools - completely rewritten for reliability
  */
 function initializeDrawingTools() {
-    // Define draw options
-    const drawOptions = {
-        position: 'topright',
-        draw: {
-            polyline: {
-                shapeOptions: {
-                    color: '#1976d2',
-                    weight: 3
+    console.log('Initializing drawing tools with direct approach');
+    
+    try {
+        // Safety check for Leaflet.Draw
+        if (typeof L === 'undefined') {
+            console.error('Leaflet not available');
+            return;
+        }
+        
+        if (typeof L.Control.Draw === 'undefined') {
+            console.error('Leaflet.Draw not available - script may not be loaded');
+            
+            // Add the script dynamically as a fallback
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js';
+            script.onload = function() {
+                console.log('Leaflet.Draw loaded dynamically');
+                setTimeout(setupDrawControls, 500);
+            };
+            document.head.appendChild(script);
+            
+            const css = document.createElement('link');
+            css.rel = 'stylesheet';
+            css.href = 'https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css';
+            document.head.appendChild(css);
+            
+            return;
+        }
+        
+        setupDrawControls();
+    } catch (error) {
+        console.error('Error in drawing tools initialization:', error);
+    }
+    
+    function setupDrawControls() {
+        console.log('Setting up draw controls');
+        
+        // Initialize the drawnItems layer if not already done
+        if (!drawnItems) {
+            drawnItems = new L.FeatureGroup();
+            if (map) {
+                map.addLayer(drawnItems);
+                console.log('Created and added drawn items layer to map');
+            } else {
+                console.error('Map not ready for drawn items layer');
+                return;
+            }
+        }
+        
+        // Initialize measurement layer if not already done
+        if (!measurementLayer) {
+            measurementLayer = new L.FeatureGroup();
+            if (map) {
+                map.addLayer(measurementLayer);
+                console.log('Created and added measurement layer to map');
+            }
+        }
+        
+        // Define draw options
+        const drawOptions = {
+            position: 'topright',
+            draw: {
+                polyline: {
+                    shapeOptions: {
+                        color: '#1976d2',
+                        weight: 3
+                    },
+                    metric: true
                 },
-                metric: false,
-                feet: true
-            },
-            polygon: {
-                allowIntersection: false,
-                drawError: {
-                    color: '#e1e100',
-                    message: '<strong>Error:</strong> Shape edges cannot cross!'
+                polygon: {
+                    allowIntersection: false,
+                    drawError: {
+                        color: '#e1e100',
+                        message: '<strong>Error:</strong> Shape edges cannot cross!'
+                    },
+                    shapeOptions: {
+                        color: '#1976d2',
+                        weight: 3
+                    }
                 },
-                shapeOptions: {
-                    color: '#1976d2',
-                    weight: 3
+                circle: {
+                    shapeOptions: {
+                        color: '#1976d2'
+                    },
+                    metric: true
+                },
+                rectangle: {
+                    shapeOptions: {
+                        color: '#1976d2'
+                    }
+                },
+                marker: {
+                    icon: createCustomMarkerIcon('fire-station', '#1976d2')
                 }
             },
-            circle: {
-                shapeOptions: {
-                    color: '#1976d2'
-                },
-                metric: false,
-                feet: true
-            },
-            rectangle: {
-                shapeOptions: {
-                    color: '#1976d2'
+            edit: {
+                featureGroup: drawnItems,
+                poly: {
+                    allowIntersection: false
                 }
-            },
-            marker: {
-                icon: createCustomMarkerIcon('fire-station', '#1976d2')
             }
-        },
-        edit: {
-            featureGroup: drawnItems,
-            poly: {
-                allowIntersection: false
-            }
-        }
-    };
-    
-    // Initialize draw control
-    drawControl = new L.Control.Draw(drawOptions);
-    
-    // Add draw created event
-    map.on(L.Draw.Event.CREATED, function(e) {
-        const layer = e.layer;
+        };
         
-        // Attach type property for filtering
-        layer.options.type = e.layerType;
+        // Create the control
+        drawControl = new L.Control.Draw(drawOptions);
+        console.log('Draw control created successfully');
         
-        // For measurement display
-        if (measurementActive) {
-            attachMeasurementPopup(layer, e.layerType);
-            measurementLayer.addLayer(layer);
-            updateMeasurementDisplay(layer, e.layerType);
-        } else {
-            // Add popup for regular drawn items
-            attachInfoPopup(layer, e.layerType);
-            drawnItems.addLayer(layer);
-        }
-    });
-    
-    // Edit events
-    map.on(L.Draw.Event.EDITED, function(e) {
-        const layers = e.layers;
-        layers.eachLayer(function(layer) {
-            if (measurementActive && measurementLayer.hasLayer(layer)) {
-                updateMeasurementDisplay(layer, layer.options.type);
-            }
-        });
-    });
-    
-    // Delete events
-    map.on(L.Draw.Event.DELETED, function(e) {
-        const layers = e.layers;
-        let measurementRemoved = false;
-        
-        layers.eachLayer(function(layer) {
-            if (measurementLayer.hasLayer(layer)) {
-                measurementRemoved = true;
+        // Set up event handlers
+        map.on(L.Draw.Event.CREATED, function(e) {
+            console.log('Draw event created:', e.layerType);
+            
+            const layer = e.layer;
+            
+            // Attach type property for filtering
+            layer.options.type = e.layerType;
+            
+            // For measurement display
+            if (measurementActive) {
+                console.log('Adding to measurement layer - measurement mode active');
+                attachMeasurementPopup(layer, e.layerType);
+                measurementLayer.addLayer(layer);
+                updateMeasurementDisplay(layer, e.layerType);
+            } else {
+                console.log('Adding to drawn items layer - regular drawing mode');
+                // Add popup for regular drawn items
+                attachInfoPopup(layer, e.layerType);
+                drawnItems.addLayer(layer);
             }
         });
         
-        if (measurementRemoved && measurementLayer.getLayers().length === 0) {
-            hideMeasurementInfo();
-        }
-    });
+        // Edit events
+        map.on(L.Draw.Event.EDITED, function(e) {
+            console.log('Draw event edited');
+            const layers = e.layers;
+            layers.eachLayer(function(layer) {
+                if (measurementActive && measurementLayer.hasLayer(layer)) {
+                    updateMeasurementDisplay(layer, layer.options.type);
+                }
+            });
+        });
+        
+        // Delete events
+        map.on(L.Draw.Event.DELETED, function(e) {
+            console.log('Draw event deleted');
+            const layers = e.layers;
+            let measurementRemoved = false;
+            
+            layers.eachLayer(function(layer) {
+                if (measurementLayer.hasLayer(layer)) {
+                    measurementRemoved = true;
+                }
+            });
+            
+            if (measurementRemoved && measurementLayer.getLayers().length === 0) {
+                hideMeasurementInfo();
+            }
+        });
+    }
+    
+    console.log('Draw tools initialization complete');
 }
 
 /**
@@ -691,123 +729,90 @@ function createCustomMarkerIcon(type, color) {
 }
 
 /**
- * Set the active base layer
+ * Set the active base layer - completely rewritten for reliability
  * @param {string} layerName - The name of the layer to set
  */
 function setBaseLayer(layerName) {
-    console.log(`Switching to base layer: ${layerName}`);
+    console.log(`Direct layer switch to: ${layerName}`);
     
     try {
-        // Validate inputs
+        // Safety check
         if (!map) {
-            console.error('Map not initialized');
+            console.error('Map not initialized yet');
             return;
         }
         
-        if (!window.baseLayers) {
-            console.error('Base layers not defined');
-            console.log('Available global variables:', Object.keys(window));
-            return;
+        // Create base layers on demand if they don't exist
+        if (!window.streetLayer) {
+            window.streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            });
+            console.log('Created street layer');
         }
         
-        // Normalize layer name to handle case sensitivity
-        let normalizedLayerName = layerName;
-        
-        // Check if we need to fix case
-        if (!window.baseLayers[layerName]) {
-            // Try different capitalizations
-            const layerKeys = Object.keys(window.baseLayers);
-            console.log('Available layers:', layerKeys);
-            
-            // Find case-insensitive match
-            const matchingKey = layerKeys.find(k => 
-                k.toLowerCase() === layerName.toLowerCase());
-            
-            if (matchingKey) {
-                normalizedLayerName = matchingKey;
-                console.log(`Found matching layer with different case: ${matchingKey}`);
-            } else {
-                console.error(`Base layer '${layerName}' not found in available layers`);
-                return;
-            }
+        if (!window.satelliteLayer) {
+            window.satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Imagery &copy; Esri',
+                maxZoom: 19
+            });
+            console.log('Created satellite layer');
         }
         
-        // Debug logging
-        console.log('Current layers:');
-        for (const name in window.baseLayers) {
-            console.log(`- ${name}: ${map.hasLayer(window.baseLayers[name]) ? 'active' : 'inactive'}`);
+        if (!window.terrainLayer) {
+            window.terrainLayer = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.png', {
+                attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>',
+                maxZoom: 18
+            });
+            console.log('Created terrain layer');
         }
         
         // Remove all base layers first
-        for (const name in window.baseLayers) {
-            try {
-                if (map.hasLayer(window.baseLayers[name])) {
-                    map.removeLayer(window.baseLayers[name]);
-                    console.log(`Removed base layer: ${name}`);
-                }
-            } catch (e) {
-                console.error(`Error removing base layer ${name}:`, e);
-            }
+        if (window.streetLayer && map.hasLayer(window.streetLayer)) {
+            map.removeLayer(window.streetLayer);
+            console.log('Removed street layer');
         }
         
-        // Add the selected base layer
-        map.addLayer(window.baseLayers[normalizedLayerName]);
-        console.log(`Added base layer: ${normalizedLayerName}`);
+        if (window.satelliteLayer && map.hasLayer(window.satelliteLayer)) {
+            map.removeLayer(window.satelliteLayer);
+            console.log('Removed satellite layer');
+        }
         
-        // Using setTimeout to ensure rendering is complete
+        if (window.terrainLayer && map.hasLayer(window.terrainLayer)) {
+            map.removeLayer(window.terrainLayer);
+            console.log('Removed terrain layer');
+        }
+        
+        // Now add the requested layer
+        if (layerName.toLowerCase() === 'street') {
+            map.addLayer(window.streetLayer);
+            document.getElementById('street-layer').checked = true;
+            console.log('Added street layer and set radio button');
+        } 
+        else if (layerName.toLowerCase() === 'satellite') {
+            map.addLayer(window.satelliteLayer);
+            document.getElementById('satellite-layer').checked = true;
+            console.log('Added satellite layer and set radio button');
+        }
+        else if (layerName.toLowerCase() === 'terrain') {
+            map.addLayer(window.terrainLayer);
+            document.getElementById('terrain-layer').checked = true;
+            console.log('Added terrain layer and set radio button');
+        }
+        else {
+            console.error(`Unknown layer name: ${layerName}`);
+            return;
+        }
+        
+        // Force map redraw
         setTimeout(() => {
-            map.invalidateSize();
+            map.invalidateSize(true);
             console.log('Map size invalidated after layer change');
         }, 100);
         
-        // Update UI to reflect current layer
-        const radioButtons = document.querySelectorAll('input[name="base-layer"]');
-        let foundMatch = false;
-        
-        // Print all available radio buttons for debugging
-        console.log('Available radio buttons:');
-        radioButtons.forEach(radio => {
-            console.log(`- ${radio.id}: value=${radio.value}, checked=${radio.checked}`);
-        });
-        
-        // Manually set the correct radio button based on layer name
-        if (normalizedLayerName.toLowerCase() === 'street') {
-            const streetRadio = document.getElementById('street-layer');
-            if (streetRadio) {
-                streetRadio.checked = true;
-                console.log('Set street radio button to checked');
-                foundMatch = true;
-            }
-        } else if (normalizedLayerName.toLowerCase() === 'satellite') {
-            const satelliteRadio = document.getElementById('satellite-layer');
-            if (satelliteRadio) {
-                satelliteRadio.checked = true;
-                console.log('Set satellite radio button to checked');
-                foundMatch = true;
-            }
-        } else if (normalizedLayerName.toLowerCase() === 'terrain') {
-            const terrainRadio = document.getElementById('terrain-layer');
-            if (terrainRadio) {
-                terrainRadio.checked = true;
-                console.log('Set terrain radio button to checked');
-                foundMatch = true;
-            }
-        }
-        
-        if (!foundMatch) {
-            console.warn(`No radio button found matching "${normalizedLayerName}"`);
-            
-            // Emergency fallback - check by value
-            radioButtons.forEach(radio => {
-                if (radio.value.toLowerCase() === normalizedLayerName.toLowerCase()) {
-                    radio.checked = true;
-                    console.log(`Set radio button for ${radio.value} to checked (fallback)`);
-                    foundMatch = true;
-                }
-            });
-        }
     } catch (error) {
         console.error('Error in setBaseLayer:', error);
+        alert('There was an error changing the map layer. Please try again.');
     }
 }
 
@@ -1709,7 +1714,7 @@ function createResizeHandle(latlng) {
 }
 
 /**
- * Toggle the drawing controls
+ * Toggle the drawing controls - rewritten for reliability
  */
 function toggleDrawControls() {
     console.log('toggleDrawControls called');
@@ -1717,38 +1722,54 @@ function toggleDrawControls() {
     try {
         if (!map) {
             console.error('Map is not initialized yet');
+            alert('Map is not ready. Please refresh the page and try again.');
             return;
         }
         
         if (!drawControl) {
             console.error('Draw control is not initialized yet');
-            return;
+            
+            // Try to initialize it immediately
+            initializeDrawingTools();
+            
+            // Check again
+            if (!drawControl) {
+                alert('Drawing tools could not be initialized. Please refresh the page and try again.');
+                return;
+            }
         }
         
-        if (map.drawControlAdded) {
+        // Check if draw control is already on the map
+        const drawControlExists = document.querySelector('.leaflet-draw');
+        
+        if (drawControlExists) {
             console.log('Removing draw control');
             map.removeControl(drawControl);
+            window.measurementActive = false;
             map.drawControlAdded = false;
-            
-            measurementActive = false;
             hideMeasurementInfo();
+            console.log('Draw control removed successfully');
         } else {
-            console.log('Adding draw control');
+            console.log('Adding draw control to map');
             map.addControl(drawControl);
             map.drawControlAdded = true;
             
             // Show a prompt
-            let measurementMode = confirm('Do you want to activate measurement mode? Click OK to measure distances and areas, or Cancel to draw features on the map.');
+            let measurementMode = confirm('Do you want to activate measurement mode?\n\nClick OK to measure distances and areas.\nClick Cancel to draw features on the map.');
             
-            measurementActive = measurementMode;
+            window.measurementActive = measurementMode;
             console.log('Measurement mode:', measurementMode);
             
-            if (measurementActive) {
+            if (window.measurementActive) {
                 showMeasurementInfo();
+                console.log('Measurement info shown');
             }
+            
+            console.log('Draw control added successfully');
         }
     } catch (error) {
         console.error('Error in toggleDrawControls:', error);
+        alert('An error occurred while toggling the drawing controls. Please try again.');
     }
 }
 
@@ -1843,6 +1864,138 @@ function hideMeasurementInfo() {
     const infoDiv = document.getElementById('measurement-info');
     if (infoDiv) {
         document.body.removeChild(infoDiv);
+    }
+}
+
+/**
+ * Attach measurement popup to a layer
+ * @param {L.Layer} layer - The layer to attach a popup to
+ * @param {string} layerType - The type of layer
+ */
+function attachMeasurementPopup(layer, layerType) {
+    console.log(`Attaching measurement popup to ${layerType}`);
+    
+    let popupContent = '<div class="custom-popup">';
+    
+    if (layerType === 'polyline') {
+        const length = calculateLength(layer);
+        popupContent += `<h4>Distance Measurement</h4>
+                         <p>${length.toFixed(2)} km</p>`;
+    } 
+    else if (layerType === 'polygon' || layerType === 'rectangle') {
+        const area = calculateArea(layer);
+        popupContent += `<h4>Area Measurement</h4>
+                         <p>${area.toFixed(2)} km²</p>`;
+    } 
+    else if (layerType === 'circle') {
+        const radius = layer.getRadius() / 1000; // Convert to km
+        const area = Math.PI * radius * radius;
+        popupContent += `<h4>Circle Measurement</h4>
+                         <p>Radius: ${radius.toFixed(2)} km</p>
+                         <p>Area: ${area.toFixed(2)} km²</p>`;
+    }
+    
+    popupContent += '<button class="measurement-remove-btn">Remove</button></div>';
+    
+    layer.bindPopup(popupContent);
+    
+    // Add event listener when popup opens
+    layer.on('popupopen', function() {
+        const btn = document.querySelector('.measurement-remove-btn');
+        if (btn) {
+            btn.addEventListener('click', function() {
+                measurementLayer.removeLayer(layer);
+                layer.closePopup();
+                
+                // Hide measurement info if no measurements left
+                if (measurementLayer.getLayers().length === 0) {
+                    hideMeasurementInfo();
+                }
+            });
+        }
+    });
+}
+
+/**
+ * Attach info popup to a drawn layer
+ * @param {L.Layer} layer - The layer to attach a popup to
+ * @param {string} layerType - The type of layer
+ */
+function attachInfoPopup(layer, layerType) {
+    console.log(`Attaching info popup to ${layerType}`);
+    
+    let title = 'Shape';
+    
+    if (layerType === 'polyline') title = 'Line';
+    else if (layerType === 'polygon') title = 'Polygon';
+    else if (layerType === 'rectangle') title = 'Rectangle';
+    else if (layerType === 'circle') title = 'Circle';
+    else if (layerType === 'marker') title = 'Marker';
+    
+    const popupContent = `
+        <div class="custom-popup">
+            <h4>${title}</h4>
+            <button class="edit-shape-btn">Edit</button>
+            <button class="remove-shape-btn">Remove</button>
+        </div>
+    `;
+    
+    layer.bindPopup(popupContent);
+    
+    // Add event listeners when popup opens
+    layer.on('popupopen', function() {
+        const editBtn = document.querySelector('.edit-shape-btn');
+        const removeBtn = document.querySelector('.remove-shape-btn');
+        
+        if (editBtn) {
+            editBtn.addEventListener('click', function() {
+                layer.closePopup();
+                // Trigger edit mode
+                if (drawControl) {
+                    new L.EditToolbar.Edit(map, {
+                        featureGroup: drawnItems
+                    }).enable();
+                }
+            });
+        }
+        
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function() {
+                drawnItems.removeLayer(layer);
+                layer.closePopup();
+            });
+        }
+    });
+}
+
+/**
+ * Update measurement display with values from layer
+ * @param {L.Layer} layer - The layer to measure
+ * @param {string} layerType - The type of layer
+ */
+function updateMeasurementDisplay(layer, layerType) {
+    console.log(`Updating measurement display for ${layerType}`);
+    
+    const distanceElement = document.getElementById('distance-value');
+    const areaElement = document.getElementById('area-value');
+    
+    if (!distanceElement || !areaElement) return;
+    
+    if (layerType === 'polyline') {
+        const length = calculateLength(layer);
+        distanceElement.textContent = `${length.toFixed(2)} km`;
+        areaElement.textContent = '-';
+    } 
+    else if (layerType === 'polygon' || layerType === 'rectangle') {
+        const area = calculateArea(layer);
+        distanceElement.textContent = '-';
+        areaElement.textContent = `${area.toFixed(2)} km²`;
+    } 
+    else if (layerType === 'circle') {
+        const radius = layer.getRadius() / 1000; // Convert to km
+        const area = Math.PI * radius * radius;
+        distanceElement.textContent = `${radius.toFixed(2)} km radius`;
+        areaElement.textContent = `${area.toFixed(2)} km²`;
     }
 }
 
@@ -3184,102 +3337,175 @@ const METERS_PER_MILE = 1609.34;
  * Initialize drag and drop functionality for icons
  */
 function initializeDragAndDrop() {
-    console.log('Initializing drag and drop functionality');
+    console.log('Initializing drag and drop functionality with fixed implementation');
     
     try {
-        const icons = document.querySelectorAll('.draggable-icon');
+        // Initialize icon layer if not already done
+        if (!window.iconLayer) {
+            window.iconLayer = new L.FeatureGroup();
+            if (map) {
+                map.addLayer(window.iconLayer);
+                console.log('Created and added icon layer to map');
+            } else {
+                console.error('Map not ready for icon layer');
+            }
+        }
         
+        // Find all icons in the palette
+        const icons = document.querySelectorAll('.draggable-icon');
+        console.log(`Found ${icons.length} draggable icons`);
+        
+        if (icons.length === 0) {
+            console.warn('No draggable icons found in the DOM');
+        }
+        
+        // Make each icon draggable
         icons.forEach(icon => {
-            // Make the icon draggable
             icon.setAttribute('draggable', 'true');
+            icon.style.cursor = 'grab';
             
-            // Add drag start event
-            icon.addEventListener('dragstart', function(e) {
-                console.log('Drag started for icon:', this.dataset.icon);
-                
-                // Set the data for the drag operation
-                e.dataTransfer.setData('text/plain', JSON.stringify({
-                    type: this.dataset.icon,
-                    color: this.dataset.color || '#ff0000'
-                }));
-                
-                // Set dragImage to be the icon itself
-                if (e.dataTransfer.setDragImage) {
-                    e.dataTransfer.setDragImage(this, 15, 15);
-                }
-                
-                // Safari requires this
-                e.dataTransfer.effectAllowed = 'copy';
-            });
+            // Log what we found to help debug
+            console.log(`Making icon draggable: ${icon.dataset.icon || 'unnamed'}`);
+            
+            // Set up drag start event - remove any existing ones first
+            icon.removeEventListener('dragstart', handleDragStart);
+            icon.addEventListener('dragstart', handleDragStart);
         });
         
-        // Make the map a drop target
+        // Set up the map as a drop target
         const mapElement = document.getElementById('map');
+        
         if (!mapElement) {
-            console.error('Map element not found, cannot initialize drop functionality');
+            console.error('Map element not found in DOM');
             return;
         }
         
-        // Prevent default behavior to allow drop
-        mapElement.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'copy';
+        console.log('Setting up map as drop target');
+        
+        // Remove existing event listeners to avoid duplicates
+        mapElement.removeEventListener('dragover', handleDragOver);
+        mapElement.removeEventListener('drop', handleDrop);
+        
+        // Add fresh event listeners
+        mapElement.addEventListener('dragover', handleDragOver);
+        mapElement.addEventListener('drop', handleDrop);
+        
+        // Additionally, add a click handler to debug any issues
+        mapElement.addEventListener('click', function(e) {
+            console.log('Map clicked at:', e.clientX, e.clientY);
+            console.log('Map is properly handling events');
         });
         
-        // Handle drop events on the map
-        mapElement.addEventListener('drop', function(e) {
-            e.preventDefault();
-            
-            try {
-                console.log('Icon dropped on map');
-                
-                // Get the data from the drag operation
-                const data = JSON.parse(e.dataTransfer.getData('text/plain'));
-                
-                // Get the map coordinates where the icon was dropped
-                const rect = mapElement.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                console.log(`Drop position in pixels: ${x}, ${y}`);
-                
-                // Convert pixel coordinates to map coordinates (lat/lng)
-                const point = L.point(x, y);
-                const latlng = map.containerPointToLatLng(point);
-                console.log(`Drop position in lat/lng: ${latlng.lat}, ${latlng.lng}`);
-                
-                // Create a custom marker at the drop location
-                const marker = L.marker(latlng, {
-                    icon: createCustomMarkerIcon(data.type, data.color),
-                    draggable: true, // Allow the marker to be dragged after placement
-                }).addTo(iconLayer);
-                
-                // Add a popup to the marker with information
-                const iconType = data.type.split('-').map(capitalizeFirstLetter).join(' ');
-                marker.bindPopup(`
-                    <div class="custom-popup">
-                        <h4>${iconType}</h4>
-                        <p>Coordinates: ${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}</p>
-                        <button class="remove-marker-btn">Remove</button>
-                    </div>
-                `);
-                
-                // Add event listener to the remove button (when popup is opened)
-                marker.on('popupopen', function() {
-                    document.querySelector('.remove-marker-btn').addEventListener('click', function() {
-                        map.removeLayer(marker);
-                        marker.closePopup();
-                    });
-                });
-                
-                // Log success
-                console.log(`Added ${data.type} marker at ${latlng.lat}, ${latlng.lng}`);
-            } catch (error) {
-                console.error('Error handling icon drop:', error);
-            }
-        });
-        
-        console.log('Drag and drop functionality initialized successfully');
+        console.log('Drag and drop setup complete');
     } catch (error) {
-        console.error('Error initializing drag and drop:', error);
+        console.error('Error setting up drag and drop:', error);
+    }
+    
+    // Helper function for drag start
+    function handleDragStart(e) {
+        const iconType = this.dataset.icon || 'marker';
+        const iconColor = this.dataset.color || '#ff0000';
+        
+        console.log(`Drag started for icon: ${iconType} with color ${iconColor}`);
+        
+        // Set required data for transfer
+        e.dataTransfer.setData('text/plain', JSON.stringify({
+            type: iconType,
+            color: iconColor
+        }));
+        
+        // Set the visual representation during drag
+        if (e.dataTransfer.setDragImage) {
+            e.dataTransfer.setDragImage(this, 15, 15);
+        }
+        
+        // Required for some browsers
+        e.dataTransfer.effectAllowed = 'copy';
+    }
+    
+    // Helper function for drag over
+    function handleDragOver(e) {
+        // This is required to allow dropping
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+    }
+    
+    // Helper function for drop
+    function handleDrop(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        console.log('Drop event detected on map');
+        
+        try {
+            // Get transfer data
+            const dataString = e.dataTransfer.getData('text/plain');
+            console.log('Data received:', dataString);
+            
+            if (!dataString) {
+                console.error('No data received in drop event');
+                return;
+            }
+            
+            const data = JSON.parse(dataString);
+            
+            // Get pixel coordinates
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            console.log(`Drop position in pixels: ${x}, ${y}`);
+            
+            // Convert to map coordinates
+            const point = L.point(x, y);
+            const latlng = map.containerPointToLatLng(point);
+            console.log(`Drop position in geo coordinates: ${latlng.lat}, ${latlng.lng}`);
+            
+            // Create marker icon
+            const markerIcon = createCustomMarkerIcon(data.type, data.color);
+            
+            // Add marker to map
+            const marker = L.marker(latlng, {
+                icon: markerIcon,
+                draggable: true
+            });
+            
+            // Add to icon layer and map
+            window.iconLayer.addLayer(marker);
+            console.log(`Added ${data.type} marker to map at ${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`);
+            
+            // Create popup content
+            const iconTypeFormatted = data.type.split('-').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+            
+            const popupContent = `
+                <div class="custom-popup">
+                    <h4>${iconTypeFormatted}</h4>
+                    <p>Lat: ${latlng.lat.toFixed(5)}, Lng: ${latlng.lng.toFixed(5)}</p>
+                    <button class="remove-marker-btn">Remove</button>
+                </div>
+            `;
+            
+            // Bind popup to marker
+            marker.bindPopup(popupContent);
+            
+            // Add remove functionality when popup opens
+            marker.on('popupopen', function() {
+                const btn = document.querySelector('.remove-marker-btn');
+                if (btn) {
+                    // Ensure we don't add duplicate listeners
+                    const newBtn = btn.cloneNode(true);
+                    btn.parentNode.replaceChild(newBtn, btn);
+                    
+                    newBtn.addEventListener('click', function() {
+                        window.iconLayer.removeLayer(marker);
+                        console.log('Marker removed');
+                    });
+                }
+            });
+        } catch (error) {
+            console.error('Error handling drop event:', error);
+            alert('There was an error placing the icon. Please try again.');
+        }
     }
 }
