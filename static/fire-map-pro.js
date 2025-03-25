@@ -1410,16 +1410,6 @@ function processCSVWithoutPreview(content, filename) {
     
     return markers.length;
 }
-        }, 100);
-    });
-    
-    document.getElementById('csv-preview-cancel').addEventListener('click', function() {
-        document.body.removeChild(previewContainer);
-        document.head.removeChild(previewStyles);
-        document.getElementById('upload-status').textContent = 'CSV loading cancelled.';
-        document.getElementById('upload-status').className = '';
-    });
-}
 
 /**
  * Load GeoJSON data
