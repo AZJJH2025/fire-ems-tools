@@ -415,46 +415,139 @@
                         console.log('Map not properly initialized, attempting emergency initialization');
                         
                         try {
-                            // Try to get map container
+                            // The proper way to remove a Leaflet map is to call .remove()
+                            // First check if there's already a map instance on window.map
+                            if (window.map && typeof window.map.remove === 'function') {
+                                console.log('Removing existing map instance');
+                                window.map.remove(); // Properly removes the map
+                                window.map = null;
+                            }
+                            
+                            // Additionally, for extra safety, let's replace the map container
+                            const rightPanel = document.querySelector('.right-panel');
+                            if (rightPanel) {
+                                console.log('Rebuilding map container');
+                                // Get the map-card element
+                                const mapCard = rightPanel.querySelector('.map-card');
+                                if (mapCard) {
+                                    const oldMapContainer = mapCard.querySelector('.map-container');
+                                    if (oldMapContainer) {
+                                        // Remove old container
+                                        oldMapContainer.remove();
+                                        
+                                        // Create new container
+                                        const newMapContainer = document.createElement('div');
+                                        newMapContainer.id = 'map-container';
+                                        newMapContainer.className = 'map-container';
+                                        
+                                        // Create new map div
+                                        const newMapDiv = document.createElement('div');
+                                        newMapDiv.id = 'map';
+                                        newMapDiv.style.height = '600px';
+                                        newMapDiv.style.width = '100%';
+                                        
+                                        // Add to DOM
+                                        newMapContainer.appendChild(newMapDiv);
+                                        mapCard.appendChild(newMapContainer);
+                                        
+                                        // Add coordinate display
+                                        const coordDisplay = document.createElement('div');
+                                        coordDisplay.id = 'coordinates-display';
+                                        coordDisplay.className = 'map-overlay-panel';
+                                        coordDisplay.innerHTML = '<span id="coordinate-values">Lat: 0.00000, Lng: 0.00000</span>';
+                                        newMapContainer.appendChild(coordDisplay);
+                                        
+                                        console.log('Map container rebuilt successfully');
+                                    }
+                                }
+                            }
+                            
+                            // Try to get the new map container
                             const mapContainer = document.getElementById('map');
                             if (!mapContainer) {
-                                console.error('Map container not found in DOM');
+                                console.error('Map container not found in DOM after rebuild');
                                 return;
                             }
                             
-                            // Clear any previous map instance
-                            mapContainer.innerHTML = '';
+                            // Small delay to ensure DOM is updated
+                            setTimeout(function() {
+                                try {
+                                    // Create fresh map instance on newly created container
+                                    window.map = L.map('map', {
+                                        center: [39.8283, -98.5795],
+                                        zoom: 4,
+                                        zoomControl: true,
+                                        scrollWheelZoom: true,
+                                        doubleClickZoom: true,
+                                        dragging: true
+                                    });
+                                    
+                                    // Add the base tile layer
+                                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                                        maxZoom: 19
+                                    }).addTo(window.map);
+                                    
+                                    // Add zoom controls explicitly
+                                    L.control.zoom({
+                                        position: 'topright'
+                                    }).addTo(window.map);
+                                    
+                                    // Add a scale control
+                                    L.control.scale().addTo(window.map);
+                                    
+                                    console.log('New map instance created successfully with all controls');
+                                } catch (err) {
+                                    console.error('Failed to create map:', err);
+                                }
+                            }, 200);
                             
-                            // Create fresh map instance
-                            window.map = L.map('map', {
-                                center: [39.8283, -98.5795],
-                                zoom: 4,
-                                zoomControl: true,
-                                scrollWheelZoom: true,
-                                doubleClickZoom: true,
-                                dragging: true
-                            });
+                            // Tile layer will be added in the timeout function above
                             
-                            // Add base tile layer
-                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                                maxZoom: 19
-                            }).addTo(window.map);
-                            
-                            // Force resize after creation
+                            // Force resize after creation with a longer timeout
                             setTimeout(function() {
                                 if (window.map && typeof window.map.invalidateSize === 'function') {
                                     window.map.invalidateSize(true);
-                                    console.log('Emergency map initialization successful');
+                                    console.log('Map size invalidated after emergency initialization');
                                     
-                                    // Set up global variables needed by the app
-                                    window.drawnItems = new L.FeatureGroup();
-                                    window.map.addLayer(window.drawnItems);
-                                    
-                                    window.measurementLayer = new L.FeatureGroup();
-                                    window.map.addLayer(window.measurementLayer);
+                                    try {
+                                        // Make sure important map layers are set up if they don't exist yet
+                                        if (!window.drawnItems) {
+                                            window.drawnItems = new L.FeatureGroup();
+                                            window.map.addLayer(window.drawnItems);
+                                            console.log('Created drawnItems layer');
+                                        }
+                                        
+                                        if (!window.measurementLayer) {
+                                            window.measurementLayer = new L.FeatureGroup();
+                                            window.map.addLayer(window.measurementLayer);
+                                            console.log('Created measurementLayer');
+                                        }
+                                        
+                                        if (!window.iconLayer) {
+                                            window.iconLayer = new L.FeatureGroup();
+                                            window.map.addLayer(window.iconLayer);
+                                            console.log('Created iconLayer');
+                                        }
+                                        
+                                        if (!window.customDataLayers) {
+                                            window.customDataLayers = {};
+                                            console.log('Initialized customDataLayers');
+                                        }
+                                        
+                                        if (!window.baseLayers) {
+                                            window.baseLayers = {
+                                                "Street": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+                                            };
+                                            console.log('Initialized baseLayers');
+                                        }
+                                        
+                                        console.log('Emergency map initialization fully completed');
+                                    } catch (err) {
+                                        console.error('Error setting up map layers:', err);
+                                    }
                                 }
-                            }, 100);
+                            }, 500);
                         } catch (error) {
                             console.error('Error in emergency map initialization:', error);
                         }
