@@ -1261,6 +1261,7 @@ function loadCSV(content, filename) {
     
     // Create a layer for the CSV data
     const layerName = filename.split('.')[0].replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    console.log(`Creating layer: ${layerName} from CSV file`);
     
     // Create markers
     const markers = [];
@@ -1322,8 +1323,7 @@ function loadCSV(content, filename) {
         markers.push(marker);
     }
     
-    // Create a layer group
-    const layerName = filename.split('.')[0].replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    // Create a layer group - USING THE EXISTING layerName instead of creating a new constant
     const layer = L.layerGroup(markers);
     
     // Add to map and store in custom layers

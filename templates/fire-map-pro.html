@@ -397,45 +397,72 @@
     <!-- App JS -->
     <script src="/static/fire-map-pro.js"></script>
     
-    <!-- Additional Map Initialization Helper - matches Station Overview pattern -->
+    <!-- Additional Map Initialization Helper -->
     <script>
         // Force map initialization after page loads
         window.addEventListener('load', function() {
-            console.log('Window fully loaded - forcing map re-initialization');
+            console.log('Window fully loaded - checking map initialization');
             
-            // Add direct initialization just in case the earlier one failed
-            if (!window.map && typeof L !== 'undefined') {
-                console.log('Map not initialized yet, creating now');
-                try {
-                    // Create map directly
-                    window.map = L.map('map', {
-                        zoomControl: true,
-                        scrollWheelZoom: true,
-                        doubleClickZoom: true,
-                        dragging: true
-                    }).setView([39.8283, -98.5795], 4);
+            // First check if we have a valid Leaflet map object
+            setTimeout(function() {
+                if (typeof L !== 'undefined') {
+                    console.log('Leaflet is available');
                     
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                        maxZoom: 19
-                    }).addTo(window.map);
-                    
-                    console.log('Emergency map initialization complete');
-                } catch (error) {
-                    console.error('Error in emergency map initialization:', error);
-                }
-            }
-            
-            // Force multiple invalidateSizes to be absolutely sure it works
-            const delays = [100, 500, 1000, 2000, 3000];
-            delays.forEach(delay => {
-                setTimeout(function() {
-                    if (window.map) {
-                        console.log(`Forcing map invalidation after ${delay}ms`);
+                    if (window.map && typeof window.map.invalidateSize === 'function') {
+                        console.log('Map is properly initialized, forcing refresh');
                         window.map.invalidateSize(true);
+                    } else {
+                        console.log('Map not properly initialized, attempting emergency initialization');
+                        
+                        try {
+                            // Try to get map container
+                            const mapContainer = document.getElementById('map');
+                            if (!mapContainer) {
+                                console.error('Map container not found in DOM');
+                                return;
+                            }
+                            
+                            // Clear any previous map instance
+                            mapContainer.innerHTML = '';
+                            
+                            // Create fresh map instance
+                            window.map = L.map('map', {
+                                center: [39.8283, -98.5795],
+                                zoom: 4,
+                                zoomControl: true,
+                                scrollWheelZoom: true,
+                                doubleClickZoom: true,
+                                dragging: true
+                            });
+                            
+                            // Add base tile layer
+                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                                maxZoom: 19
+                            }).addTo(window.map);
+                            
+                            // Force resize after creation
+                            setTimeout(function() {
+                                if (window.map && typeof window.map.invalidateSize === 'function') {
+                                    window.map.invalidateSize(true);
+                                    console.log('Emergency map initialization successful');
+                                    
+                                    // Set up global variables needed by the app
+                                    window.drawnItems = new L.FeatureGroup();
+                                    window.map.addLayer(window.drawnItems);
+                                    
+                                    window.measurementLayer = new L.FeatureGroup();
+                                    window.map.addLayer(window.measurementLayer);
+                                }
+                            }, 100);
+                        } catch (error) {
+                            console.error('Error in emergency map initialization:', error);
+                        }
                     }
-                }, delay);
-            });
+                } else {
+                    console.error('Leaflet library not loaded');
+                }
+            }, 500);
         });
     </script>
 </body>
