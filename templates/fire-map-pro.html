@@ -50,6 +50,36 @@
     
     <!-- Favicon -->
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
+    <!-- Preload critical libraries -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+    
+    <!-- Force draw controls for extra reliability -->
+    <script>
+        // Add global initialization for Draw controls
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                // Check if draw controls exist, if not force them
+                if (!document.querySelector('.leaflet-draw')) {
+                    console.log('No Leaflet Draw controls found after load, forcing visibility...');
+                    const styleTag = document.createElement('style');
+                    styleTag.textContent = `
+                        .leaflet-draw, .leaflet-draw-toolbar, .leaflet-draw-toolbar a,
+                        .leaflet-draw.leaflet-control, .leaflet-draw-actions, .leaflet-draw-actions a,
+                        [class*="leaflet-draw"] {
+                            display: block !important;
+                            visibility: visible !important;
+                            opacity: 1 !important;
+                            z-index: 2000 !important;
+                            pointer-events: auto !important;
+                        }
+                    `;
+                    document.head.appendChild(styleTag);
+                }
+            }, 2000); // Check 2 seconds after load
+        });
+    </script>
 </head>
 <body>
     <div class="navbar">

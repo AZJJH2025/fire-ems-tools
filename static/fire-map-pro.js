@@ -148,6 +148,21 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, initializing FireMapPro...');
     
     try {
+        // Verify Leaflet and Leaflet.Draw are loaded
+        if (typeof L === 'undefined') {
+            console.error('CRITICAL ERROR: Leaflet is not loaded!');
+            injectLeafletScripts();
+            return;
+        }
+        
+        if (typeof L.Control.Draw === 'undefined') {
+            console.error('CRITICAL ERROR: Leaflet.Draw is not loaded!');
+            injectLeafletScripts();
+            return;
+        }
+        
+        console.log('Leaflet and Leaflet.Draw verified as loaded');
+        
         // Create the map
         initializeMap();
         console.log('Map initialized');
@@ -177,6 +192,9 @@ document.addEventListener('DOMContentLoaded', function() {
         setupEventListeners();
         console.log('Event listeners set up');
         
+        // Create the draw control for direct access (available even if not shown)
+        createGlobalDrawControl();
+        
         // Extra debug for draw tool button
         const drawButton = document.getElementById('draw-tool');
         if (drawButton) {
@@ -185,9 +203,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const newButton = drawButton.cloneNode(true);
             drawButton.parentNode.replaceChild(newButton, drawButton);
             
-            // Add direct handler
+            // Add direct handler with extra reliability
             newButton.addEventListener('click', function(e) {
                 console.log('Draw tool direct click handler triggered');
+                
+                // Create with direct flag set
+                window.directDrawControl = true;
                 toggleDrawControls();
             });
         } else {
@@ -198,6 +219,70 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Error during initialization:', error);
     }
 });
+
+/**
+ * Emergency injection of Leaflet scripts
+ */
+function injectLeafletScripts() {
+    console.log('EMERGENCY: Dynamically injecting Leaflet and Leaflet.Draw scripts');
+    
+    // Add Leaflet
+    const leafletScript = document.createElement('script');
+    leafletScript.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    leafletScript.onload = function() {
+        console.log('Leaflet loaded dynamically');
+        
+        // Add Leaflet.Draw after Leaflet is loaded
+        const drawScript = document.createElement('script');
+        drawScript.src = 'https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js';
+        drawScript.onload = function() {
+            console.log('Leaflet.Draw loaded dynamically');
+            
+            // Restart initialization process
+            setTimeout(function() {
+                window.location.reload();
+            }, 500);
+        };
+        document.head.appendChild(drawScript);
+    };
+    document.head.appendChild(leafletScript);
+}
+
+/**
+ * Create global draw control for backup access
+ */
+function createGlobalDrawControl() {
+    console.log('Creating global draw control');
+    
+    try {
+        if (!window.drawnItems) {
+            window.drawnItems = new L.FeatureGroup();
+            map.addLayer(window.drawnItems);
+        }
+        
+        window.globalDrawControl = new L.Control.Draw({
+            position: 'topright',
+            draw: {
+                polyline: { shapeOptions: { color: '#1976d2', weight: 3 } },
+                polygon: { 
+                    allowIntersection: false, 
+                    shapeOptions: { color: '#1976d2', weight: 3 }
+                },
+                rectangle: { shapeOptions: { color: '#1976d2', weight: 2 } },
+                circle: { shapeOptions: { color: '#1976d2', weight: 2 } },
+                marker: true
+            },
+            edit: {
+                featureGroup: window.drawnItems,
+                remove: true
+            }
+        });
+        
+        console.log('Global draw control created successfully');
+    } catch (e) {
+        console.error('Failed to create global draw control:', e);
+    }
+}
 
 /**
  * Initialize the Leaflet map with base layers
@@ -2042,6 +2127,35 @@ function toggleDrawControls() {
         // Get the draw button for reference
         const drawButton = document.getElementById('draw-tool');
         
+        // If we have a global control and no current control, use the global one
+        if (window.globalDrawControl && !drawControl) {
+            console.log('Using global draw control as fallback');
+            drawControl = window.globalDrawControl;
+        }
+        
+        // Check direct access flag (set in the event handler)
+        if (window.directDrawControl) {
+            console.log('Direct access mode - forcing draw control to be shown');
+            
+            // Force removal first if it exists
+            try {
+                if (drawControlExists && drawControlExists.parentNode) {
+                    drawControlExists.parentNode.removeChild(drawControlExists);
+                }
+                if (drawControl) {
+                    map.removeControl(drawControl);
+                }
+            } catch (e) {
+                console.log('Cleanup error:', e);
+            }
+            
+            window.directDrawControl = false;
+            
+            // Force visibility with a new control
+            createAndAddDrawControl();
+            return;
+        }
+        
         // Always set the active state based on whether we're going to show or hide the draw toolbar
         const showToolbar = !drawControlExists || drawControlExists.style.display === 'none';
         
@@ -2078,75 +2192,97 @@ function toggleDrawControls() {
                 console.error('Error removing draw control:', e);
             }
         } else {
-            // Add the draw control
-            console.log('Adding draw control to map');
-            
-            try {
-                // Remove any existing draw control to start fresh
-                try {
-                    if (drawControl) map.removeControl(drawControl);
-                } catch (e) {
-                    console.log('No previous control to remove');
-                }
-                
-                // Create a brand new control
-                drawControl = new L.Control.Draw({
-                    position: 'topright',
-                    draw: {
-                        polyline: { shapeOptions: { color: '#1976d2', weight: 3 } },
-                        polygon: { 
-                            allowIntersection: false, 
-                            shapeOptions: { color: '#1976d2', weight: 3 }
-                        },
-                        rectangle: { shapeOptions: { color: '#1976d2', weight: 2 } },
-                        circle: { shapeOptions: { color: '#1976d2', weight: 2 } },
-                        marker: true
-                    },
-                    edit: {
-                        featureGroup: drawnItems || new L.FeatureGroup(),
-                        remove: true
-                    }
-                });
-                
-                // Add it to the map
-                map.addControl(drawControl);
-                map.drawControlAdded = true;
-                
-                // Add active class to the tool button
-                if (drawButton) {
-                    drawButton.classList.add('active');
-                }
-                
-                // Show a prompt for measurement mode
-                let measurementMode = confirm('Do you want to activate measurement mode?\n\nClick OK to measure distances and areas.\nClick Cancel to draw features on the map.');
-                
-                window.measurementActive = measurementMode;
-                console.log('Measurement mode activated:', measurementMode);
-                
-                // Show measurement info panel if needed
-                if (window.measurementActive) {
-                    showMeasurementInfo();
-                }
-                
-                console.log('Draw control added successfully');
-                
-                // Force the control to be visible multiple times
-                forceShowDrawControls();
-                
-                // Set multiple timeouts to ensure CSS takes effect
-                for (let delay of [50, 100, 200, 500, 1000, 2000]) {
-                    setTimeout(forceShowDrawControls, delay);
-                }
-                
-            } catch (e) {
-                console.error('Error adding draw control:', e);
-                alert('Error with drawing tools. Trying recovery...');
-                emergencyRecreateDrawControl();
-            }
+            createAndAddDrawControl();
         }
     } catch (error) {
         console.error('Error in toggleDrawControls:', error);
         alert('An error occurred with the drawing tools. Attempting recovery...');
+        emergencyRecreateDrawControl();
+    }
+}
+
+/**
+ * Create and add draw control (extracted for reuse)
+ */
+function createAndAddDrawControl() {
+    console.log('Adding draw control to map');
+    const drawButton = document.getElementById('draw-tool');
+    
+    try {
+        // Remove any existing draw control to start fresh
+        try {
+            if (drawControl) map.removeControl(drawControl);
+        } catch (e) {
+            console.log('No previous control to remove');
+        }
+        
+        // Create a brand new control
+        drawControl = new L.Control.Draw({
+            position: 'topright',
+            draw: {
+                polyline: { shapeOptions: { color: '#1976d2', weight: 3 } },
+                polygon: { 
+                    allowIntersection: false, 
+                    shapeOptions: { color: '#1976d2', weight: 3 }
+                },
+                rectangle: { shapeOptions: { color: '#1976d2', weight: 2 } },
+                circle: { shapeOptions: { color: '#1976d2', weight: 2 } },
+                marker: true
+            },
+            edit: {
+                featureGroup: drawnItems || new L.FeatureGroup(),
+                remove: true
+            }
+        });
+        
+        // Add it to the map
+        map.addControl(drawControl);
+        map.drawControlAdded = true;
+        
+        // Add active class to the tool button
+        if (drawButton) {
+            drawButton.classList.add('active');
+        }
+        
+        // Create a style tag for guaranteed visibility
+        const styleTag = document.createElement('style');
+        styleTag.textContent = `
+            .leaflet-draw, .leaflet-draw-toolbar, .leaflet-draw-toolbar a, 
+            .leaflet-draw.leaflet-control, .leaflet-draw-actions, .leaflet-draw-actions a,
+            [class*="leaflet-draw"] {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                z-index: 2000 !important;
+                pointer-events: auto !important;
+            }
+        `;
+        document.head.appendChild(styleTag);
+        
+        // Show a prompt for measurement mode
+        let measurementMode = confirm('Do you want to activate measurement mode?\n\nClick OK to measure distances and areas.\nClick Cancel to draw features on the map.');
+        
+        window.measurementActive = measurementMode;
+        console.log('Measurement mode activated:', measurementMode);
+        
+        // Show measurement info panel if needed
+        if (window.measurementActive) {
+            showMeasurementInfo();
+        }
+        
+        console.log('Draw control added successfully');
+        
+        // Force the control to be visible multiple times
+        forceShowDrawControls();
+        
+        // Set multiple timeouts to ensure CSS takes effect
+        for (let delay of [50, 100, 200, 500, 1000, 2000]) {
+            setTimeout(forceShowDrawControls, delay);
+        }
+        
+    } catch (e) {
+        console.error('Error adding draw control:', e);
+        alert('Error with drawing tools. Trying recovery...');
         emergencyRecreateDrawControl();
     }
 }
