@@ -248,17 +248,70 @@ function initializeMap() {
  */
 function setupEventListeners() {
     // Base layer radio buttons
-    document.querySelector('input[name="base-layer"][value="street"]').addEventListener('change', function() {
-        setBaseLayer('Street');
-    });
+    console.log('Setting up base layer radio button listeners');
     
-    document.querySelector('input[name="base-layer"][value="satellite"]').addEventListener('change', function() {
-        setBaseLayer('Satellite');
-    });
+    // Use direct ID selectors instead of attribute selectors
+    const streetRadio = document.getElementById('street-layer');
+    const satelliteRadio = document.getElementById('satellite-layer');
+    const terrainRadio = document.getElementById('terrain-layer');
     
-    document.querySelector('input[name="base-layer"][value="terrain"]').addEventListener('change', function() {
-        setBaseLayer('Terrain');
-    });
+    if (!streetRadio || !satelliteRadio || !terrainRadio) {
+        console.error('Base layer radio buttons not found in the DOM:', {
+            street: !!streetRadio, 
+            satellite: !!satelliteRadio, 
+            terrain: !!terrainRadio
+        });
+        
+        // Emergency fallback - try to find them again with different selectors
+        const allRadios = document.querySelectorAll('input[type="radio"]');
+        console.log('All radio buttons found:', allRadios.length);
+        allRadios.forEach(radio => {
+            console.log(`Radio button: id=${radio.id}, name=${radio.name}, value=${radio.value}`);
+        });
+    } else {
+        console.log('Base layer radio buttons found, attaching listeners');
+        
+        // Use both change and click event to ensure it works in all browsers
+        streetRadio.addEventListener('change', function() {
+            console.log('Street radio button changed');
+            setBaseLayer('Street');
+        });
+        
+        streetRadio.addEventListener('click', function() {
+            console.log('Street radio button clicked');
+            setBaseLayer('Street');
+        });
+        
+        satelliteRadio.addEventListener('change', function() {
+            console.log('Satellite radio button changed');
+            setBaseLayer('Satellite');
+        });
+        
+        satelliteRadio.addEventListener('click', function() {
+            console.log('Satellite radio button clicked');
+            setBaseLayer('Satellite');
+        });
+        
+        terrainRadio.addEventListener('change', function() {
+            console.log('Terrain radio button changed');
+            setBaseLayer('Terrain');
+        });
+        
+        terrainRadio.addEventListener('click', function() {
+            console.log('Terrain radio button clicked');
+            setBaseLayer('Terrain');
+        });
+        
+        // Add a direct global click handler for all radio buttons as a fallback
+        document.querySelectorAll('input[name="base-layer"]').forEach(radio => {
+            radio.onclick = function() {
+                console.log(`Radio clicked: ${this.id} with value ${this.value}`);
+                if (this.value === 'street') setBaseLayer('Street');
+                if (this.value === 'satellite') setBaseLayer('Satellite');
+                if (this.value === 'terrain') setBaseLayer('Terrain');
+            };
+        });
+    }
     
     // Overlay checkboxes
     document.getElementById('stations-layer').addEventListener('change', function() {
@@ -653,12 +706,30 @@ function setBaseLayer(layerName) {
         
         if (!window.baseLayers) {
             console.error('Base layers not defined');
+            console.log('Available global variables:', Object.keys(window));
             return;
         }
         
+        // Normalize layer name to handle case sensitivity
+        let normalizedLayerName = layerName;
+        
+        // Check if we need to fix case
         if (!window.baseLayers[layerName]) {
-            console.error(`Base layer '${layerName}' not found`);
-            return;
+            // Try different capitalizations
+            const layerKeys = Object.keys(window.baseLayers);
+            console.log('Available layers:', layerKeys);
+            
+            // Find case-insensitive match
+            const matchingKey = layerKeys.find(k => 
+                k.toLowerCase() === layerName.toLowerCase());
+            
+            if (matchingKey) {
+                normalizedLayerName = matchingKey;
+                console.log(`Found matching layer with different case: ${matchingKey}`);
+            } else {
+                console.error(`Base layer '${layerName}' not found in available layers`);
+                return;
+            }
         }
         
         // Debug logging
@@ -680,8 +751,8 @@ function setBaseLayer(layerName) {
         }
         
         // Add the selected base layer
-        map.addLayer(window.baseLayers[layerName]);
-        console.log(`Added base layer: ${layerName}`);
+        map.addLayer(window.baseLayers[normalizedLayerName]);
+        console.log(`Added base layer: ${normalizedLayerName}`);
         
         // Using setTimeout to ensure rendering is complete
         setTimeout(() => {
@@ -693,17 +764,47 @@ function setBaseLayer(layerName) {
         const radioButtons = document.querySelectorAll('input[name="base-layer"]');
         let foundMatch = false;
         
+        // Print all available radio buttons for debugging
+        console.log('Available radio buttons:');
         radioButtons.forEach(radio => {
-            // Match format in both cases (Street = street, etc.)
-            if (radio.value.toLowerCase() === layerName.toLowerCase()) {
-                radio.checked = true;
-                console.log(`Set radio button for ${radio.value} to checked`);
-                foundMatch = true;
-            }
+            console.log(`- ${radio.id}: value=${radio.value}, checked=${radio.checked}`);
         });
         
+        // Manually set the correct radio button based on layer name
+        if (normalizedLayerName.toLowerCase() === 'street') {
+            const streetRadio = document.getElementById('street-layer');
+            if (streetRadio) {
+                streetRadio.checked = true;
+                console.log('Set street radio button to checked');
+                foundMatch = true;
+            }
+        } else if (normalizedLayerName.toLowerCase() === 'satellite') {
+            const satelliteRadio = document.getElementById('satellite-layer');
+            if (satelliteRadio) {
+                satelliteRadio.checked = true;
+                console.log('Set satellite radio button to checked');
+                foundMatch = true;
+            }
+        } else if (normalizedLayerName.toLowerCase() === 'terrain') {
+            const terrainRadio = document.getElementById('terrain-layer');
+            if (terrainRadio) {
+                terrainRadio.checked = true;
+                console.log('Set terrain radio button to checked');
+                foundMatch = true;
+            }
+        }
+        
         if (!foundMatch) {
-            console.warn(`No radio button found matching "${layerName}"`);
+            console.warn(`No radio button found matching "${normalizedLayerName}"`);
+            
+            // Emergency fallback - check by value
+            radioButtons.forEach(radio => {
+                if (radio.value.toLowerCase() === normalizedLayerName.toLowerCase()) {
+                    radio.checked = true;
+                    console.log(`Set radio button for ${radio.value} to checked (fallback)`);
+                    foundMatch = true;
+                }
+            });
         }
     } catch (error) {
         console.error('Error in setBaseLayer:', error);
@@ -1772,8 +1873,10 @@ function togglePanel(panelId) {
         
         const isCurrentlyVisible = targetPanel.style.display === 'block';
         
-        // Hide all panels first
-        document.querySelectorAll('.panel, .tool-panel, .icon-container, .search-container, .filter-container, .export-container')
+        console.log(`Panel ${panelId} visibility status: ${isCurrentlyVisible ? 'visible' : 'hidden'}`);
+        
+        // Hide all panels first - check the actual panel IDs from HTML
+        document.querySelectorAll('.panel, .tool-panel, .tools-section, #icon-container, #search-container, #filter-container, #export-container')
             .forEach(function(panel) {
                 panel.style.display = 'none';
                 console.log(`Hidden panel: ${panel.id || 'unnamed panel'}`);
@@ -3102,11 +3205,11 @@ function initializeDragAndDrop() {
             
             // Add drag start event
             icon.addEventListener('dragstart', function(e) {
-                console.log('Drag started for icon:', this.dataset.type);
+                console.log('Drag started for icon:', this.dataset.icon);
                 
                 // Set the data for the drag operation
                 e.dataTransfer.setData('text/plain', JSON.stringify({
-                    type: this.dataset.type,
+                    type: this.dataset.icon,
                     color: this.dataset.color || '#ff0000'
                 }));
                 
