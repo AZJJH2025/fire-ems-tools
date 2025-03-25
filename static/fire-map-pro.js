@@ -13,6 +13,136 @@ let customDataLayers = {};
 let searchControl;
 let measurementActive = false;
 
+// Base layers storage
+window.streetLayer = null;
+window.satelliteLayer = null;
+window.terrainLayer = null;
+window.baseLayers = {};
+
+/**
+ * Direct implementation of layer switching for fixing radio button issues
+ * This function works independently from the main setBaseLayer function
+ */
+function directSwitchLayer(layerType) {
+    console.log(`Direct layer switch: ${layerType}`);
+    
+    if (!map) {
+        console.error('[Direct] Map not initialized');
+        return false;
+    }
+    
+    try {
+        // Normalize layer name
+        const layer = layerType.toString().toLowerCase().trim();
+        
+        // Create layers if they don't exist
+        if (!window.streetLayer) {
+            window.streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            });
+        }
+        
+        if (!window.satelliteLayer) {
+            window.satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Imagery &copy; Esri',
+                maxZoom: 19
+            });
+        }
+        
+        if (!window.terrainLayer) {
+            window.terrainLayer = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.png', {
+                attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>',
+                maxZoom: 18
+            });
+        }
+        
+        // Remove all existing base layers
+        [window.streetLayer, window.satelliteLayer, window.terrainLayer].forEach(baseLayer => {
+            if (baseLayer && map.hasLayer(baseLayer)) {
+                map.removeLayer(baseLayer);
+            }
+        });
+        
+        // Add selected base layer
+        if (layer === 'street') {
+            map.addLayer(window.streetLayer);
+            document.getElementById('street-layer').checked = true;
+            console.log('[Direct] Added street layer');
+        } 
+        else if (layer === 'satellite') {
+            map.addLayer(window.satelliteLayer);
+            document.getElementById('satellite-layer').checked = true;
+            console.log('[Direct] Added satellite layer');
+        }
+        else if (layer === 'terrain') {
+            map.addLayer(window.terrainLayer);
+            document.getElementById('terrain-layer').checked = true;
+            console.log('[Direct] Added terrain layer');
+        }
+        else {
+            console.error(`[Direct] Unknown layer: ${layer}`);
+            return false;
+        }
+        
+        // Force map redraw
+        setTimeout(() => map.invalidateSize(true), 100);
+        return true;
+    }
+    catch (error) {
+        console.error('[Direct] Error switching layer:', error);
+        return false;
+    }
+}
+
+/**
+ * Setup direct layer switching that bypasses any issues in the existing code
+ */
+function setupDirectLayerSwitching() {
+    console.log('Setting up direct layer switching handlers...');
+    
+    // Get all radio buttons
+    const radioButtons = document.querySelectorAll('input[name="base-layer"]');
+    
+    if (radioButtons.length === 0) {
+        console.error('No base layer radio buttons found');
+        return;
+    }
+    
+    // Clear existing listeners by cloning and replacing
+    radioButtons.forEach(radio => {
+        const newRadio = radio.cloneNode(true);
+        radio.parentNode.replaceChild(newRadio, radio);
+        
+        // Add robust direct click handler
+        newRadio.addEventListener('click', function(e) {
+            const value = this.value;
+            console.log(`[Direct] Radio button clicked: ${value}`);
+            directSwitchLayer(value);
+        });
+    });
+    
+    // Set up label handlers too
+    const labels = document.querySelectorAll('label[for^="street-layer"], label[for^="satellite-layer"], label[for^="terrain-layer"]');
+    
+    labels.forEach(label => {
+        const newLabel = label.cloneNode(true);
+        label.parentNode.replaceChild(newLabel, label);
+        
+        newLabel.addEventListener('click', function(e) {
+            const forValue = this.getAttribute('for');
+            const radio = document.getElementById(forValue);
+            if (radio) {
+                const value = radio.value;
+                console.log(`[Direct] Label clicked: ${value}`);
+                directSwitchLayer(value);
+            }
+        });
+    });
+    
+    console.log('Direct layer switching set up successfully');
+}
+
 // Initialize the map when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, initializing FireMapPro...');
@@ -25,6 +155,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // Set up event listeners
         setupEventListeners();
         console.log('Event listeners set up');
+        
+        // Set up direct layer switching (for robustness)
+        setupDirectLayerSwitching();
+        console.log('Direct layer switching initialized');
         
         // Initialize tools
         initializeDrawingTools();
@@ -1882,36 +2016,13 @@ function toggleDrawControls() {
     
     try {
         if (!map) {
-            console.error('Map is not initialized yet');
+            console.error('Map not initialized yet');
             alert('Map is not ready. Please refresh the page and try again.');
             return;
         }
         
-        // Initialize drawing tools if needed
-        if (!drawControl) {
-            console.log('Draw control not initialized - initializing now');
-            initializeDrawingTools();
-            
-            if (!drawControl) {
-                console.error('Drawing tools initialization failed');
-                alert('Drawing tools could not be initialized. Please refresh the page and try again.');
-                return;
-            }
-        }
-        
-        // Define measurement layer if it doesn't exist
-        if (!window.measurementLayer) {
-            console.log('Creating measurement layer');
-            window.measurementLayer = new L.FeatureGroup();
-            map.addLayer(window.measurementLayer);
-        }
-        
-        // Define drawn items layer if it doesn't exist
-        if (!window.drawnItems) {
-            console.log('Creating drawn items layer');
-            window.drawnItems = new L.FeatureGroup();
-            map.addLayer(window.drawnItems);
-        }
+        // Ensure we have a valid draw control
+        ensureDrawControl();
         
         // Check if draw control is already on the map
         const drawControlExists = document.querySelector('.leaflet-draw');
@@ -1919,7 +2030,11 @@ function toggleDrawControls() {
         if (drawControlExists) {
             // Remove the draw control
             console.log('Removing draw control');
-            map.removeControl(drawControl);
+            try {
+                map.removeControl(drawControl);
+            } catch (e) {
+                console.error('Error removing draw control:', e);
+            }
             
             // Reset measurement state
             window.measurementActive = false;
@@ -1934,38 +2049,255 @@ function toggleDrawControls() {
                 drawButton.classList.remove('active');
             }
             
-            console.log('Draw control removed successfully');
+            console.log('Draw control removed');
         } else {
             // Add the draw control
             console.log('Adding draw control to map');
-            map.addControl(drawControl);
-            map.drawControlAdded = true;
-            
-            // Add active class to the tool button
-            const drawButton = document.getElementById('draw-tool');
-            if (drawButton) {
-                drawButton.classList.add('active');
-            }
-            
-            // Show a prompt to determine if we're in measurement mode
-            let measurementMode = confirm('Do you want to activate measurement mode?\n\nClick OK to measure distances and areas.\nClick Cancel to draw features on the map.');
-            
-            window.measurementActive = measurementMode;
-            console.log('Measurement mode activated:', measurementMode);
-            
-            // Show measurement info panel if in measurement mode
-            if (window.measurementActive) {
-                const success = showMeasurementInfo();
-                if (!success) {
-                    console.error('Failed to show measurement info panel');
+            try {
+                map.addControl(drawControl);
+                map.drawControlAdded = true;
+                
+                // Force visibility with CSS
+                forceShowDrawControls();
+                
+                // Add active class to the tool button
+                const drawButton = document.getElementById('draw-tool');
+                if (drawButton) {
+                    drawButton.classList.add('active');
                 }
+                
+                // Show a prompt for measurement mode
+                let measurementMode = confirm('Do you want to activate measurement mode?\n\nClick OK to measure distances and areas.\nClick Cancel to draw features on the map.');
+                
+                window.measurementActive = measurementMode;
+                console.log('Measurement mode activated:', measurementMode);
+                
+                // Show measurement info panel if needed
+                if (window.measurementActive) {
+                    showMeasurementInfo();
+                }
+                
+                console.log('Draw control added successfully');
+            } catch (e) {
+                console.error('Error adding draw control:', e);
+                
+                // Try emergency recovery
+                emergencyRecreateDrawControl();
             }
-            
-            console.log('Draw control added successfully');
         }
+        
+        // Force a timeout to ensure CSS visibility takes effect
+        setTimeout(forceShowDrawControls, 100);
+        setTimeout(forceShowDrawControls, 500);
+        
     } catch (error) {
         console.error('Error in toggleDrawControls:', error);
-        alert('An error occurred while toggling the drawing controls. Please try again.');
+        alert('An error occurred with the drawing tools. Attempting recovery...');
+        emergencyRecreateDrawControl();
+    }
+}
+
+/**
+ * Force CSS visibility on the drawing controls
+ */
+function forceShowDrawControls() {
+    console.log('Forcing draw control visibility');
+    
+    try {
+        // Find the draw control elements
+        const drawToolbar = document.querySelector('.leaflet-draw.leaflet-control');
+        
+        if (!drawToolbar) {
+            console.warn('Draw toolbar not found in DOM');
+            return;
+        }
+        
+        // Force visibility with inline styles
+        drawToolbar.style.display = 'block';
+        drawToolbar.style.visibility = 'visible';
+        drawToolbar.style.opacity = '1';
+        drawToolbar.style.pointerEvents = 'auto';
+        
+        // Style the toolbar buttons
+        const buttons = document.querySelectorAll('.leaflet-draw-toolbar a');
+        buttons.forEach(button => {
+            button.style.display = 'block';
+            button.style.visibility = 'visible';
+        });
+        
+        console.log('Draw controls visibility enforced');
+    } catch (error) {
+        console.error('Error forcing draw control visibility:', error);
+    }
+}
+
+/**
+ * Ensure we have a valid draw control
+ */
+function ensureDrawControl() {
+    // Create measurement layer if it doesn't exist
+    if (!window.measurementLayer) {
+        console.log('Creating measurement layer');
+        window.measurementLayer = new L.FeatureGroup();
+        map.addLayer(window.measurementLayer);
+    }
+    
+    // Create drawn items layer if it doesn't exist
+    if (!window.drawnItems) {
+        console.log('Creating drawn items layer');
+        window.drawnItems = new L.FeatureGroup();
+        map.addLayer(window.drawnItems);
+    }
+    
+    // Create draw control if it doesn't exist
+    if (!drawControl) {
+        console.log('Creating new draw control');
+        
+        try {
+            // Check if L.Control.Draw is available
+            if (typeof L.Control.Draw !== 'undefined') {
+                // Create drawing control with options
+                drawControl = new L.Control.Draw({
+                    position: 'topright',
+                    draw: {
+                        polyline: {
+                            shapeOptions: {
+                                color: '#1976d2',
+                                weight: 3
+                            }
+                        },
+                        polygon: {
+                            allowIntersection: false,
+                            shapeOptions: {
+                                color: '#1976d2',
+                                weight: 3
+                            }
+                        },
+                        rectangle: {
+                            shapeOptions: {
+                                color: '#1976d2',
+                                weight: 2
+                            }
+                        },
+                        circle: {
+                            shapeOptions: {
+                                color: '#1976d2',
+                                weight: 2
+                            }
+                        },
+                        marker: true
+                    },
+                    edit: {
+                        featureGroup: drawnItems,
+                        remove: true
+                    }
+                });
+                
+                console.log('Draw control created successfully');
+                
+                // Set up creation handler if it doesn't exist
+                if (!map._drawCreationHandler) {
+                    map.on(L.Draw.Event.CREATED, function(e) {
+                        console.log('Draw event created:', e.layerType);
+                        
+                        const layer = e.layer;
+                        layer.options.type = e.layerType;
+                        
+                        if (window.measurementActive) {
+                            attachMeasurementPopup(layer, e.layerType);
+                            measurementLayer.addLayer(layer);
+                            updateMeasurementDisplay(layer, e.layerType);
+                        } else {
+                            attachInfoPopup(layer, e.layerType);
+                            drawnItems.addLayer(layer);
+                        }
+                    });
+                    
+                    map._drawCreationHandler = true;
+                }
+            } else {
+                console.error('L.Control.Draw not available - loading dynamically');
+                loadLeafletDrawDynamically();
+            }
+        } catch (error) {
+            console.error('Error creating draw control:', error);
+            loadLeafletDrawDynamically();
+        }
+    }
+}
+
+/**
+ * Load Leaflet.Draw dynamically as a fallback
+ */
+function loadLeafletDrawDynamically() {
+    console.log('Loading Leaflet.Draw dynamically');
+    
+    // Add the script dynamically
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js';
+    script.onload = function() {
+        console.log('Leaflet.Draw loaded successfully');
+        
+        // Add CSS
+        if (!document.querySelector('link[href*="leaflet.draw.css"]')) {
+            const css = document.createElement('link');
+            css.rel = 'stylesheet';
+            css.href = 'https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css';
+            document.head.appendChild(css);
+        }
+        
+        // Create draw control
+        setTimeout(function() {
+            ensureDrawControl();
+            toggleDrawControls();
+        }, 500);
+    };
+    
+    document.head.appendChild(script);
+}
+
+/**
+ * Emergency recreation of draw control when things go wrong
+ */
+function emergencyRecreateDrawControl() {
+    console.log('EMERGENCY: Attempting to recover draw controls');
+    
+    try {
+        // Remove any existing controls
+        const existingControls = document.querySelectorAll('.leaflet-draw');
+        existingControls.forEach(control => {
+            control.remove();
+        });
+        
+        // Reset state
+        drawControl = null;
+        
+        // Recreate layers
+        if (window.drawnItems) {
+            map.removeLayer(window.drawnItems);
+        }
+        
+        if (window.measurementLayer) {
+            map.removeLayer(window.measurementLayer);
+        }
+        
+        window.drawnItems = new L.FeatureGroup();
+        window.measurementLayer = new L.FeatureGroup();
+        
+        map.addLayer(window.drawnItems);
+        map.addLayer(window.measurementLayer);
+        
+        // Create new control
+        ensureDrawControl();
+        
+        // Try to add it to the map again
+        if (drawControl) {
+            map.addControl(drawControl);
+            forceShowDrawControls();
+            console.log('Draw controls recovered successfully');
+        }
+    } catch (error) {
+        console.error('Recovery failed:', error);
     }
 }
 
