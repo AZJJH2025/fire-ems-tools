@@ -237,53 +237,116 @@ function setupEventListeners() {
     // Base layer radio buttons - simplified and improved
     console.log('Setting up base layer radio button listeners');
     
-    // Direct and simplified approach with a robust event binding
+    // Complete rewrite of base layer radio button handling
     function setupMapLayerRadioButtons() {
-        // Get all radio buttons and set up their event handlers
-        document.querySelectorAll('input[name="base-layer"]').forEach(radio => {
-            // Print what we found to help debug
-            console.log(`Found radio button: ${radio.id}, value: ${radio.value}`);
+        // Find all base layer radio buttons
+        const radioButtons = document.querySelectorAll('input[name="base-layer"]');
+        
+        if (radioButtons.length === 0) {
+            console.error('No base layer radio buttons found in the DOM');
+            return;
+        }
+        
+        console.log(`Found ${radioButtons.length} base layer radio buttons`);
+        
+        // Replace all radio buttons with fresh copies to remove any existing listeners
+        radioButtons.forEach(radio => {
+            console.log(`Setting up radio button: id=${radio.id}, value=${radio.value}`);
             
-            // Remove any existing handlers first to avoid duplicates
-            radio.removeEventListener('change', handleLayerChange);
-            radio.removeEventListener('click', handleLayerChange);
+            // Clone and replace to remove all existing handlers
+            const newRadio = radio.cloneNode(true);
+            radio.parentNode.replaceChild(newRadio, radio);
             
-            // Add fresh handlers for both events
-            radio.addEventListener('change', handleLayerChange);
-            radio.addEventListener('click', handleLayerChange);
+            // Add direct click handler for immediate response
+            newRadio.addEventListener('click', handleMapLayerChange);
+            
+            // Add change handler as backup
+            newRadio.addEventListener('change', handleMapLayerChange);
         });
         
-        console.log('Successfully set up all layer radio buttons');
+        console.log('Base layer radio buttons setup complete');
     }
     
-    // The actual handler function 
-    function handleLayerChange(event) {
-        const value = event.target.value;
-        console.log(`Layer radio changed: id=${event.target.id}, value=${value}`);
+    // The handler function for layer changes
+    function handleMapLayerChange(event) {
+        // Prevent any default behavior and stop event propagation
+        event.preventDefault();
+        event.stopPropagation();
         
-        if (value === 'street') {
-            setBaseLayer('street');
-        } else if (value === 'satellite') {
-            setBaseLayer('satellite');
-        } else if (value === 'terrain') {
-            setBaseLayer('terrain');
-        }
+        // Get the selected value
+        const value = this.value;
+        console.log(`Base layer selection: ${value}`);
+        
+        // Switch the layer immediately
+        setBaseLayer(value);
+        
+        // Force UI update to match
+        const radioButtons = document.querySelectorAll('input[name="base-layer"]');
+        radioButtons.forEach(radio => {
+            radio.checked = (radio.value === value);
+        });
+        
+        return false; // Prevent further event handling
     }
     
     // Run the setup
     setupMapLayerRadioButtons();
     
-    // Also set a global click detector as a fail-safe backup
-    document.addEventListener('click', function(event) {
-        // If a radio button with name="base-layer" was clicked
-        if (event.target.type === 'radio' && event.target.name === 'base-layer') {
-            console.log(`Global detector caught radio button click: ${event.target.id}`);
-            handleLayerChange(event);
-        }
+    // Add a direct handler to each label as well
+    const radioLabels = document.querySelectorAll('label[for^="street-layer"], label[for^="satellite-layer"], label[for^="terrain-layer"]');
+    radioLabels.forEach(label => {
+        const forValue = label.getAttribute('for');
+        console.log(`Setting up label handler for: ${forValue}`);
+        
+        // Clone and replace to remove existing handlers
+        const newLabel = label.cloneNode(true);
+        label.parentNode.replaceChild(newLabel, label);
+        
+        // Add click handler
+        newLabel.addEventListener('click', function() {
+            const radioId = this.getAttribute('for');
+            const radio = document.getElementById(radioId);
+            
+            if (radio) {
+                // Set the radio button checked
+                radio.checked = true;
+                
+                // Get the value and switch layer
+                const value = radio.value;
+                console.log(`Label clicked for ${radioId}, switching to ${value}`);
+                setBaseLayer(value);
+            }
+        });
     });
     
-    // Ensure street layer is initially selected
+    // Add a container-level event handler as last resort
+    const radioGroup = document.querySelector('.radio-group');
+    if (radioGroup) {
+        radioGroup.addEventListener('click', function(e) {
+            const target = e.target;
+            
+            // Handle clicks on radio buttons
+            if (target.type === 'radio' && target.name === 'base-layer') {
+                console.log(`Radio group container caught click: ${target.value}`);
+                setBaseLayer(target.value);
+            }
+            // Handle clicks on labels
+            else if (target.tagName === 'LABEL' && target.getAttribute('for')) {
+                const radioId = target.getAttribute('for');
+                const radio = document.getElementById(radioId);
+                
+                if (radio && radio.name === 'base-layer') {
+                    console.log(`Radio group container caught label click: ${radio.value}`);
+                    radio.checked = true;
+                    setBaseLayer(radio.value);
+                }
+            }
+        });
+    }
+    
+    // Set initial state - make sure street layer is visible and radio is checked
     document.getElementById('street-layer').checked = true;
+    setBaseLayer('street');
     
     // Overlay checkboxes
     document.getElementById('stations-layer').addEventListener('change', function() {
@@ -733,86 +796,184 @@ function createCustomMarkerIcon(type, color) {
  * @param {string} layerName - The name of the layer to set
  */
 function setBaseLayer(layerName) {
-    console.log(`Direct layer switch to: ${layerName}`);
+    console.log(`Layer switch requested to: ${layerName}`);
     
     try {
         // Safety check
         if (!map) {
             console.error('Map not initialized yet');
-            return;
+            return false;
         }
         
-        // Create base layers on demand if they don't exist
-        if (!window.streetLayer) {
-            window.streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                maxZoom: 19
-            });
-            console.log('Created street layer');
-        }
+        // Normalize layerName to handle case-insensitive matching
+        const layer = layerName.toString().toLowerCase().trim();
+        console.log(`Normalized layer name: ${layer}`);
         
-        if (!window.satelliteLayer) {
-            window.satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                attribution: 'Imagery &copy; Esri',
-                maxZoom: 19
-            });
-            console.log('Created satellite layer');
-        }
+        // Initialize base layers if needed
+        initializeBaseLayers();
         
-        if (!window.terrainLayer) {
-            window.terrainLayer = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.png', {
-                attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>',
-                maxZoom: 18
-            });
-            console.log('Created terrain layer');
-        }
+        // Store current center and zoom to restore after layer change
+        const currentCenter = map.getCenter();
+        const currentZoom = map.getZoom();
+        console.log(`Current position: ${currentCenter.lat.toFixed(5)}, ${currentCenter.lng.toFixed(5)}, zoom: ${currentZoom}`);
         
-        // Remove all base layers first
-        if (window.streetLayer && map.hasLayer(window.streetLayer)) {
-            map.removeLayer(window.streetLayer);
-            console.log('Removed street layer');
-        }
+        // Remove all existing base layers
+        removeAllBaseLayers();
         
-        if (window.satelliteLayer && map.hasLayer(window.satelliteLayer)) {
-            map.removeLayer(window.satelliteLayer);
-            console.log('Removed satellite layer');
-        }
+        // Add the requested layer and update radio button state
+        let success = false;
         
-        if (window.terrainLayer && map.hasLayer(window.terrainLayer)) {
-            map.removeLayer(window.terrainLayer);
-            console.log('Removed terrain layer');
-        }
-        
-        // Now add the requested layer
-        if (layerName.toLowerCase() === 'street') {
-            map.addLayer(window.streetLayer);
-            document.getElementById('street-layer').checked = true;
-            console.log('Added street layer and set radio button');
+        if (layer === 'street') {
+            window.streetLayer.addTo(map);
+            success = true;
+            console.log('Street layer added successfully');
         } 
-        else if (layerName.toLowerCase() === 'satellite') {
-            map.addLayer(window.satelliteLayer);
-            document.getElementById('satellite-layer').checked = true;
-            console.log('Added satellite layer and set radio button');
+        else if (layer === 'satellite') {
+            window.satelliteLayer.addTo(map);
+            success = true;
+            console.log('Satellite layer added successfully');
         }
-        else if (layerName.toLowerCase() === 'terrain') {
-            map.addLayer(window.terrainLayer);
-            document.getElementById('terrain-layer').checked = true;
-            console.log('Added terrain layer and set radio button');
+        else if (layer === 'terrain') {
+            window.terrainLayer.addTo(map);
+            success = true;
+            console.log('Terrain layer added successfully');
         }
         else {
-            console.error(`Unknown layer name: ${layerName}`);
-            return;
+            console.error(`Unknown layer name: ${layer}`);
+            // Fallback to street layer
+            window.streetLayer.addTo(map);
+            console.log('Fallback to street layer');
+            success = true;
         }
         
-        // Force map redraw
+        // Update UI to match the current layer
+        updateRadioButtonState(layer);
+        
+        // Restore the map position and zoom
+        map.setView(currentCenter, currentZoom, { animate: false });
+        
+        // Force map to refresh
+        map.invalidateSize(true);
+        
+        // Add another delayed refresh for good measure
         setTimeout(() => {
             map.invalidateSize(true);
             console.log('Map size invalidated after layer change');
         }, 100);
         
+        return success;
     } catch (error) {
         console.error('Error in setBaseLayer:', error);
-        alert('There was an error changing the map layer. Please try again.');
+        
+        // Try to recover by adding the street layer as a fallback
+        try {
+            if (window.streetLayer) {
+                window.streetLayer.addTo(map);
+                updateRadioButtonState('street');
+                console.log('Recovered by adding street layer');
+            }
+        } catch (recoveryError) {
+            console.error('Recovery failed:', recoveryError);
+        }
+        
+        return false;
+    }
+}
+
+/**
+ * Initialize all base layers
+ */
+function initializeBaseLayers() {
+    // Create street layer if it doesn't exist
+    if (!window.streetLayer) {
+        window.streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19
+        });
+        console.log('Created street layer');
+    }
+    
+    // Create satellite layer if it doesn't exist
+    if (!window.satelliteLayer) {
+        window.satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Imagery &copy; Esri',
+            maxZoom: 19
+        });
+        console.log('Created satellite layer');
+    }
+    
+    // Create terrain layer if it doesn't exist
+    if (!window.terrainLayer) {
+        window.terrainLayer = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.png', {
+            attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>',
+            maxZoom: 18
+        });
+        console.log('Created terrain layer');
+    }
+    
+    // Store in a collection for easier management
+    window.baseLayers = {
+        'street': window.streetLayer,
+        'satellite': window.satelliteLayer,
+        'terrain': window.terrainLayer
+    };
+    
+    console.log('All base layers initialized');
+}
+
+/**
+ * Remove all base layers from the map
+ */
+function removeAllBaseLayers() {
+    // Explicitly remove each layer if it's on the map
+    if (window.streetLayer && map.hasLayer(window.streetLayer)) {
+        map.removeLayer(window.streetLayer);
+        console.log('Removed street layer');
+    }
+    
+    if (window.satelliteLayer && map.hasLayer(window.satelliteLayer)) {
+        map.removeLayer(window.satelliteLayer);
+        console.log('Removed satellite layer');
+    }
+    
+    if (window.terrainLayer && map.hasLayer(window.terrainLayer)) {
+        map.removeLayer(window.terrainLayer);
+        console.log('Removed terrain layer');
+    }
+}
+
+/**
+ * Update all radio buttons to match the current layer
+ */
+function updateRadioButtonState(activeLayer) {
+    // Clear all checked states first
+    const radioButtons = document.querySelectorAll('input[name="base-layer"]');
+    radioButtons.forEach(radio => {
+        radio.checked = false;
+    });
+    
+    // Set the active layer's radio button
+    let activeRadio;
+    
+    switch (activeLayer) {
+        case 'street':
+            activeRadio = document.getElementById('street-layer');
+            break;
+        case 'satellite':
+            activeRadio = document.getElementById('satellite-layer');
+            break;
+        case 'terrain':
+            activeRadio = document.getElementById('terrain-layer');
+            break;
+        default:
+            activeRadio = document.getElementById('street-layer');
+    }
+    
+    if (activeRadio) {
+        activeRadio.checked = true;
+        console.log(`Set radio button checked: ${activeRadio.id}`);
+    } else {
+        console.warn(`Radio button for ${activeLayer} not found in DOM`);
     }
 }
 
