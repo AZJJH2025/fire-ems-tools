@@ -2032,19 +2032,34 @@ function toggleDrawControls() {
         // Always ensure we have a valid draw control
         ensureDrawControl();
         
-        // Check if draw control is already on the map (look for the actual DOM element)
-        const drawControlExists = document.querySelector('.leaflet-draw');
+        // Check if draw control is already on the map (using multiple selector patterns)
+        let drawControlExists = document.querySelector('.leaflet-draw.leaflet-control');
+        if (!drawControlExists) drawControlExists = document.querySelector('.leaflet-draw');
+        if (!drawControlExists) drawControlExists = document.querySelector('[class*="leaflet-draw"]');
+        
         console.log('Draw control exists in DOM:', !!drawControlExists);
         
         // Get the draw button for reference
         const drawButton = document.getElementById('draw-tool');
         
-        // SIMPLIFIED LOGIC: Just add the control if it doesn't exist, otherwise remove it
-        if (drawControlExists && drawControlExists.style.display !== 'none') {
+        // Always set the active state based on whether we're going to show or hide the draw toolbar
+        const showToolbar = !drawControlExists || drawControlExists.style.display === 'none';
+        
+        // Track visibility for toggle state
+        window.drawControlsVisible = !window.drawControlsVisible;
+        
+        if (!showToolbar && drawControlExists) {
             // Remove the draw control
             console.log('Removing draw control');
             try {
-                map.removeControl(drawControl);
+                if (drawControl) {
+                    map.removeControl(drawControl);
+                }
+                
+                // Also try removing any lingering DOM elements
+                if (drawControlExists && drawControlExists.parentNode) {
+                    drawControlExists.parentNode.removeChild(drawControlExists);
+                }
                 
                 // Reset measurement state
                 window.measurementActive = false;
@@ -2067,7 +2082,14 @@ function toggleDrawControls() {
             console.log('Adding draw control to map');
             
             try {
-                // Create a brand new control each time for reliability
+                // Remove any existing draw control to start fresh
+                try {
+                    if (drawControl) map.removeControl(drawControl);
+                } catch (e) {
+                    console.log('No previous control to remove');
+                }
+                
+                // Create a brand new control
                 drawControl = new L.Control.Draw({
                     position: 'topright',
                     draw: {
@@ -2110,9 +2132,11 @@ function toggleDrawControls() {
                 
                 // Force the control to be visible multiple times
                 forceShowDrawControls();
-                setTimeout(forceShowDrawControls, 100);
-                setTimeout(forceShowDrawControls, 500);
-                setTimeout(forceShowDrawControls, 1000);
+                
+                // Set multiple timeouts to ensure CSS takes effect
+                for (let delay of [50, 100, 200, 500, 1000, 2000]) {
+                    setTimeout(forceShowDrawControls, delay);
+                }
                 
             } catch (e) {
                 console.error('Error adding draw control:', e);
@@ -2134,26 +2158,51 @@ function forceShowDrawControls() {
     console.log('Forcing draw control visibility');
     
     try {
-        // Find the draw control elements
-        const drawToolbar = document.querySelector('.leaflet-draw.leaflet-control');
+        // IMPORTANT: We need to wait for the control to be added to the DOM
+        // Find the draw control elements - try multiple selector patterns
+        let drawToolbar = document.querySelector('.leaflet-draw.leaflet-control');
         
         if (!drawToolbar) {
-            console.warn('Draw toolbar not found in DOM');
-            return;
+            drawToolbar = document.querySelector('.leaflet-draw');
         }
         
-        // Force visibility with inline styles
-        drawToolbar.style.display = 'block';
-        drawToolbar.style.visibility = 'visible';
-        drawToolbar.style.opacity = '1';
-        drawToolbar.style.pointerEvents = 'auto';
+        if (!drawToolbar) {
+            drawToolbar = document.querySelector('[class*="leaflet-draw"]');
+        }
         
-        // Style the toolbar buttons
-        const buttons = document.querySelectorAll('.leaflet-draw-toolbar a');
-        buttons.forEach(button => {
-            button.style.display = 'block';
-            button.style.visibility = 'visible';
-        });
+        if (!drawToolbar) {
+            console.warn('Draw toolbar not found in DOM - will create style rules anyway');
+            
+            // Create a style element to force visibility for all Leaflet Draw elements
+            const style = document.createElement('style');
+            style.textContent = `
+                .leaflet-draw, .leaflet-draw-toolbar, .leaflet-draw-toolbar a, 
+                .leaflet-draw.leaflet-control, .leaflet-draw-actions, .leaflet-draw-actions a {
+                    display: block !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
+                    z-index: 2000 !important;
+                    pointer-events: auto !important;
+                }
+            `;
+            document.head.appendChild(style);
+        } else {
+            console.log('Draw toolbar found, applying styles directly');
+            // Force visibility with inline styles
+            drawToolbar.style.display = 'block';
+            drawToolbar.style.visibility = 'visible';
+            drawToolbar.style.opacity = '1';
+            drawToolbar.style.pointerEvents = 'auto';
+            drawToolbar.style.zIndex = '2000';
+            
+            // Style the toolbar buttons
+            const buttons = document.querySelectorAll('.leaflet-draw-toolbar a, [class*="leaflet-draw-"] a');
+            buttons.forEach(button => {
+                button.style.display = 'block';
+                button.style.visibility = 'visible';
+                button.style.opacity = '1';
+            });
+        }
         
         console.log('Draw controls visibility enforced');
     } catch (error) {

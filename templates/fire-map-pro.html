@@ -17,11 +17,34 @@
     
     <!-- Fix for Leaflet.Draw z-index issue -->
     <style>
+        /* Comprehensive fix for all Leaflet.Draw elements */
+        .leaflet-draw, 
         .leaflet-draw.leaflet-control,
-        .leaflet-draw-toolbar {
+        .leaflet-draw-toolbar, 
+        .leaflet-draw-toolbar a, 
+        .leaflet-draw-actions, 
+        .leaflet-draw-actions a,
+        [class*="leaflet-draw-"] {
             display: block !important;
             visibility: visible !important;
-            z-index: 1000 !important;
+            opacity: 1 !important;
+            z-index: 2000 !important;
+            pointer-events: auto !important;
+        }
+        
+        /* Ensure toolbar has proper background */
+        .leaflet-draw-toolbar {
+            background: white !important;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4) !important;
+            border-radius: 4px !important;
+        }
+        
+        /* Style buttons specifically */
+        .leaflet-draw-toolbar a {
+            width: 30px !important;
+            height: 30px !important;
+            line-height: 30px !important;
+            text-align: center !important;
         }
     </style>
     
