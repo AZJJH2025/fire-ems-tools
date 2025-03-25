@@ -69,23 +69,39 @@ function initializeMap() {
         try {
             console.log('Leaflet library available, creating map');
             
-            // Create map centered on Phoenix by default
+            // First define all base layers for proper layer switching
+            const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            });
+            
+            const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Imagery &copy; Esri',
+                maxZoom: 19
+            });
+            
+            const terrainLayer = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.png', {
+                attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>',
+                maxZoom: 18
+            });
+            
+            // Store available base layers with REFERENCES to the actual layer objects
+            window.baseLayers = {
+                "Street": streetLayer,
+                "Satellite": satelliteLayer, 
+                "Terrain": terrainLayer
+            };
+            
+            // Create map with first base layer
             map = L.map('map', {
                 zoomControl: true,      // Ensures zoom controls are visible
                 scrollWheelZoom: true,  // Enables mouse wheel zoom
                 doubleClickZoom: true,  // Enables double click zoom
-                dragging: true          // Enables dragging
+                dragging: true,         // Enables dragging
+                layers: [streetLayer]   // Start with the street layer
             }).setView([39.8283, -98.5795], 4);  // Center of the US
             
-            console.log('Map instance created successfully');
-            
-            // Add OpenStreetMap tiles as base layer
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                maxZoom: 19  // Allow zooming in quite far
-            }).addTo(map);
-            
-            console.log('Base tile layer added to map');
+            console.log('Map instance created successfully with Street layer');
             
             // Add zoom controls explicitly in top right
             L.control.zoom({
@@ -103,10 +119,98 @@ function initializeMap() {
             measurementLayer = new L.FeatureGroup();
             map.addLayer(measurementLayer);
             
+            // Create a layer for custom icons
+            iconLayer = new L.FeatureGroup();
+            map.addLayer(iconLayer);
+            
+            // Set up drawing controls if Leaflet.Draw is available
+            if (typeof L.Control.Draw !== 'undefined') {
+                console.log('Leaflet.Draw is available, setting up draw controls');
+                const drawOptions = {
+                    position: 'topright',
+                    draw: {
+                        polyline: {
+                            shapeOptions: {
+                                color: '#f357a1',
+                                weight: 3
+                            }
+                        },
+                        polygon: {
+                            allowIntersection: false,
+                            drawError: {
+                                color: '#e1e100',
+                                message: '<strong>Warning!</strong> Shape cannot intersect itself'
+                            },
+                            shapeOptions: {
+                                color: '#3388ff',
+                                weight: 3
+                            }
+                        },
+                        circle: {
+                            shapeOptions: {
+                                color: '#662d91',
+                                fillOpacity: 0.2
+                            }
+                        },
+                        marker: true,
+                        rectangle: {
+                            shapeOptions: {
+                                color: '#ffa500',
+                                weight: 2
+                            }
+                        }
+                    },
+                    edit: {
+                        featureGroup: drawnItems,
+                        remove: true
+                    }
+                };
+                
+                drawControl = new L.Control.Draw(drawOptions);
+                console.log('Draw control created successfully');
+                
+                // Set up event handlers for drawn items
+                map.on(L.Draw.Event.CREATED, function(e) {
+                    console.log('Draw event created');
+                    
+                    // Add the layer to the map
+                    const layer = e.layer;
+                    drawnItems.addLayer(layer);
+                    
+                    // If measurement mode is active, display the measurement
+                    if (measurementActive) {
+                        if (e.layerType === 'polyline') {
+                            // For lines, calculate length
+                            const length = calculateLength(layer);
+                            console.log(`Line measurement: ${length.toFixed(2)} km`);
+                            layer.bindPopup(`Length: ${length.toFixed(2)} km`).openPopup();
+                        } else if (e.layerType === 'polygon' || e.layerType === 'rectangle') {
+                            // For polygons and rectangles, calculate area
+                            const area = calculateArea(layer);
+                            console.log(`Area measurement: ${area.toFixed(2)} km²`);
+                            layer.bindPopup(`Area: ${area.toFixed(2)} km²`).openPopup();
+                        } else if (e.layerType === 'circle') {
+                            // For circles, calculate radius and area
+                            const radius = layer.getRadius() / 1000; // Convert to km
+                            const area = Math.PI * radius * radius;
+                            console.log(`Circle radius: ${radius.toFixed(2)} km, area: ${area.toFixed(2)} km²`);
+                            layer.bindPopup(`Radius: ${radius.toFixed(2)} km<br>Area: ${area.toFixed(2)} km²`).openPopup();
+                        }
+                    }
+                });
+            } else {
+                console.warn('Leaflet.Draw library not loaded, drawing tools will not be available');
+            }
+            
+            // Initialize measurement-related variables
+            measurementActive = false;
+            
             // Set up coordinate display
             map.on('mousemove', function(e) {
-                document.getElementById('coordinate-values').innerHTML = 
-                    `Lat: ${e.latlng.lat.toFixed(5)}, Lng: ${e.latlng.lng.toFixed(5)}`;
+                const coordElement = document.getElementById('coordinate-values');
+                if (coordElement) {
+                    coordElement.innerHTML = `Lat: ${e.latlng.lat.toFixed(5)}, Lng: ${e.latlng.lng.toFixed(5)}`;
+                }
             });
             
             // Force map to recalculate size using multiple timeouts (ensures it works)
@@ -126,29 +230,6 @@ function initializeMap() {
             }, 2000);
             
             console.log('Map initialization complete');
-            
-            // Create all base layers for proper layer switching
-            const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                maxZoom: 19
-            });
-            
-            const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                attribution: 'Imagery &copy; Esri',
-                maxZoom: 19
-            });
-            
-            const terrainLayer = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.png', {
-                attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>',
-                maxZoom: 18
-            });
-            
-            // Store available base layers with REFERENCES to the actual layer objects
-            window.baseLayers = {
-                "Street": streetLayer,
-                "Satellite": satelliteLayer,
-                "Terrain": terrainLayer
-            };
             
             // Make sure the radio buttons reflect the current base layer
             document.querySelector('input[name="base-layer"][value="street"]').checked = true;
@@ -580,6 +661,12 @@ function setBaseLayer(layerName) {
             return;
         }
         
+        // Debug logging
+        console.log('Current layers:');
+        for (const name in window.baseLayers) {
+            console.log(`- ${name}: ${map.hasLayer(window.baseLayers[name]) ? 'active' : 'inactive'}`);
+        }
+        
         // Remove all base layers first
         for (const name in window.baseLayers) {
             try {
@@ -596,13 +683,28 @@ function setBaseLayer(layerName) {
         map.addLayer(window.baseLayers[layerName]);
         console.log(`Added base layer: ${layerName}`);
         
+        // Using setTimeout to ensure rendering is complete
+        setTimeout(() => {
+            map.invalidateSize();
+            console.log('Map size invalidated after layer change');
+        }, 100);
+        
         // Update UI to reflect current layer
         const radioButtons = document.querySelectorAll('input[name="base-layer"]');
+        let foundMatch = false;
+        
         radioButtons.forEach(radio => {
+            // Match format in both cases (Street = street, etc.)
             if (radio.value.toLowerCase() === layerName.toLowerCase()) {
                 radio.checked = true;
+                console.log(`Set radio button for ${radio.value} to checked`);
+                foundMatch = true;
             }
         });
+        
+        if (!foundMatch) {
+            console.warn(`No radio button found matching "${layerName}"`);
+        }
     } catch (error) {
         console.error('Error in setBaseLayer:', error);
     }
@@ -1560,6 +1662,100 @@ function toggleDrawControls() {
 }
 
 /**
+ * Calculate the length of a polyline in kilometers
+ * @param {L.Polyline} polyline - The polyline to measure
+ * @returns {number} - The length in kilometers
+ */
+function calculateLength(polyline) {
+    try {
+        const latlngs = polyline.getLatLngs();
+        let totalLength = 0;
+        
+        for (let i = 1; i < latlngs.length; i++) {
+            totalLength += latlngs[i-1].distanceTo(latlngs[i]);
+        }
+        
+        // Convert from meters to kilometers
+        return totalLength / 1000;
+    } catch (error) {
+        console.error('Error calculating length:', error);
+        return 0;
+    }
+}
+
+/**
+ * Calculate the area of a polygon in square kilometers
+ * @param {L.Polygon} polygon - The polygon to measure
+ * @returns {number} - The area in square kilometers
+ */
+function calculateArea(polygon) {
+    try {
+        // Use Leaflet's built-in method if available
+        if (polygon.getLatLngs && polygon._mRadius) {
+            // It's a circle
+            const radius = polygon._mRadius / 1000; // Convert to km
+            return Math.PI * radius * radius;
+        }
+        
+        // For polygons
+        const latlngs = polygon.getLatLngs()[0];
+        
+        // Simple approximation for small areas
+        let area = 0;
+        if (latlngs.length > 2) {
+            for (let i = 0; i < latlngs.length; i++) {
+                const j = (i + 1) % latlngs.length;
+                area += latlngs[i].lng * latlngs[j].lat;
+                area -= latlngs[j].lng * latlngs[i].lat;
+            }
+            area = Math.abs(area) * 0.5 * 111.32 * 111.32; // Rough approximation
+        }
+        
+        return area;
+    } catch (error) {
+        console.error('Error calculating area:', error);
+        return 0;
+    }
+}
+
+/**
+ * Show measurement information panel
+ */
+function showMeasurementInfo() {
+    const infoDiv = document.createElement('div');
+    infoDiv.id = 'measurement-info';
+    infoDiv.className = 'measurement-info';
+    infoDiv.innerHTML = `
+        <div class="info-content">
+            <h3>Measurement Mode</h3>
+            <p>Draw shapes on the map to measure:</p>
+            <ul>
+                <li>Lines: Distance in kilometers</li>
+                <li>Polygons: Area in square kilometers</li>
+                <li>Circles: Radius and area</li>
+            </ul>
+            <button id="exit-measurement">Exit Measurement Mode</button>
+        </div>
+    `;
+    
+    document.body.appendChild(infoDiv);
+    
+    document.getElementById('exit-measurement').addEventListener('click', function() {
+        toggleDrawControls();
+    });
+}
+
+/**
+ * Hide measurement information panel
+ */
+function hideMeasurementInfo() {
+    const infoDiv = document.getElementById('measurement-info');
+    if (infoDiv) {
+        document.body.removeChild(infoDiv);
+    }
+}
+
+/**
  * Toggle visibility of a panel
  * @param {string} panelId - The ID of the panel to toggle
  */
@@ -1567,25 +1763,46 @@ function togglePanel(panelId) {
     console.log(`Toggling panel: ${panelId}`);
     
     try {
-        // Hide all panels first
-        document.querySelectorAll('.panel').forEach(function(panel) {
-            panel.style.display = 'none';
-            console.log(`Hidden panel: ${panel.id}`);
-        });
-        
-        // Show the selected panel
-        const panel = document.getElementById(panelId);
-        if (panel) {
-            panel.style.display = 'block';
-            console.log(`Shown panel: ${panelId}`);
-            
-            // Ensure map is properly sized when panels change
-            setTimeout(function() {
-                if (map) map.invalidateSize();
-            }, 100);
-        } else {
+        // Get the current visible state of the target panel
+        const targetPanel = document.getElementById(panelId);
+        if (!targetPanel) {
             console.error(`Panel with ID ${panelId} not found`);
+            return;
         }
+        
+        const isCurrentlyVisible = targetPanel.style.display === 'block';
+        
+        // Hide all panels first
+        document.querySelectorAll('.panel, .tool-panel, .icon-container, .search-container, .filter-container, .export-container')
+            .forEach(function(panel) {
+                panel.style.display = 'none';
+                console.log(`Hidden panel: ${panel.id || 'unnamed panel'}`);
+            });
+        
+        // If the clicked panel was already visible, leave all panels hidden (toggle off)
+        // If not, make it visible (toggle on)
+        if (!isCurrentlyVisible) {
+            targetPanel.style.display = 'block';
+            console.log(`Shown panel: ${panelId}`);
+        } else {
+            console.log(`Keeping panel ${panelId} hidden (was previously visible)`);
+        }
+        
+        // Ensure map is properly sized when panels change
+        setTimeout(function() {
+            if (map) {
+                console.log('Invalidating map size after panel toggle');
+                map.invalidateSize(true);
+            }
+        }, 100);
+        
+        // Invalidate size again after a longer delay to be sure
+        setTimeout(function() {
+            if (map) {
+                console.log('Invalidating map size after panel toggle (delayed)');
+                map.invalidateSize(true);
+            }
+        }, 500);
     } catch (error) {
         console.error(`Error toggling panel ${panelId}:`, error);
     }
@@ -2869,3 +3086,107 @@ function capitalizeFirstLetter(string) {
 
 // Constants
 const METERS_PER_MILE = 1609.34;
+
+/**
+ * Initialize drag and drop functionality for icons
+ */
+function initializeDragAndDrop() {
+    console.log('Initializing drag and drop functionality');
+    
+    try {
+        const icons = document.querySelectorAll('.draggable-icon');
+        
+        icons.forEach(icon => {
+            // Make the icon draggable
+            icon.setAttribute('draggable', 'true');
+            
+            // Add drag start event
+            icon.addEventListener('dragstart', function(e) {
+                console.log('Drag started for icon:', this.dataset.type);
+                
+                // Set the data for the drag operation
+                e.dataTransfer.setData('text/plain', JSON.stringify({
+                    type: this.dataset.type,
+                    color: this.dataset.color || '#ff0000'
+                }));
+                
+                // Set dragImage to be the icon itself
+                if (e.dataTransfer.setDragImage) {
+                    e.dataTransfer.setDragImage(this, 15, 15);
+                }
+                
+                // Safari requires this
+                e.dataTransfer.effectAllowed = 'copy';
+            });
+        });
+        
+        // Make the map a drop target
+        const mapElement = document.getElementById('map');
+        if (!mapElement) {
+            console.error('Map element not found, cannot initialize drop functionality');
+            return;
+        }
+        
+        // Prevent default behavior to allow drop
+        mapElement.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+        });
+        
+        // Handle drop events on the map
+        mapElement.addEventListener('drop', function(e) {
+            e.preventDefault();
+            
+            try {
+                console.log('Icon dropped on map');
+                
+                // Get the data from the drag operation
+                const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+                
+                // Get the map coordinates where the icon was dropped
+                const rect = mapElement.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                console.log(`Drop position in pixels: ${x}, ${y}`);
+                
+                // Convert pixel coordinates to map coordinates (lat/lng)
+                const point = L.point(x, y);
+                const latlng = map.containerPointToLatLng(point);
+                console.log(`Drop position in lat/lng: ${latlng.lat}, ${latlng.lng}`);
+                
+                // Create a custom marker at the drop location
+                const marker = L.marker(latlng, {
+                    icon: createCustomMarkerIcon(data.type, data.color),
+                    draggable: true, // Allow the marker to be dragged after placement
+                }).addTo(iconLayer);
+                
+                // Add a popup to the marker with information
+                const iconType = data.type.split('-').map(capitalizeFirstLetter).join(' ');
+                marker.bindPopup(`
+                    <div class="custom-popup">
+                        <h4>${iconType}</h4>
+                        <p>Coordinates: ${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}</p>
+                        <button class="remove-marker-btn">Remove</button>
+                    </div>
+                `);
+                
+                // Add event listener to the remove button (when popup is opened)
+                marker.on('popupopen', function() {
+                    document.querySelector('.remove-marker-btn').addEventListener('click', function() {
+                        map.removeLayer(marker);
+                        marker.closePopup();
+                    });
+                });
+                
+                // Log success
+                console.log(`Added ${data.type} marker at ${latlng.lat}, ${latlng.lng}`);
+            } catch (error) {
+                console.error('Error handling icon drop:', error);
+            }
+        });
+        
+        console.log('Drag and drop functionality initialized successfully');
+    } catch (error) {
+        console.error('Error initializing drag and drop:', error);
+    }
+}
