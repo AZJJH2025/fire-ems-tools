@@ -602,16 +602,53 @@ footer {
     flex-direction: column;
     align-items: center;
     gap: 5px;
+    position: relative; /* For proper positioning of :after content */
 }
 
 .draggable-icon:hover {
     background-color: #f9f9f9;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
 }
 
-.draggable-icon:active {
+.draggable-icon:active,
+.draggable-icon.dragging {
     cursor: grabbing;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    opacity: 0.8;
+    transform: scale(1.05);
+}
+
+/* Add a "drag handle" hint */
+.draggable-icon:after {
+    content: "";
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--secondary-color);
+    opacity: 0.5;
+    transition: all 0.2s;
+}
+
+.draggable-icon:hover:after {
+    opacity: 1;
+}
+
+/* Map drop target visualizations */
+#map.drop-target {
+    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.5);
+}
+
+#map.drop-hover {
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.8);
+}
+
+/* Cursor change when dragging over map */
+#map.drop-target {
+    cursor: crosshair;
 }
 
 .draggable-icon i {

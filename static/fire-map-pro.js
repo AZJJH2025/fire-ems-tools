@@ -1714,7 +1714,7 @@ function createResizeHandle(latlng) {
 }
 
 /**
- * Toggle the drawing controls - rewritten for reliability
+ * Toggle the drawing controls and measurement mode
  */
 function toggleDrawControls() {
     console.log('toggleDrawControls called');
@@ -1726,43 +1726,78 @@ function toggleDrawControls() {
             return;
         }
         
+        // Initialize drawing tools if needed
         if (!drawControl) {
-            console.error('Draw control is not initialized yet');
-            
-            // Try to initialize it immediately
+            console.log('Draw control not initialized - initializing now');
             initializeDrawingTools();
             
-            // Check again
             if (!drawControl) {
+                console.error('Drawing tools initialization failed');
                 alert('Drawing tools could not be initialized. Please refresh the page and try again.');
                 return;
             }
+        }
+        
+        // Define measurement layer if it doesn't exist
+        if (!window.measurementLayer) {
+            console.log('Creating measurement layer');
+            window.measurementLayer = new L.FeatureGroup();
+            map.addLayer(window.measurementLayer);
+        }
+        
+        // Define drawn items layer if it doesn't exist
+        if (!window.drawnItems) {
+            console.log('Creating drawn items layer');
+            window.drawnItems = new L.FeatureGroup();
+            map.addLayer(window.drawnItems);
         }
         
         // Check if draw control is already on the map
         const drawControlExists = document.querySelector('.leaflet-draw');
         
         if (drawControlExists) {
+            // Remove the draw control
             console.log('Removing draw control');
             map.removeControl(drawControl);
+            
+            // Reset measurement state
             window.measurementActive = false;
             map.drawControlAdded = false;
+            
+            // Hide measurement info
             hideMeasurementInfo();
+            
+            // Remove active class from the tool button
+            const drawButton = document.getElementById('draw-tool');
+            if (drawButton) {
+                drawButton.classList.remove('active');
+            }
+            
             console.log('Draw control removed successfully');
         } else {
+            // Add the draw control
             console.log('Adding draw control to map');
             map.addControl(drawControl);
             map.drawControlAdded = true;
             
-            // Show a prompt
+            // Add active class to the tool button
+            const drawButton = document.getElementById('draw-tool');
+            if (drawButton) {
+                drawButton.classList.add('active');
+            }
+            
+            // Show a prompt to determine if we're in measurement mode
             let measurementMode = confirm('Do you want to activate measurement mode?\n\nClick OK to measure distances and areas.\nClick Cancel to draw features on the map.');
             
             window.measurementActive = measurementMode;
-            console.log('Measurement mode:', measurementMode);
+            console.log('Measurement mode activated:', measurementMode);
             
+            // Show measurement info panel if in measurement mode
             if (window.measurementActive) {
-                showMeasurementInfo();
-                console.log('Measurement info shown');
+                const success = showMeasurementInfo();
+                if (!success) {
+                    console.error('Failed to show measurement info panel');
+                }
             }
             
             console.log('Draw control added successfully');
@@ -1774,9 +1809,9 @@ function toggleDrawControls() {
 }
 
 /**
- * Calculate the length of a polyline in kilometers
+ * Calculate the length of a polyline in miles
  * @param {L.Polyline} polyline - The polyline to measure
- * @returns {number} - The length in kilometers
+ * @returns {number} - The length in miles
  */
 function calculateLength(polyline) {
     try {
@@ -1787,8 +1822,8 @@ function calculateLength(polyline) {
             totalLength += latlngs[i-1].distanceTo(latlngs[i]);
         }
         
-        // Convert from meters to kilometers
-        return totalLength / 1000;
+        // Convert from meters to miles
+        return totalLength / METERS_PER_MILE;
     } catch (error) {
         console.error('Error calculating length:', error);
         return 0;
@@ -1796,16 +1831,16 @@ function calculateLength(polyline) {
 }
 
 /**
- * Calculate the area of a polygon in square kilometers
+ * Calculate the area of a polygon in square miles
  * @param {L.Polygon} polygon - The polygon to measure
- * @returns {number} - The area in square kilometers
+ * @returns {number} - The area in square miles
  */
 function calculateArea(polygon) {
     try {
         // Use Leaflet's built-in method if available
         if (polygon.getLatLngs && polygon._mRadius) {
             // It's a circle
-            const radius = polygon._mRadius / 1000; // Convert to km
+            const radius = polygon._mRadius / METERS_PER_MILE; // Convert to miles
             return Math.PI * radius * radius;
         }
         
@@ -1820,12 +1855,90 @@ function calculateArea(polygon) {
                 area += latlngs[i].lng * latlngs[j].lat;
                 area -= latlngs[j].lng * latlngs[i].lat;
             }
-            area = Math.abs(area) * 0.5 * 111.32 * 111.32; // Rough approximation
+            // Convert to square miles (using approximate conversion factor)
+            // 111.32 km per degree at equator = 69.2 miles per degree
+            const MILES_PER_DEGREE = 69.2;
+            area = Math.abs(area) * 0.5 * MILES_PER_DEGREE * MILES_PER_DEGREE; 
         }
         
         return area;
     } catch (error) {
         console.error('Error calculating area:', error);
+        return 0;
+    }
+}
+
+/**
+ * Calculate the distance of a polyline in miles
+ * @param {L.Polyline} polyline - The polyline
+ * @returns {number} - The distance in miles
+ */
+function calculatePolylineDistance(polyline) {
+    try {
+        // If the old function exists, use it and convert
+        if (typeof calculateLength === 'function') {
+            return calculateLength(polyline);
+        }
+        
+        // Otherwise implement from scratch
+        const latlngs = polyline.getLatLngs();
+        let distance = 0;
+        
+        for (let i = 1; i < latlngs.length; i++) {
+            distance += latlngs[i-1].distanceTo(latlngs[i]);
+        }
+        
+        // Convert from meters to miles
+        return distance / METERS_PER_MILE;
+    } catch (error) {
+        console.error('Error calculating polyline distance:', error);
+        return 0;
+    }
+}
+
+/**
+ * Calculate the area of a polygon in square miles
+ * @param {L.Polygon} polygon - The polygon
+ * @returns {number} - The area in square miles
+ */
+function calculatePolygonArea(polygon) {
+    try {
+        // If the old function exists, use it and convert
+        if (typeof calculateArea === 'function') {
+            return calculateArea(polygon);
+        }
+        
+        // Otherwise use Turf.js if available
+        if (typeof turf !== 'undefined') {
+            // Convert polygon to GeoJSON
+            const geojson = polygon.toGeoJSON();
+            
+            // Calculate area using Turf.js
+            const area = turf.area(geojson);
+            
+            // Convert from square meters to square miles
+            return area / (METERS_PER_MILE * METERS_PER_MILE);
+        } else {
+            // Fallback to basic calculation
+            const latlngs = polygon.getLatLngs()[0];
+            
+            // Simple approximation for small areas
+            let area = 0;
+            if (latlngs.length > 2) {
+                for (let i = 0; i < latlngs.length; i++) {
+                    const j = (i + 1) % latlngs.length;
+                    area += latlngs[i].lng * latlngs[j].lat;
+                    area -= latlngs[j].lng * latlngs[i].lat;
+                }
+                // Convert to square miles (using approximate conversion factor)
+                const MILES_PER_DEGREE = 69.2;
+                area = Math.abs(area) * 0.5 * MILES_PER_DEGREE * MILES_PER_DEGREE;
+            }
+            
+            return area;
+        }
+    } catch (error) {
+        console.error('Error calculating polygon area:', error);
         return 0;
     }
 }
@@ -1840,45 +1953,68 @@ function calculateArea(polygon) {
 function attachMeasurementPopup(layer, layerType) {
     console.log(`Attaching measurement popup to ${layerType}`);
     
-    let popupContent = '<div class="custom-popup">';
-    
-    if (layerType === 'polyline') {
-        const length = calculateLength(layer);
-        popupContent += `<h4>Distance Measurement</h4>
-                         <p>${length.toFixed(2)} km</p>`;
-    } 
-    else if (layerType === 'polygon' || layerType === 'rectangle') {
-        const area = calculateArea(layer);
-        popupContent += `<h4>Area Measurement</h4>
-                         <p>${area.toFixed(2)} km²</p>`;
-    } 
-    else if (layerType === 'circle') {
-        const radius = layer.getRadius() / 1000; // Convert to km
-        const area = Math.PI * radius * radius;
-        popupContent += `<h4>Circle Measurement</h4>
-                         <p>Radius: ${radius.toFixed(2)} km</p>
-                         <p>Area: ${area.toFixed(2)} km²</p>`;
-    }
-    
-    popupContent += '<button class="measurement-remove-btn">Remove</button></div>';
-    
-    layer.bindPopup(popupContent);
-    
-    // Add event listener when popup opens
-    layer.on('popupopen', function() {
-        const btn = document.querySelector('.measurement-remove-btn');
-        if (btn) {
-            btn.addEventListener('click', function() {
-                measurementLayer.removeLayer(layer);
-                layer.closePopup();
-                
-                // Hide measurement info if no measurements left
-                if (measurementLayer.getLayers().length === 0) {
-                    hideMeasurementInfo();
-                }
-            });
+    try {
+        let popupContent = '<div class="custom-popup">';
+        
+        if (layerType === 'polyline') {
+            // Calculate distance in miles
+            const distanceMiles = calculatePolylineDistance(layer);
+            popupContent += `<h4>Distance Measurement</h4>
+                           <p>${distanceMiles.toFixed(2)} miles</p>`;
+        } 
+        else if (layerType === 'polygon' || layerType === 'rectangle') {
+            // Calculate area in square miles
+            const areaMiles = calculatePolygonArea(layer);
+            popupContent += `<h4>Area Measurement</h4>
+                           <p>${areaMiles.toFixed(2)} sq miles</p>`;
+        } 
+        else if (layerType === 'circle') {
+            // Calculate radius and area in miles
+            const radius = layer.getRadius();
+            const radiusMiles = radius / METERS_PER_MILE;
+            const areaMiles = Math.PI * radiusMiles * radiusMiles;
+            popupContent += `<h4>Circle Measurement</h4>
+                           <p>Radius: ${radiusMiles.toFixed(2)} miles</p>
+                           <p>Area: ${areaMiles.toFixed(2)} sq miles</p>`;
         }
-    });
+        
+        popupContent += '<button class="measurement-remove-btn">Remove</button></div>';
+        
+        // Bind popup to the layer
+        layer.bindPopup(popupContent);
+        
+        // Add event listener when popup opens
+        layer.on('popupopen', function() {
+            const btn = document.querySelector('.measurement-remove-btn');
+            if (btn) {
+                // Clone to prevent multiple event handlers
+                const newBtn = btn.cloneNode(true);
+                btn.parentNode.replaceChild(newBtn, btn);
+                
+                // Add click handler for removal
+                newBtn.addEventListener('click', function() {
+                    if (window.measurementLayer) {
+                        window.measurementLayer.removeLayer(layer);
+                    }
+                    layer.closePopup();
+                    
+                    // Hide measurement info if no measurements left
+                    if (window.measurementLayer && window.measurementLayer.getLayers().length === 0) {
+                        hideMeasurementInfo();
+                    }
+                    
+                    // Update display
+                    updateMeasurementDisplay(null, null);
+                });
+            }
+        });
+        
+        console.log('Measurement popup attached successfully');
+        return true;
+    } catch (error) {
+        console.error('Error attaching measurement popup:', error);
+        return false;
+    }
 }
 
 /**
@@ -3409,7 +3545,7 @@ const METERS_PER_MILE = 1609.34;
  * Initialize drag and drop functionality for icons
  */
 function initializeDragAndDrop() {
-    console.log('Initializing drag and drop functionality with fixed implementation');
+    console.log('Initializing drag and drop functionality with improved implementation');
     
     try {
         // Initialize icon layer if not already done
@@ -3420,7 +3556,14 @@ function initializeDragAndDrop() {
                 console.log('Created and added icon layer to map');
             } else {
                 console.error('Map not ready for icon layer');
+                return;
             }
+        }
+        
+        // Get the icon color from the selector
+        function getSelectedIconColor() {
+            const colorSelector = document.getElementById('icon-color');
+            return colorSelector ? colorSelector.value : '#d32f2f';
         }
         
         // Find all icons in the palette
@@ -3433,151 +3576,221 @@ function initializeDragAndDrop() {
         
         // Make each icon draggable
         icons.forEach(icon => {
+            // Set draggable attribute
             icon.setAttribute('draggable', 'true');
             icon.style.cursor = 'grab';
             
-            // Log what we found to help debug
-            console.log(`Making icon draggable: ${icon.dataset.icon || 'unnamed'}`);
-            
-            // Set up drag start event - remove any existing ones first
+            // Clean up existing event listeners to prevent duplicates
             icon.removeEventListener('dragstart', handleDragStart);
+            icon.removeEventListener('dragend', handleDragEnd);
+            
+            // Set up drag events
             icon.addEventListener('dragstart', handleDragStart);
+            icon.addEventListener('dragend', handleDragEnd);
+            
+            // Add hover effect
+            icon.classList.add('draggable');
+            
+            console.log(`Made icon draggable: ${icon.dataset.icon || 'unnamed'}`);
         });
         
-        // Set up the map as a drop target
-        const mapElement = document.getElementById('map');
+        // Set up the map container as drop target
+        const mapContainer = document.getElementById('map');
         
-        if (!mapElement) {
+        if (!mapContainer) {
             console.error('Map element not found in DOM');
             return;
         }
         
-        console.log('Setting up map as drop target');
+        // Clean up existing event listeners to prevent duplicates
+        mapContainer.removeEventListener('dragenter', handleDragEnter);
+        mapContainer.removeEventListener('dragleave', handleDragLeave);
+        mapContainer.removeEventListener('dragover', handleDragOver);
+        mapContainer.removeEventListener('drop', handleDrop);
         
-        // Remove existing event listeners to avoid duplicates
-        mapElement.removeEventListener('dragover', handleDragOver);
-        mapElement.removeEventListener('drop', handleDrop);
+        // Set up complete drag and drop lifecycle events
+        mapContainer.addEventListener('dragenter', handleDragEnter);
+        mapContainer.addEventListener('dragleave', handleDragLeave);
+        mapContainer.addEventListener('dragover', handleDragOver);
+        mapContainer.addEventListener('drop', handleDrop);
         
-        // Add fresh event listeners
-        mapElement.addEventListener('dragover', handleDragOver);
-        mapElement.addEventListener('drop', handleDrop);
+        console.log('Map container set up as drop target');
         
-        // Additionally, add a click handler to debug any issues
-        mapElement.addEventListener('click', function(e) {
-            console.log('Map clicked at:', e.clientX, e.clientY);
-            console.log('Map is properly handling events');
-        });
-        
-        console.log('Drag and drop setup complete');
-    } catch (error) {
-        console.error('Error setting up drag and drop:', error);
-    }
-    
-    // Helper function for drag start
-    function handleDragStart(e) {
-        const iconType = this.dataset.icon || 'marker';
-        const iconColor = this.dataset.color || '#ff0000';
-        
-        console.log(`Drag started for icon: ${iconType} with color ${iconColor}`);
-        
-        // Set required data for transfer
-        e.dataTransfer.setData('text/plain', JSON.stringify({
-            type: iconType,
-            color: iconColor
-        }));
-        
-        // Set the visual representation during drag
-        if (e.dataTransfer.setDragImage) {
-            e.dataTransfer.setDragImage(this, 15, 15);
-        }
-        
-        // Required for some browsers
-        e.dataTransfer.effectAllowed = 'copy';
-    }
-    
-    // Helper function for drag over
-    function handleDragOver(e) {
-        // This is required to allow dropping
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'copy';
-    }
-    
-    // Helper function for drop
-    function handleDrop(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        console.log('Drop event detected on map');
-        
-        try {
-            // Get transfer data
-            const dataString = e.dataTransfer.getData('text/plain');
-            console.log('Data received:', dataString);
-            
-            if (!dataString) {
-                console.error('No data received in drop event');
-                return;
-            }
-            
-            const data = JSON.parse(dataString);
-            
-            // Get pixel coordinates
-            const rect = this.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            console.log(`Drop position in pixels: ${x}, ${y}`);
-            
-            // Convert to map coordinates
-            const point = L.point(x, y);
-            const latlng = map.containerPointToLatLng(point);
-            console.log(`Drop position in geo coordinates: ${latlng.lat}, ${latlng.lng}`);
-            
-            // Create marker icon
-            const markerIcon = createCustomMarkerIcon(data.type, data.color);
-            
-            // Add marker to map
-            const marker = L.marker(latlng, {
-                icon: markerIcon,
-                draggable: true
-            });
-            
-            // Add to icon layer and map
-            window.iconLayer.addLayer(marker);
-            console.log(`Added ${data.type} marker to map at ${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`);
-            
-            // Create popup content
-            const iconTypeFormatted = data.type.split('-').map(word => 
-                word.charAt(0).toUpperCase() + word.slice(1)
-            ).join(' ');
-            
-            const popupContent = `
-                <div class="custom-popup">
-                    <h4>${iconTypeFormatted}</h4>
-                    <p>Lat: ${latlng.lat.toFixed(5)}, Lng: ${latlng.lng.toFixed(5)}</p>
-                    <button class="remove-marker-btn">Remove</button>
-                </div>
-            `;
-            
-            // Bind popup to marker
-            marker.bindPopup(popupContent);
-            
-            // Add remove functionality when popup opens
-            marker.on('popupopen', function() {
-                const btn = document.querySelector('.remove-marker-btn');
-                if (btn) {
-                    // Ensure we don't add duplicate listeners
-                    const newBtn = btn.cloneNode(true);
-                    btn.parentNode.replaceChild(newBtn, btn);
-                    
-                    newBtn.addEventListener('click', function() {
-                        window.iconLayer.removeLayer(marker);
-                        console.log('Marker removed');
-                    });
+        // Helper function for drag start
+        function handleDragStart(e) {
+            try {
+                const iconType = this.dataset.icon || 'marker';
+                const iconColor = getSelectedIconColor();
+                
+                console.log(`Drag started for icon: ${iconType} with color ${iconColor}`);
+                
+                // Set the data being dragged - both properties are needed
+                const dragData = {
+                    type: iconType,
+                    color: iconColor
+                };
+                
+                // Set data for transfer
+                e.dataTransfer.setData('text/plain', JSON.stringify(dragData));
+                e.dataTransfer.setData('application/json', JSON.stringify(dragData));
+                
+                // Set visual representation during drag
+                if (e.dataTransfer.setDragImage) {
+                    e.dataTransfer.setDragImage(this, 15, 15);
                 }
-            });
-        } catch (error) {
-            console.error('Error handling drop event:', error);
-            alert('There was an error placing the icon. Please try again.');
+                
+                // Set allowed effect
+                e.dataTransfer.effectAllowed = 'copy';
+                
+                // Add dragging class for visual feedback
+                this.classList.add('dragging');
+                
+                // Show drop hint
+                document.getElementById('map').classList.add('drop-target');
+            } catch (error) {
+                console.error('Error in drag start:', error);
+            }
         }
+        
+        // Helper function for drag end
+        function handleDragEnd(e) {
+            // Remove dragging class
+            this.classList.remove('dragging');
+            
+            // Remove drop hint
+            document.getElementById('map').classList.remove('drop-target');
+            document.getElementById('map').classList.remove('drop-hover');
+        }
+        
+        // Helper function for drag enter
+        function handleDragEnter(e) {
+            e.preventDefault();
+            // Add visual feedback for valid drop target
+            this.classList.add('drop-hover');
+        }
+        
+        // Helper function for drag leave
+        function handleDragLeave(e) {
+            // Remove hover effect when drag leaves the target
+            this.classList.remove('drop-hover');
+        }
+        
+        // Helper function for drag over
+        function handleDragOver(e) {
+            // This is required to allow dropping
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+        }
+        
+        // Helper function for drop
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Remove visual feedback
+            this.classList.remove('drop-hover');
+            this.classList.remove('drop-target');
+            
+            console.log('Drop event detected on map');
+            
+            try {
+                // Try to get data in multiple formats to ensure browser compatibility
+                let dataString = e.dataTransfer.getData('application/json');
+                if (!dataString) {
+                    dataString = e.dataTransfer.getData('text/plain');
+                }
+                
+                if (!dataString) {
+                    console.error('No data received in drop event');
+                    return;
+                }
+                
+                console.log('Data received:', dataString);
+                const data = JSON.parse(dataString);
+                
+                // Get correct map container coordinates
+                const mapRect = this.getBoundingClientRect();
+                const x = e.clientX - mapRect.left;
+                const y = e.clientY - mapRect.top;
+                console.log(`Drop position in pixels: ${x}, ${y}`);
+                
+                // Convert pixel coordinates to map geographical coordinates
+                const point = L.point(x, y);
+                const latlng = map.containerPointToLatLng(point);
+                console.log(`Drop position in geo coordinates: ${latlng.lat}, ${latlng.lng}`);
+                
+                // Get selected color from dropdown
+                const iconColor = data.color || getSelectedIconColor();
+                
+                // Create marker icon
+                const markerIcon = createCustomMarkerIcon(data.type, iconColor);
+                
+                // Create marker with the icon
+                const marker = L.marker(latlng, {
+                    icon: markerIcon,
+                    draggable: true
+                });
+                
+                // Add marker to icon layer
+                window.iconLayer.addLayer(marker);
+                console.log(`Added ${data.type} marker to map at ${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`);
+                
+                // Format icon type for display (convert fire-station to Fire Station)
+                const iconTypeFormatted = data.type.split('-').map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1)
+                ).join(' ');
+                
+                // Create popup content
+                const popupContent = `
+                    <div class="custom-popup">
+                        <h4>${iconTypeFormatted}</h4>
+                        <p>Lat: ${latlng.lat.toFixed(5)}, Lng: ${latlng.lng.toFixed(5)}</p>
+                        <button class="remove-marker-btn">Remove</button>
+                    </div>
+                `;
+                
+                // Bind popup to marker
+                marker.bindPopup(popupContent);
+                
+                // Add remove functionality when popup opens
+                marker.on('popupopen', function() {
+                    const btn = document.querySelector('.remove-marker-btn');
+                    if (btn) {
+                        // Ensure we don't add duplicate listeners
+                        const newBtn = btn.cloneNode(true);
+                        btn.parentNode.replaceChild(newBtn, btn);
+                        
+                        newBtn.addEventListener('click', function() {
+                            window.iconLayer.removeLayer(marker);
+                            console.log('Marker removed');
+                        });
+                    }
+                });
+                
+                // Make sure we update marker position when it's dragged
+                marker.on('dragend', function(e) {
+                    const newPos = e.target.getLatLng();
+                    console.log(`Marker moved to: ${newPos.lat.toFixed(5)}, ${newPos.lng.toFixed(5)}`);
+                    
+                    // Update popup content with new coordinates
+                    const newPopupContent = `
+                        <div class="custom-popup">
+                            <h4>${iconTypeFormatted}</h4>
+                            <p>Lat: ${newPos.lat.toFixed(5)}, Lng: ${newPos.lng.toFixed(5)}</p>
+                            <button class="remove-marker-btn">Remove</button>
+                        </div>
+                    `;
+                    
+                    marker.setPopupContent(newPopupContent);
+                });
+            } catch (error) {
+                console.error('Error handling drop event:', error);
+                alert('There was an error placing the icon. Please try again.');
+            }
+        }
+        
+        console.log('Drag and drop functionality initialized successfully');
+    } catch (error) {
+        console.error('Error initializing drag and drop:', error);
     }
 }
