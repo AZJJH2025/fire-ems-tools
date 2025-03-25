@@ -53,24 +53,53 @@ body {
     flex-direction: column;
 }
 
-#map-container {
-    position: relative;
-    flex: 1;
+/* Map Card and Container styles (copied from working Station Overview) */
+.map-card {
+    background-color: white;
     border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    flex: 1;
+}
+
+.map-card h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 16px;
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.map-container {
+    height: 600px;
+    border-radius: 4px;
+    margin-top: 15px;
+    z-index: 1;  /* Ensure map controls are clickable */
+    position: relative;  /* Needed for z-index to work */
     overflow: hidden;
-    box-shadow: var(--box-shadow);
-    display: block !important; /* Force display */
-    height: 700px !important; /* Force height */
-    width: 100% !important;
+    width: 100%;
 }
 
 #map {
-    height: 100% !important; /* Force height to 100% */
-    min-height: 500px !important;
-    width: 100% !important;
-    z-index: 10; /* Increased z-index */
+    height: 100%;
+    width: 100%;
+    z-index: 5; /* Increased z-index */
     position: relative; /* Ensure proper stacking context */
-    display: block !important; /* Force display */
+    display: block;
+}
+
+/* Ensure all Leaflet controls are visible and clickable */
+.leaflet-control-container .leaflet-top,
+.leaflet-control-container .leaflet-bottom {
+    z-index: 10; /* Higher than other elements */
+    pointer-events: auto; /* Ensure clicks get through */
+}
+
+/* Ensure popup content is visible */
+.leaflet-popup-content {
+    max-height: 200px;
+    overflow-y: auto;
 }
 
 /* Navbar Styles */

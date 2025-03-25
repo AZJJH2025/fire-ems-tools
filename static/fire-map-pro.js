@@ -61,111 +61,96 @@ document.addEventListener('DOMContentLoaded', function() {
  * Initialize the Leaflet map with base layers
  */
 function initializeMap() {
-    console.log('Initializing FireMapPro map...');
+    console.log('Initializing FireMapPro map using pattern from Station Overview...');
     
-    try {
-        // First, make sure the map container is visible
-        const mapContainer = document.getElementById('map-container');
-        const mapElement = document.getElementById('map');
-        
-        if (!mapContainer || !mapElement) {
-            console.error('Map container or map element not found in DOM');
-            return;
-        }
-        
-        // Make sure the containers are visible
-        mapContainer.style.display = 'block';
-        mapElement.style.height = '600px'; // Force a fixed height initially
-        
-        console.log('Map containers set up');
-        
-        // Create Leaflet map with more explicit options (similar to Station Overview)
-        map = L.map('map', {
-            center: [39.8283, -98.5795], // Center of the US
-            zoom: 4,
-            zoomControl: true,  // Ensure zoom controls are visible
-            scrollWheelZoom: true,  // Enable mouse wheel zoom
-            doubleClickZoom: true,  // Enable double click zoom
-            dragging: true,  // Enable dragging
-            attributionControl: true,
-            preferCanvas: false  // Try with DOM rendering
-        });
-        
-        console.log('Map object created');
-        
-        // Add zoom controls explicitly
-        L.control.zoom({
-            position: 'topright'
-        }).addTo(map);
-        
-        // Define base layers
-        const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 19
-        });
-        
-        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Imagery &copy; Esri',
-            maxZoom: 19
-        });
-        
-        const terrainLayer = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.png', {
-            attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>',
-            maxZoom: 18
-        });
-        
-        // Add base layer to map
-        streetLayer.addTo(map);
-        console.log('Base street layer added');
-        
-        // Create layer objects for control
-        const baseLayers = {
-            "Street": streetLayer,
-            "Satellite": satelliteLayer,
-            "Terrain": terrainLayer
-        };
-        
-        // Store base layers for easy reference
-        window.baseLayers = baseLayers;
-        
-        // Create a layer for drawn items
-        drawnItems = new L.FeatureGroup();
-        map.addLayer(drawnItems);
-        
-        // Create a layer for measurement tools
-        measurementLayer = new L.FeatureGroup();
-        map.addLayer(measurementLayer);
-        
-        // Set up coordinate display
-        map.on('mousemove', function(e) {
-            document.getElementById('coordinate-values').innerHTML = 
-                `Lat: ${e.latlng.lat.toFixed(5)}, Lng: ${e.latlng.lng.toFixed(5)}`;
-        });
-        
-        // Add a scale control like in Station Overview
-        L.control.scale().addTo(map);
-        
-        // Force the map to update its size - use multiple timeouts for reliability
-        for (let delay of [100, 500, 1000, 2000]) {
+    // Completely rewrite the map initialization using the working pattern from Station Overview
+    // Check if Leaflet is available
+    if (typeof L !== 'undefined') {
+        try {
+            console.log('Leaflet library available, creating map');
+            
+            // Create map centered on Phoenix by default
+            map = L.map('map', {
+                zoomControl: true,      // Ensures zoom controls are visible
+                scrollWheelZoom: true,  // Enables mouse wheel zoom
+                doubleClickZoom: true,  // Enables double click zoom
+                dragging: true          // Enables dragging
+            }).setView([39.8283, -98.5795], 4);  // Center of the US
+            
+            console.log('Map instance created successfully');
+            
+            // Add OpenStreetMap tiles as base layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19  // Allow zooming in quite far
+            }).addTo(map);
+            
+            console.log('Base tile layer added to map');
+            
+            // Add zoom controls explicitly in top right
+            L.control.zoom({
+                position: 'topright'
+            }).addTo(map);
+            
+            // Add a scale control
+            L.control.scale().addTo(map);
+            
+            // Create a layer for drawn items
+            drawnItems = new L.FeatureGroup();
+            map.addLayer(drawnItems);
+            
+            // Create a layer for measurement tools
+            measurementLayer = new L.FeatureGroup();
+            map.addLayer(measurementLayer);
+            
+            // Set up coordinate display
+            map.on('mousemove', function(e) {
+                document.getElementById('coordinate-values').innerHTML = 
+                    `Lat: ${e.latlng.lat.toFixed(5)}, Lng: ${e.latlng.lng.toFixed(5)}`;
+            });
+            
+            // Force map to recalculate size using multiple timeouts (ensures it works)
             setTimeout(function() {
-                console.log(`Invalidating map size after ${delay}ms`);
-                if (map) {
-                    map.invalidateSize(true);
-                }
-            }, delay);
-        }
-        
-        // Additional size adjustment when window is resized
-        window.addEventListener('resize', function() {
-            if (map) {
-                console.log('Window resized, invalidating map size');
                 map.invalidateSize(true);
-            }
-        });
-        
-        console.log('Map initialization complete');
-    } catch (error) {
-        console.error('Error initializing map:', error);
+                console.log('Map size invalidated (500ms)');
+            }, 500);
+            
+            setTimeout(function() {
+                map.invalidateSize(true);
+                console.log('Map size invalidated (1000ms)');
+            }, 1000);
+            
+            setTimeout(function() {
+                map.invalidateSize(true);
+                console.log('Map size invalidated (2000ms)');
+            }, 2000);
+            
+            console.log('Map initialization complete');
+            
+            // Define additional base layers for layer control
+            const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Imagery &copy; Esri',
+                maxZoom: 19
+            });
+            
+            const terrainLayer = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.png', {
+                attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>',
+                maxZoom: 18
+            });
+            
+            // Store available base layers
+            window.baseLayers = {
+                "Street": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'),
+                "Satellite": satelliteLayer,
+                "Terrain": terrainLayer
+            };
+            
+        } catch (error) {
+            console.error('Error creating map:', error);
+        }
+    } else {
+        console.error("Leaflet library not loaded");
+        alert("Map library not loaded. Please refresh the page and try again.");
     }
 }
 

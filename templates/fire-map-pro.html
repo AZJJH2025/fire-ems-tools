@@ -348,21 +348,26 @@
             </div>
             
             <div class="right-panel">
-                <div id="map-container">
-                    <div id="map"></div>
-                    
-                    <div id="measurement-info" class="map-overlay-panel" style="display: none;">
-                        <h4>Measurement</h4>
-                        <div id="distance-measurement">
-                            <strong>Distance:</strong> <span id="distance-value">0</span> miles
+                <!-- Map structure rebuilt to match Station Overview implementation -->
+                <div class="map-card">
+                    <h3>FireMapPro Interactive Map</h3>
+                    <div id="map-container" class="map-container">
+                        <div id="map" style="height: 600px; width: 100%;"></div>
+                        
+                        <!-- Map overlays -->
+                        <div id="measurement-info" class="map-overlay-panel" style="display: none;">
+                            <h4>Measurement</h4>
+                            <div id="distance-measurement">
+                                <strong>Distance:</strong> <span id="distance-value">0</span> miles
+                            </div>
+                            <div id="area-measurement">
+                                <strong>Area:</strong> <span id="area-value">0</span> sq miles
+                            </div>
                         </div>
-                        <div id="area-measurement">
-                            <strong>Area:</strong> <span id="area-value">0</span> sq miles
+                        
+                        <div id="coordinates-display" class="map-overlay-panel">
+                            <span id="coordinate-values">Lat: 0.00000, Lng: 0.00000</span>
                         </div>
-                    </div>
-                    
-                    <div id="coordinates-display" class="map-overlay-panel">
-                        <span id="coordinate-values">Lat: 0.00000, Lng: 0.00000</span>
                     </div>
                 </div>
                 
@@ -392,30 +397,45 @@
     <!-- App JS -->
     <script src="/static/fire-map-pro.js"></script>
     
-    <!-- Additional Map Initialization Helper -->
+    <!-- Additional Map Initialization Helper - matches Station Overview pattern -->
     <script>
         // Force map initialization after page loads
         window.addEventListener('load', function() {
-            console.log('Window fully loaded - forcing map initialization');
+            console.log('Window fully loaded - forcing map re-initialization');
             
-            // Make sure map container and map element are visible
-            const mapContainer = document.getElementById('map-container');
-            const mapElement = document.getElementById('map');
+            // Add direct initialization just in case the earlier one failed
+            if (!window.map && typeof L !== 'undefined') {
+                console.log('Map not initialized yet, creating now');
+                try {
+                    // Create map directly
+                    window.map = L.map('map', {
+                        zoomControl: true,
+                        scrollWheelZoom: true,
+                        doubleClickZoom: true,
+                        dragging: true
+                    }).setView([39.8283, -98.5795], 4);
+                    
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                        maxZoom: 19
+                    }).addTo(window.map);
+                    
+                    console.log('Emergency map initialization complete');
+                } catch (error) {
+                    console.error('Error in emergency map initialization:', error);
+                }
+            }
             
-            if (mapContainer && mapElement) {
-                mapContainer.style.display = 'block';
-                mapElement.style.height = '600px';
-                
-                // Force map refresh with timeout
+            // Force multiple invalidateSizes to be absolutely sure it works
+            const delays = [100, 500, 1000, 2000, 3000];
+            delays.forEach(delay => {
                 setTimeout(function() {
                     if (window.map) {
-                        console.log('Forcing map invalidation after window load');
+                        console.log(`Forcing map invalidation after ${delay}ms`);
                         window.map.invalidateSize(true);
-                    } else {
-                        console.error('Map not available for invalidation');
                     }
-                }, 1000);
-            }
+                }, delay);
+            });
         });
     </script>
 </body>
