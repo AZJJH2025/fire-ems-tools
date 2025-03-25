@@ -127,7 +127,12 @@ function initializeMap() {
             
             console.log('Map initialization complete');
             
-            // Define additional base layers for layer control
+            // Create all base layers for proper layer switching
+            const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            });
+            
             const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                 attribution: 'Imagery &copy; Esri',
                 maxZoom: 19
@@ -138,12 +143,15 @@ function initializeMap() {
                 maxZoom: 18
             });
             
-            // Store available base layers
+            // Store available base layers with REFERENCES to the actual layer objects
             window.baseLayers = {
-                "Street": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'),
+                "Street": streetLayer,
                 "Satellite": satelliteLayer,
                 "Terrain": terrainLayer
             };
+            
+            // Make sure the radio buttons reflect the current base layer
+            document.querySelector('input[name="base-layer"][value="street"]').checked = true;
             
         } catch (error) {
             console.error('Error creating map:', error);
@@ -536,12 +544,15 @@ function createCustomMarkerIcon(type, color) {
             break;
     }
     
+    // Create a div icon with centered anchor point for more accurate placement
     return L.divIcon({
         html: `<div class="custom-marker" style="background-color:${color}"><i class="fas ${iconClass}"></i></div>`,
         className: '',
         iconSize: [30, 30],
-        iconAnchor: [15, 30],
-        popupAnchor: [0, -30]
+        // Fix the anchor point to be in the CENTER of the icon (not at the bottom)
+        // This makes the icon appear exactly where it was dropped
+        iconAnchor: [15, 15],  // Center of the 30x30 icon
+        popupAnchor: [0, -15]  // Position popup above the icon
     });
 }
 
@@ -550,13 +561,51 @@ function createCustomMarkerIcon(type, color) {
  * @param {string} layerName - The name of the layer to set
  */
 function setBaseLayer(layerName) {
-    // Remove all base layers
-    for (const name in window.baseLayers) {
-        map.removeLayer(window.baseLayers[name]);
-    }
+    console.log(`Switching to base layer: ${layerName}`);
     
-    // Add the selected base layer
-    map.addLayer(window.baseLayers[layerName]);
+    try {
+        // Validate inputs
+        if (!map) {
+            console.error('Map not initialized');
+            return;
+        }
+        
+        if (!window.baseLayers) {
+            console.error('Base layers not defined');
+            return;
+        }
+        
+        if (!window.baseLayers[layerName]) {
+            console.error(`Base layer '${layerName}' not found`);
+            return;
+        }
+        
+        // Remove all base layers first
+        for (const name in window.baseLayers) {
+            try {
+                if (map.hasLayer(window.baseLayers[name])) {
+                    map.removeLayer(window.baseLayers[name]);
+                    console.log(`Removed base layer: ${name}`);
+                }
+            } catch (e) {
+                console.error(`Error removing base layer ${name}:`, e);
+            }
+        }
+        
+        // Add the selected base layer
+        map.addLayer(window.baseLayers[layerName]);
+        console.log(`Added base layer: ${layerName}`);
+        
+        // Update UI to reflect current layer
+        const radioButtons = document.querySelectorAll('input[name="base-layer"]');
+        radioButtons.forEach(radio => {
+            if (radio.value.toLowerCase() === layerName.toLowerCase()) {
+                radio.checked = true;
+            }
+        });
+    } catch (error) {
+        console.error('Error in setBaseLayer:', error);
+    }
 }
 
 /**
@@ -695,11 +744,13 @@ function handleFileUpload(file, type) {
 }
 
 /**
- * Preview CSV data before loading it on the map
+ * Preview CSV data in a modal and set up load button
  * @param {string} content - The CSV content
  * @param {string} filename - The name of the file
  */
 function previewCSV(content, filename) {
+    console.log(`Previewing CSV file: ${filename}`);
+    
     // Get coordinate format preference
     const coordFormat = document.getElementById('csv-coord-format') ? 
                         document.getElementById('csv-coord-format').value : 
@@ -990,6 +1041,8 @@ function previewCSV(content, filename) {
     
     // Add event listeners for buttons
     document.getElementById('csv-preview-confirm').addEventListener('click', function() {
+        console.log('CSV preview confirm button clicked - loading data');
+        
         // Update the coordinate format based on the preview selection
         const selectedFormat = document.querySelector('input[name="preview-format"]:checked').value;
         if (document.getElementById('csv-coord-format')) {
@@ -1006,16 +1059,32 @@ function previewCSV(content, filename) {
         // Save the format for direct processing
         const formatToUse = selectedFormat;
         
-        // Deep clone the content to avoid any reference issues
-        const contentToProcess = content.slice();
-        const filenameToProcess = filename.slice();
+        // Store content and filename for processing
+        const contentToProcess = content;
+        const filenameToProcess = filename;
+        
+        // Show loading status
+        const statusElement = document.getElementById('upload-status');
+        statusElement.innerHTML = `<div class="success-message">Processing ${filenameToProcess}...</div>`;
         
         // Small delay to ensure UI is updated before processing
         setTimeout(() => {
-            // Process the file content directly - but don't display the preview again
+            // Process the file content directly without showing the preview again
             try {
-                // Create a temporary function based on loadCSV that skips the preview check
-                function processCSVWithoutPreview(csvContent, csvFilename) {
+                console.log(`Processing CSV data from ${filenameToProcess} with format ${formatToUse}`);
+                
+                // Call a direct process function that skips the preview check
+                processCSVDirectly(contentToProcess, filenameToProcess, formatToUse);
+                
+            } catch (error) {
+                console.error('Error processing CSV after preview:', error);
+                statusElement.innerHTML = `<div class="error-message">Error: ${error.message}</div>`;
+            }
+        }, 100);
+    });
+    
+    // Separate function to process CSV data without showing preview again
+    function processCSVDirectly(csvContent, csvFilename, formatToUse) {
                     // Get coordinate format from the selected format
                     const csvFormat = formatToUse;
                     
@@ -1619,23 +1688,58 @@ function initializeDragAndDrop() {
         e.preventDefault();
         mapContainer.classList.remove('map-drag-over');
         
-        // Get the dragged icon type
-        const iconType = e.dataTransfer.getData('text/plain');
-        
-        // Get the color selection
-        const iconColor = document.getElementById('icon-color').value;
-        
-        // Get the coordinates of the drop location
-        const mapRect = mapContainer.getBoundingClientRect();
-        const x = e.clientX - mapRect.left;
-        const y = e.clientY - mapRect.top;
-        
-        // Convert pixel coordinates to map coordinates
-        const point = L.point(x, y);
-        const latlng = map.containerPointToLatLng(point);
-        
-        // Create a marker with the icon at the drop location
-        createCustomMarker(iconType, latlng, iconColor);
+        try {
+            // Get the dragged icon type
+            const iconType = e.dataTransfer.getData('text/plain');
+            console.log(`Icon type being dropped: ${iconType}`);
+            
+            // Get the color selection
+            const iconColor = document.getElementById('icon-color').value;
+            
+            // Get the precise coordinates of the drop location - IMPROVED CALCULATION
+            const mapRect = mapContainer.getBoundingClientRect();
+            
+            // Calculate exact pixel position within the map container
+            const x = e.clientX - mapRect.left;
+            const y = e.clientY - mapRect.top;
+            
+            console.log(`Drop position in pixels - x: ${x}, y: ${y}`);
+            console.log(`Map container dimensions - width: ${mapRect.width}, height: ${mapRect.height}`);
+            
+            // Make sure the coordinates are within the map bounds
+            if (x < 0 || x > mapRect.width || y < 0 || y > mapRect.height) {
+                console.warn('Drop position outside map bounds, clamping to edges');
+            }
+            
+            // Convert pixel coordinates to map coordinates using Leaflet's containerPointToLatLng
+            const point = L.point(x, y);
+            const latlng = map.containerPointToLatLng(point);
+            
+            console.log(`Converted to map coordinates - lat: ${latlng.lat.toFixed(6)}, lng: ${latlng.lng.toFixed(6)}`);
+            
+            // Create a marker with the icon at the exact drop location
+            createCustomMarker(iconType, latlng, iconColor);
+            
+            // Show a brief feedback message
+            const statusElement = document.getElementById('upload-status');
+            if (statusElement) {
+                statusElement.innerHTML = `<div class="success-message">Icon placed at ${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)}</div>`;
+                setTimeout(() => {
+                    statusElement.innerHTML = '';
+                }, 3000);
+            }
+        } catch (error) {
+            console.error('Error during icon drop handling:', error);
+            
+            // Show error message to user
+            const statusElement = document.getElementById('upload-status');
+            if (statusElement) {
+                statusElement.innerHTML = `<div class="error-message">Error placing icon: ${error.message}</div>`;
+                setTimeout(() => {
+                    statusElement.innerHTML = '';
+                }, 3000);
+            }
+        }
     });
 }
 
@@ -1663,11 +1767,16 @@ function createCustomMarker(iconType, latlng, iconColor) {
     // Create a custom icon
     const icon = createCustomMarkerIcon(iconType, iconColor);
     
-    // Create a marker with the icon
-    const marker = L.marker(latlng, {
+    // Create a marker with the icon at the exact coordinates
+    // Use the exact latlng value without any offset
+    const markerLatLng = L.latLng(latlng.lat, latlng.lng);
+    
+    // Create marker with precise positioning
+    const marker = L.marker(markerLatLng, {
         icon: icon,
         draggable: true,
-        autoPan: true
+        autoPan: true,
+        zIndexOffset: 1000  // Ensure it appears on top of other markers
     });
     
     // Add a popup with information about the marker
