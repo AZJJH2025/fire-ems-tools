@@ -1,23 +1,65 @@
-/* Fix for "READY" status text covering headers in tiles */
-.success-message {
-  position: relative;
-  z-index: 5; /* Lower z-index than the sticky headers */
-  color: #155724;
-  background-color: #d4edda;
-  border-left: 4px solid #28a745;
-  padding: 10px 15px;
-  border-radius: 0 4px 4px 0;
-  margin-bottom: 15px;
+/**
+ * Fixes for CSS visibility and control issues
+ */
+
+/* Force visibility for drawing tools */
+.leaflet-draw.leaflet-control {
+    display: block !important;
+    z-index: 1500 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
 }
 
-/* Ensure sticky headers have higher z-index */
-.dashboard-card h3 {
-  position: sticky;
-  top: 0;
-  background: white;
-  z-index: 15; /* Higher z-index than success messages */
-  padding: 10px 0;
-  margin-top: 0;
-  margin-bottom: 15px;
-  border-bottom: 1px solid #eee;
+.leaflet-draw-toolbar {
+    display: block !important;
+    visibility: visible !important;
+    z-index: 1500 !important;
+    background: white !important;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.4) !important;
+}
+
+.leaflet-draw-toolbar a {
+    display: block !important;
+    width: 30px !important;
+    height: 30px !important;
+    line-height: 30px !important;
+    text-align: center !important;
+    background-color: white !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+}
+
+.leaflet-draw-actions {
+    display: block !important;
+    z-index: 1600 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    left: 36px !important;
+}
+
+.leaflet-draw-actions a {
+    display: block !important;
+    visibility: visible !important;
+    background: white !important;
+    color: #333 !important;
+    padding: 0 8px !important;
+}
+
+/* Make sure base layers work properly */
+.base-layers .radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.base-layers .radio-group label {
+    cursor: pointer;
+    font-weight: normal;
+    margin-left: 5px;
+    user-select: none;
+}
+
+.base-layers .radio-group input[type="radio"] {
+    cursor: pointer;
 }

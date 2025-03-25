@@ -152,13 +152,15 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeMap();
         console.log('Map initialized');
         
-        // Set up event listeners
-        setupEventListeners();
-        console.log('Event listeners set up');
-        
-        // Set up direct layer switching (for robustness)
+        // Set up direct layer switching first (for robustness)
         setupDirectLayerSwitching();
         console.log('Direct layer switching initialized');
+        
+        // Force immediate layer switching to street view
+        setTimeout(() => {
+            console.log('Forcing initial layer setup...');
+            directSwitchLayer('street');
+        }, 100);
         
         // Initialize tools
         initializeDrawingTools();
@@ -171,20 +173,26 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeCSVSettings();
         console.log('CSV settings initialized');
         
-        // Check if buttons have event listeners
-        console.log('Checking button event listeners:');
-        ['draw-tool', 'search-tool', 'filter-tool', 'export-tool', 'icon-tool', 'clear-map'].forEach(id => {
-            const element = document.getElementById(id);
-            if (element) {
-                console.log(`Button ${id} found in DOM`);
-                // Add a test click handler to verify event binding
-                element.addEventListener('click', function() {
-                    console.log(`Button ${id} was clicked`);
-                });
-            } else {
-                console.error(`Button ${id} not found in DOM`);
-            }
-        });
+        // Set up event listeners (AFTER all initialization)
+        setupEventListeners();
+        console.log('Event listeners set up');
+        
+        // Extra debug for draw tool button
+        const drawButton = document.getElementById('draw-tool');
+        if (drawButton) {
+            console.log('Draw tool button found - adding guaranteed handler');
+            // Remove any existing handlers
+            const newButton = drawButton.cloneNode(true);
+            drawButton.parentNode.replaceChild(newButton, drawButton);
+            
+            // Add direct handler
+            newButton.addEventListener('click', function(e) {
+                console.log('Draw tool direct click handler triggered');
+                toggleDrawControls();
+            });
+        } else {
+            console.error('CRITICAL: Draw tool button not found in DOM');
+        }
         
     } catch (error) {
         console.error('Error during initialization:', error);
@@ -2012,7 +2020,7 @@ function createResizeHandle(latlng) {
  * Toggle the drawing controls and measurement mode
  */
 function toggleDrawControls() {
-    console.log('toggleDrawControls called');
+    console.log('=== TOGGLE DRAW CONTROLS CALLED ===');
     
     try {
         if (!map) {
@@ -2021,47 +2029,68 @@ function toggleDrawControls() {
             return;
         }
         
-        // Ensure we have a valid draw control
+        // Always ensure we have a valid draw control
         ensureDrawControl();
         
-        // Check if draw control is already on the map
+        // Check if draw control is already on the map (look for the actual DOM element)
         const drawControlExists = document.querySelector('.leaflet-draw');
+        console.log('Draw control exists in DOM:', !!drawControlExists);
         
-        if (drawControlExists) {
+        // Get the draw button for reference
+        const drawButton = document.getElementById('draw-tool');
+        
+        // SIMPLIFIED LOGIC: Just add the control if it doesn't exist, otherwise remove it
+        if (drawControlExists && drawControlExists.style.display !== 'none') {
             // Remove the draw control
             console.log('Removing draw control');
             try {
                 map.removeControl(drawControl);
+                
+                // Reset measurement state
+                window.measurementActive = false;
+                map.drawControlAdded = false;
+                
+                // Hide measurement info panel
+                hideMeasurementInfo();
+                
+                // Remove active class from the tool button
+                if (drawButton) {
+                    drawButton.classList.remove('active');
+                }
+                
+                console.log('Draw control removed');
             } catch (e) {
                 console.error('Error removing draw control:', e);
             }
-            
-            // Reset measurement state
-            window.measurementActive = false;
-            map.drawControlAdded = false;
-            
-            // Hide measurement info
-            hideMeasurementInfo();
-            
-            // Remove active class from the tool button
-            const drawButton = document.getElementById('draw-tool');
-            if (drawButton) {
-                drawButton.classList.remove('active');
-            }
-            
-            console.log('Draw control removed');
         } else {
             // Add the draw control
             console.log('Adding draw control to map');
+            
             try {
+                // Create a brand new control each time for reliability
+                drawControl = new L.Control.Draw({
+                    position: 'topright',
+                    draw: {
+                        polyline: { shapeOptions: { color: '#1976d2', weight: 3 } },
+                        polygon: { 
+                            allowIntersection: false, 
+                            shapeOptions: { color: '#1976d2', weight: 3 }
+                        },
+                        rectangle: { shapeOptions: { color: '#1976d2', weight: 2 } },
+                        circle: { shapeOptions: { color: '#1976d2', weight: 2 } },
+                        marker: true
+                    },
+                    edit: {
+                        featureGroup: drawnItems || new L.FeatureGroup(),
+                        remove: true
+                    }
+                });
+                
+                // Add it to the map
                 map.addControl(drawControl);
                 map.drawControlAdded = true;
                 
-                // Force visibility with CSS
-                forceShowDrawControls();
-                
                 // Add active class to the tool button
-                const drawButton = document.getElementById('draw-tool');
                 if (drawButton) {
                     drawButton.classList.add('active');
                 }
@@ -2078,18 +2107,19 @@ function toggleDrawControls() {
                 }
                 
                 console.log('Draw control added successfully');
+                
+                // Force the control to be visible multiple times
+                forceShowDrawControls();
+                setTimeout(forceShowDrawControls, 100);
+                setTimeout(forceShowDrawControls, 500);
+                setTimeout(forceShowDrawControls, 1000);
+                
             } catch (e) {
                 console.error('Error adding draw control:', e);
-                
-                // Try emergency recovery
+                alert('Error with drawing tools. Trying recovery...');
                 emergencyRecreateDrawControl();
             }
         }
-        
-        // Force a timeout to ensure CSS visibility takes effect
-        setTimeout(forceShowDrawControls, 100);
-        setTimeout(forceShowDrawControls, 500);
-        
     } catch (error) {
         console.error('Error in toggleDrawControls:', error);
         alert('An error occurred with the drawing tools. Attempting recovery...');

@@ -15,6 +15,16 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='fire-map-pro.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='fix-ready-status.css') }}">
     
+    <!-- Fix for Leaflet.Draw z-index issue -->
+    <style>
+        .leaflet-draw.leaflet-control,
+        .leaflet-draw-toolbar {
+            display: block !important;
+            visibility: visible !important;
+            z-index: 1000 !important;
+        }
+    </style>
+    
     <!-- Favicon -->
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 </head>
