@@ -26,6 +26,67 @@
     
     <!-- Fix for Leaflet.Draw toolbar visibility and styling -->
     <style>
+        /* Additional styles for the icon palette */
+        .icon-category {
+            margin-bottom: 15px;
+        }
+        
+        .icon-category h4 {
+            background-color: #f5f5f5;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            color: #333;
+            border-left: 3px solid #d32f2f;
+        }
+        
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .draggable-icon {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px 5px;
+            text-align: center;
+            cursor: grab;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .draggable-icon:hover {
+            background-color: #f9f9f9;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .draggable-icon i {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        
+        .draggable-icon span {
+            font-size: 0.8rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            .icon-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
         /* Super high z-index fix for all Leaflet.Draw elements */
         .leaflet-draw, 
         .leaflet-draw.leaflet-control {
@@ -385,19 +446,41 @@
                     <p class="hint-text"><i class="fas fa-info-circle"></i> Drag and drop icons onto the map</p>
                     <div class="icon-palette">
                         <div class="icon-category">
-                            <h4>Emergency Services</h4>
+                            <h4>Fire Department</h4>
                             <div class="icon-grid">
                                 <div class="draggable-icon" data-icon="fire-station">
                                     <i class="fas fa-fire-extinguisher"></i>
                                     <span>Fire Station</span>
                                 </div>
+                                <div class="draggable-icon" data-icon="fire-engine">
+                                    <i class="fas fa-truck"></i>
+                                    <span>Fire Engine</span>
+                                </div>
+                                <div class="draggable-icon" data-icon="ladder-truck">
+                                    <i class="fas fa-truck-moving"></i>
+                                    <span>Ladder Truck</span>
+                                </div>
+                                <div class="draggable-icon" data-icon="hydrant">
+                                    <i class="fas fa-tint"></i>
+                                    <span>Hydrant</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="icon-category">
+                            <h4>Emergency Services</h4>
+                            <div class="icon-grid">
+                                <div class="draggable-icon" data-icon="ambulance">
+                                    <i class="fas fa-ambulance"></i>
+                                    <span>Ambulance</span>
+                                </div>
                                 <div class="draggable-icon" data-icon="hospital">
                                     <i class="fas fa-hospital"></i>
                                     <span>Hospital</span>
                                 </div>
-                                <div class="draggable-icon" data-icon="ambulance">
-                                    <i class="fas fa-ambulance"></i>
-                                    <span>Ambulance</span>
+                                <div class="draggable-icon" data-icon="medic">
+                                    <i class="fas fa-user-md"></i>
+                                    <span>Medic</span>
                                 </div>
                                 <div class="draggable-icon" data-icon="police">
                                     <i class="fas fa-shield-alt"></i>
@@ -405,6 +488,95 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <div class="icon-category">
+                            <h4>Hazards & Warnings</h4>
+                            <div class="icon-grid">
+                                <div class="draggable-icon" data-icon="hazard">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <span>Hazard</span>
+                                </div>
+                                <div class="draggable-icon" data-icon="hazmat">
+                                    <i class="fas fa-biohazard"></i>
+                                    <span>Hazmat</span>
+                                </div>
+                                <div class="draggable-icon" data-icon="radiation">
+                                    <i class="fas fa-radiation"></i>
+                                    <span>Radiation</span>
+                                </div>
+                                <div class="draggable-icon" data-icon="chemical">
+                                    <i class="fas fa-flask"></i>
+                                    <span>Chemical</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="icon-category">
+                            <h4>DOT Placard Types</h4>
+                            <div class="icon-grid">
+                                <div class="draggable-icon" data-icon="placard-flammable">
+                                    <i class="fas fa-fire"></i>
+                                    <span>Flammable</span>
+                                </div>
+                                <div class="draggable-icon" data-icon="placard-explosive">
+                                    <i class="fas fa-bomb"></i>
+                                    <span>Explosive</span>
+                                </div>
+                                <div class="draggable-icon" data-icon="placard-gas">
+                                    <i class="fas fa-wind"></i>
+                                    <span>Gas</span>
+                                </div>
+                                <div class="draggable-icon" data-icon="placard-corrosive">
+                                    <i class="fas fa-skull-crossbones"></i>
+                                    <span>Corrosive</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="icon-category">
+                            <h4>Energy Systems</h4>
+                            <div class="icon-grid">
+                                <div class="draggable-icon" data-icon="bess">
+                                    <i class="fas fa-car-battery"></i>
+                                    <span>BESS</span>
+                                </div>
+                                <div class="draggable-icon" data-icon="solar">
+                                    <i class="fas fa-solar-panel"></i>
+                                    <span>Solar Panel</span>
+                                </div>
+                                <div class="draggable-icon" data-icon="electric">
+                                    <i class="fas fa-bolt"></i>
+                                    <span>Electric</span>
+                                </div>
+                                <div class="draggable-icon" data-icon="utility-pole">
+                                    <i class="fas fa-broadcast-tower"></i>
+                                    <span>Utility Pole</span>
+                                </div>
+                            </div>
+                        </div>
+                                                
+                        <div class="icon-category">
+                            <h4>Command & Control</h4>
+                            <div class="icon-grid">
+                                <div class="draggable-icon" data-icon="command-post">
+                                    <i class="fas fa-laptop-house"></i>
+                                    <span>Command Post</span>
+                                </div>
+                                <div class="draggable-icon" data-icon="staging-area">
+                                    <i class="fas fa-people-carry"></i>
+                                    <span>Staging Area</span>
+                                </div>
+                                <div class="draggable-icon" data-icon="evacuation">
+                                    <i class="fas fa-running"></i>
+                                    <span>Evacuation</span>
+                                </div>
+                                <div class="draggable-icon" data-icon="helicopter">
+                                    <i class="fas fa-helicopter"></i>
+                                    <span>Helicopter</span>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="icon-options">
                             <div class="color-selector">
                                 <label for="icon-color">Icon Color:</label>
@@ -415,6 +587,8 @@
                                     <option value="#f57c00">Orange</option>
                                     <option value="#5e35b1">Purple</option>
                                     <option value="#000000">Black</option>
+                                    <option value="#ffeb3b">Yellow</option>
+                                    <option value="#795548">Brown</option>
                                 </select>
                             </div>
                         </div>
@@ -1361,21 +1535,91 @@
                         // Create an appropriate icon based on the type
                         var iconHtml = '';
                         switch(iconType) {
+                            // Fire Department icons
                             case 'fire-station':
                                 iconHtml = '<i class="fas fa-fire-extinguisher"></i>';
                                 break;
+                            case 'fire-engine':
+                                iconHtml = '<i class="fas fa-truck"></i>';
+                                break;
+                            case 'ladder-truck':
+                                iconHtml = '<i class="fas fa-truck-moving"></i>';
+                                break;
+                            case 'hydrant':
+                                iconHtml = '<i class="fas fa-tint"></i>';
+                                break;
+                                
+                            // Emergency Services icons
                             case 'hospital':
                                 iconHtml = '<i class="fas fa-hospital"></i>';
                                 break;
                             case 'ambulance':
                                 iconHtml = '<i class="fas fa-ambulance"></i>';
                                 break;
+                            case 'medic':
+                                iconHtml = '<i class="fas fa-user-md"></i>';
+                                break;
                             case 'police':
                                 iconHtml = '<i class="fas fa-shield-alt"></i>';
                                 break;
-                            case 'hydrant':
-                                iconHtml = '<i class="fas fa-tint"></i>';
+                                
+                            // Hazards & Warnings icons
+                            case 'hazard':
+                                iconHtml = '<i class="fas fa-exclamation-triangle"></i>';
                                 break;
+                            case 'hazmat':
+                                iconHtml = '<i class="fas fa-biohazard"></i>';
+                                break;
+                            case 'radiation':
+                                iconHtml = '<i class="fas fa-radiation"></i>';
+                                break;
+                            case 'chemical':
+                                iconHtml = '<i class="fas fa-flask"></i>';
+                                break;
+                                
+                            // DOT Placard Types
+                            case 'placard-flammable':
+                                iconHtml = '<i class="fas fa-fire"></i>';
+                                break;
+                            case 'placard-explosive':
+                                iconHtml = '<i class="fas fa-bomb"></i>';
+                                break;
+                            case 'placard-gas':
+                                iconHtml = '<i class="fas fa-wind"></i>';
+                                break;
+                            case 'placard-corrosive':
+                                iconHtml = '<i class="fas fa-skull-crossbones"></i>';
+                                break;
+                                
+                            // Energy Systems
+                            case 'bess':
+                                iconHtml = '<i class="fas fa-car-battery"></i>';
+                                break;
+                            case 'solar':
+                                iconHtml = '<i class="fas fa-solar-panel"></i>';
+                                break;
+                            case 'electric':
+                                iconHtml = '<i class="fas fa-bolt"></i>';
+                                break;
+                            case 'utility-pole':
+                                iconHtml = '<i class="fas fa-broadcast-tower"></i>';
+                                break;
+                                
+                            // Command & Control
+                            case 'command-post':
+                                iconHtml = '<i class="fas fa-laptop-house"></i>';
+                                break;
+                            case 'staging-area':
+                                iconHtml = '<i class="fas fa-people-carry"></i>';
+                                break;
+                            case 'evacuation':
+                                iconHtml = '<i class="fas fa-running"></i>';
+                                break;
+                            case 'helicopter':
+                                iconHtml = '<i class="fas fa-helicopter"></i>';
+                                break;
+                                
+                            // Legacy icons (keeping for compatibility)
                             case 'school':
                                 iconHtml = '<i class="fas fa-school"></i>';
                                 break;
@@ -1397,6 +1641,8 @@
                             case 'target':
                                 iconHtml = '<i class="fas fa-crosshairs"></i>';
                                 break;
+                                
+                            // Default fallback
                             default:
                                 iconHtml = '<i class="fas fa-map-marker-alt"></i>';
                         }
@@ -1415,11 +1661,37 @@
                             draggable: true
                         }).addTo(map);
                         
-                        // Add popup with delete option
-                        marker.bindPopup('<div style="text-align:center;">' + 
-                                        '<b>' + iconType.replace('-', ' ').toUpperCase() + '</b><br>' +
-                                        '<button class="delete-marker">Delete</button>' +
-                                        '</div>');
+                        // Format icon type name for display
+                        var iconTypeName = iconType
+                            .split('-')
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(' ');
+                            
+                        // Create more descriptive popups for special icon types
+                        var popupContent = '<div style="text-align:center;">';
+                        
+                        // Add icon
+                        popupContent += '<div style="font-size: 24px; margin-bottom: 5px; color:' + iconColor + ';">' + iconHtml + '</div>';
+                        
+                        // Add title
+                        popupContent += '<b>' + iconTypeName + '</b><br>';
+                        
+                        // Add specific descriptions for special icon types
+                        if (iconType === 'bess') {
+                            popupContent += '<span style="font-size: 0.9em; display: block; margin: 5px 0;">Battery Energy Storage System</span>';
+                        } 
+                        else if (iconType.startsWith('placard-')) {
+                            popupContent += '<span style="font-size: 0.9em; display: block; margin: 5px 0;">DOT Placard: ' + 
+                                iconType.replace('placard-', '').toUpperCase() + '</span>';
+                        }
+                        
+                        // Add delete button
+                        popupContent += '<button class="delete-marker" style="margin-top: 8px; background-color: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Delete</button>';
+                        
+                        popupContent += '</div>';
+                        
+                        // Bind popup
+                        marker.bindPopup(popupContent);
                         
                         // Style the icon with selected color
                         marker.getElement().querySelector('i').style.color = iconColor;
