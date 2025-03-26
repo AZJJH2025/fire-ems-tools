@@ -496,6 +496,12 @@ def fire_map_pro():
     """Serve the FireMapPro tool"""
     return render_template('fire-map-pro.html')
 
+# Data Formatter route
+@app.route('/data-formatter')
+def data_formatter():
+    """Serve the Data Formatter tool"""
+    return render_template('data-formatter.html')
+
 # Geocoding endpoint for Coverage Gap Finder
 @app.route('/api/geocode')
 def geocode_endpoint():

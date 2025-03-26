@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Formatter - FireEMS.ai</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="stylesheet" href="/static/data-formatter.css">
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Favicon -->
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+</head>
+<body>
+  <header>
+    <div class="navbar">
+      <div class="logo">
+        <a href="/">🚒 FireEMS.ai 🚑</a>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="/fire-ems-dashboard">Dashboard</a></li>
+          <li><a href="/isochrone-map">Isochrone Map</a></li>
+          <li><a href="/call-density-heatmap">Call Density</a></li>
+          <li><a href="/coverage-gap-finder">Coverage Gaps</a></li>
+          <li><a href="/incident-logger">Incident Logger</a></li>
+          <li><a href="/station-overview">Station Overview</a></li>
+          <li><a href="/fire-map-pro">FireMapPro</a></li>
+          <li class="active"><a href="/data-formatter">Data Formatter</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="tool-header">
+      <h1><i class="fas fa-exchange-alt"></i> Data Formatter</h1>
+      <p>Convert, standardize, and prepare your data for use with FireEMS.ai tools</p>
+    </section>
+
+    <section class="formatter-container">
+      <div class="formatter-panel left-panel">
+        <h2>Input Data</h2>
+        
+        <div class="upload-section">
+          <div class="file-upload">
+            <label for="data-file" class="file-upload-btn">
+              <i class="fas fa-file-upload"></i> Choose File
+            </label>
+            <input type="file" id="data-file" accept=".csv,.xlsx,.json,.xml,.kml,.kmz">
+            <span id="file-name">No file selected</span>
+          </div>
+          
+          <div class="format-selector">
+            <label for="input-format">Input Format:</label>
+            <select id="input-format">
+              <option value="auto">Auto-detect</option>
+              <option value="csv">CSV</option>
+              <option value="excel">Excel</option>
+              <option value="json">JSON</option>
+              <option value="xml">XML</option>
+              <option value="kml">KML/KMZ</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="preview-container">
+          <h3>Input Preview</h3>
+          <div id="input-preview" class="data-preview">
+            <div class="placeholder-message">
+              <i class="fas fa-arrow-up"></i>
+              <p>Upload a file to preview</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="formatter-panel center-panel">
+        <h2>Transformation Settings</h2>
+        
+        <div class="target-tool-section">
+          <label for="target-tool">Target Tool:</label>
+          <select id="target-tool">
+            <option value="" disabled selected>Select target tool</option>
+            <option value="response-time">Response Time Analyzer</option>
+            <option value="isochrone">Isochrone Map Generator</option>
+            <option value="call-density">Call Density Heatmap</option>
+            <option value="incident-logger">Incident Logger</option>
+            <option value="coverage-gap">Coverage Gap Finder</option>
+            <option value="station-overview">Station Overview</option>
+            <option value="fire-map-pro">FireMapPro</option>
+          </select>
+          
+          <div class="info-tooltip">
+            <i class="fas fa-info-circle"></i>
+            <div class="tooltip-content">
+              Select the tool you want to prepare data for. The formatter will automatically adjust data to meet that tool's requirements.
+            </div>
+          </div>
+        </div>
+        
+        <div class="action-buttons">
+          <button id="transform-btn" class="primary-btn" disabled>
+            <i class="fas fa-magic"></i> Transform Data
+          </button>
+          <button id="clear-btn" class="secondary-btn" disabled>
+            <i class="fas fa-trash-alt"></i> Clear
+          </button>
+        </div>
+        
+        <div class="options-container">
+          <div class="options-header collapsed" id="advanced-toggle">
+            <h3>Advanced Options</h3>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          
+          <div class="advanced-options" style="display: none;">
+            <div class="option-group">
+              <label for="date-format">Date Format:</label>
+              <select id="date-format">
+                <option value="auto">Auto-detect</option>
+                <option value="mm/dd/yyyy">MM/DD/YYYY</option>
+                <option value="dd/mm/yyyy">DD/MM/YYYY</option>
+                <option value="yyyy-mm-dd">YYYY-MM-DD</option>
+                <option value="custom">Custom...</option>
+              </select>
+              <input type="text" id="custom-date-format" placeholder="Custom format" style="display: none;">
+            </div>
+            
+            <div class="option-group">
+              <label for="compression">Compression:</label>
+              <select id="compression">
+                <option value="none">None</option>
+                <option value="light">Light</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+            
+            <div class="option-group checkbox">
+              <input type="checkbox" id="remove-duplicates" checked>
+              <label for="remove-duplicates">Remove duplicate entries</label>
+            </div>
+            
+            <div class="option-group checkbox">
+              <input type="checkbox" id="clean-addresses" checked>
+              <label for="clean-addresses">Clean and standardize addresses</label>
+            </div>
+            
+            <div class="option-group checkbox">
+              <input type="checkbox" id="handle-missing">
+              <label for="handle-missing">Handle missing values</label>
+            </div>
+            
+            <div class="missing-values-options" style="display: none;">
+              <label for="missing-strategy">Missing Value Strategy:</label>
+              <select id="missing-strategy">
+                <option value="remove-rows">Remove rows with missing values</option>
+                <option value="fill-default">Fill with default values</option>
+                <option value="interpolate">Interpolate where possible</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <div class="transformation-log">
+          <h3>Transformation Log</h3>
+          <div id="log-container" class="log-content">
+            <p class="log-placeholder">Transformation details will appear here</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="formatter-panel right-panel">
+        <h2>Output Data</h2>
+        
+        <div class="output-format-section">
+          <label for="output-format">Output Format:</label>
+          <select id="output-format">
+            <option value="csv">CSV</option>
+            <option value="excel">Excel</option>
+            <option value="json">JSON</option>
+          </select>
+        </div>
+        
+        <div class="preview-container">
+          <h3>Output Preview</h3>
+          <div id="output-preview" class="data-preview">
+            <div class="placeholder-message">
+              <i class="fas fa-arrow-left"></i>
+              <p>Transform data to preview</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="download-section">
+          <button id="download-btn" class="primary-btn" disabled>
+            <i class="fas fa-download"></i> Download
+          </button>
+          
+          <button id="send-to-tool-btn" class="primary-btn" disabled>
+            <i class="fas fa-paper-plane"></i> Send to Tool
+          </button>
+        </div>
+      </div>
+    </section>
+    
+    <section class="requirements-container">
+      <div class="requirements-header collapsed" id="requirements-toggle">
+        <h2>Tool-specific Data Requirements</h2>
+        <i class="fas fa-chevron-down"></i>
+      </div>
+      
+      <div class="requirements-content" style="display: none;">
+        <div class="tool-requirements" id="response-time-requirements">
+          <h3>Response Time Analyzer</h3>
+          <p>Required fields:</p>
+          <ul>
+            <li>Incident ID</li>
+            <li>Incident Date</li>
+            <li>Incident Time</li>
+            <li>Dispatch Time</li>
+            <li>En Route Time</li>
+            <li>On Scene Time</li>
+            <li>Incident Type</li>
+            <li>Latitude</li>
+            <li>Longitude</li>
+          </ul>
+        </div>
+        
+        <div class="tool-requirements" id="isochrone-requirements">
+          <h3>Isochrone Map Generator</h3>
+          <p>Required fields:</p>
+          <ul>
+            <li>Station ID</li>
+            <li>Station Name</li>
+            <li>Station Address</li>
+            <li>Latitude</li>
+            <li>Longitude</li>
+            <li>Unit Types</li>
+          </ul>
+        </div>
+        
+        <div class="tool-requirements" id="call-density-requirements">
+          <h3>Call Density Heatmap</h3>
+          <p>Required fields:</p>
+          <ul>
+            <li>Incident ID</li>
+            <li>Incident Date</li>
+            <li>Incident Time</li>
+            <li>Latitude</li>
+            <li>Longitude</li>
+            <li>Incident Type (optional)</li>
+          </ul>
+        </div>
+        
+        <div class="tool-requirements" id="other-requirements">
+          <h3>Other Tools</h3>
+          <p>Requirements for other tools will be displayed when selected</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 FireEMS.ai - Advanced Analytics for Fire & EMS Agencies</p>
+    </div>
+  </footer>
+
+  <script src="/static/data-formatter.js"></script>
+</body>
+</html>
