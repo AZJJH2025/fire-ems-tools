@@ -19,7 +19,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
     
-    <!-- Fix for Leaflet.Draw toolbar visibility -->
+    <!-- Fix for Leaflet.Draw toolbar visibility and styling -->
     <style>
         /* Comprehensive fix for all Leaflet.Draw elements */
         .leaflet-draw, 
@@ -41,6 +41,7 @@
             background: white !important;
             box-shadow: 0 1px 5px rgba(0,0,0,0.4) !important;
             border-radius: 4px !important;
+            padding: 2px !important;
         }
         
         /* Style buttons specifically */
@@ -49,6 +50,85 @@
             height: 30px !important;
             line-height: 30px !important;
             text-align: center !important;
+            margin-bottom: 2px !important;
+            border-radius: 4px !important;
+            color: #333 !important;
+        }
+        
+        /* Add tool icons via Font Awesome */
+        .leaflet-draw-toolbar a.leaflet-draw-draw-polyline::before {
+            font-family: 'Font Awesome 5 Free';
+            content: "\f1e0";  /* fa-share-alt */
+            font-weight: 900;
+        }
+        
+        .leaflet-draw-toolbar a.leaflet-draw-draw-polygon::before {
+            font-family: 'Font Awesome 5 Free';
+            content: "\f5ee";  /* fa-draw-polygon */
+            font-weight: 900;
+        }
+        
+        .leaflet-draw-toolbar a.leaflet-draw-draw-rectangle::before {
+            font-family: 'Font Awesome 5 Free';
+            content: "\f0c8";  /* fa-square */
+            font-weight: 900;
+        }
+        
+        .leaflet-draw-toolbar a.leaflet-draw-draw-circle::before {
+            font-family: 'Font Awesome 5 Free';
+            content: "\f111";  /* fa-circle */
+            font-weight: 900;
+        }
+        
+        .leaflet-draw-toolbar a.leaflet-draw-draw-marker::before {
+            font-family: 'Font Awesome 5 Free';
+            content: "\f3c5";  /* fa-map-marker-alt */
+            font-weight: 900;
+        }
+        
+        .leaflet-draw-toolbar a.leaflet-draw-edit-edit::before {
+            font-family: 'Font Awesome 5 Free';
+            content: "\f044";  /* fa-edit */
+            font-weight: 900;
+        }
+        
+        .leaflet-draw-toolbar a.leaflet-draw-edit-remove::before {
+            font-family: 'Font Awesome 5 Free';
+            content: "\f2ed";  /* fa-trash-alt */
+            font-weight: 900;
+        }
+        
+        .leaflet-draw-toolbar a:hover {
+            background-color: #f4f4f4 !important;
+        }
+        
+        .leaflet-draw-actions {
+            left: 35px !important;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4) !important;
+            border-radius: 4px !important;
+        }
+        
+        .leaflet-draw-actions a {
+            background: white !important;
+            color: #333 !important;
+            font-size: 13px !important;
+            line-height: 28px !important;
+            text-decoration: none !important;
+        }
+        
+        .leaflet-draw-actions a:hover {
+            background-color: #f4f4f4 !important;
+        }
+        
+        /* Custom div icons styling */
+        .custom-div-icon {
+            background: transparent;
+            border: none;
+        }
+        
+        .custom-div-icon i {
+            font-size: 24px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
         
         /* Make radio buttons more prominent */
