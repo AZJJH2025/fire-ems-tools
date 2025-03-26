@@ -948,6 +948,29 @@
                                 </select>
                             </div>
                             
+                            <div class="print-option-group">
+                                <label for="print-title-font">Title Font:</label>
+                                <select id="print-title-font" class="print-option">
+                                    <option value="Arial">Arial</option>
+                                    <option value="Helvetica">Helvetica</option>
+                                    <option value="Times New Roman">Times New Roman</option>
+                                    <option value="Georgia">Georgia</option>
+                                    <option value="Verdana">Verdana</option>
+                                    <option value="Tahoma">Tahoma</option>
+                                </select>
+                            </div>
+                            
+                            <div class="print-option-group">
+                                <label for="print-title-size">Title Size:</label>
+                                <input type="range" id="print-title-size" min="1" max="5" value="3" class="print-option slider">
+                                <span id="print-title-size-value">3</span>
+                            </div>
+                            
+                            <div class="print-option-group">
+                                <label for="print-title-color">Title Color:</label>
+                                <input type="color" id="print-title-color" value="#000000" class="print-option">
+                            </div>
+                            
                             <div class="print-option-group logo-upload">
                                 <label for="print-logo-upload">Logo:</label>
                                 <div style="display: flex; gap: 10px; align-items: center;">
@@ -2270,6 +2293,10 @@
                     document.getElementById('print-logo-size-value').textContent = this.value;
                 });
                 
+                document.getElementById('print-title-size').addEventListener('input', function() {
+                    document.getElementById('print-title-size-value').textContent = this.value;
+                });
+                
                 // Logo upload handling
                 var logoFile = null;
                 document.getElementById('print-logo-upload').addEventListener('change', function(e) {
@@ -2366,6 +2393,9 @@
                     // Get title and logo settings
                     var mapTitle = document.getElementById('print-map-title').value;
                     var titlePosition = document.getElementById('print-title-position').value;
+                    var titleFont = document.getElementById('print-title-font').value;
+                    var titleSize = parseInt(document.getElementById('print-title-size').value);
+                    var titleColor = document.getElementById('print-title-color').value;
                     var logoPosition = document.getElementById('print-logo-position').value;
                     var logoSize = parseInt(document.getElementById('print-logo-size').value);
                     
@@ -2410,7 +2440,7 @@
                     renderMapForPrint(map, canvas, dimensions, function() {
                         // Add title and logo after map is rendered
                         if (mapTitle || logoFile) {
-                            addTitleAndLogo(canvas, dimensions, mapTitle, titlePosition, logoFile, logoPosition, logoSize);
+                            addTitleAndLogo(canvas, dimensions, mapTitle, titlePosition, titleFont, titleSize, titleColor, logoFile, logoPosition, logoSize);
                         }
                         
                         // Draw the bleed, trim, and safe zones on the overlay
@@ -2423,7 +2453,7 @@
                 /**
                  * Adds a title and logo to the canvas
                  */
-                function addTitleAndLogo(canvas, dimensions, title, titlePosition, logo, logoPosition, logoSize) {
+                function addTitleAndLogo(canvas, dimensions, title, titlePosition, titleFont, titleSize, titleColor, logo, logoPosition, logoSize) {
                     var ctx = canvas.getContext('2d');
                     var titleHeight = 0;
                     var titlePadding = Math.round(dimensions.height * 0.03); // 3% of canvas height
@@ -2433,11 +2463,12 @@
                     if (title) {
                         // Calculate font size based on dimensions and user setting
                         var baseFontSize = Math.round(dimensions.height * 0.03); // 3% of height as base
-                        var fontSize = baseFontSize * (parseInt(document.getElementById('print-text-size').value) / 2);
+                        var fontSize = baseFontSize * (titleSize / 2);
                         
-                        ctx.font = 'bold ' + fontSize + 'px Arial';
+                        // Use the selected font and color
+                        ctx.font = 'bold ' + fontSize + 'px ' + titleFont;
                         ctx.textAlign = 'center';
-                        ctx.fillStyle = '#000000';
+                        ctx.fillStyle = titleColor;
                         
                         // Measure text for positioning
                         var titleWidth = ctx.measureText(title).width;
@@ -2600,9 +2631,10 @@
                             maxZoom: 19
                         }).addTo(tempMap);
                     } else if (map.hasLayer(window.terrainLayer)) {
-                        activeLayer = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.png', {
-                            attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>',
-                            maxZoom: 18
+                        activeLayer = L.tileLayer('https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
+                            attribution: 'Terrain &copy; Google',
+                            maxZoom: 20,
+                            crossOrigin: "anonymous"
                         }).addTo(tempMap);
                     }
                     
@@ -2777,6 +2809,9 @@
                         // Get title and logo settings
                         var mapTitle = document.getElementById('print-map-title').value;
                         var titlePosition = document.getElementById('print-title-position').value;
+                        var titleFont = document.getElementById('print-title-font').value;
+                        var titleSize = parseInt(document.getElementById('print-title-size').value);
+                        var titleColor = document.getElementById('print-title-color').value;
                         var logoPosition = document.getElementById('print-logo-position').value;
                         var logoSize = parseInt(document.getElementById('print-logo-size').value);
                         
@@ -2820,7 +2855,7 @@
                                 // Add title and logo
                                 if (mapTitle || logoFile) {
                                     // Add title and logo
-                                    addTitleAndLogo(canvas, dimensions, mapTitle, titlePosition, logoFile, logoPosition, logoSize);
+                                    addTitleAndLogo(canvas, dimensions, mapTitle, titlePosition, titleFont, titleSize, titleColor, logoFile, logoPosition, logoSize);
                                     
                                     // Wait a bit for the logo to be loaded and rendered
                                     setTimeout(function() {
