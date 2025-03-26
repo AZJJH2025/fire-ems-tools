@@ -55,47 +55,51 @@
             color: #333 !important;
         }
         
-        /* Add tool icons via Font Awesome */
-        .leaflet-draw-toolbar a.leaflet-draw-draw-polyline::before {
-            font-family: 'Font Awesome 5 Free';
-            content: "\f1e0";  /* fa-share-alt */
-            font-weight: 900;
+        /* Preserve Leaflet.Draw's sprite icons but make them more visible */
+        .leaflet-draw-toolbar a {
+            background-image: url("https://unpkg.com/leaflet-draw@1.0.4/dist/images/spritesheet.png") !important;
+            background-repeat: no-repeat !important;
+            background-size: 270px 30px !important;
         }
         
-        .leaflet-draw-toolbar a.leaflet-draw-draw-polygon::before {
-            font-family: 'Font Awesome 5 Free';
-            content: "\f5ee";  /* fa-draw-polygon */
-            font-weight: 900;
+        .leaflet-draw-toolbar a.leaflet-draw-draw-polyline {
+            background-position: -2px 0px !important;
         }
         
-        .leaflet-draw-toolbar a.leaflet-draw-draw-rectangle::before {
-            font-family: 'Font Awesome 5 Free';
-            content: "\f0c8";  /* fa-square */
-            font-weight: 900;
+        .leaflet-draw-toolbar a.leaflet-draw-draw-polygon {
+            background-position: -31px 0px !important;
         }
         
-        .leaflet-draw-toolbar a.leaflet-draw-draw-circle::before {
-            font-family: 'Font Awesome 5 Free';
-            content: "\f111";  /* fa-circle */
-            font-weight: 900;
+        .leaflet-draw-toolbar a.leaflet-draw-draw-rectangle {
+            background-position: -62px 0px !important;
         }
         
-        .leaflet-draw-toolbar a.leaflet-draw-draw-marker::before {
-            font-family: 'Font Awesome 5 Free';
-            content: "\f3c5";  /* fa-map-marker-alt */
-            font-weight: 900;
+        .leaflet-draw-toolbar a.leaflet-draw-draw-circle {
+            background-position: -92px 0px !important;
         }
         
-        .leaflet-draw-toolbar a.leaflet-draw-edit-edit::before {
-            font-family: 'Font Awesome 5 Free';
-            content: "\f044";  /* fa-edit */
-            font-weight: 900;
+        .leaflet-draw-toolbar a.leaflet-draw-draw-marker {
+            background-position: -122px 0px !important;
         }
         
-        .leaflet-draw-toolbar a.leaflet-draw-edit-remove::before {
-            font-family: 'Font Awesome 5 Free';
-            content: "\f2ed";  /* fa-trash-alt */
-            font-weight: 900;
+        .leaflet-draw-toolbar a.leaflet-draw-edit-edit {
+            background-position: -152px 0px !important;
+        }
+        
+        .leaflet-draw-toolbar a.leaflet-draw-edit-remove {
+            background-position: -182px 0px !important;
+        }
+        
+        /* Add labels to make it clearer what each tool does */
+        .leaflet-draw-tooltip {
+            background: rgba(0, 0, 0, 0.7) !important;
+            color: white !important;
+            border: none !important;
+            box-shadow: 0 1px 7px rgba(0,0,0,0.4) !important;
+            border-radius: 4px !important;
+            padding: 5px 10px !important;
+            font-size: 13px !important;
+            white-space: nowrap !important;
         }
         
         .leaflet-draw-toolbar a:hover {
@@ -610,29 +614,52 @@
                                     shapeOptions: { color: '#1976d2', weight: 3 },
                                     metric: true,
                                     showLength: true,
-                                    feet: false
+                                    feet: false,
+                                    tooltip: {
+                                        start: 'Click to start drawing a line',
+                                        cont: 'Click to continue drawing the line',
+                                        end: 'Click last point to finish line'
+                                    }
                                 },
                                 polygon: { 
                                     allowIntersection: false,
                                     showArea: true,
                                     metric: true,
-                                    shapeOptions: { color: '#1976d2', weight: 3 }
+                                    shapeOptions: { color: '#1976d2', weight: 3 },
+                                    tooltip: {
+                                        start: 'Click to start drawing a shape',
+                                        cont: 'Click to continue drawing the shape',
+                                        end: 'Click first point to close this shape'
+                                    }
                                 },
                                 rectangle: { 
                                     showArea: true,
                                     metric: true,
-                                    shapeOptions: { color: '#1976d2', weight: 2 }
+                                    shapeOptions: { color: '#1976d2', weight: 2 },
+                                    tooltip: {
+                                        start: 'Click and drag to draw a rectangle'
+                                    }
                                 },
                                 circle: { 
                                     showRadius: true,
                                     metric: true,
-                                    shapeOptions: { color: '#1976d2', weight: 2 }
+                                    shapeOptions: { color: '#1976d2', weight: 2 },
+                                    tooltip: {
+                                        start: 'Click and drag to draw a circle'
+                                    }
                                 },
-                                marker: true
+                                marker: {
+                                    tooltip: {
+                                        start: 'Click map to place a marker'
+                                    }
+                                }
                             },
                             edit: {
                                 featureGroup: drawnItems,
-                                remove: true
+                                remove: true,
+                                poly: {
+                                    allowIntersection: false
+                                }
                             }
                         });
                         
