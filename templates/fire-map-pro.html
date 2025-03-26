@@ -26,6 +26,15 @@
     
     <!-- Fix for Leaflet.Draw toolbar visibility and styling -->
     <style>
+        /* Ensure left panel scrolls properly with all the new content */
+        .left-panel {
+            max-height: calc(100vh - 240px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            padding-right: 10px;
+        }
+        
         /* Additional styles for the icon palette */
         .icon-category {
             margin-bottom: 15px;
@@ -1729,8 +1738,15 @@
                 console.log('Icon drag and drop set up complete');
             }
             
-            // Call this function to set up icon drag and drop
-            setupIconDragAndDrop();
+            // We need to update the setupIconDragAndDrop function to make sure it properly binds to all new icons
+            // Call this function only after the page is fully loaded
+            window.addEventListener('load', function() {
+                // Ensure that all icon elements are fully loaded in the DOM
+                setTimeout(function() {
+                    setupIconDragAndDrop();
+                    console.log('Icon drag and drop initialized with all new icons');
+                }, 500);
+            });
             
             // Fix for common measurement issues
             function improveDrawMeasurements() {
@@ -2087,8 +2103,27 @@
             document.getElementById('icon-tool').addEventListener('click', function() {
                 var panel = document.getElementById('icon-container');
                 if (panel) {
-                    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                    var isHidden = panel.style.display === 'none';
+                    panel.style.display = isHidden ? 'block' : 'none';
                     this.classList.toggle('active');
+                    
+                    // If showing the panel, ensure it's fully visible
+                    if (isHidden) {
+                        // Force a reflow to ensure all icon categories are displayed
+                        panel.style.opacity = '0.99';
+                        setTimeout(function() {
+                            panel.style.opacity = '1';
+                            
+                            // Make sure the panel is scrolled to the top
+                            var leftPanel = document.querySelector('.left-panel');
+                            if (leftPanel) {
+                                leftPanel.scrollTop = panel.offsetTop - 20;
+                            }
+                            
+                            // Make sure draggable icons are properly initialized
+                            setupIconDragAndDrop();
+                        }, 100);
+                    }
                 }
             });
             
