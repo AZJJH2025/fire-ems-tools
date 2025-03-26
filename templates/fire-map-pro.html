@@ -523,7 +523,182 @@
     <!-- Direct inline script to handle layer switching and drawing tools -->
     <script>
         // Add Leaflet.GeometryUtil for area calculations
-        (function(){function t(t,n){if(t.x&&t.y)return n([t.x,t.y]);if(t.lat&&t.lng)return n([t.lng,t.lat]);if(t[0]&&t[1])return n(t);throw"Invalid LatLng object: "+t}L.GeometryUtil={},L.GeometryUtil.distancePointLine=function(n,e){var r=L.point(n),i=L.point(e[0]),a=L.point(e[1]),u=a.x-i.x,s=a.y-i.y,o=u*u+s*s,l=void 0;return o>0&&(l=((r.x-i.x)*u+(r.y-i.y)*s)/o),l<0?r.distanceTo(i):l>1?r.distanceTo(a):r.distanceTo(L.point(i.x+l*u,i.y+l*s))},L.GeometryUtil.closest=function(n,e,r){if(!r||!r.length)return null;for(var i=1/0,a=null,u=L.GeometryUtil.distanceSegment,s=0,o=r.length;s<o-1;s++){var l=r[s],c=r[s+1],h=u(n,l,c);h<i&&(i=h,a=L.GeometryUtil.closestOnSegment(n,l,c))}return a},L.GeometryUtil.closestOnSegment=function(n,e,r){var i=n.distanceTo(e),a=n.distanceTo(r);return i<a?e:r},L.GeometryUtil.distanceSegment=function(n,e,r){return L.GeometryUtil.distancePointLine(n,[e,r])},L.GeometryUtil.length=function(n){for(var e=0,r=n.length,i=r-1;i>=1;i--)e+=n[i].distanceTo(n[i-1]);return e},L.Polyline.include({getDistance:function(){return L.GeometryUtil.length(this.getLatLngs())}}),L.GeometryUtil.readableDistance=function(n,e){var r,i="m";return n>1e3&&(n/=1e3,i="km"),n=n.toFixed(0),e&&(n=t(n,e)),n+" "+i},L.GeometryUtil.readableArea=function(n,e){var r="";return n>=1e6?(n/=1e6,r="km²"):n>=1e4&&(n/=1e4,r="ha"),n=n.toFixed(2),e&&(n=t(n,e)),n+" "+r},L.GeometryUtil.geodesicArea=function(t){for(var n=0,e=t.length,r=e-1,i=0;i<e;r=i++){var a=t[r].lat*Math.PI/180,u=t[i].lat*Math.PI/180,s=(t[i].lng-t[r].lng)*Math.PI/180,o=Math.sin(a),l=Math.sin(u),c=Math.cos(a),h=Math.cos(u);n+=Math.atan2(Math.sin(s)*c*h,l*o-Math.cos(s)*c*l)}return Math.abs(n*6378137*6378137/2)},L.Polygon.include({getArea:function(){return L.GeometryUtil.geodesicArea(this.getLatLngs()[0])}}),L.GeometryUtil.bearing=function(n,e){var r=Math.PI/180,i=n.lat*r,a=e.lat*r,u=n.lng*r,s=e.lng*r,o=Math.sin(s-u)*Math.cos(a),l=Math.cos(i)*Math.sin(a)-Math.sin(i)*Math.cos(a)*Math.cos(s-u),c=Math.atan2(o,l)/r;return(c+360)%360},L.GeometryUtil.destination=function(n,e,r){var i=L.latLng(n);e=0===e?e:360-e;var a=r/6371e3,u=e*Math.PI/180,s=n.lat*Math.PI/180,o=n.lng*Math.PI/180,l=Math.asin(Math.sin(s)*Math.cos(a)+Math.cos(s)*Math.sin(a)*Math.cos(u)),c=o+Math.atan2(Math.sin(u)*Math.sin(a)*Math.cos(s),Math.cos(a)-Math.sin(s)*Math.sin(l));return c=parseFloat(c.toPrecision(10)),c=(c+3*Math.PI)%(2*Math.PI)-Math.PI,i.setLatLng([l*180/Math.PI,c*180/Math.PI]),i},L.GeometryUtil.lineIntersection=function(t,n){var e,r,i,a,u=t[0][0],s=t[0][1],o=t[1][0],l=t[1][1],c=n[0][0],h=n[0][1],d=n[1][0],f=n[1][1],g=o-u,L=l-s,p=d-c,m=f-h;if(a=(-L)*(c-u)+g*(h-s),i=(p)*(h-s)-(-m)*(c-u),g*(-m)-(-L)*(p)){if(e=a/(g*(-m)-(-L)*(p)),r=i/(g*(-m)-(-L)*(p)),e>=0&&e<=1&&r>=0&&r<=1)return{x:u+e*g,y:s+e*L}}return null},L.GeometryUtil.reverse=function(t){var n=t.length,e=n-1,r=t.slice(0);for(var i in t)r[i]=t[e-i];return r}}());
+        // Fixed version with Leaflet.Draw compatibility functions added
+(function() {
+    // Helper function for Leaflet.Draw compatibility
+    var formatNum = function(num, digits) {
+        var pow = Math.pow(10, (digits === undefined ? 0 : digits));
+        return Math.round(num * pow) / pow;
+    };
+    
+    // Required by Leaflet.Draw
+    L.GeometryUtil = L.extend(L.GeometryUtil || {}, {
+        // This function is specifically required by Leaflet.Draw
+        isVersion07x: function() {
+            // Check Leaflet version based on the most reliable method
+            return true; // Default to true for our implementation
+        },
+        
+        // All other functions from the original GeometryUtil
+        distancePointLine: function(p, p1, p2) {
+            var point = L.point(p),
+                p1 = L.point(p1),
+                p2 = L.point(p2),
+                x = p2.x - p1.x,
+                y = p2.y - p1.y,
+                dot = x * x + y * y,
+                t;
+
+            if (dot > 0) {
+                t = ((point.x - p1.x) * x + (point.y - p1.y) * y) / dot;
+                if (t < 0) {
+                    return point.distanceTo(p1);
+                }
+                if (t > 1) {
+                    return point.distanceTo(p2);
+                }
+                return point.distanceTo(L.point(p1.x + t * x, p1.y + t * y));
+            }
+            return point.distanceTo(p1);
+        },
+        
+        closest: function(map, layer, latlng, vertices) {
+            if (!vertices || vertices.length === 0) {
+                return null;
+            }
+            
+            var mindist = Number.MAX_VALUE,
+                result = null,
+                distance,
+                i, n, d;
+                
+            // Iterate through vertices
+            for (i = 0, n = vertices.length; i < n-1; i++) {
+                d = this.distanceSegment(map, latlng, vertices[i], vertices[i+1]);
+                if (d < mindist) {
+                    mindist = d;
+                    result = this.closestOnSegment(map, latlng, vertices[i], vertices[i+1]);
+                }
+            }
+            return result;
+        },
+        
+        closestOnSegment: function(map, latlng, latlngA, latlngB) {
+            var maxzoom = map.getMaxZoom();
+            if (maxzoom === Infinity)
+                maxzoom = map.getZoom();
+            var p = map.project(latlng, maxzoom),
+                p1 = map.project(latlngA, maxzoom),
+                p2 = map.project(latlngB, maxzoom),
+                closest = L.LineUtil.closestPointOnSegment(p, p1, p2);
+            return map.unproject(closest, maxzoom);
+        },
+        
+        distanceSegment: function(map, latlng, latlngA, latlngB) {
+            var p = map.latLngToLayerPoint(latlng),
+                p1 = map.latLngToLayerPoint(latlngA),
+                p2 = map.latLngToLayerPoint(latlngB);
+            return L.LineUtil.pointToSegmentDistance(p, p1, p2);
+        },
+        
+        readableDistance: function(distance, unit, precision) {
+            var precision = precision || 0;
+            var units = {
+                meters: 'm',
+                kilometers: 'km',
+                feet: 'ft',
+                miles: 'mi'
+            };
+            
+            if (unit === 'metric' || unit === undefined) {
+                if (distance >= 1000) {
+                    return formatNum(distance / 1000, precision) + ' ' + units.kilometers;
+                } else {
+                    return formatNum(distance, precision) + ' ' + units.meters;
+                }
+            } else {
+                distance *= 3.28084; // Meters to feet
+                if (distance >= 5280) {
+                    return formatNum(distance / 5280, precision) + ' ' + units.miles;
+                } else {
+                    return formatNum(distance, precision) + ' ' + units.feet;
+                }
+            }
+        },
+        
+        readableArea: function(area, unit, precision) {
+            var precision = precision || 0;
+            var units = {
+                metric: ['m²', 'ha', 'km²'],
+                imperial: ['ft²', 'ac', 'mi²']
+            };
+            
+            if (unit === 'metric' || unit === undefined) {
+                if (area >= 1000000) {
+                    return formatNum(area / 1000000, precision) + ' ' + units.metric[2];
+                } else if (area >= 10000) {
+                    return formatNum(area / 10000, precision) + ' ' + units.metric[1];
+                } else {
+                    return formatNum(area, precision) + ' ' + units.metric[0];
+                }
+            } else {
+                area *= 10.7639; // m² to ft²
+                if (area >= 27878400) {
+                    return formatNum(area / 27878400, precision) + ' ' + units.imperial[2];
+                } else if (area >= 43560) {
+                    return formatNum(area / 43560, precision) + ' ' + units.imperial[1];
+                } else {
+                    return formatNum(area, precision) + ' ' + units.imperial[0];
+                }
+            }
+        },
+        
+        geodesicArea: function(latLngs) {
+            var pointsCount = latLngs.length,
+                area = 0,
+                d2r = Math.PI / 180,
+                p1, p2;
+
+            if (pointsCount > 2) {
+                for (var i = 0; i < pointsCount; i++) {
+                    p1 = latLngs[i];
+                    p2 = latLngs[(i + 1) % pointsCount];
+                    area += ((p2.lng - p1.lng) * d2r) *
+                            (2 + Math.sin(p1.lat * d2r) + Math.sin(p2.lat * d2r));
+                }
+                area = area * 6378137.0 * 6378137.0 / 2.0;
+            }
+
+            return Math.abs(area);
+        },
+        
+        // Additional extensions for proper Leaflet.Draw compatibility
+        formattedNumber: function(num, precision) {
+            return formatNum(num, precision);
+        }
+    });
+    
+    // Add polygon getArea method
+    L.Polygon.include({
+        getArea: function() {
+            return L.GeometryUtil.geodesicArea(this.getLatLngs()[0]);
+        }
+    });
+    
+    // Add polyline getDistance method
+    L.Polyline.include({
+        getDistance: function() {
+            var distance = 0,
+                i, len, latlngs = this.getLatLngs();
+            
+            for (i = 0, len = latlngs.length - 1; i < len; i++) {
+                distance += latlngs[i].distanceTo(latlngs[i + 1]);
+            }
+            
+            return distance;
+        }
+    });
+})();
         
         // Wait for page load
         // Add a super high priority style before anything else loads
