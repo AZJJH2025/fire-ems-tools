@@ -43,6 +43,31 @@
             margin-bottom: 15px;
         }
         
+        /* Logo upload button styling */
+        .logo-upload-btn {
+            display: inline-block;
+            background-color: #1976d2;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background-color 0.2s;
+        }
+        
+        .logo-upload-btn:hover {
+            background-color: #0d47a1;
+        }
+        
+        #print-logo-filename {
+            font-size: 0.85rem;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+        }
+        
         .icon-category h4 {
             background-color: #f5f5f5;
             padding: 5px 10px;
@@ -905,6 +930,61 @@
                                 <input type="range" id="print-text-size" min="1" max="5" value="3" class="print-option slider">
                                 <span id="print-text-size-value">3</span>
                             </div>
+                            
+                            <h4 style="margin-top: 20px; margin-bottom: 10px; color: #1976d2; border-top: 1px solid #ddd; padding-top: 15px;">
+                                <i class="fas fa-image"></i> Logo & Title
+                            </h4>
+                            
+                            <div class="print-option-group">
+                                <label for="print-map-title">Map Title:</label>
+                                <input type="text" id="print-map-title" class="print-option" placeholder="Enter a title for your map">
+                            </div>
+                            
+                            <div class="print-option-group">
+                                <label for="print-title-position">Title Position:</label>
+                                <select id="print-title-position" class="print-option">
+                                    <option value="top">Top</option>
+                                    <option value="bottom">Bottom</option>
+                                </select>
+                            </div>
+                            
+                            <div class="print-option-group logo-upload">
+                                <label for="print-logo-upload">Logo:</label>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <label for="print-logo-upload" class="logo-upload-btn">
+                                        <i class="fas fa-upload"></i> Upload Logo
+                                    </label>
+                                    <input type="file" id="print-logo-upload" accept="image/*" style="display: none;">
+                                    <span id="print-logo-filename">No file selected</span>
+                                </div>
+                            </div>
+                            
+                            <div id="print-logo-preview" style="display: none; margin-top: 10px; text-align: center; border: 1px dashed #ddd; padding: 10px; border-radius: 4px;">
+                                <img id="print-logo-preview-img" style="max-width: 200px; max-height: 80px;">
+                                <button id="print-logo-remove" class="secondary-btn" style="margin-top: 10px; font-size: 0.8rem; padding: 3px 8px;">
+                                    <i class="fas fa-times"></i> Remove Logo
+                                </button>
+                            </div>
+                            
+                            <div class="print-option-group">
+                                <label for="print-logo-position">Logo Position:</label>
+                                <select id="print-logo-position" class="print-option">
+                                    <option value="top-left">Top Left</option>
+                                    <option value="top-right">Top Right</option>
+                                    <option value="bottom-left">Bottom Left</option>
+                                    <option value="bottom-right">Bottom Right</option>
+                                </select>
+                            </div>
+                            
+                            <div class="print-option-group">
+                                <label for="print-logo-size">Logo Size:</label>
+                                <input type="range" id="print-logo-size" min="1" max="5" value="3" class="print-option slider">
+                                <span id="print-logo-size-value">3</span>
+                            </div>
+                            
+                            <h4 style="margin-top: 20px; margin-bottom: 10px; color: #1976d2; border-top: 1px solid #ddd; padding-top: 15px;">
+                                <i class="fas fa-sliders-h"></i> Print Options
+                            </h4>
                             
                             <div class="print-option-group checkbox">
                                 <input type="checkbox" id="print-show-bleed" checked class="print-option">
@@ -2186,6 +2266,48 @@
                     document.getElementById('print-text-size-value').textContent = this.value;
                 });
                 
+                document.getElementById('print-logo-size').addEventListener('input', function() {
+                    document.getElementById('print-logo-size-value').textContent = this.value;
+                });
+                
+                // Logo upload handling
+                var logoFile = null;
+                document.getElementById('print-logo-upload').addEventListener('change', function(e) {
+                    var file = e.target.files[0];
+                    if (file) {
+                        if (file.type.match('image.*')) {
+                            var reader = new FileReader();
+                            
+                            reader.onload = function(e) {
+                                // Store the logo file data
+                                logoFile = e.target.result;
+                                
+                                // Update filename display
+                                document.getElementById('print-logo-filename').textContent = file.name;
+                                
+                                // Show logo preview
+                                var preview = document.getElementById('print-logo-preview');
+                                preview.style.display = 'block';
+                                
+                                var previewImg = document.getElementById('print-logo-preview-img');
+                                previewImg.src = logoFile;
+                            };
+                            
+                            reader.readAsDataURL(file);
+                        } else {
+                            alert('Please select an image file.');
+                        }
+                    }
+                });
+                
+                // Remove logo button
+                document.getElementById('print-logo-remove').addEventListener('click', function() {
+                    logoFile = null;
+                    document.getElementById('print-logo-filename').textContent = 'No file selected';
+                    document.getElementById('print-logo-preview').style.display = 'none';
+                    document.getElementById('print-logo-upload').value = '';
+                });
+                
                 // Print Preview Button
                 document.getElementById('print-preview-btn').addEventListener('click', function() {
                     try {
@@ -2241,6 +2363,12 @@
                     var showBleed = document.getElementById('print-show-bleed').checked;
                     var showSafe = document.getElementById('print-show-safe').checked;
                     
+                    // Get title and logo settings
+                    var mapTitle = document.getElementById('print-map-title').value;
+                    var titlePosition = document.getElementById('print-title-position').value;
+                    var logoPosition = document.getElementById('print-logo-position').value;
+                    var logoSize = parseInt(document.getElementById('print-logo-size').value);
+                    
                     // Calculate dimensions in pixels based on the selected paper size and DPI
                     var dimensions = calculatePaperDimensions(paperSize, orientation, dpi);
                     
@@ -2280,11 +2408,106 @@
                     
                     // Render the map to the canvas
                     renderMapForPrint(map, canvas, dimensions, function() {
-                        // Once the map is rendered, draw the bleed, trim, and safe zones on the overlay
+                        // Add title and logo after map is rendered
+                        if (mapTitle || logoFile) {
+                            addTitleAndLogo(canvas, dimensions, mapTitle, titlePosition, logoFile, logoPosition, logoSize);
+                        }
+                        
+                        // Draw the bleed, trim, and safe zones on the overlay
                         if (showBleed || showSafe) {
                             drawPrintGuides(overlay, dimensions, showBleed, showSafe);
                         }
                     });
+                }
+                
+                /**
+                 * Adds a title and logo to the canvas
+                 */
+                function addTitleAndLogo(canvas, dimensions, title, titlePosition, logo, logoPosition, logoSize) {
+                    var ctx = canvas.getContext('2d');
+                    var titleHeight = 0;
+                    var titlePadding = Math.round(dimensions.height * 0.03); // 3% of canvas height
+                    var safeAreaWidth = dimensions.width - (dimensions.bleedOffset + dimensions.safeZoneInset) * 2;
+                    
+                    // Add title if provided
+                    if (title) {
+                        // Calculate font size based on dimensions and user setting
+                        var baseFontSize = Math.round(dimensions.height * 0.03); // 3% of height as base
+                        var fontSize = baseFontSize * (parseInt(document.getElementById('print-text-size').value) / 2);
+                        
+                        ctx.font = 'bold ' + fontSize + 'px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillStyle = '#000000';
+                        
+                        // Measure text for positioning
+                        var titleWidth = ctx.measureText(title).width;
+                        titleHeight = fontSize * 1.5; // Approximate height of text
+                        
+                        // Position the title
+                        var titleX = dimensions.width / 2;
+                        var titleY;
+                        
+                        if (titlePosition === 'top') {
+                            // Title at top with padding from top of safe area
+                            titleY = dimensions.bleedOffset + dimensions.safeZoneInset + titleHeight;
+                        } else {
+                            // Title at bottom with padding from bottom of safe area
+                            titleY = dimensions.height - dimensions.bleedOffset - dimensions.safeZoneInset - titlePadding;
+                        }
+                        
+                        // Draw title
+                        ctx.fillText(title, titleX, titleY);
+                    }
+                    
+                    // Add logo if provided
+                    if (logo) {
+                        var img = new Image();
+                        img.src = logo;
+                        
+                        img.onload = function() {
+                            // Determine logo dimensions with aspect ratio preserved
+                            var maxLogoWidth = safeAreaWidth * 0.2 * logoSize/3; // 20% of safe width * size factor
+                            var maxLogoHeight = dimensions.height * 0.15 * logoSize/3; // 15% of height * size factor
+                            
+                            var logoWidth, logoHeight;
+                            
+                            if (img.width / img.height > maxLogoWidth / maxLogoHeight) {
+                                // Width constrained
+                                logoWidth = maxLogoWidth;
+                                logoHeight = logoWidth * (img.height / img.width);
+                            } else {
+                                // Height constrained
+                                logoHeight = maxLogoHeight;
+                                logoWidth = logoHeight * (img.width / img.height);
+                            }
+                            
+                            // Determine logo position
+                            var logoX, logoY;
+                            var logoPadding = Math.round(dimensions.height * 0.02); // 2% padding
+                            
+                            switch (logoPosition) {
+                                case 'top-left':
+                                    logoX = dimensions.bleedOffset + dimensions.safeZoneInset + logoPadding;
+                                    logoY = dimensions.bleedOffset + dimensions.safeZoneInset + logoPadding;
+                                    break;
+                                case 'top-right':
+                                    logoX = dimensions.width - dimensions.bleedOffset - dimensions.safeZoneInset - logoPadding - logoWidth;
+                                    logoY = dimensions.bleedOffset + dimensions.safeZoneInset + logoPadding;
+                                    break;
+                                case 'bottom-left':
+                                    logoX = dimensions.bleedOffset + dimensions.safeZoneInset + logoPadding;
+                                    logoY = dimensions.height - dimensions.bleedOffset - dimensions.safeZoneInset - logoPadding - logoHeight;
+                                    break;
+                                case 'bottom-right':
+                                default:
+                                    logoX = dimensions.width - dimensions.bleedOffset - dimensions.safeZoneInset - logoPadding - logoWidth;
+                                    logoY = dimensions.height - dimensions.bleedOffset - dimensions.safeZoneInset - logoPadding - logoHeight;
+                            }
+                            
+                            // Draw logo
+                            ctx.drawImage(img, logoX, logoY, logoWidth, logoHeight);
+                        };
+                    }
                 }
                 
                 /**
@@ -2551,6 +2774,12 @@
                         var dpi = parseInt(document.getElementById('print-dpi').value);
                         var useCmyk = document.getElementById('print-cmyk').checked;
                         
+                        // Get title and logo settings
+                        var mapTitle = document.getElementById('print-map-title').value;
+                        var titlePosition = document.getElementById('print-title-position').value;
+                        var logoPosition = document.getElementById('print-logo-position').value;
+                        var logoSize = parseInt(document.getElementById('print-logo-size').value);
+                        
                         // Calculate dimensions
                         var dimensions = calculatePaperDimensions(paperSize, orientation, dpi);
                         
@@ -2559,6 +2788,9 @@
                         
                         if (document.getElementById('print-preview-modal').style.display === 'flex') {
                             canvas = document.getElementById('print-preview-canvas');
+                            
+                            // Create PDF immediately if using preview
+                            createPrintPdf(canvas, dimensions, paperSize, orientation, useCmyk);
                         } else {
                             // Show loading status
                             var statusDiv = document.createElement('div');
@@ -2585,19 +2817,28 @@
                             
                             // Render the map to the canvas
                             renderMapForPrint(map, canvas, dimensions, function() {
-                                // Continue with PDF creation
-                                createPrintPdf(canvas, dimensions, paperSize, orientation, useCmyk);
-                                
-                                // Remove status message
-                                document.body.removeChild(statusDiv);
+                                // Add title and logo
+                                if (mapTitle || logoFile) {
+                                    // Add title and logo
+                                    addTitleAndLogo(canvas, dimensions, mapTitle, titlePosition, logoFile, logoPosition, logoSize);
+                                    
+                                    // Wait a bit for the logo to be loaded and rendered
+                                    setTimeout(function() {
+                                        // Continue with PDF creation
+                                        createPrintPdf(canvas, dimensions, paperSize, orientation, useCmyk);
+                                        
+                                        // Remove status message
+                                        document.body.removeChild(statusDiv);
+                                    }, 500);
+                                } else {
+                                    // Continue with PDF creation immediately
+                                    createPrintPdf(canvas, dimensions, paperSize, orientation, useCmyk);
+                                    
+                                    // Remove status message
+                                    document.body.removeChild(statusDiv);
+                                }
                             });
-                            
-                            return; // Exit early, the callback will finish the process
                         }
-                        
-                        // Create PDF immediately if using preview
-                        createPrintPdf(canvas, dimensions, paperSize, orientation, useCmyk);
-                        
                     } catch (error) {
                         console.error('Error exporting for print:', error);
                         alert('Error creating print export: ' + error.message);
