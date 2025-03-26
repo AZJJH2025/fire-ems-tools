@@ -462,6 +462,46 @@
                 console.log('Shape created:', event.layerType);
             });
             
+            // Set up other tool buttons
+            document.getElementById('search-tool').addEventListener('click', function() {
+                var panel = document.getElementById('search-container');
+                if (panel) {
+                    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                    this.classList.toggle('active');
+                }
+            });
+            
+            document.getElementById('filter-tool').addEventListener('click', function() {
+                var panel = document.getElementById('filter-container');
+                if (panel) {
+                    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                    this.classList.toggle('active');
+                }
+            });
+            
+            document.getElementById('export-tool').addEventListener('click', function() {
+                var panel = document.getElementById('export-container');
+                if (panel) {
+                    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                    this.classList.toggle('active');
+                }
+            });
+            
+            document.getElementById('icon-tool').addEventListener('click', function() {
+                var panel = document.getElementById('icon-container');
+                if (panel) {
+                    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                    this.classList.toggle('active');
+                }
+            });
+            
+            document.getElementById('clear-map').addEventListener('click', function() {
+                if (confirm('Are you sure you want to clear all items from the map?')) {
+                    drawnItems.clearLayers();
+                    console.log('Map cleared');
+                }
+            });
+            
             console.log('*** DIRECT INITIALIZATION COMPLETED ***');
         });
     </script>
@@ -469,6 +509,7 @@
     <!-- Other scripts -->
     <script src="https://cdn.jsdelivr.net/npm/leaflet-search@3.0.2/dist/leaflet-search.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
-    <script src="{{ url_for('static', filename='fire-map-pro.js') }}"></script>
+    <!-- Disable the main JS to use our inline solution instead -->
+    <!-- <script src="{{ url_for('static', filename='fire-map-pro.js') }}"></script> -->
 </body>
 </html>
