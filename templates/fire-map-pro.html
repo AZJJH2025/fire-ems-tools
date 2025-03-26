@@ -18,22 +18,76 @@
     <!-- Required scripts before content loads -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     
     <!-- Fix for Leaflet.Draw toolbar visibility and styling -->
     <style>
-        /* Comprehensive fix for all Leaflet.Draw elements */
+        /* Super high z-index fix for all Leaflet.Draw elements */
         .leaflet-draw, 
-        .leaflet-draw.leaflet-control,
-        .leaflet-draw-toolbar, 
-        .leaflet-draw-toolbar a, 
-        .leaflet-draw-actions, 
-        .leaflet-draw-actions a,
-        [class*="leaflet-draw-"] {
+        .leaflet-draw.leaflet-control {
             display: block !important;
             visibility: visible !important;
             opacity: 1 !important;
-            z-index: 2000 !important;
+            z-index: 99999 !important; /* Extreme z-index to ensure it stays above everything */
             pointer-events: auto !important;
+            position: absolute !important; /* Absolute positioning to break out of stacking context */
+            top: 10px !important;
+            right: 10px !important;
+        }
+        
+        .leaflet-draw-toolbar {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            z-index: 99999 !important;
+            background: white !important;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4) !important;
+            border-radius: 4px !important;
+            padding: 2px !important;
+            position: relative !important;
+        }
+        
+        .leaflet-draw-toolbar a, 
+        [class*="leaflet-draw-toolbar-button"] {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            z-index: 99999 !important;
+            pointer-events: auto !important;
+        }
+        
+        .leaflet-draw-actions {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            z-index: 100000 !important; /* Even higher than toolbar */
+            pointer-events: auto !important;
+            position: absolute !important;
+            left: 36px !important;
+        }
+        
+        .leaflet-draw-actions a {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            z-index: 100000 !important;
+            pointer-events: auto !important;
+        }
+        
+        /* Force controls to stay on top of all map layers */
+        .leaflet-top, 
+        .leaflet-bottom {
+            z-index: 10000 !important;
+            position: absolute !important;
+        }
+        
+        /* Override map pane z-indices */
+        .leaflet-map-pane {
+            z-index: 1 !important; /* Lower than controls */
+        }
+        
+        .leaflet-tile-pane {
+            z-index: 2 !important;
         }
         
         /* Ensure toolbar has proper background */
@@ -55,39 +109,49 @@
             color: #333 !important;
         }
         
-        /* Preserve Leaflet.Draw's sprite icons but make them more visible */
+        /* Use Font Awesome icons for drawing toolbar */
+        .leaflet-draw-toolbar a:before {
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            font-size: 16px;
+            line-height: 30px;
+            width: 30px;
+            text-align: center;
+            display: inline-block;
+        }
+        
+        .leaflet-draw-toolbar a.leaflet-draw-draw-polyline:before {
+            content: "\f1e0"; /* fa-share-alt - good for lines */
+        }
+        
+        .leaflet-draw-toolbar a.leaflet-draw-draw-polygon:before {
+            content: "\f5ee"; /* fa-draw-polygon */
+        }
+        
+        .leaflet-draw-toolbar a.leaflet-draw-draw-rectangle:before {
+            content: "\f0c8"; /* fa-square */
+        }
+        
+        .leaflet-draw-toolbar a.leaflet-draw-draw-circle:before {
+            content: "\f111"; /* fa-circle */
+        }
+        
+        .leaflet-draw-toolbar a.leaflet-draw-draw-marker:before {
+            content: "\f3c5"; /* fa-map-marker-alt */
+        }
+        
+        .leaflet-draw-toolbar a.leaflet-draw-edit-edit:before {
+            content: "\f044"; /* fa-edit */
+        }
+        
+        .leaflet-draw-toolbar a.leaflet-draw-edit-remove:before {
+            content: "\f2ed"; /* fa-trash-alt */
+        }
+        
+        /* Remove default background images */
         .leaflet-draw-toolbar a {
-            background-image: url("https://unpkg.com/leaflet-draw@1.0.4/dist/images/spritesheet.png") !important;
-            background-repeat: no-repeat !important;
-            background-size: 270px 30px !important;
-        }
-        
-        .leaflet-draw-toolbar a.leaflet-draw-draw-polyline {
-            background-position: -2px 0px !important;
-        }
-        
-        .leaflet-draw-toolbar a.leaflet-draw-draw-polygon {
-            background-position: -31px 0px !important;
-        }
-        
-        .leaflet-draw-toolbar a.leaflet-draw-draw-rectangle {
-            background-position: -62px 0px !important;
-        }
-        
-        .leaflet-draw-toolbar a.leaflet-draw-draw-circle {
-            background-position: -92px 0px !important;
-        }
-        
-        .leaflet-draw-toolbar a.leaflet-draw-draw-marker {
-            background-position: -122px 0px !important;
-        }
-        
-        .leaflet-draw-toolbar a.leaflet-draw-edit-edit {
-            background-position: -152px 0px !important;
-        }
-        
-        .leaflet-draw-toolbar a.leaflet-draw-edit-remove {
-            background-position: -182px 0px !important;
+            background-image: none !important;
+            background-color: white !important;
         }
         
         /* Add labels to make it clearer what each tool does */
@@ -462,6 +526,61 @@
         (function(){function t(t,n){if(t.x&&t.y)return n([t.x,t.y]);if(t.lat&&t.lng)return n([t.lng,t.lat]);if(t[0]&&t[1])return n(t);throw"Invalid LatLng object: "+t}L.GeometryUtil={},L.GeometryUtil.distancePointLine=function(n,e){var r=L.point(n),i=L.point(e[0]),a=L.point(e[1]),u=a.x-i.x,s=a.y-i.y,o=u*u+s*s,l=void 0;return o>0&&(l=((r.x-i.x)*u+(r.y-i.y)*s)/o),l<0?r.distanceTo(i):l>1?r.distanceTo(a):r.distanceTo(L.point(i.x+l*u,i.y+l*s))},L.GeometryUtil.closest=function(n,e,r){if(!r||!r.length)return null;for(var i=1/0,a=null,u=L.GeometryUtil.distanceSegment,s=0,o=r.length;s<o-1;s++){var l=r[s],c=r[s+1],h=u(n,l,c);h<i&&(i=h,a=L.GeometryUtil.closestOnSegment(n,l,c))}return a},L.GeometryUtil.closestOnSegment=function(n,e,r){var i=n.distanceTo(e),a=n.distanceTo(r);return i<a?e:r},L.GeometryUtil.distanceSegment=function(n,e,r){return L.GeometryUtil.distancePointLine(n,[e,r])},L.GeometryUtil.length=function(n){for(var e=0,r=n.length,i=r-1;i>=1;i--)e+=n[i].distanceTo(n[i-1]);return e},L.Polyline.include({getDistance:function(){return L.GeometryUtil.length(this.getLatLngs())}}),L.GeometryUtil.readableDistance=function(n,e){var r,i="m";return n>1e3&&(n/=1e3,i="km"),n=n.toFixed(0),e&&(n=t(n,e)),n+" "+i},L.GeometryUtil.readableArea=function(n,e){var r="";return n>=1e6?(n/=1e6,r="km²"):n>=1e4&&(n/=1e4,r="ha"),n=n.toFixed(2),e&&(n=t(n,e)),n+" "+r},L.GeometryUtil.geodesicArea=function(t){for(var n=0,e=t.length,r=e-1,i=0;i<e;r=i++){var a=t[r].lat*Math.PI/180,u=t[i].lat*Math.PI/180,s=(t[i].lng-t[r].lng)*Math.PI/180,o=Math.sin(a),l=Math.sin(u),c=Math.cos(a),h=Math.cos(u);n+=Math.atan2(Math.sin(s)*c*h,l*o-Math.cos(s)*c*l)}return Math.abs(n*6378137*6378137/2)},L.Polygon.include({getArea:function(){return L.GeometryUtil.geodesicArea(this.getLatLngs()[0])}}),L.GeometryUtil.bearing=function(n,e){var r=Math.PI/180,i=n.lat*r,a=e.lat*r,u=n.lng*r,s=e.lng*r,o=Math.sin(s-u)*Math.cos(a),l=Math.cos(i)*Math.sin(a)-Math.sin(i)*Math.cos(a)*Math.cos(s-u),c=Math.atan2(o,l)/r;return(c+360)%360},L.GeometryUtil.destination=function(n,e,r){var i=L.latLng(n);e=0===e?e:360-e;var a=r/6371e3,u=e*Math.PI/180,s=n.lat*Math.PI/180,o=n.lng*Math.PI/180,l=Math.asin(Math.sin(s)*Math.cos(a)+Math.cos(s)*Math.sin(a)*Math.cos(u)),c=o+Math.atan2(Math.sin(u)*Math.sin(a)*Math.cos(s),Math.cos(a)-Math.sin(s)*Math.sin(l));return c=parseFloat(c.toPrecision(10)),c=(c+3*Math.PI)%(2*Math.PI)-Math.PI,i.setLatLng([l*180/Math.PI,c*180/Math.PI]),i},L.GeometryUtil.lineIntersection=function(t,n){var e,r,i,a,u=t[0][0],s=t[0][1],o=t[1][0],l=t[1][1],c=n[0][0],h=n[0][1],d=n[1][0],f=n[1][1],g=o-u,L=l-s,p=d-c,m=f-h;if(a=(-L)*(c-u)+g*(h-s),i=(p)*(h-s)-(-m)*(c-u),g*(-m)-(-L)*(p)){if(e=a/(g*(-m)-(-L)*(p)),r=i/(g*(-m)-(-L)*(p)),e>=0&&e<=1&&r>=0&&r<=1)return{x:u+e*g,y:s+e*L}}return null},L.GeometryUtil.reverse=function(t){var n=t.length,e=n-1,r=t.slice(0);for(var i in t)r[i]=t[e-i];return r}}());
         
         // Wait for page load
+        // Add a super high priority style before anything else loads
+        (function() {
+            var criticalStyle = document.createElement('style');
+            criticalStyle.setAttribute('id', 'emergency-toolbar-fix');
+            criticalStyle.innerHTML = `
+                /* Critical toolbar visibility fixes with !important on everything */
+                .leaflet-draw,
+                .leaflet-draw.leaflet-control,
+                .leaflet-draw-toolbar,
+                .leaflet-draw-toolbar-top,
+                .leaflet-draw-toolbar-bottom,
+                .leaflet-draw-edit-edit,
+                .leaflet-draw-edit-remove,
+                .leaflet-draw-draw-polygon,
+                .leaflet-draw-draw-rectangle,
+                .leaflet-draw-draw-circle,
+                .leaflet-draw-draw-marker,
+                .leaflet-draw-draw-circlemarker,
+                .leaflet-draw-draw-polyline {
+                    display: block !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
+                    z-index: 9999999 !important; /* Ultra-high z-index */
+                    position: relative !important;
+                    pointer-events: auto !important;
+                }
+
+                /* Force the map panes to stay behind */
+                .leaflet-map-pane,
+                .leaflet-objects-pane,
+                .leaflet-tile-pane,
+                .leaflet-overlay-pane,
+                .leaflet-shadow-pane,
+                .leaflet-marker-pane,
+                .leaflet-popup-pane,
+                .leaflet-tooltip-pane,
+                .leaflet-zoom-animated {
+                    z-index: 1 !important;
+                }
+
+                /* Ensure controls always appear */
+                .leaflet-top, 
+                .leaflet-right {
+                    z-index: 9000000 !important;
+                    position: absolute !important;
+                    display: block !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
+                    top: 10px !important;
+                    right: 10px !important;
+                }
+            `;
+            document.head.appendChild(criticalStyle);
+        })();
+
         window.addEventListener('load', function() {
             console.log('*** DIRECT INITIALIZATION STARTING ***');
             
@@ -586,7 +705,7 @@
                 document.getElementById('search-results').innerHTML = '<p>' + msg + '</p>';
             });
             
-            // Handle draw button
+            // COMPLETELY NEW APPROACH - Fixed position toolbar at the bottom of the screen
             document.getElementById('draw-tool').addEventListener('click', function() {
                 console.log('Draw tool clicked');
                 
@@ -595,104 +714,255 @@
                 document.getElementById('measurement-info').style.display = window.drawControlActive ? 'block' : 'none';
                 
                 if (!window.drawControlActive) {
-                    // Remove draw control
+                    // Remove floating toolbar if it exists
                     try {
-                        map.removeControl(drawControl);
+                        var floatingToolbar = document.getElementById('floating-draw-toolbar');
+                        if (floatingToolbar) {
+                            document.body.removeChild(floatingToolbar);
+                        }
+                        
+                        var drawOverlay = document.getElementById('draw-mode-overlay');
+                        if (drawOverlay) {
+                            document.body.removeChild(drawOverlay);
+                        }
+                        
+                        // Disable any active handlers
+                        if (window.activeHandler) {
+                            window.activeHandler.disable();
+                            window.activeHandler = null;
+                        }
+                        
                         drawButton.classList.remove('active');
-                        console.log('Draw control removed');
                     } catch (e) {
-                        console.error('Error removing draw control:', e);
+                        console.error('Error removing drawing toolbar:', e);
                     }
                 } else {
-                    // Add draw control
                     try {
-                        // Create a new draw control each time for reliability
+                        // Create a fixed position toolbar at the BOTTOM of the screen
+                        var toolbar = document.createElement('div');
+                        toolbar.id = 'floating-draw-toolbar';
+                        
+                        // NOTE: We're applying styles directly as inline style attributes for maximum compatibility
+                        toolbar.style.position = 'fixed';
+                        toolbar.style.bottom = '20px';
+                        toolbar.style.left = '50%';
+                        toolbar.style.transform = 'translateX(-50%)';
+                        toolbar.style.backgroundColor = 'white';
+                        toolbar.style.boxShadow = '0 0 10px rgba(0,0,0,0.3)';
+                        toolbar.style.borderRadius = '8px';
+                        toolbar.style.padding = '10px 15px';
+                        toolbar.style.display = 'flex';
+                        toolbar.style.gap = '15px';
+                        toolbar.style.alignItems = 'center';
+                        toolbar.style.zIndex = '999999999'; // Ultra-high z-index
+                        
+                        // Create the drawing tools
+                        var tools = [
+                            { name: 'Line', icon: 'fa-share-alt', type: 'polyline' },
+                            { name: 'Polygon', icon: 'fa-draw-polygon', type: 'polygon' },
+                            { name: 'Rectangle', icon: 'fa-square', type: 'rectangle' },
+                            { name: 'Circle', icon: 'fa-circle', type: 'circle' },
+                            { name: 'Marker', icon: 'fa-map-marker-alt', type: 'marker' },
+                            { name: 'Edit', icon: 'fa-edit', type: 'edit' },
+                            { name: 'Delete', icon: 'fa-trash-alt', type: 'remove' },
+                            { name: 'Close', icon: 'fa-times', type: 'close' }
+                        ];
+                        
+                        // Create Draw control for the options (but don't add it to the map)
                         drawControl = new L.Control.Draw({
-                            position: 'topright',
+                            position: 'topright', // Won't matter since we're not adding it to the map
                             draw: {
                                 polyline: { 
                                     shapeOptions: { color: '#1976d2', weight: 3 },
                                     metric: true,
-                                    showLength: true,
-                                    feet: false,
-                                    tooltip: {
-                                        start: 'Click to start drawing a line',
-                                        cont: 'Click to continue drawing the line',
-                                        end: 'Click last point to finish line'
-                                    }
+                                    showLength: true
                                 },
                                 polygon: { 
                                     allowIntersection: false,
                                     showArea: true,
                                     metric: true,
-                                    shapeOptions: { color: '#1976d2', weight: 3 },
-                                    tooltip: {
-                                        start: 'Click to start drawing a shape',
-                                        cont: 'Click to continue drawing the shape',
-                                        end: 'Click first point to close this shape'
-                                    }
+                                    shapeOptions: { color: '#1976d2', weight: 3 }
                                 },
                                 rectangle: { 
                                     showArea: true,
                                     metric: true,
-                                    shapeOptions: { color: '#1976d2', weight: 2 },
-                                    tooltip: {
-                                        start: 'Click and drag to draw a rectangle'
-                                    }
+                                    shapeOptions: { color: '#1976d2', weight: 2 }
                                 },
                                 circle: { 
                                     showRadius: true,
                                     metric: true,
-                                    shapeOptions: { color: '#1976d2', weight: 2 },
-                                    tooltip: {
-                                        start: 'Click and drag to draw a circle'
-                                    }
+                                    shapeOptions: { color: '#1976d2', weight: 2 }
                                 },
-                                marker: {
-                                    tooltip: {
-                                        start: 'Click map to place a marker'
-                                    }
-                                }
+                                marker: true
                             },
                             edit: {
                                 featureGroup: drawnItems,
-                                remove: true,
-                                poly: {
-                                    allowIntersection: false
-                                }
+                                remove: true
                             }
                         });
                         
-                        map.addControl(drawControl);
+                        // Function to handle tool activation
+                        function activateDrawingTool(type) {
+                            console.log('Activating drawing tool:', type);
+                            
+                            // First disable any active handlers
+                            if (window.activeHandler) {
+                                window.activeHandler.disable();
+                                window.activeHandler = null;
+                            }
+                            
+                            // Handle close button
+                            if (type === 'close') {
+                                // Toggle off drawing mode
+                                document.getElementById('draw-tool').click();
+                                return;
+                            }
+                            
+                            // Update visual state of buttons
+                            tools.forEach(function(t) {
+                                var btn = document.getElementById('tool-' + t.type);
+                                if (btn) {
+                                    if (t.type === type) {
+                                        // Active button
+                                        btn.style.backgroundColor = '#1976d2';
+                                        var icon = btn.querySelector('i');
+                                        if (icon) icon.style.color = 'white';
+                                    } else if (t.type !== 'close') {
+                                        // Inactive buttons (except close)
+                                        btn.style.backgroundColor = 'white';
+                                        var icon = btn.querySelector('i');
+                                        if (icon) icon.style.color = '#333';
+                                    }
+                                }
+                            });
+                            
+                            // Create and enable the appropriate handler
+                            if (type === 'polyline') {
+                                window.activeHandler = new L.Draw.Polyline(map, drawControl.options.draw.polyline);
+                                window.activeHandler.enable();
+                            } 
+                            else if (type === 'polygon') {
+                                window.activeHandler = new L.Draw.Polygon(map, drawControl.options.draw.polygon);
+                                window.activeHandler.enable();
+                            }
+                            else if (type === 'rectangle') {
+                                window.activeHandler = new L.Draw.Rectangle(map, drawControl.options.draw.rectangle);
+                                window.activeHandler.enable();
+                            }
+                            else if (type === 'circle') {
+                                window.activeHandler = new L.Draw.Circle(map, drawControl.options.draw.circle);
+                                window.activeHandler.enable();
+                            }
+                            else if (type === 'marker') {
+                                window.activeHandler = new L.Draw.Marker(map, drawControl.options.draw.marker);
+                                window.activeHandler.enable();
+                            }
+                            else if (type === 'edit') {
+                                window.activeHandler = new L.EditToolbar.Edit(map, {
+                                    featureGroup: drawnItems,
+                                    selectedPathOptions: {
+                                        maintainColor: true,
+                                        dashArray: '10, 10'
+                                    }
+                                });
+                                window.activeHandler.enable();
+                            }
+                            else if (type === 'remove') {
+                                window.activeHandler = new L.EditToolbar.Delete(map, {
+                                    featureGroup: drawnItems
+                                });
+                                window.activeHandler.enable();
+                            }
+                            
+                            // Update measurement panel
+                            var measurementResults = document.getElementById('measurement-results');
+                            if (measurementResults) {
+                                measurementResults.innerHTML = '<p>Active tool: ' + type + '</p>';
+                            }
+                        }
+                        
+                        // Add buttons to the toolbar
+                        tools.forEach(function(tool) {
+                            var button = document.createElement('button');
+                            button.id = 'tool-' + tool.type;
+                            
+                            // Apply all styles directly to button
+                            button.style.width = tool.type === 'close' ? '40px' : '60px';
+                            button.style.height = tool.type === 'close' ? '40px' : '60px';
+                            button.style.border = tool.type === 'close' ? 'none' : '1px solid #ddd';
+                            button.style.borderRadius = '8px';
+                            button.style.backgroundColor = 'white';
+                            button.style.cursor = 'pointer';
+                            button.style.display = 'flex';
+                            button.style.flexDirection = 'column';
+                            button.style.alignItems = 'center';
+                            button.style.justifyContent = 'center';
+                            button.style.padding = '5px';
+                            
+                            // Create icon
+                            var icon = document.createElement('i');
+                            icon.className = 'fas ' + tool.icon;
+                            icon.style.fontSize = tool.type === 'close' ? '18px' : '22px';
+                            icon.style.marginBottom = '5px';
+                            icon.style.color = tool.type === 'close' ? '#f44336' : '#333';
+                            button.appendChild(icon);
+                            
+                            // Add label for everything except close
+                            if (tool.type !== 'close') {
+                                var label = document.createElement('span');
+                                label.textContent = tool.name;
+                                label.style.fontSize = '12px';
+                                button.appendChild(label);
+                            }
+                            
+                            // Add click handler
+                            button.addEventListener('click', function() {
+                                activateDrawingTool(tool.type);
+                            });
+                            
+                            // Add to toolbar
+                            toolbar.appendChild(button);
+                        });
+                        
+                        // Add the toolbar to the document body (completely outside the map)
+                        document.body.appendChild(toolbar);
+                        
+                        // Create a semi-transparent overlay to indicate drawing mode is active
+                        var overlay = document.createElement('div');
+                        overlay.id = 'draw-mode-overlay';
+                        
+                        // Apply styles directly to ensure maximum compatibility
+                        overlay.style.position = 'fixed';
+                        overlay.style.top = '0';
+                        overlay.style.left = '0';
+                        overlay.style.right = '0';
+                        overlay.style.bottom = '0';
+                        overlay.style.backgroundColor = 'rgba(0,0,0,0.05)';
+                        overlay.style.pointerEvents = 'none';
+                        overlay.style.zIndex = '1000000'; // High but below toolbar
+                        
+                        // Add the overlay to the document body
+                        document.body.appendChild(overlay);
+                        
+                        // Update button state
                         drawButton.classList.add('active');
                         
-                        // Add style to ensure visibility
-                        var style = document.createElement('style');
-                        style.innerHTML = `
-                            .leaflet-draw, 
-                            .leaflet-draw.leaflet-control,
-                            .leaflet-draw-toolbar, 
-                            .leaflet-draw-toolbar a, 
-                            .leaflet-draw-actions, 
-                            .leaflet-draw-actions a,
-                            [class*="leaflet-draw-"] {
-                                display: block !important;
-                                visibility: visible !important;
-                                opacity: 1 !important;
-                                z-index: 2000 !important;
-                                pointer-events: auto !important;
-                            }
-                        `;
-                        document.head.appendChild(style);
+                        // Show the measurement info panel
+                        document.getElementById('measurement-info').style.display = 'block';
                         
-                        console.log('Draw control added and visibility enforced');
-                        
-                        // Ask about measurement mode
-                        var measurementMode = confirm('Do you want to activate measurement mode?\n\nClick OK to measure distances and areas.\nClick Cancel to draw features on the map.');
-                        console.log('Measurement mode:', measurementMode);
-                        
-                        // Set measurement mode flag for reference
-                        window.measurementActive = measurementMode;
+                        // Update measurement instructions
+                        var measurementDisplay = document.getElementById('measurement-display');
+                        if (measurementDisplay) {
+                            measurementDisplay.innerHTML = `
+                                <p>Drawing mode is active. Use the toolbar at the bottom of the screen:</p>
+                                <ul>
+                                    <li>Select a tool from the toolbar</li>
+                                    <li>Click or drag on the map to draw</li>
+                                    <li>Use Edit to modify shapes</li>
+                                    <li>Use Delete to remove shapes</li>
+                                </ul>
+                            `;
+                        }
                     } catch (e) {
                         console.error('Error adding draw control:', e);
                         alert('Error setting up drawing tools. Please refresh the page and try again.');

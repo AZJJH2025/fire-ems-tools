@@ -84,7 +84,7 @@ body {
 #map {
     height: 100%;
     width: 100%;
-    z-index: 5; /* Increased z-index */
+    z-index: 10; /* Higher than before but lower than controls */
     position: relative; /* Ensure proper stacking context */
     display: block;
 }
@@ -92,7 +92,7 @@ body {
 /* Ensure all Leaflet controls are visible and clickable */
 .leaflet-control-container .leaflet-top,
 .leaflet-control-container .leaflet-bottom {
-    z-index: 10; /* Higher than other elements */
+    z-index: 4000; /* Consistent with other files */
     pointer-events: auto; /* Ensure clicks get through */
 }
 
@@ -788,57 +788,8 @@ footer {
     background-size: 20px 20px;
 }
 
-/* Fix for Leaflet Draw toolbar visibility */
-.leaflet-draw.leaflet-control {
-    display: block !important;
-    z-index: 1000;
-    visibility: visible !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-}
-
-/* Make sure toolbar items are visible and properly sized */
-.leaflet-draw-toolbar {
-    z-index: 1500 !important;
-    display: block !important;
-    pointer-events: auto !important;
-    background: white !important;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.4);
-    border-radius: 4px;
-}
-
-.leaflet-draw-toolbar a {
-    display: block !important;
-    width: 30px !important;
-    height: 30px !important;
-    line-height: 30px !important;
-    text-align: center !important;
-    font-size: 1.2rem;
-    background-color: white !important;
-    background-position: center !important;
-    background-repeat: no-repeat !important;
-}
-
-.leaflet-draw-actions {
-    display: block !important;
-    z-index: 1600 !important;
-    pointer-events: auto !important;
-    left: 36px !important; /* Ensure they appear to the right of the toolbar */
-    visibility: visible !important;
-}
-
-.leaflet-draw-actions a {
-    font-size: 0.9rem;
-    display: block !important;
-    background: white !important;
-    color: #333 !important;
-    padding: 0 8px !important;
-    visibility: visible !important;
-}
-
-.leaflet-draw-actions a:hover {
-    background: #f4f4f4 !important;
-}
+/* REMOVED DUPLICATE DRAW CONTROL STYLES - Using fix-ready-status.css for all draw control styling */
+/* This prevents conflicts between different CSS files with different z-index values */
 
 .leaflet-bar a {
     width: 30px;
