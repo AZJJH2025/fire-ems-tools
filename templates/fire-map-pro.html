@@ -24,6 +24,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
+    <!-- Additional print export libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/kmcconverter@1.0.1/dist/index.js"></script> <!-- For RGB to CMYK conversion -->
+    
     <!-- Fix for Leaflet.Draw toolbar visibility and styling -->
     <style>
         /* Ensure left panel scrolls properly with all the new content */
@@ -294,8 +297,213 @@
     
     <!-- Favicon -->
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
+    <!-- Additional styles for print export functionality -->
+    <style>
+        /* Premium button styling */
+        .premium-btn {
+            background: linear-gradient(135deg, #1976d2 0%, #00b0ff 100%);
+            color: white !important;
+            border: none !important;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .premium-btn i {
+            color: white !important;
+        }
+        
+        .premium-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: all 0.6s;
+        }
+        
+        .premium-btn:hover::before {
+            left: 100%;
+        }
+        
+        /* Print options styling */
+        .print-option-group {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .print-option-group label {
+            min-width: 120px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .print-option-group.checkbox {
+            display: flex;
+            align-items: center;
+        }
+        
+        .print-option-group.checkbox label {
+            margin-left: 8px;
+            min-width: auto;
+        }
+        
+        .print-option {
+            padding: 6px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            flex: 1;
+        }
+        
+        input.slider {
+            flex: 1;
+            margin-right: 10px;
+        }
+        
+        /* Print preview modal */
+        #print-preview-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 9999999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        .print-preview-content {
+            background: white;
+            border-radius: 8px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        
+        .print-preview-header {
+            padding: 15px;
+            background: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .print-preview-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #333;
+        }
+        
+        .print-preview-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .print-preview-body {
+            padding: 20px;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+            max-height: 70vh;
+        }
+        
+        .print-preview-canvas-container {
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+        }
+        
+        .print-preview-canvas {
+            display: block;
+        }
+        
+        .print-preview-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .print-preview-info {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 15px;
+            text-align: center;
+        }
+        
+        .print-preview-footer {
+            padding: 15px;
+            background: #f5f5f5;
+            border-top: 1px solid #ddd;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .print-preview-footer button {
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .print-preview-footer .cancel-btn {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            color: #333;
+        }
+        
+        .print-preview-footer .export-btn {
+            background: #1976d2;
+            border: none;
+            color: white;
+        }
+    </style>
 </head>
 <body>
+    <!-- Print Preview Modal -->
+    <div id="print-preview-modal">
+        <div class="print-preview-content">
+            <div class="print-preview-header">
+                <h2><i class="fas fa-print"></i> Print Preview</h2>
+                <button class="print-preview-close">&times;</button>
+            </div>
+            <div class="print-preview-body">
+                <div class="print-preview-canvas-container">
+                    <canvas id="print-preview-canvas" class="print-preview-canvas"></canvas>
+                    <canvas id="print-preview-overlay" class="print-preview-overlay"></canvas>
+                </div>
+            </div>
+            <div class="print-preview-info">
+                <p>Preview shows bleed area (red), trim line (black), and safe zone (blue).</p>
+                <p>For best results, keep important content inside the safe zone.</p>
+            </div>
+            <div class="print-preview-footer">
+                <button class="cancel-btn" id="print-preview-cancel">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="export-btn" id="print-preview-export">
+                    <i class="fas fa-file-export"></i> Export for Print
+                </button>
+            </div>
+        </div>
+    </div>
     <div class="navbar">
         <div class="logo">
             <a href="/">
@@ -649,6 +857,78 @@
                             <button id="export-geojson" class="export-btn">
                                 <i class="fas fa-file-code"></i> GeoJSON
                             </button>
+                            <button id="export-print" class="export-btn premium-btn">
+                                <i class="fas fa-print"></i> Print Quality
+                            </button>
+                        </div>
+                        
+                        <!-- Print Export Options (hidden by default) -->
+                        <div id="print-export-options" style="display: none; margin-top: 20px; background: #f9f9f9; padding: 15px; border-radius: 6px; border-left: 3px solid #1976d2;">
+                            <h4 style="margin-top: 0; margin-bottom: 10px; color: #1976d2;"><i class="fas fa-cog"></i> Print Settings</h4>
+                            
+                            <div class="print-option-group">
+                                <label for="print-size">Paper Size:</label>
+                                <select id="print-size" class="print-option">
+                                    <option value="letter">Letter (8.5" x 11")</option>
+                                    <option value="legal">Legal (8.5" x 14")</option>
+                                    <option value="tabloid">Tabloid (11" x 17")</option>
+                                    <option value="a4">A4 (210 x 297 mm)</option>
+                                    <option value="a3">A3 (297 x 420 mm)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="print-option-group">
+                                <label for="print-orientation">Orientation:</label>
+                                <select id="print-orientation" class="print-option">
+                                    <option value="landscape">Landscape</option>
+                                    <option value="portrait">Portrait</option>
+                                </select>
+                            </div>
+                            
+                            <div class="print-option-group">
+                                <label for="print-dpi">Resolution (DPI):</label>
+                                <select id="print-dpi" class="print-option">
+                                    <option value="150">150 DPI</option>
+                                    <option value="300" selected>300 DPI (Recommended)</option>
+                                    <option value="600">600 DPI (Large File)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="print-option-group">
+                                <label for="print-line-thickness">Line Thickness:</label>
+                                <input type="range" id="print-line-thickness" min="1" max="5" value="2" class="print-option slider">
+                                <span id="print-line-thickness-value">2</span>
+                            </div>
+                            
+                            <div class="print-option-group">
+                                <label for="print-text-size">Text Size:</label>
+                                <input type="range" id="print-text-size" min="1" max="5" value="3" class="print-option slider">
+                                <span id="print-text-size-value">3</span>
+                            </div>
+                            
+                            <div class="print-option-group checkbox">
+                                <input type="checkbox" id="print-show-bleed" checked class="print-option">
+                                <label for="print-show-bleed">Show bleed area (0.125")</label>
+                            </div>
+                            
+                            <div class="print-option-group checkbox">
+                                <input type="checkbox" id="print-show-safe" checked class="print-option">
+                                <label for="print-show-safe">Show safe zone</label>
+                            </div>
+                            
+                            <div class="print-option-group checkbox">
+                                <input type="checkbox" id="print-cmyk" checked class="print-option">
+                                <label for="print-cmyk">Use CMYK color profile</label>
+                            </div>
+                            
+                            <div class="print-actions" style="margin-top: 15px; display: flex; gap: 10px;">
+                                <button id="print-preview-btn" class="primary-btn">
+                                    <i class="fas fa-eye"></i> Preview
+                                </button>
+                                <button id="print-export-btn" class="primary-btn">
+                                    <i class="fas fa-file-export"></i> Export for Print
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1881,6 +2161,533 @@
             
             // Implement export functionality
             function setupExportFunctions() {
+                // Print Quality Export Button - Show/Hide Print Settings
+                document.getElementById('export-print').addEventListener('click', function() {
+                    var printOptions = document.getElementById('print-export-options');
+                    if (printOptions) {
+                        var isHidden = printOptions.style.display === 'none';
+                        printOptions.style.display = isHidden ? 'block' : 'none';
+                        
+                        // Update button state
+                        if (isHidden) {
+                            this.classList.add('active');
+                        } else {
+                            this.classList.remove('active');
+                        }
+                    }
+                });
+                
+                // Slider value display updates
+                document.getElementById('print-line-thickness').addEventListener('input', function() {
+                    document.getElementById('print-line-thickness-value').textContent = this.value;
+                });
+                
+                document.getElementById('print-text-size').addEventListener('input', function() {
+                    document.getElementById('print-text-size-value').textContent = this.value;
+                });
+                
+                // Print Preview Button
+                document.getElementById('print-preview-btn').addEventListener('click', function() {
+                    try {
+                        showPrintPreview();
+                    } catch (error) {
+                        console.error('Error showing print preview:', error);
+                        alert('Error creating print preview: ' + error.message);
+                    }
+                });
+                
+                // Close Print Preview Modal
+                document.querySelector('.print-preview-close').addEventListener('click', function() {
+                    document.getElementById('print-preview-modal').style.display = 'none';
+                });
+                
+                // Cancel Print Preview Button
+                document.getElementById('print-preview-cancel').addEventListener('click', function() {
+                    document.getElementById('print-preview-modal').style.display = 'none';
+                });
+                
+                // Export from Print Preview
+                document.getElementById('print-preview-export').addEventListener('click', function() {
+                    try {
+                        exportPrintQuality();
+                    } catch (error) {
+                        console.error('Error exporting print quality:', error);
+                        alert('Error creating print export: ' + error.message);
+                    }
+                });
+                
+                // Direct Export Print Quality Button (without preview)
+                document.getElementById('print-export-btn').addEventListener('click', function() {
+                    try {
+                        exportPrintQuality();
+                    } catch (error) {
+                        console.error('Error exporting print quality:', error);
+                        alert('Error creating print export: ' + error.message);
+                    }
+                });
+                
+                /**
+                 * Creates a print preview with bleed, trim, and safe zones
+                 */
+                function showPrintPreview() {
+                    // Show the modal
+                    var modal = document.getElementById('print-preview-modal');
+                    modal.style.display = 'flex';
+                    
+                    // Get print settings
+                    var paperSize = document.getElementById('print-size').value;
+                    var orientation = document.getElementById('print-orientation').value;
+                    var dpi = parseInt(document.getElementById('print-dpi').value);
+                    var showBleed = document.getElementById('print-show-bleed').checked;
+                    var showSafe = document.getElementById('print-show-safe').checked;
+                    
+                    // Calculate dimensions in pixels based on the selected paper size and DPI
+                    var dimensions = calculatePaperDimensions(paperSize, orientation, dpi);
+                    
+                    // Set up the canvas dimensions
+                    var canvas = document.getElementById('print-preview-canvas');
+                    var ctx = canvas.getContext('2d');
+                    
+                    canvas.width = dimensions.width;
+                    canvas.height = dimensions.height;
+                    
+                    // Set up the overlay canvas for bleed, trim and safe zones
+                    var overlay = document.getElementById('print-preview-overlay');
+                    overlay.width = dimensions.width;
+                    overlay.height = dimensions.height;
+                    
+                    // Scale the preview canvas to fit the modal
+                    var scaleFactor = Math.min(
+                        (window.innerWidth * 0.8) / dimensions.width,
+                        (window.innerHeight * 0.7) / dimensions.height
+                    );
+                    
+                    if (scaleFactor < 1) {
+                        canvas.style.width = (dimensions.width * scaleFactor) + 'px';
+                        canvas.style.height = (dimensions.height * scaleFactor) + 'px';
+                        overlay.style.width = (dimensions.width * scaleFactor) + 'px';
+                        overlay.style.height = (dimensions.height * scaleFactor) + 'px';
+                    } else {
+                        canvas.style.width = dimensions.width + 'px';
+                        canvas.style.height = dimensions.height + 'px';
+                        overlay.style.width = dimensions.width + 'px';
+                        overlay.style.height = dimensions.height + 'px';
+                    }
+                    
+                    // Fill with white background
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, dimensions.width, dimensions.height);
+                    
+                    // Render the map to the canvas
+                    renderMapForPrint(map, canvas, dimensions, function() {
+                        // Once the map is rendered, draw the bleed, trim, and safe zones on the overlay
+                        if (showBleed || showSafe) {
+                            drawPrintGuides(overlay, dimensions, showBleed, showSafe);
+                        }
+                    });
+                }
+                
+                /**
+                 * Returns dimensions in pixels for various paper sizes at a given DPI
+                 */
+                function calculatePaperDimensions(paperSize, orientation, dpi) {
+                    // Paper sizes in inches (width, height)
+                    var sizes = {
+                        'letter': [8.5, 11],
+                        'legal': [8.5, 14],
+                        'tabloid': [11, 17],
+                        'a4': [8.27, 11.69],   // A4 in inches
+                        'a3': [11.69, 16.54]   // A3 in inches
+                    };
+                    
+                    // Get the base dimensions
+                    var baseDimensions = sizes[paperSize];
+                    if (!baseDimensions) {
+                        baseDimensions = sizes['letter']; // Default to letter if not found
+                    }
+                    
+                    // Adjust for orientation
+                    var dimensions = {
+                        width: baseDimensions[0] * dpi,
+                        height: baseDimensions[1] * dpi
+                    };
+                    
+                    if (orientation === 'landscape') {
+                        dimensions = {
+                            width: baseDimensions[1] * dpi,
+                            height: baseDimensions[0] * dpi
+                        };
+                    }
+                    
+                    // Add bleed dimensions (0.125 inches on each side)
+                    dimensions.bleedWidth = dimensions.width + (0.125 * dpi * 2);
+                    dimensions.bleedHeight = dimensions.height + (0.125 * dpi * 2);
+                    
+                    // Calculate safe zone (0.25 inches inside the trim)
+                    dimensions.safeZoneInset = 0.25 * dpi;
+                    
+                    // Bleed offset
+                    dimensions.bleedOffset = 0.125 * dpi;
+                    
+                    return dimensions;
+                }
+                
+                /**
+                 * Renders the map to a canvas, optimized for print
+                 */
+                function renderMapForPrint(map, canvas, dimensions, callback) {
+                    var ctx = canvas.getContext('2d');
+                    
+                    // Get current map bounds
+                    var bounds = map.getBounds();
+                    
+                    // Create a hidden div for rendering
+                    var renderContainer = document.createElement('div');
+                    renderContainer.style.width = dimensions.width + 'px';
+                    renderContainer.style.height = dimensions.height + 'px';
+                    renderContainer.style.position = 'absolute';
+                    renderContainer.style.top = '-9999px';
+                    renderContainer.style.left = '-9999px';
+                    document.body.appendChild(renderContainer);
+                    
+                    // Create a temporary map for rendering at high resolution
+                    var tempMap = L.map(renderContainer, {
+                        center: map.getCenter(),
+                        zoom: map.getZoom(),
+                        zoomControl: false,
+                        attributionControl: false,
+                        dragging: false,
+                        touchZoom: false,
+                        scrollWheelZoom: false,
+                        doubleClickZoom: false,
+                        boxZoom: false,
+                        tap: false
+                    });
+                    
+                    // Add the same base layer as the main map
+                    var activeLayer = null;
+                    if (map.hasLayer(window.streetLayer)) {
+                        activeLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                            maxZoom: 19
+                        }).addTo(tempMap);
+                    } else if (map.hasLayer(window.satelliteLayer)) {
+                        activeLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                            attribution: 'Imagery &copy; Esri',
+                            maxZoom: 19
+                        }).addTo(tempMap);
+                    } else if (map.hasLayer(window.terrainLayer)) {
+                        activeLayer = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.png', {
+                            attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>',
+                            maxZoom: 18
+                        }).addTo(tempMap);
+                    }
+                    
+                    // Set the map to the same bounds as the original map
+                    tempMap.fitBounds(bounds);
+                    
+                    // Apply custom styling based on print settings
+                    var lineThickness = parseInt(document.getElementById('print-line-thickness').value);
+                    var textSize = parseInt(document.getElementById('print-text-size').value);
+                    
+                    // Copy drawn items to the temp map with adjusted styles
+                    var drawnItemsCopy = new L.FeatureGroup();
+                    tempMap.addLayer(drawnItemsCopy);
+                    
+                    drawnItems.eachLayer(function(layer) {
+                        var copyLayer;
+                        
+                        if (layer instanceof L.Polyline) {
+                            // This handles polylines and polygons
+                            var options = {
+                                color: layer.options.color,
+                                weight: layer.options.weight * lineThickness,
+                                opacity: 1,
+                                fillOpacity: layer.options.fillOpacity ? 0.8 : 0
+                            };
+                            
+                            if (layer instanceof L.Polygon) {
+                                copyLayer = L.polygon(layer.getLatLngs(), options);
+                            } else {
+                                copyLayer = L.polyline(layer.getLatLngs(), options);
+                            }
+                        } 
+                        else if (layer instanceof L.Circle) {
+                            copyLayer = L.circle(layer.getLatLng(), {
+                                radius: layer.getRadius(),
+                                color: layer.options.color,
+                                weight: layer.options.weight * lineThickness,
+                                opacity: 1,
+                                fillOpacity: 0.8
+                            });
+                        }
+                        else if (layer instanceof L.Marker) {
+                            copyLayer = L.marker(layer.getLatLng(), {
+                                icon: layer.options.icon
+                            });
+                        }
+                        
+                        if (copyLayer) {
+                            drawnItemsCopy.addLayer(copyLayer);
+                        }
+                    });
+                    
+                    // Wait for the map to stabilize, then render to canvas
+                    setTimeout(function() {
+                        html2canvas(renderContainer, {
+                            useCORS: true,
+                            allowTaint: true,
+                            backgroundColor: '#ffffff',
+                            scale: 1
+                        }).then(function(renderedCanvas) {
+                            // Copy the rendered canvas to our preview canvas
+                            ctx.drawImage(renderedCanvas, 0, 0, dimensions.width, dimensions.height);
+                            
+                            // Clean up the temporary map
+                            tempMap.remove();
+                            document.body.removeChild(renderContainer);
+                            
+                            // Execute callback
+                            if (callback) callback();
+                        });
+                    }, 1000);
+                }
+                
+                /**
+                 * Draws print guides (bleed, trim, safe zone) on the overlay canvas
+                 */
+                function drawPrintGuides(canvas, dimensions, showBleed, showSafe) {
+                    var ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Draw bleed area (red)
+                    if (showBleed) {
+                        ctx.strokeStyle = 'rgba(255, 0, 0, 0.7)';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(0, 0, dimensions.width, dimensions.height);
+                        
+                        // Draw bleed edge explanation
+                        ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+                        ctx.font = '12px Arial';
+                        ctx.textAlign = 'left';
+                        ctx.fillText('Bleed Edge', 10, 16);
+                    }
+                    
+                    // Draw trim line (black)
+                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(
+                        dimensions.bleedOffset, 
+                        dimensions.bleedOffset, 
+                        dimensions.width - (dimensions.bleedOffset * 2), 
+                        dimensions.height - (dimensions.bleedOffset * 2)
+                    );
+                    
+                    // Draw safe zone (blue)
+                    if (showSafe) {
+                        ctx.strokeStyle = 'rgba(0, 0, 255, 0.5)';
+                        ctx.lineWidth = 1;
+                        ctx.setLineDash([5, 5]);
+                        ctx.strokeRect(
+                            dimensions.bleedOffset + dimensions.safeZoneInset, 
+                            dimensions.bleedOffset + dimensions.safeZoneInset, 
+                            dimensions.width - ((dimensions.bleedOffset + dimensions.safeZoneInset) * 2), 
+                            dimensions.height - ((dimensions.bleedOffset + dimensions.safeZoneInset) * 2)
+                        );
+                        ctx.setLineDash([]);
+                        
+                        // Draw safe zone explanation
+                        ctx.fillStyle = 'rgba(0, 0, 255, 0.7)';
+                        ctx.font = '12px Arial';
+                        ctx.textAlign = 'left';
+                        ctx.fillText('Safe Zone', 10, 36);
+                    }
+                }
+                
+                /**
+                 * Convert RGB to CMYK for print-ready PDF
+                 */
+                function rgbToCmyk(r, g, b) {
+                    try {
+                        // Use the converter library if available
+                        if (typeof kmc !== 'undefined') {
+                            var cmyk = kmc.ColorConverter.rgbToCmyk(r, g, b);
+                            return cmyk;
+                        } else {
+                            // Fallback manual conversion
+                            // Normalize RGB values
+                            var r1 = r / 255;
+                            var g1 = g / 255;
+                            var b1 = b / 255;
+                            
+                            // Calculate CMY
+                            var k = Math.min(1 - r1, 1 - g1, 1 - b1);
+                            var c = (1 - r1 - k) / (1 - k) || 0;
+                            var m = (1 - g1 - k) / (1 - k) || 0;
+                            var y = (1 - b1 - k) / (1 - k) || 0;
+                            
+                            // Convert to 0-100 range for printing
+                            return {
+                                c: Math.round(c * 100),
+                                m: Math.round(m * 100),
+                                y: Math.round(y * 100),
+                                k: Math.round(k * 100)
+                            };
+                        }
+                    } catch (error) {
+                        console.error('Error converting RGB to CMYK:', error);
+                        return { c: 0, m: 0, y: 0, k: 100 }; // Default to black on error
+                    }
+                }
+                
+                /**
+                 * Export the map as a high-quality print PDF
+                 */
+                function exportPrintQuality() {
+                    try {
+                        // Get print settings
+                        var paperSize = document.getElementById('print-size').value;
+                        var orientation = document.getElementById('print-orientation').value;
+                        var dpi = parseInt(document.getElementById('print-dpi').value);
+                        var useCmyk = document.getElementById('print-cmyk').checked;
+                        
+                        // Calculate dimensions
+                        var dimensions = calculatePaperDimensions(paperSize, orientation, dpi);
+                        
+                        // Get the current preview canvas if preview is active, or create a new one
+                        var canvas;
+                        
+                        if (document.getElementById('print-preview-modal').style.display === 'flex') {
+                            canvas = document.getElementById('print-preview-canvas');
+                        } else {
+                            // Show loading status
+                            var statusDiv = document.createElement('div');
+                            statusDiv.innerHTML = 'Preparing high-quality print export, please wait...';
+                            statusDiv.style.position = 'fixed';
+                            statusDiv.style.top = '50%';
+                            statusDiv.style.left = '50%';
+                            statusDiv.style.transform = 'translate(-50%, -50%)';
+                            statusDiv.style.padding = '20px';
+                            statusDiv.style.background = 'rgba(0,0,0,0.8)';
+                            statusDiv.style.color = 'white';
+                            statusDiv.style.borderRadius = '10px';
+                            statusDiv.style.zIndex = '999999';
+                            document.body.appendChild(statusDiv);
+                            
+                            // Create a new canvas
+                            canvas = document.createElement('canvas');
+                            canvas.width = dimensions.width;
+                            canvas.height = dimensions.height;
+                            
+                            var ctx = canvas.getContext('2d');
+                            ctx.fillStyle = 'white';
+                            ctx.fillRect(0, 0, dimensions.width, dimensions.height);
+                            
+                            // Render the map to the canvas
+                            renderMapForPrint(map, canvas, dimensions, function() {
+                                // Continue with PDF creation
+                                createPrintPdf(canvas, dimensions, paperSize, orientation, useCmyk);
+                                
+                                // Remove status message
+                                document.body.removeChild(statusDiv);
+                            });
+                            
+                            return; // Exit early, the callback will finish the process
+                        }
+                        
+                        // Create PDF immediately if using preview
+                        createPrintPdf(canvas, dimensions, paperSize, orientation, useCmyk);
+                        
+                    } catch (error) {
+                        console.error('Error exporting for print:', error);
+                        alert('Error creating print export: ' + error.message);
+                    }
+                }
+                
+                /**
+                 * Create a print-ready PDF from the canvas
+                 */
+                function createPrintPdf(canvas, dimensions, paperSize, orientation, useCmyk) {
+                    try {
+                        // Get base paper size in points (72 points per inch)
+                        var sizes = {
+                            'letter': [612, 792],     // 8.5" x 11" in points
+                            'legal': [612, 1008],     // 8.5" x 14" in points
+                            'tabloid': [792, 1224],   // 11" x 17" in points
+                            'a4': [595, 842],         // A4 in points
+                            'a3': [842, 1191]         // A3 in points
+                        };
+                        
+                        var pdfSize = sizes[paperSize] || sizes['letter'];
+                        
+                        // Adjust for orientation
+                        if (orientation === 'landscape') {
+                            pdfSize = [pdfSize[1], pdfSize[0]];
+                        }
+                        
+                        // Create PDF with jsPDF
+                        var pdf = new jspdf.jsPDF({
+                            orientation: orientation,
+                            unit: 'pt',
+                            format: paperSize
+                        });
+                        
+                        // Get image data from canvas
+                        var imgData = canvas.toDataURL('image/jpeg', 1.0);
+                        
+                        // Process for CMYK if requested
+                        if (useCmyk) {
+                            var tempCanvas = document.createElement('canvas');
+                            tempCanvas.width = canvas.width;
+                            tempCanvas.height = canvas.height;
+                            var tempCtx = tempCanvas.getContext('2d');
+                            
+                            // Draw the original image
+                            var img = new Image();
+                            img.src = imgData;
+                            
+                            // Process the image data for CMYK conversion
+                            img.onload = function() {
+                                tempCtx.drawImage(img, 0, 0);
+                                var imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+                                var data = imageData.data;
+                                
+                                // Add black channel text
+                                tempCtx.fillStyle = 'black';
+                                tempCtx.font = 'bold 16pt Arial';
+                                tempCtx.fillText('CMYK Optimized for Print', 20, canvas.height - 30);
+                                tempCtx.fillText('FireMapPro Export - ' + new Date().toISOString().split('T')[0], 20, canvas.height - 10);
+                                
+                                // Get the updated image with text
+                                imgData = tempCanvas.toDataURL('image/jpeg', 1.0);
+                                
+                                // Add the processed image to PDF
+                                pdf.addImage(imgData, 'JPEG', 0, 0, pdfSize[0], pdfSize[1]);
+                                
+                                // Save the PDF
+                                pdf.save('firemap-print-export-' + new Date().toISOString().split('T')[0] + '.pdf');
+                            };
+                        } else {
+                            // Use the image directly without CMYK conversion
+                            pdf.addImage(imgData, 'JPEG', 0, 0, pdfSize[0], pdfSize[1]);
+                            
+                            // Add metadata
+                            pdf.setFontSize(12);
+                            pdf.setTextColor(0, 0, 0);
+                            pdf.text('FireMapPro Export - ' + new Date().toISOString().split('T')[0], 20, pdfSize[1] - 20);
+                            
+                            // Save the PDF
+                            pdf.save('firemap-print-export-' + new Date().toISOString().split('T')[0] + '.pdf');
+                        }
+                        
+                        // Hide the preview modal if it's open
+                        document.getElementById('print-preview-modal').style.display = 'none';
+                        
+                    } catch (error) {
+                        console.error('Error creating PDF:', error);
+                        alert('Error creating PDF: ' + error.message);
+                    }
+                }
                 // PDF Export
                 document.getElementById('export-pdf').addEventListener('click', function() {
                     try {
