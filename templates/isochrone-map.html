@@ -70,6 +70,17 @@
             <button id="place-station-button">Add Station</button>
           </div>
           
+          <!-- Bulk upload station locations -->
+          <div class="input-group">
+            <label><strong>- OR -</strong></label>
+            <div class="file-upload-wrapper">
+              <label for="station-file-upload">Bulk Upload Station Locations:</label>
+              <input type="file" id="station-file-upload" accept=".csv,.xlsx,.xls">
+              <button id="upload-stations-button">Upload Stations</button>
+            </div>
+            <p class="upload-help">Upload CSV or Excel file with station data (requires columns for name, latitude, longitude)</p>
+          </div>
+          
           <!-- Station list and active station info -->
           <div class="station-management">
             <h4 id="active-station-name">No station selected</h4>
@@ -79,9 +90,9 @@
             </div>
             
             <div class="stations-container">
-              <h4>Added Stations</h4>
+              <h4>Added Stations <span id="station-count">(0)</span></h4>
               <div id="stations-list" class="station-list">
-                <p class="no-stations">No stations added yet. Click "Add Station" or use the address search to add stations.</p>
+                <p class="no-stations">No stations added yet. Click "Add Station", use the address search, or upload station data.</p>
               </div>
             </div>
           </div>
@@ -136,6 +147,31 @@
           
           <div class="input-group">
             <label><input type="checkbox" id="show-critical-facilities"> Show Critical Facilities</label>
+          </div>
+        </section>
+        
+        <!-- Incident Data Section -->
+        <section class="control-section">
+          <h3>Incident Data (Optional)</h3>
+          <div class="input-group">
+            <div class="file-upload-wrapper">
+              <label for="incident-file-upload">Upload Incident Data:</label>
+              <input type="file" id="incident-file-upload" accept=".csv,.xlsx,.xls">
+              <button id="upload-incidents-button">Upload Incidents</button>
+            </div>
+            <p class="upload-help">Upload CSV or Excel file with incident data (requires columns for latitude, longitude)</p>
+          </div>
+          
+          <div class="incidents-summary" id="incidents-summary">
+            <p>No incident data loaded</p>
+          </div>
+          
+          <div class="input-group">
+            <label><input type="checkbox" id="show-incidents" disabled> Show Incidents on Map</label>
+          </div>
+          
+          <div class="input-group">
+            <label><input type="checkbox" id="show-heatmap" disabled> Show Incident Heatmap</label>
           </div>
         </section>
         
@@ -196,6 +232,12 @@
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <!-- Leaflet.heat for heatmap functionality -->
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+  
+  <!-- Papa Parse for CSV parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   
   <!-- HTML2Canvas for map export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>

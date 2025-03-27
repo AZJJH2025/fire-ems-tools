@@ -96,6 +96,20 @@ document.addEventListener('DOMContentLoaded', function() {
             ],
             coordinateFields: ['Latitude', 'Longitude'],
             optionalFields: ['Description', 'Icon Type', 'Color', 'Group']
+        },
+        'isochrone-stations': {
+            requiredFields: [
+                'Station Name', 'Latitude', 'Longitude'
+            ],
+            coordinateFields: ['Latitude', 'Longitude'],
+            optionalFields: ['Station ID', 'Address', 'Station Type', 'Coverage Area', 'Unit Types']
+        },
+        'isochrone-incidents': {
+            requiredFields: [
+                'Latitude', 'Longitude'
+            ],
+            coordinateFields: ['Latitude', 'Longitude'],
+            optionalFields: ['Incident Type', 'Incident ID', 'Incident Date', 'Incident Time', 'Priority']
         }
     };
     
@@ -2199,6 +2213,109 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log('Coverage Gap Finder data sample:', preparedData.length > 0 ? preparedData[0] : 'No data');
                     break;
                     
+                case 'isochrone-stations':
+                    // Ensure stations have proper fields
+                    preparedData.forEach((item, index) => {
+                        // Standardize coordinates
+                        for (const field of ['Latitude', 'Longitude']) {
+                            // Try standard field names first
+                            if (item[field] !== undefined) {
+                                const coordValue = parseFloat(item[field]);
+                                if (!isNaN(coordValue)) {
+                                    item[field] = coordValue;
+                                }
+                            } else {
+                                // Try alternate field names
+                                const alternates = field === 'Latitude' ? 
+                                    ['latitude', 'lat', 'y', 'LAT', 'Lat'] : 
+                                    ['longitude', 'long', 'lng', 'x', 'LONG', 'Lng', 'LON', 'Lon'];
+                                
+                                for (const altField of alternates) {
+                                    if (item[altField] !== undefined) {
+                                        const coordValue = parseFloat(item[altField]);
+                                        if (!isNaN(coordValue)) {
+                                            item[field] = coordValue;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Map station identification fields
+                        if (item['Station Name'] === undefined) {
+                            // Try alternate fields for Station Name
+                            const nameFields = ['station_name', 'stationName', 'name', 'Name', 'STATION_NAME', 'Station'];
+                            for (const field of nameFields) {
+                                if (item[field] !== undefined) {
+                                    item['Station Name'] = item[field];
+                                    break;
+                                }
+                            }
+                            
+                            // If still no name but we have ID, use ID as name
+                            if (item['Station Name'] === undefined && item['Station ID'] !== undefined) {
+                                item['Station Name'] = `Station ${item['Station ID']}`;
+                            } else if (item['Station Name'] === undefined) {
+                                // Generate a name if none exists
+                                item['Station Name'] = `Station ${index + 1}`;
+                            }
+                        }
+                    });
+                    
+                    console.log('Isochrone Map Station data sample:', preparedData.length > 0 ? preparedData[0] : 'No data');
+                    break;
+                    
+                case 'isochrone-incidents':
+                    // Ensure incidents have proper fields
+                    preparedData.forEach(item => {
+                        // Standardize coordinates
+                        for (const field of ['Latitude', 'Longitude']) {
+                            // Try standard field names first
+                            if (item[field] !== undefined) {
+                                const coordValue = parseFloat(item[field]);
+                                if (!isNaN(coordValue)) {
+                                    item[field] = coordValue;
+                                }
+                            } else {
+                                // Try alternate field names
+                                const alternates = field === 'Latitude' ? 
+                                    ['latitude', 'lat', 'y', 'LAT', 'Lat'] : 
+                                    ['longitude', 'long', 'lng', 'x', 'LONG', 'Lng', 'LON', 'Lon'];
+                                
+                                for (const altField of alternates) {
+                                    if (item[altField] !== undefined) {
+                                        const coordValue = parseFloat(item[altField]);
+                                        if (!isNaN(coordValue)) {
+                                            item[field] = coordValue;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Map incident type field
+                        if (item['Incident Type'] === undefined) {
+                            // Try alternate fields for Incident Type
+                            const typeFields = ['incident_type', 'incidentType', 'type', 'Type', 'call_type', 'callType'];
+                            for (const field of typeFields) {
+                                if (item[field] !== undefined) {
+                                    item['Incident Type'] = item[field];
+                                    break;
+                                }
+                            }
+                            
+                            // If still no type, use a default
+                            if (item['Incident Type'] === undefined) {
+                                item['Incident Type'] = 'Unknown';
+                            }
+                        }
+                    });
+                    
+                    console.log('Isochrone Map Incident data sample:', preparedData.length > 0 ? preparedData[0] : 'No data');
+                    break;
+                
                 // Add tool-specific preparations for other tools as needed
             }
             

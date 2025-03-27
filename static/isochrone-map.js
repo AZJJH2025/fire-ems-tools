@@ -197,6 +197,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let activeStationIndex = -1; // Track the currently active station
     let isochrones = [];
     let isPlacingStation = false;
+    let incidentMarkers = []; // Array to hold incident markers
+    let incidentHeatmap = null; // Heatmap layer for incidents
+    let incidentData = []; // Raw incident data
 
     // -------------------------------------------------------------------------
     // Event Listeners
@@ -275,6 +278,34 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // File upload listeners
+    document.getElementById('upload-stations-button').addEventListener('click', function() {
+        const fileInput = document.getElementById('station-file-upload');
+        if (fileInput.files.length > 0) {
+            processStationFile(fileInput.files[0]);
+        } else {
+            alert('Please select a file to upload');
+        }
+    });
+    
+    document.getElementById('upload-incidents-button').addEventListener('click', function() {
+        const fileInput = document.getElementById('incident-file-upload');
+        if (fileInput.files.length > 0) {
+            processIncidentFile(fileInput.files[0]);
+        } else {
+            alert('Please select a file to upload');
+        }
+    });
+    
+    // Incident display toggles
+    document.getElementById('show-incidents').addEventListener('change', function(e) {
+        toggleIncidentDisplay(e.target.checked);
+    });
+    
+    document.getElementById('show-heatmap').addEventListener('change', function(e) {
+        toggleHeatmapDisplay(e.target.checked);
+    });
+    
     // Button event listeners for isochrone generation, reset, and export
     document.getElementById('generate-button').addEventListener('click', generateIsochrones);
     document.getElementById('reset-button').addEventListener('click', resetMap);
@@ -283,6 +314,478 @@ document.addEventListener('DOMContentLoaded', function() {
     // -------------------------------------------------------------------------
     // Helper Functions
     // -------------------------------------------------------------------------
+    
+    // Process uploaded station file (CSV or Excel)
+    function processStationFile(file) {
+        const reader = new FileReader();
+        const fileExt = file.name.split('.').pop().toLowerCase();
+        
+        document.getElementById('upload-stations-button').textContent = 'Processing...';
+        document.getElementById('upload-stations-button').disabled = true;
+        
+        reader.onload = function(e) {
+            try {
+                let stations = [];
+                
+                if (fileExt === 'csv') {
+                    // Process CSV
+                    stations = parseCSV(e.target.result);
+                } else if (['xls', 'xlsx'].includes(fileExt)) {
+                    // For real Excel files, you'd need a library like SheetJS
+                    // This is a simplified version that assumes CSV-like format
+                    const csvData = e.target.result.replace(/\\r\\n/g, '\n').replace(/\\r/g, '\n');
+                    stations = parseCSV(csvData);
+                }
+                
+                if (stations.length === 0) {
+                    throw new Error('No valid station data found in file');
+                }
+                
+                // Process stations
+                processStations(stations);
+                
+                // Reset the file input
+                document.getElementById('station-file-upload').value = '';
+                document.getElementById('upload-stations-button').textContent = 'Upload Stations';
+                document.getElementById('upload-stations-button').disabled = false;
+                
+                showMessage(`Successfully loaded ${stations.length} stations`, 'success');
+            } catch (error) {
+                console.error('Error processing station file:', error);
+                showMessage(`Error processing file: ${error.message}`, 'error');
+                document.getElementById('upload-stations-button').textContent = 'Upload Stations';
+                document.getElementById('upload-stations-button').disabled = false;
+            }
+        };
+        
+        reader.onerror = function() {
+            showMessage('Error reading file', 'error');
+            document.getElementById('upload-stations-button').textContent = 'Upload Stations';
+            document.getElementById('upload-stations-button').disabled = false;
+        };
+        
+        if (fileExt === 'csv') {
+            reader.readAsText(file);
+        } else {
+            reader.readAsText(file);
+        }
+    }
+    
+    // Process uploaded incident file (CSV or Excel)
+    function processIncidentFile(file) {
+        const reader = new FileReader();
+        const fileExt = file.name.split('.').pop().toLowerCase();
+        
+        document.getElementById('upload-incidents-button').textContent = 'Processing...';
+        document.getElementById('upload-incidents-button').disabled = true;
+        
+        reader.onload = function(e) {
+            try {
+                let incidents = [];
+                
+                if (fileExt === 'csv') {
+                    // Process CSV
+                    incidents = parseCSV(e.target.result);
+                } else if (['xls', 'xlsx'].includes(fileExt)) {
+                    // Simplified version for Excel-like format
+                    const csvData = e.target.result.replace(/\\r\\n/g, '\n').replace(/\\r/g, '\n');
+                    incidents = parseCSV(csvData);
+                }
+                
+                if (incidents.length === 0) {
+                    throw new Error('No valid incident data found in file');
+                }
+                
+                // Process incidents
+                processIncidents(incidents);
+                
+                // Reset the file input
+                document.getElementById('incident-file-upload').value = '';
+                document.getElementById('upload-incidents-button').textContent = 'Upload Incidents';
+                document.getElementById('upload-incidents-button').disabled = false;
+                
+                showMessage(`Successfully loaded ${incidents.length} incidents`, 'success');
+            } catch (error) {
+                console.error('Error processing incident file:', error);
+                showMessage(`Error processing file: ${error.message}`, 'error');
+                document.getElementById('upload-incidents-button').textContent = 'Upload Incidents';
+                document.getElementById('upload-incidents-button').disabled = false;
+            }
+        };
+        
+        reader.onerror = function() {
+            showMessage('Error reading file', 'error');
+            document.getElementById('upload-incidents-button').textContent = 'Upload Incidents';
+            document.getElementById('upload-incidents-button').disabled = false;
+        };
+        
+        if (fileExt === 'csv') {
+            reader.readAsText(file);
+        } else {
+            reader.readAsText(file);
+        }
+    }
+    
+    // Parse CSV data
+    function parseCSV(csvData) {
+        const lines = csvData.split('\n');
+        if (lines.length < 2) {
+            throw new Error('File contains insufficient data');
+        }
+        
+        // Parse header and find column indexes
+        const header = lines[0].split(',').map(h => h.trim().toLowerCase());
+        
+        const results = [];
+        
+        // Process each line
+        for (let i = 1; i < lines.length; i++) {
+            if (!lines[i].trim()) continue; // Skip empty lines
+            
+            const values = lines[i].split(',').map(v => v.trim());
+            if (values.length !== header.length) {
+                console.warn(`Skipping line ${i+1}: Column count mismatch`);
+                continue;
+            }
+            
+            // Create an object with the header keys and corresponding values
+            const entry = {};
+            header.forEach((key, index) => {
+                entry[key] = values[index];
+            });
+            
+            results.push(entry);
+        }
+        
+        return results;
+    }
+    
+    // Process station data from file
+    function processStations(stations) {
+        // Clear existing stations if requested
+        if (stations.length > 10 && stationMarkers.length > 0) {
+            if (confirm(`You're adding ${stations.length} stations. Would you like to clear the ${stationMarkers.length} existing stations first?`)) {
+                stationMarkers.forEach(marker => map.removeLayer(marker));
+                stationMarkers = [];
+                activeStationIndex = -1;
+            }
+        }
+        
+        const validStations = [];
+        const errorMessages = [];
+        
+        // Identify column names for required fields
+        const possibleLatFields = ['lat', 'latitude', 'y', 'ylat', 'lat_y'];
+        const possibleLngFields = ['lon', 'long', 'longitude', 'x', 'xlong', 'lng', 'long_x'];
+        const possibleNameFields = ['name', 'station', 'station_name', 'stationname', 'title', 'id', 'station_id'];
+        
+        let latField = null;
+        let lngField = null;
+        let nameField = null;
+        
+        // Find the actual field names in this dataset
+        const sampleKeys = Object.keys(stations[0]).map(k => k.toLowerCase());
+        
+        for (const field of possibleLatFields) {
+            if (sampleKeys.includes(field)) {
+                latField = field;
+                break;
+            }
+        }
+        
+        for (const field of possibleLngFields) {
+            if (sampleKeys.includes(field)) {
+                lngField = field;
+                break;
+            }
+        }
+        
+        for (const field of possibleNameFields) {
+            if (sampleKeys.includes(field)) {
+                nameField = field;
+                break;
+            }
+        }
+        
+        if (!latField || !lngField) {
+            showMessage('Could not identify latitude/longitude fields in the data', 'error');
+            return;
+        }
+        
+        // Process each station
+        stations.forEach((station, index) => {
+            const name = nameField ? station[nameField] : `Station ${index + 1}`;
+            const lat = parseFloat(station[latField]);
+            const lng = parseFloat(station[lngField]);
+            
+            if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                validStations.push({
+                    name: name,
+                    latitude: lat,
+                    longitude: lng
+                });
+            } else {
+                errorMessages.push(`Row ${index + 1}: Invalid coordinates - ${station[latField]}, ${station[lngField]}`);
+            }
+        });
+        
+        // Add valid stations to the map
+        if (validStations.length > 0) {
+            validStations.forEach(station => {
+                addStationMarker(station.latitude, station.longitude, station.name);
+            });
+            
+            // Display summary
+            document.getElementById('station-count').textContent = `(${stationMarkers.length})`;
+            
+            // Fit map to stations
+            const bounds = L.latLngBounds(stationMarkers.map(m => m.getLatLng()));
+            map.fitBounds(bounds, { padding: [50, 50] });
+        }
+        
+        // Show errors if any
+        if (errorMessages.length > 0) {
+            const totalErrors = errorMessages.length;
+            console.error(`${totalErrors} stations had invalid coordinates:`, errorMessages);
+            showMessage(`Warning: ${totalErrors} stations had invalid coordinates and were skipped.`, 'error');
+        }
+    }
+    
+    // Process incident data from file
+    function processIncidents(incidents) {
+        // Clear existing incidents
+        clearIncidents();
+        
+        const validIncidents = [];
+        const errorMessages = [];
+        
+        // Identify column names for required fields
+        const possibleLatFields = ['lat', 'latitude', 'y', 'ylat', 'lat_y'];
+        const possibleLngFields = ['lon', 'long', 'longitude', 'x', 'xlong', 'lng', 'long_x'];
+        const possibleTypeFields = ['type', 'incident_type', 'call_type', 'calltype', 'category'];
+        
+        let latField = null;
+        let lngField = null;
+        let typeField = null;
+        
+        // Find the actual field names in this dataset
+        const sampleKeys = Object.keys(incidents[0]).map(k => k.toLowerCase());
+        
+        for (const field of possibleLatFields) {
+            if (sampleKeys.includes(field)) {
+                latField = field;
+                break;
+            }
+        }
+        
+        for (const field of possibleLngFields) {
+            if (sampleKeys.includes(field)) {
+                lngField = field;
+                break;
+            }
+        }
+        
+        for (const field of possibleTypeFields) {
+            if (sampleKeys.includes(field)) {
+                typeField = field;
+                break;
+            }
+        }
+        
+        if (!latField || !lngField) {
+            showMessage('Could not identify latitude/longitude fields in the incident data', 'error');
+            return;
+        }
+        
+        // Process each incident
+        incidents.forEach((incident, index) => {
+            const type = typeField ? incident[typeField] : 'Unknown';
+            const lat = parseFloat(incident[latField]);
+            const lng = parseFloat(incident[lngField]);
+            
+            if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                validIncidents.push({
+                    type: type,
+                    latitude: lat,
+                    longitude: lng,
+                    // Store original data for reference
+                    originalData: incident
+                });
+            } else {
+                errorMessages.push(`Row ${index + 1}: Invalid coordinates - ${incident[latField]}, ${incident[lngField]}`);
+            }
+        });
+        
+        // Store valid incidents
+        incidentData = validIncidents;
+        
+        // Display summary
+        const typesCount = {};
+        validIncidents.forEach(incident => {
+            typesCount[incident.type] = (typesCount[incident.type] || 0) + 1;
+        });
+        
+        let summaryHTML = `<p><strong>${validIncidents.length} incidents loaded</strong></p>`;
+        if (Object.keys(typesCount).length > 0) {
+            summaryHTML += '<ul class="incident-types">';
+            Object.entries(typesCount)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5)
+                .forEach(([type, count]) => {
+                    summaryHTML += `<li>${type}: ${count}</li>`;
+                });
+            
+            if (Object.keys(typesCount).length > 5) {
+                summaryHTML += `<li>...and ${Object.keys(typesCount).length - 5} more types</li>`;
+            }
+            
+            summaryHTML += '</ul>';
+        }
+        
+        document.getElementById('incidents-summary').innerHTML = summaryHTML;
+        
+        // Enable checkboxes
+        document.getElementById('show-incidents').disabled = false;
+        document.getElementById('show-heatmap').disabled = false;
+        
+        // Show incidents if requested
+        if (document.getElementById('show-incidents').checked) {
+            displayIncidents();
+        }
+        
+        // Show heatmap if requested
+        if (document.getElementById('show-heatmap').checked) {
+            displayHeatmap();
+        }
+        
+        // Show errors if any
+        if (errorMessages.length > 0) {
+            const totalErrors = errorMessages.length;
+            console.error(`${totalErrors} incidents had invalid coordinates:`, errorMessages);
+            showMessage(`Warning: ${totalErrors} incidents had invalid coordinates and were skipped.`, 'error');
+        }
+    }
+    
+    // Display incidents on the map
+    function displayIncidents() {
+        // Clear existing incident markers
+        incidentMarkers.forEach(marker => map.removeLayer(marker));
+        incidentMarkers = [];
+        
+        // Add new markers
+        incidentData.forEach(incident => {
+            const marker = L.circleMarker([incident.latitude, incident.longitude], {
+                radius: 4,
+                fillColor: '#ff7800',
+                color: '#000',
+                weight: 1,
+                opacity: 0.7,
+                fillOpacity: 0.7
+            }).addTo(map);
+            
+            // Add popup with incident details
+            let popupContent = `<strong>Incident</strong><br>Type: ${incident.type}<br>Location: ${incident.latitude.toFixed(6)}, ${incident.longitude.toFixed(6)}`;
+            
+            // Add any additional fields
+            const originalData = incident.originalData;
+            if (originalData) {
+                Object.entries(originalData)
+                    .filter(([key]) => !['latitude', 'longitude', 'lat', 'lng', 'type'].includes(key.toLowerCase()))
+                    .slice(0, 5) // Limit to 5 additional fields
+                    .forEach(([key, value]) => {
+                        popupContent += `<br>${key}: ${value}`;
+                    });
+            }
+            
+            marker.bindPopup(popupContent);
+            incidentMarkers.push(marker);
+        });
+    }
+    
+    // Display heatmap of incidents
+    function displayHeatmap() {
+        // Clear existing heatmap
+        if (incidentHeatmap) {
+            map.removeLayer(incidentHeatmap);
+        }
+        
+        // Create heatmap if we have the Leaflet.heat plugin
+        if (typeof L.heatLayer === 'function') {
+            const heatData = incidentData.map(incident => [
+                incident.latitude,
+                incident.longitude,
+                1 // Intensity
+            ]);
+            
+            incidentHeatmap = L.heatLayer(heatData, {
+                radius: 25,
+                blur: 15,
+                maxZoom: 17,
+                gradient: { 0.4: 'blue', 0.65: 'lime', 1: 'red' }
+            }).addTo(map);
+        } else {
+            console.warn('Leaflet.heat plugin not available. Heatmap cannot be displayed.');
+            showMessage('Heatmap feature requires the Leaflet.heat plugin which is not loaded.', 'error');
+        }
+    }
+    
+    // Toggle incident display
+    function toggleIncidentDisplay(show) {
+        if (show) {
+            if (incidentData.length > 0) {
+                displayIncidents();
+            } else {
+                showMessage('No incident data to display. Please upload incident data first.', 'error');
+                document.getElementById('show-incidents').checked = false;
+            }
+        } else {
+            // Hide incidents
+            incidentMarkers.forEach(marker => map.removeLayer(marker));
+            incidentMarkers = [];
+        }
+    }
+    
+    // Toggle heatmap display
+    function toggleHeatmapDisplay(show) {
+        if (show) {
+            if (incidentData.length > 0) {
+                displayHeatmap();
+            } else {
+                showMessage('No incident data to display. Please upload incident data first.', 'error');
+                document.getElementById('show-heatmap').checked = false;
+            }
+        } else {
+            // Hide heatmap
+            if (incidentHeatmap) {
+                map.removeLayer(incidentHeatmap);
+                incidentHeatmap = null;
+            }
+        }
+    }
+    
+    // Clear all incidents
+    function clearIncidents() {
+        // Remove markers
+        incidentMarkers.forEach(marker => map.removeLayer(marker));
+        incidentMarkers = [];
+        
+        // Remove heatmap
+        if (incidentHeatmap) {
+            map.removeLayer(incidentHeatmap);
+            incidentHeatmap = null;
+        }
+        
+        // Clear data
+        incidentData = [];
+        
+        // Reset UI
+        document.getElementById('incidents-summary').innerHTML = '<p>No incident data loaded</p>';
+        document.getElementById('show-incidents').checked = false;
+        document.getElementById('show-incidents').disabled = true;
+        document.getElementById('show-heatmap').checked = false;
+        document.getElementById('show-heatmap').disabled = true;
+    }
+    
     function addStationMarker(lat, lng, name = null) {
         const stationIndex = stationMarkers.length;
         const stationName = name || `Station ${stationIndex + 1}`;
@@ -929,10 +1432,16 @@ document.addEventListener('DOMContentLoaded', function() {
         isochrones.forEach(layer => map.removeLayer(layer));
         isochrones = [];
         
+        // Clear all incidents
+        clearIncidents();
+        
         // Reset the UI displays
         document.getElementById('station-lat').textContent = '--';
         document.getElementById('station-lng').textContent = '--';
         document.getElementById('station-address').value = '';
+        document.getElementById('station-count').textContent = '(0)';
+        document.getElementById('station-file-upload').value = '';
+        document.getElementById('incident-file-upload').value = '';
         
         // Reset the station name if element exists
         const stationNameEl = document.getElementById('active-station-name');
@@ -952,7 +1461,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const stateInfo = stateCoordinates[currentState];
         map.setView([stateInfo.lat, stateInfo.lng], stateInfo.zoom);
         
-        showMessage('Map has been reset. You can now add new stations.', 'info');
+        showMessage('Map has been reset. You can now add new stations and incidents.', 'info');
     }
     
     function exportMap() {
