@@ -1728,20 +1728,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     preparedData.forEach(item => {
                         // Map the Response Time Analyzer expected field names
                         const keyMappings = {
-                            'Reported': ['Incident Time', 'Reported Time', 'Time Reported', 'Call Time', 'Alarm Time'],
-                            'Unit Dispatched': ['Dispatch Time', 'Dispatched', 'Time Dispatched', 'Dispatch'],
-                            'Unit Enroute': ['En Route Time', 'Enroute', 'Time Enroute', 'Responding Time'],
-                            'Unit Onscene': ['On Scene Time', 'Onscene', 'Time Onscene', 'Arrival Time', 'Arrived'],
-                            'Run No': ['Incident ID', 'Call No', 'Call ID', 'Incident Number'],
-                            'Incident City': ['City', 'Location City', 'Municipality'],
-                            'Full Address': ['Address', 'Incident Address', 'Location', 'Location Address'],
-                            'Unit': ['Unit ID', 'Responding Unit', 'Apparatus']
+                            'Reported': ['Incident Time', 'Reported Time', 'Time Reported', 'Call Time', 'Alarm Time', 'Incident_Time', 'Call_Time'],
+                            'Unit Dispatched': ['Dispatch Time', 'Dispatched', 'Time Dispatched', 'Dispatch', 'Dispatch_Time', 'TimeDispatched'],
+                            'Unit Enroute': ['En Route Time', 'Enroute', 'Time Enroute', 'Responding Time', 'EnRouteTime', 'TimeEnroute'],
+                            'Unit Onscene': ['On Scene Time', 'Onscene', 'Time Onscene', 'Arrival Time', 'Arrived', 'OnSceneTime', 'TimeOnScene', 'ArrivalTime'],
+                            'Run No': ['Incident ID', 'Call No', 'Call ID', 'Incident Number', 'IncidentID', 'CallNumber'],
+                            'Incident City': ['City', 'Location City', 'Municipality', 'City_Name'],
+                            'Full Address': ['Address', 'Incident Address', 'Location', 'Location Address', 'IncidentAddress'],
+                            'Unit': ['Unit ID', 'Responding Unit', 'Apparatus', 'UnitID', 'Unit_ID', 'UnitName']
                         };
                         
                         // Map fields to the format expected by the Response Time Analyzer
                         Object.entries(keyMappings).forEach(([targetField, possibleSourceFields]) => {
-                            // Skip if already exists
+                            // Skip if already exists and not empty
                             if (item[targetField] !== undefined && item[targetField] !== '') {
+                                console.log(`Field ${targetField} already exists: ${item[targetField]}`);
                                 return;
                             }
                             
@@ -1749,18 +1750,23 @@ document.addEventListener('DOMContentLoaded', function() {
                             for (const sourceField of possibleSourceFields) {
                                 if (item[sourceField] !== undefined && item[sourceField] !== '') {
                                     item[targetField] = item[sourceField];
+                                    console.log(`Mapped ${sourceField} → ${targetField}: ${item[targetField]}`);
                                     break;
                                 }
                             }
                         });
                         
+                        // Log available fields for debugging
+                        console.log(`Available fields in record: ${Object.keys(item).join(', ')}`);
+                        
                         // Handle date and time fields that might be combined in a single timestamp
-                        const timestampFields = ['timestamp', 'datetime', 'incident_datetime', 'created_at', 'Timestamp', 'DateTime'];
+                        const timestampFields = ['timestamp', 'datetime', 'incident_datetime', 'created_at', 'Timestamp', 'DateTime', 'Date_Time', 'CreateTime'];
                         let hasTimestamp = false;
                         
                         for (const field of timestampFields) {
                             if (item[field] !== undefined && item[field] !== '') {
                                 hasTimestamp = true;
+                                console.log(`Found timestamp field: ${field} = ${item[field]}`);
                                 try {
                                     // Try to parse as a standard date format
                                     const timestamp = new Date(item[field]);
@@ -1769,10 +1775,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                         // For each time field component, set if it doesn't exist
                                         if (!item['Reported']) {
                                             item['Reported'] = timestamp.toISOString();
+                                            console.log(`Set Reported from ${field}: ${item['Reported']}`);
                                         }
                                         
                                         if (!item['Incident Date']) {
                                             item['Incident Date'] = timestamp.toISOString().split('T')[0];
+                                            console.log(`Set Incident Date from ${field}: ${item['Incident Date']}`);
                                         }
                                     }
                                 } catch (e) {
@@ -1784,19 +1792,45 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         // Handle separate date/time fields that need to be combined
                         if (!hasTimestamp) {
-                            // Check for separate date and time fields
-                            if ((item['Incident Date'] || item['Date']) && (item['Incident Time'] || item['Time'])) {
-                                const dateStr = item['Incident Date'] || item['Date'];
-                                const timeStr = item['Incident Time'] || item['Time'];
-                                
+                            // Expanded list of date field names
+                            const dateFieldNames = ['Incident Date', 'Date', 'Call Date', 'Alarm Date', 'Date_Reported', 'Date_Created'];
+                            const timeFieldNames = ['Incident Time', 'Time', 'Call Time', 'Alarm Time', 'Time_Reported', 'Time_Created'];
+                            
+                            let dateStr = null;
+                            let timeStr = null;
+                            
+                            // Find first available date field
+                            for (const dateField of dateFieldNames) {
+                                if (item[dateField]) {
+                                    dateStr = item[dateField];
+                                    console.log(`Found date field: ${dateField} = ${dateStr}`);
+                                    break;
+                                }
+                            }
+                            
+                            // Find first available time field
+                            for (const timeField of timeFieldNames) {
+                                if (item[timeField]) {
+                                    timeStr = item[timeField];
+                                    console.log(`Found time field: ${timeField} = ${timeStr}`);
+                                    break;
+                                }
+                            }
+                            
+                            if (dateStr && timeStr) {
                                 try {
                                     // Combine date and time
-                                    const dateTimeStr = `${standardizeDate(dateStr)}T${standardizeTime(timeStr)}`;
+                                    const standardizedDate = standardizeDate(dateStr);
+                                    const standardizedTime = standardizeTime(timeStr);
+                                    console.log(`Standardized date: ${standardizedDate}, time: ${standardizedTime}`);
+                                    
+                                    const dateTimeStr = `${standardizedDate}T${standardizedTime}`;
                                     const timestamp = new Date(dateTimeStr);
                                     
                                     if (!isNaN(timestamp)) {
                                         if (!item['Reported']) {
                                             item['Reported'] = timestamp.toISOString();
+                                            console.log(`Combined date/time into Reported: ${item['Reported']}`);
                                         }
                                     }
                                 } catch (e) {
@@ -1822,7 +1856,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                     
                                     if (!isNaN(parsedDate)) {
                                         // Store in ISO format for consistent processing
+                                        const oldValue = item[field];
                                         item[field] = parsedDate.toISOString();
+                                        console.log(`Standardized ${field} from "${oldValue}" to "${item[field]}"`);
                                     }
                                 }
                             } catch (e) {
@@ -1867,7 +1903,42 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (item['Longitude'] !== undefined && typeof item['Longitude'] === 'string') {
                             item['Longitude'] = parseFloat(item['Longitude']);
                         }
+                        
+                        // Handle case where Latitude/Longitude fields might be named differently
+                        if (item['Latitude'] === undefined || item['Longitude'] === undefined) {
+                            const latNames = ['lat', 'latitude', 'y', 'Lat', 'GPS_Lat', 'Incident_Lat'];
+                            const lngNames = ['lng', 'lon', 'longitude', 'x', 'Long', 'GPS_Long', 'Incident_Long'];
+                            
+                            for (const latField of latNames) {
+                                if (item[latField] !== undefined) {
+                                    item['Latitude'] = typeof item[latField] === 'string' ? 
+                                        parseFloat(item[latField]) : item[latField];
+                                    console.log(`Mapped ${latField} → Latitude: ${item['Latitude']}`);
+                                    break;
+                                }
+                            }
+                            
+                            for (const lngField of lngNames) {
+                                if (item[lngField] !== undefined) {
+                                    item['Longitude'] = typeof item[lngField] === 'string' ? 
+                                        parseFloat(item[lngField]) : item[lngField];
+                                    console.log(`Mapped ${lngField} → Longitude: ${item['Longitude']}`);
+                                    break;
+                                }
+                            }
+                        }
                     });
+                    
+                    // Verify data has required fields
+                    const requiredFields = ['Unit', 'Reported', 'Unit Dispatched', 'Unit Onscene', 'Latitude', 'Longitude'];
+                    const missingFields = requiredFields.filter(field => 
+                        !preparedData.some(record => record[field] !== undefined)
+                    );
+                    
+                    if (missingFields.length > 0) {
+                        console.warn(`Data is missing required fields: ${missingFields.join(', ')}`);
+                        appendLog(`Warning: Data is missing required fields: ${missingFields.join(', ')}`, 'warning');
+                    }
                     
                     // Create sample data if the formatted data is empty
                     if (preparedData.length === 0) {
@@ -1875,6 +1946,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         preparedData = createSampleResponseTimeData();
                         appendLog("Created sample Response Time Analyzer data for demonstration", "info");
                     }
+                    
+                    // Add metadata to indicate the data is coming from the formatter
+                    preparedData.forEach(record => {
+                        record._source = 'formatter';
+                        record._formatted = true;
+                        record._timestamp = new Date().toISOString();
+                    });
                     
                     // Debug report of the data being sent
                     console.log('Response Time Analyzer data sample:', 

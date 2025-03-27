@@ -1,6 +1,102 @@
 // ✅ fire-ems-dashboard.js is loaded!
 console.log("✅ fire-ems-dashboard.js is loaded!");
 
+// ----------------------------------------------------------------------------
+// Process data function - used by both file upload and Data Formatter
+// ----------------------------------------------------------------------------
+/**
+ * Process and display data from either file upload or Data Formatter
+ * @param {Object} data - Data object including records and metadata
+ */
+function processData(data) {
+    console.log("🔄 Processing data...", data);
+    const resultDiv = document.getElementById('result');
+    const dashboardDiv = document.getElementById('dashboard');
+    
+    try {
+        // Format and process data
+        const formattedData = formatFireEMSData(data.data);
+        const stats = calculateDataStatistics(formattedData);
+        
+        // Display basic file stats
+        if (data.source !== 'formatter') {
+            resultDiv.innerHTML = `
+                <div style="color: green; margin-bottom: 15px;">
+                    <p>✅ ${data.filename ? `File uploaded: ${data.filename}` : 'Data processed successfully'}</p>
+                    <p>📊 Incidents: ${data.rows || (data.data ? data.data.length : 'Unknown')}</p>
+                    <p>📅 First reported date: ${data.first_reported_date || 'N/A'}</p>
+                </div>
+            `;
+        }
+        
+        // Optionally update file stats container if available
+        const fileStatsElement = document.getElementById('file-stats');
+        if (fileStatsElement) {
+            let statsHtml = `
+                <div style="margin-bottom: 10px;">📄 Data source: ${data.filename || 'Data Formatter'}</div>
+                <div style="margin-bottom: 10px;">📊 Incidents: ${stats.totalIncidents}</div>
+                <div style="margin-bottom: 10px;">📅 First Date: ${data.first_reported_date || 'N/A'}</div>
+            `;
+            if (stats.avgResponseTime !== null) {
+                statsHtml += `<div style="margin-bottom: 10px;">⏱️ Avg Response: ${stats.avgResponseTime} min</div>`;
+            }
+            if (stats.busyHours && stats.busyHours.length > 0) {
+                statsHtml += `<div style="margin-bottom: 10px;">🔥 Busiest Hour: ${stats.busyHours[0].hour}</div>`;
+            }
+            if (stats.topUnit) {
+                statsHtml += `<div style="margin-bottom: 10px;">🚒 Top Unit: ${stats.topUnit.unit} (${stats.topUnit.count})</div>`;
+            }
+            fileStatsElement.innerHTML = statsHtml;
+        }
+        
+        // Render data table
+        renderDataTable({ 
+            ...data, 
+            data: formattedData,
+            columns: data.columns || Object.keys(formattedData[0] || {}).filter(k => !k.startsWith('_'))
+        }, document.getElementById('data-table'));
+        
+        // Show dashboard
+        dashboardDiv.style.display = 'block';
+        
+        // Create visualizations
+        try {
+            createIncidentMap(formattedData);
+            console.log("✅ Map created successfully");
+        } catch (error) {
+            console.error("❌ Error creating map:", error);
+            document.getElementById('incident-map').innerHTML = `<p style="color: red;">Error creating map: ${error.message}</p>`;
+        }
+        
+        try {
+            createTimeChart(formattedData, stats);
+            console.log("✅ Time chart created successfully");
+        } catch (error) {
+            console.error("❌ Error creating time chart:", error);
+            document.getElementById('time-chart').innerHTML = `<p style="color: red;">Error creating time chart: ${error.message}</p>`;
+        }
+        
+        try {
+            createUnitChart(formattedData, stats);
+            console.log("✅ Unit chart created successfully");
+        } catch (error) {
+            console.error("❌ Error creating unit chart:", error);
+            document.getElementById('unit-chart').parentElement.innerHTML = `<p style="color: red;">Error creating unit chart: ${error.message}</p>`;
+        }
+        
+        try {
+            createLocationChart(formattedData, stats);
+            console.log("✅ Location chart created successfully");
+        } catch (error) {
+            console.error("❌ Error creating location chart:", error);
+            document.getElementById('location-chart').parentElement.innerHTML = `<p style="color: red;">Error creating location chart: ${error.message}</p>`;
+        }
+    } catch (error) {
+        console.error("❌ Processing error:", error);
+        resultDiv.innerHTML = `<p style="color: red;">Processing error: ${error.message}</p>`;
+    }
+}
+
 // Check for data coming from the Data Formatter
 document.addEventListener('DOMContentLoaded', function() {
     // Clean up session storage when navigating away from the page
@@ -54,6 +150,55 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
+            // Add field mapping for potential alternative names of required fields
+            const keyMappings = {
+                'Unit': ['Unit ID', 'Responding Unit', 'Apparatus', 'UnitID', 'Unit_ID', 'UnitName'],
+                'Reported': ['Incident Time', 'Reported Time', 'Time Reported', 'Call Time', 'Alarm Time', 'Incident_Time', 'Call_Time'],
+                'Unit Dispatched': ['Dispatch Time', 'Dispatched', 'Time Dispatched', 'Dispatch', 'Dispatch_Time', 'TimeDispatched'],
+                'Unit Enroute': ['En Route Time', 'Enroute', 'Time Enroute', 'Responding Time', 'EnRouteTime', 'TimeEnroute'],
+                'Unit Onscene': ['On Scene Time', 'Onscene', 'Time Onscene', 'Arrival Time', 'Arrived', 'OnSceneTime', 'TimeOnScene', 'ArrivalTime']
+            };
+            
+            // Try to map alternative field names to the expected fields
+            dataToProcess.forEach(record => {
+                // Check each expected field
+                Object.entries(keyMappings).forEach(([targetField, alternativeFields]) => {
+                    // If the target field is missing but an alternative exists, map it
+                    if (record[targetField] === undefined) {
+                        for (const altField of alternativeFields) {
+                            if (record[altField] !== undefined) {
+                                record[targetField] = record[altField];
+                                console.log(`Mapped ${altField} → ${targetField}`);
+                                break;
+                            }
+                        }
+                    }
+                });
+                
+                // Handle timestamps that might be in specific format or need conversion
+                const timestampFields = ['Reported', 'Unit Dispatched', 'Unit Enroute', 'Unit Onscene'];
+                timestampFields.forEach(field => {
+                    if (record[field]) {
+                        try {
+                            // If it's not already a date string with T delimiter (ISO format)
+                            if (typeof record[field] === 'string' && !record[field].includes('T')) {
+                                // Try to parse as date
+                                const date = new Date(record[field]);
+                                if (!isNaN(date)) {
+                                    // Store in ISO format for consistent processing
+                                    record[field] = date.toISOString();
+                                }
+                            }
+                        } catch (e) {
+                            console.warn(`Could not parse ${field} timestamp:`, e);
+                        }
+                    }
+                });
+                
+                // Add source indication
+                record._source = 'formatter'; // Add metadata to track source
+            });
+            
             // Validate that the data includes required fields for Response Time Analyzer
             const requiredFields = ['Unit', 'Reported', 'Unit Dispatched', 'Unit Onscene', 'Latitude', 'Longitude'];
             const missingFields = requiredFields.filter(field => 
@@ -64,11 +209,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.warn(`Data is missing required fields: ${missingFields.join(', ')}`);
                 console.warn("Will attempt to process anyway, but some visualizations may not work correctly");
             }
-            
-            // Add source indication
-            dataToProcess.forEach(record => {
-                record._source = 'formatter'; // Add metadata to track source
-            });
             
             // Process the data (bypass file upload)
             processData({ 
