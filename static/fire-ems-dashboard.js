@@ -1,6 +1,71 @@
 // ✅ fire-ems-dashboard.js is loaded!
 console.log("✅ fire-ems-dashboard.js is loaded!");
 
+// Check for data coming from the Data Formatter
+document.addEventListener('DOMContentLoaded', function() {
+    // Clean up session storage when navigating away from the page
+    window.addEventListener('beforeunload', function() {
+        // Only clear formatter-related storage items
+        sessionStorage.removeItem('formattedData');
+        sessionStorage.removeItem('dataSource');
+        sessionStorage.removeItem('formatterToolId');
+        sessionStorage.removeItem('formatterTarget');
+        sessionStorage.removeItem('formatterTimestamp');
+    });
+    // Check if there's data in sessionStorage from the Data Formatter
+    console.log("Checking for formatter data in Response Time Analyzer");
+    const formattedData = sessionStorage.getItem('formattedData');
+    const dataSource = sessionStorage.getItem('dataSource');
+    const formatterToolId = sessionStorage.getItem('formatterToolId');
+    const formatterTarget = sessionStorage.getItem('formatterTarget');
+    
+    console.log("SessionStorage state:", {
+        dataSource,
+        formatterToolId,
+        formatterTarget
+    });
+    
+    if (formattedData && dataSource === 'formatter' && 
+        (formatterToolId === 'response-time' || formatterTarget === 'response-time' || !formatterToolId)) {
+        console.log("📦 Data received from Data Formatter tool");
+        try {
+            // Parse the data
+            const parsedData = JSON.parse(formattedData);
+            
+            // Check if data is in the expected format (with data property)
+            let dataToProcess;
+            if (parsedData.data && Array.isArray(parsedData.data)) {
+                dataToProcess = parsedData.data;
+                console.log(`Processing ${dataToProcess.length} records from Data Formatter`);
+            } else if (Array.isArray(parsedData)) {
+                dataToProcess = parsedData;
+                console.log(`Processing ${dataToProcess.length} records from Data Formatter`);
+            } else {
+                console.error("Unexpected data format from Data Formatter");
+                return;
+            }
+            
+            // Process the data (bypass file upload)
+            processData({ data: dataToProcess });
+            
+            // Clear the sessionStorage to prevent reprocessing on page refresh
+            sessionStorage.removeItem('formattedData');
+            sessionStorage.removeItem('dataSource');
+            sessionStorage.removeItem('formatterToolId');
+            sessionStorage.removeItem('formatterTarget');
+            sessionStorage.removeItem('formatterTimestamp');
+            
+            // Hide the file upload section since we already have data
+            document.querySelector('.file-upload-container').style.display = 'none';
+            document.getElementById('result').innerHTML = 
+                '<div class="notice"><strong>Data received from Data Formatter tool.</strong><br>' +
+                'File upload has been bypassed. Refresh the page if you want to upload a new file.</div>';
+        } catch (error) {
+            console.error("Error processing data from Data Formatter:", error);
+        }
+    }
+});
+
 // ----------------------------------------------------------------------------
 // Data Formatting Functions
 // ----------------------------------------------------------------------------
