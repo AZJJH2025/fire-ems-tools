@@ -298,13 +298,31 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Incident display toggles
-    document.getElementById('show-incidents').addEventListener('change', function(e) {
+    const showIncidentsCheckbox = document.getElementById('show-incidents');
+    showIncidentsCheckbox.addEventListener('change', function(e) {
+        console.log('Show incidents checkbox changed to:', e.target.checked);
         toggleIncidentDisplay(e.target.checked);
     });
     
-    document.getElementById('show-heatmap').addEventListener('change', function(e) {
+    const showHeatmapCheckbox = document.getElementById('show-heatmap');
+    showHeatmapCheckbox.addEventListener('change', function(e) {
+        console.log('Show heatmap checkbox changed to:', e.target.checked);
         toggleHeatmapDisplay(e.target.checked);
     });
+    
+    // Also check initial state of checkboxes and apply if needed
+    setTimeout(() => {
+        // This helps ensure everything is loaded first
+        if (showIncidentsCheckbox.checked) {
+            console.log("Show incidents checkbox is initially checked - triggering display");
+            toggleIncidentDisplay(true);
+        }
+        
+        if (showHeatmapCheckbox.checked) {
+            console.log("Show heatmap checkbox is initially checked - triggering display");
+            toggleHeatmapDisplay(true);
+        }
+    }, 500);
     
     // Button event listeners for isochrone generation, reset, and export
     document.getElementById('generate-button').addEventListener('click', generateIsochrones);
@@ -698,6 +716,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Store valid incidents
         incidentData = validIncidents;
         
+        console.log(`Processed ${validIncidents.length} valid incidents out of ${incidents.length} total incidents`);
+        
         // Display summary
         const typesCount = {};
         validIncidents.forEach(incident => {
@@ -723,16 +743,21 @@ document.addEventListener('DOMContentLoaded', function() {
         
         document.getElementById('incidents-summary').innerHTML = summaryHTML;
         
-        // Enable checkboxes
-        document.getElementById('show-incidents').disabled = false;
+        // Enable and check the show incidents checkbox
+        const showIncidentsCheckbox = document.getElementById('show-incidents');
+        showIncidentsCheckbox.disabled = false;
+        showIncidentsCheckbox.checked = true; // Automatically check the box
+        
+        // Enable the heatmap checkbox (but don't check it automatically)
         document.getElementById('show-heatmap').disabled = false;
         
-        // Show incidents if requested
-        if (document.getElementById('show-incidents').checked) {
-            displayIncidents();
-        }
+        // Force display of incidents since we checked the box
+        displayIncidents();
         
-        // Show heatmap if requested
+        // Show success message
+        showMessage(`Successfully loaded ${validIncidents.length} incidents. Displaying on map.`, 'success');
+        
+        // Show heatmap only if explicitly requested
         if (document.getElementById('show-heatmap').checked) {
             displayHeatmap();
         }
@@ -747,18 +772,45 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Display incidents on the map
     function displayIncidents() {
+        console.log("displayIncidents() called - starting to display incidents");
+        
+        // Check if we have any incident data
+        if (!incidentData || incidentData.length === 0) {
+            console.warn("No incident data available to display");
+            showMessage("No incident data available. Please upload incident data first.", "error");
+            return;
+        }
+        
         // Clear existing incident markers
+        console.log(`Clearing ${incidentMarkers.length} existing incident markers`);
         incidentMarkers.forEach(marker => map.removeLayer(marker));
         incidentMarkers = [];
         
-        console.log(`Displaying ${incidentData.length} incidents on the map`);
+        console.log(`Preparing to display ${incidentData.length} incidents on the map`);
+        
+        // Verify map has been initialized
+        if (!map) {
+            console.error("Map not initialized!");
+            showMessage("Map initialization error. Please reload the page.", "error");
+            return;
+        }
+        
+        // Sample incident data for debugging
+        console.log("First incident data sample:", JSON.stringify(incidentData[0]));
         
         // Add new markers
         incidentData.forEach((incident, index) => {
             try {
                 // Log first few incidents for debugging
                 if (index < 3) {
-                    console.log(`Incident ${index} data:`, incident);
+                    console.log(`Incident ${index} lat:${incident.latitude}, lng:${incident.longitude}, type:${incident.type}`);
+                }
+                
+                // Make sure we have valid coordinates
+                if (typeof incident.latitude !== 'number' || typeof incident.longitude !== 'number' ||
+                    isNaN(incident.latitude) || isNaN(incident.longitude)) {
+                    console.warn(`Skipping incident ${index}: Invalid coordinates: ${incident.latitude}, ${incident.longitude}`);
+                    return; // Skip this incident
                 }
                 
                 // Apply color based on incident type
@@ -778,6 +830,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
                 
+                // Log marker creation 
+                console.log(`Creating marker at [${incident.latitude}, ${incident.longitude}]`);
                 const marker = L.circleMarker([incident.latitude, incident.longitude], {
                     radius: 5,
                     fillColor: fillColor,
@@ -827,24 +881,35 @@ document.addEventListener('DOMContentLoaded', function() {
             // Create bounds that include both stations and incidents
             const bounds = L.latLngBounds([]);
             
-            // Add station markers to bounds
-            stationMarkers.forEach(marker => {
-                bounds.extend(marker.getLatLng());
-            });
+            // Add station markers to bounds if we have any
+            if (stationMarkers.length > 0) {
+                console.log(`Adding ${stationMarkers.length} station markers to bounds`);
+                stationMarkers.forEach(marker => {
+                    bounds.extend(marker.getLatLng());
+                });
+            }
             
             // Add incident markers to bounds
+            console.log(`Adding ${incidentMarkers.length} incident markers to bounds`);
             incidentMarkers.forEach(marker => {
                 bounds.extend(marker.getLatLng());
             });
             
             // Fit map to bounds if we have any points
             if (bounds.isValid()) {
-                map.fitBounds(bounds, { padding: [50, 50] });
+                console.log("Fitting map to bounds with incidents and stations");
+                
+                // Use a short timeout to ensure all markers are properly added to the map first
+                setTimeout(() => {
+                    map.fitBounds(bounds, { padding: [50, 50] });
+                }, 100);
             }
             
             console.log(`Successfully displayed ${incidentMarkers.length} incident markers on the map`);
+            showMessage(`Displaying ${incidentMarkers.length} incidents on the map`, 'success');
         } else {
-            console.warn('No valid incidents to display on the map');
+            console.warn('No valid incidents were added to the map');
+            showMessage('No valid incidents could be displayed on the map. Please check your data.', 'error');
         }
     }
     
@@ -925,33 +990,53 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Toggle incident display
     function toggleIncidentDisplay(show) {
+        console.log(`Toggle incident display called with show=${show}`);
+        
         if (show) {
-            if (incidentData.length > 0) {
+            if (incidentData && incidentData.length > 0) {
+                console.log("Toggling incident display ON with", incidentData.length, "incidents");
                 displayIncidents();
             } else {
+                console.warn("Toggle incident display ON requested but no incident data available");
                 showMessage('No incident data to display. Please upload incident data first.', 'error');
                 document.getElementById('show-incidents').checked = false;
             }
         } else {
             // Hide incidents
-            incidentMarkers.forEach(marker => map.removeLayer(marker));
+            console.log(`Hiding ${incidentMarkers.length} incident markers`);
+            incidentMarkers.forEach(marker => {
+                try {
+                    map.removeLayer(marker);
+                } catch (error) {
+                    console.error("Error removing marker:", error);
+                }
+            });
             incidentMarkers = [];
         }
     }
     
     // Toggle heatmap display
     function toggleHeatmapDisplay(show) {
+        console.log(`Toggle heatmap display called with show=${show}`);
+        
         if (show) {
-            if (incidentData.length > 0) {
+            if (incidentData && incidentData.length > 0) {
+                console.log("Toggling heatmap display ON with", incidentData.length, "incidents");
                 displayHeatmap();
             } else {
+                console.warn("Toggle heatmap display ON requested but no incident data available");
                 showMessage('No incident data to display. Please upload incident data first.', 'error');
                 document.getElementById('show-heatmap').checked = false;
             }
         } else {
             // Hide heatmap
             if (incidentHeatmap) {
-                map.removeLayer(incidentHeatmap);
+                console.log("Removing incident heatmap layer");
+                try {
+                    map.removeLayer(incidentHeatmap);
+                } catch (error) {
+                    console.error("Error removing heatmap layer:", error);
+                }
                 incidentHeatmap = null;
             }
         }
