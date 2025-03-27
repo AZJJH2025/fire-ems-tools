@@ -500,7 +500,9 @@ def fire_map_pro():
 @app.route('/data-formatter')
 def data_formatter():
     """Serve the Data Formatter tool"""
-    return render_template('data-formatter.html')
+    # Get optional tool parameter to preselect target tool
+    tool = request.args.get('tool')
+    return render_template('data-formatter.html', tool=tool)
 
 # Geocoding endpoint for Coverage Gap Finder
 @app.route('/api/geocode')

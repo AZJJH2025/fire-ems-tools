@@ -356,5 +356,23 @@
   </footer>
 
   <script src="/static/data-formatter.js"></script>
+  
+  <!-- Handle tool preselection from URL parameter -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check if tool parameter was passed in URL
+      {% if tool %}
+        // Pre-select the target tool
+        const toolSelect = document.getElementById('target-tool');
+        if (toolSelect) {
+          toolSelect.value = '{{ tool }}';
+          
+          // Trigger the change event to update requirements
+          const event = new Event('change');
+          toolSelect.dispatchEvent(event);
+        }
+      {% endif %}
+    });
+  </script>
 </body>
 </html>

@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let originalData = [];
     let filteredData = [];
     let callTypes = [];
+    
+    // Check for data from Data Formatter
+    checkForFormatterData();
 
     // Handle file input change (display selected filename)
     document.getElementById('call-data-file').addEventListener('change', function(e) {
@@ -625,6 +628,103 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Function to check for and process data from the Data Formatter
+    function checkForFormatterData() {
+        // Check if we have data from the Data Formatter tool
+        if (sessionStorage.getItem('dataSource') === 'formatter' && 
+            sessionStorage.getItem('formatterToolId') === 'call-density') {
+            try {
+                console.log("Detected data from Data Formatter");
+                
+                // Show status message
+                showUploadStatus('Detected data from Data Formatter. Processing...', 'info');
+                
+                // Get the data from sessionStorage
+                const formatterData = JSON.parse(sessionStorage.getItem('formattedData'));
+                
+                if (formatterData && formatterData.data && formatterData.data.length > 0) {
+                    // Process the data
+                    const callData = formatterData.data.map(item => {
+                        // Create point objects in the format expected by the heatmap
+                        const point = {
+                            latitude: parseFloat(item.Latitude),
+                            longitude: parseFloat(item.Longitude)
+                        };
+                        
+                        // Map other common fields
+                        if (item['Incident Type']) {
+                            point.type = item['Incident Type'];
+                        }
+                        
+                        // If hour, dayOfWeek, and month are already in the data
+                        if (item.hour !== undefined) point.hour = item.hour;
+                        if (item.dayOfWeek !== undefined) point.dayOfWeek = item.dayOfWeek;
+                        if (item.month !== undefined) point.month = item.month;
+                        
+                        // If the data includes a timestamp, extract time components
+                        if (item['Incident Date'] && item['Incident Time']) {
+                            try {
+                                const dateTimeStr = `${item['Incident Date']}T${item['Incident Time']}`;
+                                const dateTime = new Date(dateTimeStr);
+                                
+                                if (!isNaN(dateTime.getTime())) {
+                                    if (point.hour === undefined) point.hour = dateTime.getHours();
+                                    if (point.dayOfWeek === undefined) point.dayOfWeek = dateTime.getDay();
+                                    if (point.month === undefined) point.month = dateTime.getMonth() + 1;
+                                }
+                            } catch (e) {
+                                console.warn("Error parsing incident date/time:", e);
+                            }
+                        }
+                        
+                        return point;
+                    });
+                    
+                    // Filter out any points with invalid coordinates
+                    const validPoints = callData.filter(point => {
+                        return !isNaN(point.latitude) && !isNaN(point.longitude) && 
+                               isFinite(point.latitude) && isFinite(point.longitude);
+                    });
+                    
+                    if (validPoints.length > 0) {
+                        // Store the data
+                        originalData = validPoints;
+                        
+                        // Extract unique call types for filtering
+                        callTypes = [...new Set(originalData.map(point => point.type).filter(Boolean))];
+                        populateCallTypeFilter(callTypes);
+                        
+                        // Apply initial filtering and display heat map
+                        applyFilters();
+                        
+                        // Update map view to fit data points
+                        fitMapToData(originalData);
+                        
+                        // Show success message
+                        showUploadStatus(
+                            `Successfully loaded ${validPoints.length} points from Data Formatter`, 
+                            'success'
+                        );
+                        
+                        // Add a visual indicator to show data came from formatter
+                        addFormatterIndicator(validPoints.length);
+                        
+                        // Clear the session storage to avoid reloading on refresh
+                        sessionStorage.removeItem('formattedData');
+                        sessionStorage.removeItem('dataSource');
+                    } else {
+                        showUploadStatus('No valid coordinate data found in the formatted data', 'error');
+                    }
+                } else {
+                    showUploadStatus('No valid data found from Data Formatter', 'error');
+                }
+            } catch (error) {
+                console.error('Error processing data from formatter:', error);
+                showUploadStatus('Error processing data from formatter: ' + error.message, 'error');
+            }
+        }
+    }
+    
     // Mock data for development and testing (when no file is uploaded)
     document.getElementById('apply-filters').addEventListener('dblclick', function() {
         // Only use mock data if no real data is uploaded
@@ -687,5 +787,51 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Show success message
         showUploadStatus('Mock data loaded successfully!', 'success');
+    }
+    
+    // Function to add a visual indicator when data comes from the formatter
+    function addFormatterIndicator(pointCount) {
+        // Create indicator element if it doesn't exist
+        let indicator = document.getElementById('formatter-indicator');
+        if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.id = 'formatter-indicator';
+            indicator.className = 'formatter-badge';
+            indicator.style.position = 'absolute';
+            indicator.style.top = '10px';
+            indicator.style.right = '10px';
+            indicator.style.backgroundColor = '#4caf50';
+            indicator.style.color = 'white';
+            indicator.style.padding = '5px 10px';
+            indicator.style.borderRadius = '4px';
+            indicator.style.fontSize = '0.8rem';
+            indicator.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+            indicator.style.zIndex = '1000';
+            indicator.style.display = 'flex';
+            indicator.style.alignItems = 'center';
+            indicator.style.gap = '5px';
+            
+            // Add to map container
+            document.getElementById('map-container').appendChild(indicator);
+        }
+        
+        // Update indicator content
+        indicator.innerHTML = `
+            <i class="fas fa-exchange-alt" style="font-size: 0.9rem;"></i>
+            <span>Data from Formatter (${pointCount} points)</span>
+        `;
+        
+        // Make it dismissible with a close button
+        const closeBtn = document.createElement('i');
+        closeBtn.className = 'fas fa-times';
+        closeBtn.style.marginLeft = '5px';
+        closeBtn.style.cursor = 'pointer';
+        closeBtn.style.opacity = '0.7';
+        closeBtn.title = 'Dismiss';
+        closeBtn.addEventListener('click', function() {
+            indicator.style.display = 'none';
+        });
+        
+        indicator.appendChild(closeBtn);
     }
 });

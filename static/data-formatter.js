@@ -1619,15 +1619,77 @@ document.addEventListener('DOMContentLoaded', function() {
             // Apply tool-specific transformations
             switch (toolId) {
                 case 'response-time':
-                    // Ensure response time is calculated if not present
+                    // Ensure response time is calculated if not present and fields are properly named
                     preparedData.forEach(item => {
+                        // Look for alternative field names and standardize them
+                        const timeFieldMappings = {
+                            'Dispatch Time': ['Unit Dispatched', 'Dispatched', 'Time Dispatched', 'Dispatch'],
+                            'En Route Time': ['Unit Enroute', 'Enroute', 'Time Enroute', 'Responding Time'],
+                            'On Scene Time': ['Unit Onscene', 'Onscene', 'Time Onscene', 'Arrival Time', 'Arrived'],
+                            'Incident Time': ['Reported', 'Time Reported', 'Call Time', 'Alarm Time']
+                        };
+                        
+                        // Map fields - look for alternate field names and map them to standard names
+                        Object.entries(timeFieldMappings).forEach(([standardField, alternateFields]) => {
+                            if (!item[standardField]) {
+                                // Try to find one of the alternate fields
+                                for (const altField of alternateFields) {
+                                    if (item[altField] !== undefined) {
+                                        item[standardField] = item[altField];
+                                        break;
+                                    }
+                                }
+                            }
+                        });
+                        
                         // Calculate response times if missing but component times are available
-                        if (!item['Response Time'] && item['Dispatch Time'] && item['On Scene Time']) {
+                        const missingResponseTime = !item['Response Time'];
+                        const hasDispatchTime = item['Dispatch Time'] !== undefined && item['Dispatch Time'] !== '';
+                        const hasOnSceneTime = item['On Scene Time'] !== undefined && item['On Scene Time'] !== '';
+                        
+                        if (missingResponseTime && hasDispatchTime && hasOnSceneTime) {
                             try {
                                 // Parse times - this is a simplified version, a real implementation would be more robust
-                                const dispatchTime = new Date(`2023-01-01T${item['Dispatch Time']}`);
-                                const onSceneTime = new Date(`2023-01-01T${item['On Scene Time']}`);
+                                let dispatchTimeStr = item['Dispatch Time'];
+                                let onSceneTimeStr = item['On Scene Time'];
                                 
+                                // Clean the time strings if needed
+                                if (typeof dispatchTimeStr === 'string' && !dispatchTimeStr.includes(':')) {
+                                    // Try to format numeric time (e.g. "1200" -> "12:00:00")
+                                    if (/^\d{3,4}$/.test(dispatchTimeStr.trim())) {
+                                        const hour = dispatchTimeStr.slice(0, -2).padStart(2, '0');
+                                        const min = dispatchTimeStr.slice(-2);
+                                        dispatchTimeStr = `${hour}:${min}:00`;
+                                    }
+                                }
+                                
+                                if (typeof onSceneTimeStr === 'string' && !onSceneTimeStr.includes(':')) {
+                                    // Try to format numeric time (e.g. "1200" -> "12:00:00")
+                                    if (/^\d{3,4}$/.test(onSceneTimeStr.trim())) {
+                                        const hour = onSceneTimeStr.slice(0, -2).padStart(2, '0');
+                                        const min = onSceneTimeStr.slice(-2);
+                                        onSceneTimeStr = `${hour}:${min}:00`;
+                                    }
+                                }
+                                
+                                // Try parsing with a full ISO date
+                                let dispatchTime, onSceneTime;
+                                
+                                try {
+                                    dispatchTime = new Date(`2023-01-01T${dispatchTimeStr}`);
+                                    onSceneTime = new Date(`2023-01-01T${onSceneTimeStr}`);
+                                } catch (e) {
+                                    // If that fails, try just comparing the strings as timestamps
+                                    const isTimeObj1 = dispatchTimeStr instanceof Date;
+                                    const isTimeObj2 = onSceneTimeStr instanceof Date;
+                                    
+                                    if (isTimeObj1 && isTimeObj2) {
+                                        dispatchTime = dispatchTimeStr;
+                                        onSceneTime = onSceneTimeStr;
+                                    }
+                                }
+                                
+                                // Calculate if we have valid times
                                 if (!isNaN(dispatchTime) && !isNaN(onSceneTime)) {
                                     // Calculate minutes
                                     const diffMs = onSceneTime - dispatchTime;
@@ -1635,23 +1697,81 @@ document.addEventListener('DOMContentLoaded', function() {
                                     
                                     if (diffMinutes >= 0 && diffMinutes < 120) { // Sanity check
                                         item['Response Time'] = diffMinutes.toFixed(2);
+                                        console.log(`Calculated response time: ${item['Response Time']} minutes`);
+                                    } else {
+                                        console.warn(`Suspicious response time calculated (${diffMinutes} minutes) - ignoring`);
                                     }
                                 }
                             } catch (e) {
-                                // Silently fail individual calculations
+                                console.warn('Error calculating response time:', e);
                             }
                         }
                     });
+                    
+                    // Debug report of the data being sent
+                    console.log('Response Time Analyzer data sample:', 
+                        preparedData.length > 0 ? preparedData[0] : 'No data');
+                    
                     break;
                     
                 case 'call-density':
-                    // Ensure coordinates are parsed as numbers
+                    // Ensure coordinates are parsed as numbers and map fields for Call Density Heatmap
                     preparedData.forEach(item => {
+                        // Handle coordinate fields
                         if (item['Latitude'] && typeof item['Latitude'] === 'string') {
                             item['Latitude'] = parseFloat(item['Latitude']);
                         }
                         if (item['Longitude'] && typeof item['Longitude'] === 'string') {
                             item['Longitude'] = parseFloat(item['Longitude']);
+                        }
+                        
+                        // Map common incident type fields if not already mapped
+                        if (!item['Incident Type']) {
+                            const typeFields = ['call_type', 'calltype', 'nature', 'incident_nature', 'type', 'problem', 'call type', 'Call Type'];
+                            for (const field of typeFields) {
+                                if (item[field]) {
+                                    item['Incident Type'] = item[field];
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // Map date fields - look for alternative names if needed
+                        if (!item['Incident Date']) {
+                            const dateFields = ['date', 'call_date', 'incident_date', 'alarm_date', 'Date', 'CallDate', 'ReportedDate'];
+                            for (const field of dateFields) {
+                                if (item[field]) {
+                                    item['Incident Date'] = standardizeDate(item[field]);
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // Map time fields - look for alternative names if needed
+                        if (!item['Incident Time']) {
+                            const timeFields = ['time', 'call_time', 'incident_time', 'alarm_time', 'Time', 'CallTime', 'ReportedTime'];
+                            for (const field of timeFields) {
+                                if (item[field]) {
+                                    item['Incident Time'] = standardizeTime(item[field]);
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // Check for combined date/time fields and split them
+                        const dateTimeFields = ['datetime', 'timestamp', 'call_datetime', 'incident_datetime', 'DateTime', 'Timestamp'];
+                        for (const field of dateTimeFields) {
+                            if (item[field] && !item['Incident Date']) {
+                                try {
+                                    const dt = new Date(item[field]);
+                                    if (!isNaN(dt)) {
+                                        item['Incident Date'] = dt.toISOString().split('T')[0];
+                                        item['Incident Time'] = dt.toTimeString().split(' ')[0];
+                                    }
+                                } catch (e) {
+                                    // Try alternative format parsing if needed
+                                }
+                            }
                         }
                         
                         // Extract time components from incident timestamps if available
@@ -1664,10 +1784,67 @@ document.addEventListener('DOMContentLoaded', function() {
                                     item['month'] = dateTime.getMonth() + 1;
                                 }
                             } catch (e) {
-                                // Silently fail individual conversions
+                                console.warn("Error extracting time components:", e);
+                            }
+                        }
+                        
+                        // Last resort for time components - check for individual hour/day/month fields
+                        if (!item.hour) {
+                            const hourFields = ['hour', 'hour_of_day', 'incident_hour', 'Hour'];
+                            for (const field of hourFields) {
+                                if (item[field] !== undefined) {
+                                    const hourVal = parseInt(item[field]);
+                                    if (!isNaN(hourVal) && hourVal >= 0 && hourVal < 24) {
+                                        item.hour = hourVal;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if (!item.dayOfWeek) {
+                            const dayFields = ['day', 'day_of_week', 'incident_day', 'weekday', 'Day', 'Weekday'];
+                            for (const field of dayFields) {
+                                if (item[field] !== undefined) {
+                                    const dayVal = parseInt(item[field]);
+                                    if (!isNaN(dayVal) && dayVal >= 0 && dayVal < 7) {
+                                        item.dayOfWeek = dayVal;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if (!item.month) {
+                            const monthFields = ['month', 'incident_month', 'Month'];
+                            for (const field of monthFields) {
+                                if (item[field] !== undefined) {
+                                    const monthVal = parseInt(item[field]);
+                                    if (!isNaN(monthVal) && monthVal >= 1 && monthVal <= 12) {
+                                        item.month = monthVal;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Add intensity field if available - useful for heat map weighting
+                        if (!item.intensity) {
+                            const intensityFields = ['intensity', 'weight', 'priority', 'severity', 'count', 'Intensity', 'Priority'];
+                            for (const field of intensityFields) {
+                                if (item[field] !== undefined) {
+                                    const intensityVal = parseFloat(item[field]);
+                                    if (!isNaN(intensityVal)) {
+                                        item.intensity = intensityVal;
+                                        break;
+                                    }
+                                }
                             }
                         }
                     });
+                    
+                    // Log a sample of the prepared data
+                    console.log('Call Density Heatmap data sample:', preparedData.length > 0 ? preparedData[0] : 'No data');
                     break;
                     
                 // Add tool-specific preparations for other tools as needed
