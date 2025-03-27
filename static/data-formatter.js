@@ -2120,6 +2120,84 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Log a sample of the prepared data
                     console.log('Call Density Heatmap data sample:', preparedData.length > 0 ? preparedData[0] : 'No data');
                     break;
+                
+                case 'coverage-gap':
+                    // Ensure stations have required fields properly mapped
+                    preparedData.forEach(item => {
+                        // Standardize coordinates
+                        for (const field of ['Latitude', 'Longitude']) {
+                            // Try standard field names first
+                            if (item[field] !== undefined) {
+                                const coordValue = parseFloat(item[field]);
+                                if (!isNaN(coordValue)) {
+                                    item[field] = coordValue;
+                                }
+                            } else {
+                                // Try alternate field names
+                                const alternates = field === 'Latitude' ? 
+                                    ['latitude', 'lat', 'y', 'LAT', 'Lat'] : 
+                                    ['longitude', 'long', 'lng', 'x', 'LONG', 'Lng', 'LON', 'Lon'];
+                                
+                                for (const altField of alternates) {
+                                    if (item[altField] !== undefined) {
+                                        const coordValue = parseFloat(item[altField]);
+                                        if (!isNaN(coordValue)) {
+                                            item[field] = coordValue;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Map station identification fields
+                        if (item['Station ID'] === undefined) {
+                            // Try alternate fields for Station ID
+                            const idFields = ['station_id', 'stationId', 'id', 'ID', 'StationID', 'STATION_ID'];
+                            for (const field of idFields) {
+                                if (item[field] !== undefined) {
+                                    item['Station ID'] = item[field];
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (item['Station Name'] === undefined) {
+                            // Try alternate fields for Station Name
+                            const nameFields = ['station_name', 'stationName', 'name', 'Name', 'STATION_NAME', 'Station'];
+                            for (const field of nameFields) {
+                                if (item[field] !== undefined) {
+                                    item['Station Name'] = item[field];
+                                    break;
+                                }
+                            }
+                            
+                            // If still no name but we have ID, use ID as name
+                            if (item['Station Name'] === undefined && item['Station ID'] !== undefined) {
+                                item['Station Name'] = `Station ${item['Station ID']}`;
+                            }
+                        }
+                        
+                        // Handle Coverage Area field
+                        if (item['Coverage Area'] === undefined) {
+                            // Try alternate fields
+                            const coverageFields = ['coverage_area', 'coverageArea', 'coverage', 'Coverage', 'COVERAGE_AREA', 'radius', 'Radius'];
+                            for (const field of coverageFields) {
+                                if (item[field] !== undefined) {
+                                    item['Coverage Area'] = item[field];
+                                    break;
+                                }
+                            }
+                            
+                            // If still no coverage area, set a default value
+                            if (item['Coverage Area'] === undefined) {
+                                item['Coverage Area'] = 5; // Default 5 mile coverage
+                            }
+                        }
+                    });
+                    
+                    console.log('Coverage Gap Finder data sample:', preparedData.length > 0 ? preparedData[0] : 'No data');
+                    break;
                     
                 // Add tool-specific preparations for other tools as needed
             }

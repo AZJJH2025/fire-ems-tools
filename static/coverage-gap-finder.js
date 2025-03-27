@@ -155,8 +155,27 @@ var populationLayer; // Population density layer
                     // Store the station data
                     stationData = dataToProcess;
                     
-                    // Process stations for display - using addStationsToMap function
-                    addStationsToMap(stationData);
+                    // Make sure map is initialized before we try to add stations
+                    if (!map) {
+                        console.log("Map not initialized yet, initializing now");
+                        try {
+                            initializeMap();
+                        } catch (error) {
+                            console.error("Failed to initialize map:", error);
+                            showMessage("Map initialization failed. Please try refreshing the page.", "error");
+                        }
+                    }
+                    
+                    // Wait a moment for the map to be ready
+                    setTimeout(() => {
+                        try {
+                            // Process stations for display
+                            addStationsToMap(stationData);
+                        } catch (error) {
+                            console.error("Error processing stations:", error);
+                            showMessage("Error adding stations to map: " + error.message, "error");
+                        }
+                    }, 500);
                     
                     showMessage(`Successfully loaded ${dataToProcess.length} stations from Data Formatter.`, "success");
                 }
