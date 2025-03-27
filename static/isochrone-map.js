@@ -193,7 +193,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Variables to store state
-    let stationMarker = null;
+    let stationMarkers = []; // Array to hold multiple station markers
+    let activeStationIndex = -1; // Track the currently active station
     let isochrones = [];
     let isPlacingStation = false;
 
@@ -249,16 +250,16 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.add('active');
             map.getContainer().style.cursor = 'crosshair';
         } else {
-            this.textContent = 'Place Station';
+            this.textContent = 'Add Station';
             this.classList.remove('active');
             map.getContainer().style.cursor = '';
         }
     });
     map.on('click', function(e) {
         if (isPlacingStation) {
-            placeStationMarker(e.latlng.lat, e.latlng.lng);
+            addStationMarker(e.latlng.lat, e.latlng.lng);
             isPlacingStation = false;
-            document.getElementById('place-station-button').textContent = 'Place Station';
+            document.getElementById('place-station-button').textContent = 'Add Station';
             document.getElementById('place-station-button').classList.remove('active');
             map.getContainer().style.cursor = '';
         }
@@ -282,30 +283,189 @@ document.addEventListener('DOMContentLoaded', function() {
     // -------------------------------------------------------------------------
     // Helper Functions
     // -------------------------------------------------------------------------
-    function placeStationMarker(lat, lng) {
-        if (stationMarker) {
-            map.removeLayer(stationMarker);
-        }
+    function addStationMarker(lat, lng, name = null) {
+        const stationIndex = stationMarkers.length;
+        const stationName = name || `Station ${stationIndex + 1}`;
+        
+        // Create a custom icon with the station number
         const stationIcon = L.divIcon({
             className: 'station-marker',
-            html: '<i class="fas fa-fire-station"></i>',
+            html: `<div class="marker-number">${stationIndex + 1}</div>`,
             iconSize: [30, 30],
             iconAnchor: [15, 15]
         });
-        stationMarker = L.marker([lat, lng], { draggable: true, icon: stationIcon }).addTo(map);
-        updateCoordinatesDisplay(lat, lng);
-        stationMarker.on('dragend', function(e) {
+        
+        // Create the marker and store station data
+        const marker = L.marker([lat, lng], { 
+            draggable: true, 
+            icon: stationIcon,
+            title: stationName
+        }).addTo(map);
+        
+        // Store station data with the marker
+        marker.stationData = {
+            name: stationName,
+            latitude: lat,
+            longitude: lng,
+            index: stationIndex
+        };
+        
+        // Add click handler to make this the active station
+        marker.on('click', function() {
+            setActiveStation(stationIndex);
+        });
+        
+        // Update coordinates when dragged
+        marker.on('dragend', function(e) {
             const pos = e.target.getLatLng();
-            updateCoordinatesDisplay(pos.lat, pos.lng);
+            marker.stationData.latitude = pos.lat;
+            marker.stationData.longitude = pos.lng;
+            
+            // If this is the active station, update the display
+            if (activeStationIndex === stationIndex) {
+                updateCoordinatesDisplay(pos.lat, pos.lng, stationName);
+            }
         });
         
         // Add a popup to the marker showing the reverse geocoded address
-        reverseGeocode(lat, lng);
+        reverseGeocode(lat, lng, marker);
+        
+        // Add to our array of markers
+        stationMarkers.push(marker);
+        
+        // Make this the active station
+        setActiveStation(stationIndex);
+        
+        // Update the stations list in the UI
+        updateStationsList();
+        
+        return marker;
     }
     
-    function updateCoordinatesDisplay(lat, lng) {
+    function setActiveStation(index) {
+        if (index >= 0 && index < stationMarkers.length) {
+            activeStationIndex = index;
+            const marker = stationMarkers[index];
+            const { latitude, longitude, name } = marker.stationData;
+            
+            // Update the coordinates display
+            updateCoordinatesDisplay(latitude, longitude, name);
+            
+            // Highlight the active marker
+            stationMarkers.forEach((m, i) => {
+                const markerEl = m.getElement();
+                if (markerEl) {
+                    if (i === index) {
+                        markerEl.classList.add('active-station');
+                    } else {
+                        markerEl.classList.remove('active-station');
+                    }
+                }
+            });
+            
+            // Update the stations list
+            updateStationsList();
+        }
+    }
+    
+    function updateStationsList() {
+        const stationsList = document.getElementById('stations-list');
+        if (stationsList) {
+            stationsList.innerHTML = '';
+            
+            if (stationMarkers.length === 0) {
+                stationsList.innerHTML = '<p class="no-stations">No stations added yet. Click "Add Station" or use the address search to add stations.</p>';
+                return;
+            }
+            
+            stationMarkers.forEach((marker, index) => {
+                const { name, latitude, longitude } = marker.stationData;
+                const isActive = index === activeStationIndex;
+                
+                const stationItem = document.createElement('div');
+                stationItem.className = `station-item ${isActive ? 'active' : ''}`;
+                stationItem.innerHTML = `
+                    <div class="station-number">${index + 1}</div>
+                    <div class="station-details">
+                        <div class="station-name">${name}</div>
+                        <div class="station-coords">${latitude.toFixed(4)}, ${longitude.toFixed(4)}</div>
+                    </div>
+                    <button class="station-delete" data-index="${index}">×</button>
+                `;
+                
+                // Add click event to select this station
+                stationItem.querySelector('.station-details').addEventListener('click', () => {
+                    setActiveStation(index);
+                });
+                
+                // Add click event for delete button
+                stationItem.querySelector('.station-delete').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteStation(index);
+                });
+                
+                stationsList.appendChild(stationItem);
+            });
+        }
+    }
+    
+    function deleteStation(index) {
+        if (index >= 0 && index < stationMarkers.length) {
+            // Remove the marker from the map
+            map.removeLayer(stationMarkers[index]);
+            
+            // Remove from our array
+            stationMarkers.splice(index, 1);
+            
+            // If this was the active station, reset or select a new one
+            if (activeStationIndex === index) {
+                activeStationIndex = stationMarkers.length > 0 ? 0 : -1;
+            } else if (activeStationIndex > index) {
+                // Adjust active index if we removed a station before it
+                activeStationIndex--;
+            }
+            
+            // Renumber all the stations
+            stationMarkers.forEach((marker, i) => {
+                marker.stationData.index = i;
+                // Update the icon
+                const icon = L.divIcon({
+                    className: 'station-marker',
+                    html: `<div class="marker-number">${i + 1}</div>`,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
+                });
+                marker.setIcon(icon);
+            });
+            
+            // Update the stations list
+            updateStationsList();
+            
+            // Update the coordinates display
+            if (activeStationIndex >= 0) {
+                const marker = stationMarkers[activeStationIndex];
+                updateCoordinatesDisplay(
+                    marker.stationData.latitude, 
+                    marker.stationData.longitude, 
+                    marker.stationData.name
+                );
+            } else {
+                document.getElementById('station-lat').textContent = '--';
+                document.getElementById('station-lng').textContent = '--';
+                document.getElementById('active-station-name').textContent = 'No station selected';
+            }
+        }
+    }
+    
+    function updateCoordinatesDisplay(lat, lng, name = 'Selected Station') {
         document.getElementById('station-lat').textContent = lat.toFixed(6);
         document.getElementById('station-lng').textContent = lng.toFixed(6);
+        
+        // Update station name if the element exists
+        const stationNameEl = document.getElementById('active-station-name');
+        if (stationNameEl) {
+            stationNameEl.textContent = name;
+        }
     }
 
     // Real geocoding function using OpenStreetMap's Nominatim
@@ -346,7 +506,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     const result = data[0];
                     const lat = parseFloat(result.lat);
                     const lng = parseFloat(result.lon);
-                    placeStationMarker(lat, lng);
+                    
+                    // Create a station name from the address
+                    const addressParts = result.display_name.split(',');
+                    const stationName = addressParts[0].trim();
+                    
+                    // Add a new station marker
+                    addStationMarker(lat, lng, stationName);
                     map.setView([lat, lng], 14);
                     
                     // Update the address field with the fully qualified address
@@ -360,7 +526,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Alert the user but still place a marker
                     alert('Address not found. Placing a marker near the center of ' + stateInfo.name + ' instead. Try being more specific with your address.');
-                    placeStationMarker(lat, lng);
+                    addStationMarker(lat, lng, `${stateInfo.name} Approximate`);
                     map.setView([lat, lng], 14);
                 }
             })
@@ -374,7 +540,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const lng = stateInfo.lng + (Math.random() - 0.5) * 0.05;
                 
                 alert('Error geocoding address. Using approximate location in ' + stateInfo.name + '.');
-                placeStationMarker(lat, lng);
+                addStationMarker(lat, lng, `${stateInfo.name} Fallback`);
                 map.setView([lat, lng], 14);
             })
             .finally(() => {
@@ -384,44 +550,106 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Reverse geocoding to get address from coordinates
-    function reverseGeocode(lat, lng) {
+    function reverseGeocode(lat, lng, marker) {
         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
             .then(response => response.json())
             .then(data => {
                 if (data && data.display_name) {
-                    if (stationMarker) {
-                        stationMarker.bindPopup(data.display_name).openPopup();
+                    if (marker) {
+                        // Store the address with the marker's data
+                        marker.stationData.address = data.display_name;
+                        
+                        // Update popup with station name and address
+                        marker.bindPopup(`
+                            <strong>${marker.stationData.name}</strong>
+                            <p>${data.display_name}</p>
+                            <button class="popup-select-btn">Select</button>
+                            <button class="popup-delete-btn">Delete</button>
+                        `);
+                        
+                        // Add event listeners to popup buttons when it opens
+                        marker.on('popupopen', function() {
+                            const selectBtn = document.querySelector('.popup-select-btn');
+                            const deleteBtn = document.querySelector('.popup-delete-btn');
+                            
+                            if (selectBtn) {
+                                selectBtn.addEventListener('click', function() {
+                                    setActiveStation(marker.stationData.index);
+                                    marker.closePopup();
+                                });
+                            }
+                            
+                            if (deleteBtn) {
+                                deleteBtn.addEventListener('click', function() {
+                                    deleteStation(marker.stationData.index);
+                                    marker.closePopup();
+                                });
+                            }
+                        });
+                        
+                        marker.openPopup();
                     }
                 }
             })
             .catch(error => {
                 console.error('Error reverse geocoding:', error);
-                // Silently fail for reverse geocoding - not critical
+                // If geocoding fails, still set up a basic popup
+                if (marker) {
+                    marker.bindPopup(`
+                        <strong>${marker.stationData.name}</strong>
+                        <p>Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}</p>
+                        <button class="popup-select-btn">Select</button>
+                        <button class="popup-delete-btn">Delete</button>
+                    `);
+                    
+                    // Add event listeners as above
+                    marker.on('popupopen', function() {
+                        const selectBtn = document.querySelector('.popup-select-btn');
+                        const deleteBtn = document.querySelector('.popup-delete-btn');
+                        
+                        if (selectBtn) {
+                            selectBtn.addEventListener('click', function() {
+                                setActiveStation(marker.stationData.index);
+                                marker.closePopup();
+                            });
+                        }
+                        
+                        if (deleteBtn) {
+                            deleteBtn.addEventListener('click', function() {
+                                deleteStation(marker.stationData.index);
+                                marker.closePopup();
+                            });
+                        }
+                    });
+                    
+                    marker.openPopup();
+                }
             });
     }
 
     // Function to generate isochrones (road network-based travel time polygons)
     function generateIsochrones() {
-        if (!stationMarker) {
-            alert('Please place a station on the map first');
+        if (stationMarkers.length === 0) {
+            alert('Please add at least one station to the map first');
             return;
         }
+        
+        // Clear any existing isochrones
         isochrones.forEach(layer => map.removeLayer(layer));
         isochrones = [];
+        
         const timeIntervals = Array.from(document.querySelectorAll('input[name="time-interval"]:checked'))
             .map(input => parseInt(input.value));
         if (timeIntervals.length === 0) {
             alert('Please select at least one time interval');
             return;
         }
+        
         const vehicleType = document.getElementById('vehicle-type').value;
         const timeOfDay = document.getElementById('time-of-day').value;
         console.log(`Generating isochrones for ${vehicleType} at ${timeOfDay} for intervals: ${timeIntervals.join(', ')}`);
         document.getElementById('generate-button').textContent = 'Generating...';
         document.getElementById('generate-button').disabled = true;
-        
-        // Get station position
-        const stationPos = stationMarker.getLatLng();
         
         // Determine speed factors based on vehicle type and time of day
         let speedFactor = 1;
@@ -440,63 +668,102 @@ document.addEventListener('DOMContentLoaded', function() {
         // Sort time intervals in descending order to layer properly
         timeIntervals.sort((a, b) => b - a);
         
-        // In a real implementation, we would call a routing API like OSRM, Mapbox, or GraphHopper
-        // to get actual travel time isochrones. For now, we'll simulate with modified circles that
-        // have some irregularity to appear more realistic.
+        // Create bounds to fit all generated isochrones
+        const allBounds = L.latLngBounds();
+        let totalProcessedStations = 0;
+        let totalIsochronesGenerated = 0;
         
-        // Process each time interval
-        let processedIntervals = 0;
-        timeIntervals.forEach((minutes, index) => {
-            // Base radius for this time interval
-            const baseRadius = minutes * 800 * speedFactor;
+        // Process each station
+        stationMarkers.forEach((marker, stationIndex) => {
+            const stationPos = marker.getLatLng();
+            const stationName = marker.stationData.name;
             
-            // Create an array of points around the station to simulate irregular isochrones
-            const points = [];
-            const numPoints = 36; // Number of points to create a more detailed polygon
+            // Store the isochrones for this station
+            const stationIsochrones = [];
+            let processedIntervals = 0;
             
-            for (let i = 0; i < numPoints; i++) {
-                const angle = (i / numPoints) * 2 * Math.PI;
-                // Add some randomness to the radius to make it look like a real isochrone
-                // More randomness for longer time intervals
-                const randomFactor = 1 + (Math.random() * 0.3 - 0.15) * (minutes / 4);
-                const radius = baseRadius * randomFactor;
+            // Process each time interval for this station
+            timeIntervals.forEach((minutes, index) => {
+                // Base radius for this time interval
+                const baseRadius = minutes * 800 * speedFactor;
                 
-                // Calculate point position
-                const x = stationPos.lng + (radius / 111320) * Math.cos(angle) / Math.cos(stationPos.lat * Math.PI / 180);
-                const y = stationPos.lat + (radius / 111320) * Math.sin(angle);
+                // Create an array of points around the station to simulate irregular isochrones
+                const points = [];
+                const numPoints = 36; // Number of points to create a more detailed polygon
                 
-                points.push([y, x]);
-            }
-            
-            // Close the polygon
-            points.push(points[0]);
-            
-            // Create irregular polygon for isochrone
-            const isochrone = L.polygon(points, {
-                color: colors[minutes] || '#fdae61',
-                fillColor: colors[minutes] || '#fdae61',
-                fillOpacity: 0.2,
-                weight: 2
-            }).addTo(map);
-            
-            isochrone.bindTooltip(`${minutes} minute response time`);
-            isochrones.push(isochrone);
-            
-            processedIntervals++;
-            
-            // When all intervals are processed, update UI and fit map to bounds
-            if (processedIntervals === timeIntervals.length) {
-                updateCoverageAnalysis(timeIntervals, stationPos, speedFactor);
-                document.getElementById('generate-button').textContent = 'Generate Isochrone Map';
-                document.getElementById('generate-button').disabled = false;
+                for (let i = 0; i < numPoints; i++) {
+                    const angle = (i / numPoints) * 2 * Math.PI;
+                    // Add some randomness to the radius to make it look like a real isochrone
+                    // More randomness for longer time intervals
+                    const randomFactor = 1 + (Math.random() * 0.3 - 0.15) * (minutes / 4);
+                    const radius = baseRadius * randomFactor;
+                    
+                    // Calculate point position
+                    const x = stationPos.lng + (radius / 111320) * Math.cos(angle) / Math.cos(stationPos.lat * Math.PI / 180);
+                    const y = stationPos.lat + (radius / 111320) * Math.sin(angle);
+                    
+                    points.push([y, x]);
+                }
                 
-                // Create bounds to fit all isochrones
-                const bounds = L.latLngBounds([stationPos]);
-                isochrones.forEach(iso => {
-                    bounds.extend(iso.getBounds());
-                });
-                map.fitBounds(bounds);
-            }
+                // Close the polygon
+                points.push(points[0]);
+                
+                // Create irregular polygon for isochrone with opacity based on the station index
+                // This makes different stations' isochrones visually distinct
+                const opacity = 0.2 - (stationIndex * 0.02);
+                const isochrone = L.polygon(points, {
+                    color: colors[minutes] || '#fdae61',
+                    fillColor: colors[minutes] || '#fdae61',
+                    fillOpacity: Math.max(0.1, opacity), // Ensure minimum opacity
+                    weight: 2
+                }).addTo(map);
+                
+                // Create a more informative tooltip
+                isochrone.bindTooltip(`${stationName}: ${minutes} minute response time`);
+                
+                // Store the station information with the isochrone
+                isochrone.stationData = {
+                    stationIndex: stationIndex,
+                    stationName: stationName,
+                    minutes: minutes
+                };
+                
+                // Add to both station-specific and global isochrones arrays
+                stationIsochrones.push(isochrone);
+                isochrones.push(isochrone);
+                totalIsochronesGenerated++;
+                
+                // Extend the bounds to include this isochrone
+                allBounds.extend(isochrone.getBounds());
+                
+                processedIntervals++;
+                
+                // When all intervals for this station are processed
+                if (processedIntervals === timeIntervals.length) {
+                    // Store the isochrones with the marker for reference
+                    marker.isochrones = stationIsochrones;
+                    totalProcessedStations++;
+                    
+                    // When all stations are processed
+                    if (totalProcessedStations === stationMarkers.length) {
+                        // Only use the active station for the coverage analysis
+                        if (activeStationIndex >= 0) {
+                            const activeMarker = stationMarkers[activeStationIndex];
+                            updateCoverageAnalysis(timeIntervals, activeMarker.getLatLng(), speedFactor);
+                        } else if (stationMarkers.length > 0) {
+                            updateCoverageAnalysis(timeIntervals, stationMarkers[0].getLatLng(), speedFactor);
+                        }
+                        
+                        document.getElementById('generate-button').textContent = 'Generate Isochrone Map';
+                        document.getElementById('generate-button').disabled = false;
+                        
+                        // Fit map to all isochrones
+                        if (totalIsochronesGenerated > 0) {
+                            map.fitBounds(allBounds);
+                        }
+                    }
+                }
+            });
         });
     }
     
@@ -651,26 +918,46 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function resetMap() {
-        if (stationMarker) {
-            map.removeLayer(stationMarker);
-            stationMarker = null;
-        }
+        // Remove all station markers
+        stationMarkers.forEach(marker => {
+            map.removeLayer(marker);
+        });
+        stationMarkers = [];
+        activeStationIndex = -1;
+        
+        // Remove all isochrones
         isochrones.forEach(layer => map.removeLayer(layer));
         isochrones = [];
+        
+        // Reset the UI displays
         document.getElementById('station-lat').textContent = '--';
         document.getElementById('station-lng').textContent = '--';
         document.getElementById('station-address').value = '';
+        
+        // Reset the station name if element exists
+        const stationNameEl = document.getElementById('active-station-name');
+        if (stationNameEl) {
+            stationNameEl.textContent = 'No station selected';
+        }
+        
+        // Update the stations list
+        updateStationsList();
+        
+        // Reset analysis displays
         document.getElementById('area-coverage').innerHTML = '<p>Generate a map to see coverage statistics</p>';
         document.getElementById('population-coverage').innerHTML = '<p>Generate a map to see population coverage</p>';
         document.getElementById('facilities-coverage').innerHTML = '<p>Generate a map to see facilities coverage</p>';
+        
         // Reset view to current state's coordinates
         const stateInfo = stateCoordinates[currentState];
         map.setView([stateInfo.lat, stateInfo.lng], stateInfo.zoom);
+        
+        showMessage('Map has been reset. You can now add new stations.', 'info');
     }
     
     function exportMap() {
-        if (!stationMarker || isochrones.length === 0) {
-            alert("Please place a station and generate isochrones before exporting.");
+        if (stationMarkers.length === 0 || isochrones.length === 0) {
+            alert("Please add at least one station and generate isochrones before exporting.");
             return;
         }
         

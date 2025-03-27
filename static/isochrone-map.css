@@ -187,6 +187,149 @@ button:hover {
   font-size: 14px;
 }
 
+/* Station management styles */
+.station-management {
+  margin-top: 15px;
+}
+
+.station-management h4 {
+  margin: 10px 0 5px 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.stations-container {
+  margin-top: 15px;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+.station-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  margin-top: 5px;
+}
+
+.station-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid #eee;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.station-item:last-child {
+  border-bottom: none;
+}
+
+.station-item:hover {
+  background-color: #f0f0f0;
+}
+
+.station-item.active {
+  background-color: #e3f2fd;
+  border-left: 3px solid #1976d2;
+}
+
+.station-number {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #d32f2f;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.station-details {
+  flex: 1;
+  overflow: hidden;
+}
+
+.station-name {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.station-coords {
+  font-size: 12px;
+  color: #666;
+}
+
+.station-delete {
+  background: none;
+  border: none;
+  color: #d32f2f;
+  font-size: 18px;
+  padding: 0 5px;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.station-delete:hover {
+  opacity: 1;
+}
+
+.no-stations {
+  padding: 10px;
+  color: #666;
+  font-style: italic;
+  text-align: center;
+  font-size: 13px;
+}
+
+/* Station marker styles */
+.station-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #d32f2f;
+  color: white;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px white, 0 0 5px rgba(0,0,0,0.3);
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.station-marker .marker-number {
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.active-station {
+  background-color: #1976d2 !important;
+  transform: scale(1.1);
+  z-index: 1000 !important;
+}
+
+/* Popup button styles */
+.popup-select-btn,
+.popup-delete-btn {
+  margin-top: 8px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.popup-select-btn {
+  background-color: #1976d2;
+  color: white;
+  margin-right: 5px;
+}
+
+.popup-delete-btn {
+  background-color: #f5f5f5;
+  color: #d32f2f;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .tool-container {

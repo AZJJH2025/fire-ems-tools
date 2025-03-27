@@ -66,12 +66,24 @@
             <p><strong>- OR -</strong></p>
           </div>
           <div class="input-group">
-            <label>Click on map to place station:</label>
-            <button id="place-station-button">Place Station</button>
+            <label>Click on map to add stations:</label>
+            <button id="place-station-button">Add Station</button>
           </div>
-          <div id="station-coordinates" class="coordinates-display">
-            <p>Latitude: <span id="station-lat">--</span></p>
-            <p>Longitude: <span id="station-lng">--</span></p>
+          
+          <!-- Station list and active station info -->
+          <div class="station-management">
+            <h4 id="active-station-name">No station selected</h4>
+            <div id="station-coordinates" class="coordinates-display">
+              <p>Latitude: <span id="station-lat">--</span></p>
+              <p>Longitude: <span id="station-lng">--</span></p>
+            </div>
+            
+            <div class="stations-container">
+              <h4>Added Stations</h4>
+              <div id="stations-list" class="station-list">
+                <p class="no-stations">No stations added yet. Click "Add Station" or use the address search to add stations.</p>
+              </div>
+            </div>
           </div>
         </section>
         
