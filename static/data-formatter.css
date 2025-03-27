@@ -1,5 +1,102 @@
 /* Data Formatter Specific Styles */
 
+/* Instructions Panel */
+.instructions-toggle {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.instructions-panel {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin-bottom: 30px;
+  overflow: hidden;
+  position: relative;
+}
+
+.instructions-header {
+  background-color: #f5f5f5;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.instructions-header h2 {
+  margin: 0;
+  color: #1976d2;
+  font-size: 1.3rem;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+
+.close-btn:hover {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.instructions-content {
+  padding: 20px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.instruction-block {
+  margin-bottom: 25px;
+}
+
+.instruction-block h3 {
+  color: #1976d2;
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+.instruction-block ol, 
+.instruction-block ul {
+  padding-left: 25px;
+}
+
+.instruction-block li {
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.example-box {
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-left: 4px solid #1976d2;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.example-box h4 {
+  margin-top: 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.example-box p {
+  margin: 8px 0;
+}
+
+.example-box ul {
+  margin-top: 8px;
+}
+
 /* Main layout structure */
 .formatter-container {
   display: flex;

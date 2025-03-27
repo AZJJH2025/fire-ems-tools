@@ -22,6 +22,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const requirementsToggle = document.getElementById('requirements-toggle');
     const requirementsContent = document.querySelector('.requirements-content');
     
+    // Instructions panel elements
+    const showInstructionsBtn = document.getElementById('show-instructions');
+    const closeInstructionsBtn = document.getElementById('close-instructions');
+    const instructionsPanel = document.getElementById('instructions-panel');
+    
     // Data storage
     let originalData = null;
     let transformedData = null;
@@ -107,6 +112,15 @@ document.addEventListener('DOMContentLoaded', function() {
         clearBtn.addEventListener('click', clearAll);
         downloadBtn.addEventListener('click', downloadData);
         sendToToolBtn.addEventListener('click', sendToTool);
+        
+        // Instructions panel
+        showInstructionsBtn.addEventListener('click', function() {
+            instructionsPanel.style.display = 'block';
+        });
+        
+        closeInstructionsBtn.addEventListener('click', function() {
+            instructionsPanel.style.display = 'none';
+        });
         
         // Toggle sections
         advancedToggle.addEventListener('click', function() {
@@ -196,25 +210,87 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Parse based on detected file type
                     switch (fileType) {
                         case 'csv':
+                            // Validate CSV content
+                            if (!e.target.result || e.target.result.trim() === '') {
+                                throw new Error('CSV file appears to be empty');
+                            }
+                            
+                            // Check if file has headers and at least one row of data
+                            const csvLines = e.target.result.split('\n').filter(line => line.trim() !== '');
+                            if (csvLines.length < 2) {
+                                throw new Error('CSV file must have headers and at least one data row');
+                            }
+                            
                             data = parseCSV(e.target.result);
+                            appendLog(`Loaded CSV with ${data.length} records and ${Object.keys(data[0] || {}).length} fields`);
                             break;
+                            
                         case 'excel':
                             // In a real implementation, we would use a library like SheetJS
                             // For now, just mock the data
                             appendLog('Excel parsing would require additional libraries in a production environment');
                             data = mockExcelData();
+                            appendLog(`Loaded sample Excel data with ${data.length} records`);
                             break;
+                            
                         case 'json':
-                            data = JSON.parse(e.target.result);
+                            // Validate JSON content
+                            if (!e.target.result || e.target.result.trim() === '') {
+                                throw new Error('JSON file appears to be empty');
+                            }
+                            
+                            const parsedJson = JSON.parse(e.target.result);
+                            
+                            // Handle different JSON structures
+                            if (Array.isArray(parsedJson)) {
+                                // Array of objects format
+                                data = parsedJson;
+                            } else if (typeof parsedJson === 'object' && parsedJson !== null) {
+                                // Object with data property containing array
+                                if (Array.isArray(parsedJson.data)) {
+                                    data = parsedJson.data;
+                                } else if (Array.isArray(parsedJson.records)) {
+                                    data = parsedJson.records;
+                                } else if (Array.isArray(parsedJson.results)) {
+                                    data = parsedJson.results;
+                                } else if (Array.isArray(parsedJson.features)) {
+                                    // GeoJSON format
+                                    data = parsedJson.features.map(feature => ({
+                                        ...feature.properties,
+                                        latitude: feature.geometry?.coordinates?.[1],
+                                        longitude: feature.geometry?.coordinates?.[0]
+                                    }));
+                                } else {
+                                    // Create array from single object
+                                    data = [parsedJson];
+                                }
+                            } else {
+                                throw new Error('JSON data must contain an array of records');
+                            }
+                            
+                            appendLog(`Loaded JSON with ${data.length} records`);
                             break;
+                            
                         case 'xml':
                         case 'kml':
                             // Mock data for now
                             appendLog('XML/KML parsing would require additional processing in a production environment');
                             data = mockSpatialData();
+                            appendLog(`Loaded sample ${fileType.toUpperCase()} data with ${data.length} records`);
                             break;
+                            
                         default:
                             throw new Error('Unsupported file type');
+                    }
+                    
+                    // Validate data structure
+                    if (!Array.isArray(data) || data.length === 0) {
+                        throw new Error('No valid data records found in file');
+                    }
+                    
+                    // Check that data objects have properties
+                    if (Object.keys(data[0]).length === 0) {
+                        throw new Error('Data records do not contain any fields');
                     }
                     
                     resolve(data);
@@ -237,20 +313,92 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Simple CSV parser (a real implementation would use a robust library)
+    // Improved CSV parser with support for quoted values and commas within fields
     function parseCSV(text) {
-        const lines = text.split('\n');
-        const headers = lines[0].split(',').map(h => h.trim());
+        const lines = text.split(/\r?\n/);  // Handle both CRLF and LF line endings
         
+        // Function to parse a single line, handling quoted values
+        function parseLine(line) {
+            const values = [];
+            let currentValue = '';
+            let insideQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    // Handle escaped quotes (double quotes)
+                    if (insideQuotes && line[i + 1] === '"') {
+                        currentValue += '"';
+                        i++; // Skip the next quote
+                    } else {
+                        // Toggle quote state
+                        insideQuotes = !insideQuotes;
+                    }
+                } else if (char === ',' && !insideQuotes) {
+                    // End of field
+                    values.push(currentValue.trim());
+                    currentValue = '';
+                } else {
+                    // Regular character
+                    currentValue += char;
+                }
+            }
+            
+            // Don't forget the last value
+            values.push(currentValue.trim());
+            
+            return values;
+        }
+        
+        // Parse headers
+        let headers = parseLine(lines[0]);
+        
+        // Create clean, unique headers
+        headers = headers.map((header, index) => {
+            // Remove quotes if present
+            let cleanHeader = header.replace(/^"(.*)"$/, '$1').trim();
+            
+            // If header is empty, create a placeholder
+            if (!cleanHeader) {
+                cleanHeader = `Column_${index + 1}`;
+            }
+            
+            return cleanHeader;
+        });
+        
+        // Parse data rows
         const data = [];
         for (let i = 1; i < lines.length; i++) {
             if (lines[i].trim() === '') continue;
             
-            const values = lines[i].split(',').map(v => v.trim());
+            const values = parseLine(lines[i]);
+            
+            // Skip rows with fewer values than expected
+            if (values.length < Math.max(1, headers.length / 2)) {
+                continue;
+            }
+            
             const row = {};
             
+            // Map values to headers
             headers.forEach((header, index) => {
-                row[header] = values[index] || '';
+                let value = values[index] || '';
+                
+                // Remove quotes from values if present
+                if (value.startsWith('"') && value.endsWith('"')) {
+                    value = value.substring(1, value.length - 1);
+                }
+                
+                // Try to convert numeric values
+                if (/^-?\d+(\.\d+)?$/.test(value)) {
+                    const num = parseFloat(value);
+                    if (!isNaN(num)) {
+                        value = num;
+                    }
+                }
+                
+                row[header] = value;
             });
             
             data.push(row);
@@ -1023,66 +1171,144 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         const format = document.getElementById('output-format').value;
-        let blob, filename;
+        let blob, filename, timestamp;
         
-        switch (format) {
-            case 'csv':
-                blob = new Blob([convertToCSV(transformedData)], { type: 'text/csv' });
-                filename = `formatted_data_${selectedTool}.csv`;
-                break;
-                
-            case 'excel':
-                // In a real implementation, we would use a library like SheetJS
-                // For this demo, we'll just use CSV
-                blob = new Blob([convertToCSV(transformedData)], { type: 'text/csv' });
-                filename = `formatted_data_${selectedTool}.csv`;
-                appendLog('Excel export would require additional libraries in a production environment', 'warning');
-                break;
-                
-            case 'json':
-                blob = new Blob([JSON.stringify(transformedData, null, 2)], { type: 'application/json' });
-                filename = `formatted_data_${selectedTool}.json`;
-                break;
-                
-            default:
-                blob = new Blob([JSON.stringify(transformedData)], { type: 'text/plain' });
-                filename = `formatted_data_${selectedTool}.txt`;
+        // Add timestamp to filename for uniqueness
+        timestamp = new Date().toISOString().replace(/[-:]/g, '').substring(0, 15);
+        
+        // Show loading message for large datasets
+        if (transformedData.length > 1000) {
+            appendLog(`Preparing download for ${transformedData.length} records...`);
         }
         
-        // Create download link and trigger download
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        // Create a safe filename based on the selected tool
+        const toolName = selectedTool ? selectedTool.replace(/[^a-z0-9]/gi, '_') : 'data';
         
-        appendLog(`Downloaded data as ${filename}`);
+        try {
+            switch (format) {
+                case 'csv':
+                    blob = new Blob([convertToCSV(transformedData)], { type: 'text/csv' });
+                    filename = `fireems_${toolName}_${timestamp}.csv`;
+                    break;
+                    
+                case 'excel':
+                    // In a real implementation, we would use a library like SheetJS
+                    // For this demo, we'll just use CSV
+                    blob = new Blob([convertToCSV(transformedData)], { type: 'text/csv' });
+                    filename = `fireems_${toolName}_${timestamp}.csv`;
+                    appendLog('Excel export would require additional libraries in a production environment. Exporting as CSV instead.', 'warning');
+                    break;
+                    
+                case 'json':
+                    let jsonStr;
+                    
+                    // Handle large datasets more efficiently
+                    if (transformedData.length > 5000) {
+                        // Without pretty-printing for large datasets
+                        jsonStr = JSON.stringify(transformedData);
+                    } else {
+                        // With pretty-printing for smaller datasets
+                        jsonStr = JSON.stringify(transformedData, null, 2);
+                    }
+                    
+                    blob = new Blob([jsonStr], { type: 'application/json' });
+                    filename = `fireems_${toolName}_${timestamp}.json`;
+                    break;
+                    
+                default:
+                    blob = new Blob([JSON.stringify(transformedData)], { type: 'text/plain' });
+                    filename = `fireems_${toolName}_${timestamp}.txt`;
+            }
+            
+            // Create download link and trigger download
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            
+            // Clean up
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+            
+            appendLog(`Downloaded data as ${filename} (${formatBytes(blob.size)})`, 'success');
+        } catch (error) {
+            appendLog(`Error during file download: ${error.message}`, 'error');
+            console.error('Download error:', error);
+        }
     }
     
     // Convert JSON data to CSV
     function convertToCSV(data) {
         if (!data || data.length === 0) return '';
         
-        const headers = Object.keys(data[0]);
-        let csv = headers.join(',') + '\n';
-        
-        data.forEach(item => {
-            const row = headers.map(header => {
-                // Handle values that need quotes
-                let value = item[header] || '';
-                if (value.includes(',') || value.includes('"') || value.includes('\n')) {
-                    value = '"' + value.replace(/"/g, '""') + '"';
-                }
-                return value;
+        try {
+            // Get all unique headers from all objects
+            const headerSet = new Set();
+            data.forEach(item => {
+                Object.keys(item).forEach(key => headerSet.add(key));
             });
             
-            csv += row.join(',') + '\n';
-        });
-        
-        return csv;
+            const headers = Array.from(headerSet);
+            
+            // Create CSV header row
+            let csv = headers.map(header => {
+                // Escape header if it contains special characters
+                if (header.includes(',') || header.includes('"') || header.includes('\n')) {
+                    return '"' + header.replace(/"/g, '""') + '"';
+                }
+                return header;
+            }).join(',') + '\n';
+            
+            // Process data in chunks for large datasets
+            const chunkSize = 500;
+            const chunks = Math.ceil(data.length / chunkSize);
+            
+            for (let c = 0; c < chunks; c++) {
+                const start = c * chunkSize;
+                const end = Math.min(start + chunkSize, data.length);
+                
+                for (let i = start; i < end; i++) {
+                    const item = data[i];
+                    const row = headers.map(header => {
+                        // Handle missing values
+                        let value = item[header];
+                        
+                        if (value === undefined || value === null) {
+                            return '';
+                        }
+                        
+                        // Convert non-string values
+                        if (typeof value !== 'string') {
+                            if (typeof value === 'object') {
+                                value = JSON.stringify(value);
+                            } else {
+                                value = String(value);
+                            }
+                        }
+                        
+                        // Handle values that need quotes
+                        if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+                            value = '"' + value.replace(/"/g, '""') + '"';
+                        }
+                        
+                        return value;
+                    }).join(',');
+                    
+                    csv += row + '\n';
+                }
+            }
+            
+            return csv;
+        } catch (error) {
+            console.error('Error converting to CSV:', error);
+            appendLog('Error converting data to CSV', 'error');
+            throw error;
+        }
     }
     
     // Send data to the selected tool
@@ -1092,55 +1318,219 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // In a real implementation, this would send the data to the appropriate tool
-        appendLog(`Sending formatted data to ${getToolName(selectedTool)}...`);
-        
-        // Store the data in sessionStorage for the target tool to access
-        sessionStorage.setItem('formattedData', JSON.stringify(transformedData));
-        sessionStorage.setItem('dataSource', 'formatter');
-        
-        // Simulate success message
-        setTimeout(() => {
-            appendLog(`Data successfully sent to ${getToolName(selectedTool)}`, 'success');
+        try {
+            // Show processing indicator
+            const processingStatus = document.createElement('div');
+            processingStatus.innerHTML = `
+                <div style="display: flex; align-items: center; margin: 15px 0; padding: 10px; background-color: #e3f2fd; border-radius: 4px;">
+                    <div class="loading-spinner"></div>
+                    <span>Sending data to ${getToolName(selectedTool)}...</span>
+                </div>
+            `;
+            document.querySelector('.download-section').appendChild(processingStatus);
             
-            // Offer to redirect to the tool
-            const confirmRedirect = confirm(
-                `Data is ready for use in ${getToolName(selectedTool)}.\n\nWould you like to open the tool now?`
-            );
+            // Ensure data is in the proper format for the selected tool
+            let preparedData = prepareDataForTool(transformedData, selectedTool);
             
-            if (confirmRedirect) {
-                // Determine the URL for the selected tool
-                let toolUrl;
-                switch (selectedTool) {
-                    case 'response-time':
-                        toolUrl = '/fire-ems-dashboard';
-                        break;
-                    case 'isochrone':
-                        toolUrl = '/isochrone-map';
-                        break;
-                    case 'call-density':
-                        toolUrl = '/call-density-heatmap';
-                        break;
-                    case 'incident-logger':
-                        toolUrl = '/incident-logger';
-                        break;
-                    case 'coverage-gap':
-                        toolUrl = '/coverage-gap-finder';
-                        break;
-                    case 'station-overview':
-                        toolUrl = '/station-overview';
-                        break;
-                    case 'fire-map-pro':
-                        toolUrl = '/fire-map-pro';
-                        break;
-                    default:
-                        toolUrl = '/';
+            // Compress large datasets for storage
+            let dataToStore;
+            if (preparedData.length > 1000) {
+                appendLog(`Large dataset detected (${preparedData.length} records). Optimizing for transfer...`);
+                
+                // Store an abbreviated version for large datasets to prevent session storage limits
+                // In a real implementation, this would use proper compression
+                
+                // Keep only essential fields
+                const requirements = toolRequirements[selectedTool];
+                if (requirements && requirements.requiredFields) {
+                    preparedData = preparedData.map(item => {
+                        const essentialItem = {};
+                        
+                        // Include only required and a subset of optional fields
+                        requirements.requiredFields.forEach(field => {
+                            essentialItem[field] = item[field];
+                        });
+                        
+                        // Add a few optional fields if present
+                        if (requirements.optionalFields && requirements.optionalFields.length > 0) {
+                            const optionalFieldsToInclude = requirements.optionalFields.slice(0, 3); // Limit to first 3 optional fields
+                            optionalFieldsToInclude.forEach(field => {
+                                if (item[field] !== undefined) {
+                                    essentialItem[field] = item[field];
+                                }
+                            });
+                        }
+                        
+                        return essentialItem;
+                    });
+                    
+                    appendLog(`Data optimized: Keeping only essential fields for ${selectedTool}`);
                 }
                 
-                // Redirect to the tool
-                window.location.href = toolUrl;
+                // For extremely large datasets, sample the data
+                if (preparedData.length > 5000) {
+                    const sampleSize = 5000;
+                    const sampledData = [];
+                    
+                    // Take a statistically valid sample
+                    const interval = Math.floor(preparedData.length / sampleSize);
+                    for (let i = 0; i < preparedData.length; i += interval) {
+                        sampledData.push(preparedData[i]);
+                        if (sampledData.length >= sampleSize) break;
+                    }
+                    
+                    dataToStore = {
+                        data: sampledData,
+                        meta: {
+                            originalSize: preparedData.length,
+                            sampled: true,
+                            sampleRatio: sampledData.length / preparedData.length
+                        }
+                    };
+                    
+                    appendLog(`Data sampled: Using ${sampledData.length} representative records out of ${preparedData.length}`);
+                } else {
+                    dataToStore = { data: preparedData, meta: { originalSize: preparedData.length } };
+                }
+            } else {
+                dataToStore = { data: preparedData, meta: { originalSize: preparedData.length } };
             }
-        }, 1500);
+            
+            // Store the data in sessionStorage for the target tool to access
+            sessionStorage.setItem('formattedData', JSON.stringify(dataToStore));
+            sessionStorage.setItem('dataSource', 'formatter');
+            sessionStorage.setItem('formatterTimestamp', new Date().toISOString());
+            sessionStorage.setItem('formatterToolId', selectedTool);
+            
+            // Remove processing indicator
+            setTimeout(() => {
+                document.querySelector('.download-section').removeChild(processingStatus);
+                
+                appendLog(`Data successfully prepared for ${getToolName(selectedTool)} (${formatBytes(JSON.stringify(dataToStore).length)})`, 'success');
+                
+                // Offer to redirect to the tool
+                const confirmRedirect = confirm(
+                    `Data is ready for use in ${getToolName(selectedTool)}.\n\nWould you like to open the tool now?`
+                );
+                
+                if (confirmRedirect) {
+                    // Determine the URL for the selected tool
+                    let toolUrl;
+                    switch (selectedTool) {
+                        case 'response-time':
+                            toolUrl = '/fire-ems-dashboard';
+                            break;
+                        case 'isochrone':
+                            toolUrl = '/isochrone-map';
+                            break;
+                        case 'call-density':
+                            toolUrl = '/call-density-heatmap';
+                            break;
+                        case 'incident-logger':
+                            toolUrl = '/incident-logger';
+                            break;
+                        case 'coverage-gap':
+                            toolUrl = '/coverage-gap-finder';
+                            break;
+                        case 'station-overview':
+                            toolUrl = '/station-overview';
+                            break;
+                        case 'fire-map-pro':
+                            toolUrl = '/fire-map-pro';
+                            break;
+                        default:
+                            toolUrl = '/';
+                    }
+                    
+                    // Add a query parameter to indicate data is available
+                    toolUrl += `?source=formatter&ts=${Date.now()}`;
+                    
+                    // Redirect to the tool
+                    window.location.href = toolUrl;
+                }
+            }, 1500);
+        } catch (error) {
+            appendLog(`Error while preparing data for selected tool: ${error.message}`, 'error');
+            console.error('Error sending to tool:', error);
+        }
+    }
+    
+    // Additional preparation of data based on specific tool requirements
+    function prepareDataForTool(data, toolId) {
+        if (!data || !toolId) return data;
+        
+        const requirements = toolRequirements[toolId];
+        if (!requirements) return data;
+        
+        try {
+            appendLog(`Applying final adjustments for ${getToolName(toolId)}...`);
+            
+            // Create a deep copy to avoid modifying the original data
+            const preparedData = JSON.parse(JSON.stringify(data));
+            
+            // Apply tool-specific transformations
+            switch (toolId) {
+                case 'response-time':
+                    // Ensure response time is calculated if not present
+                    preparedData.forEach(item => {
+                        // Calculate response times if missing but component times are available
+                        if (!item['Response Time'] && item['Dispatch Time'] && item['On Scene Time']) {
+                            try {
+                                // Parse times - this is a simplified version, a real implementation would be more robust
+                                const dispatchTime = new Date(`2023-01-01T${item['Dispatch Time']}`);
+                                const onSceneTime = new Date(`2023-01-01T${item['On Scene Time']}`);
+                                
+                                if (!isNaN(dispatchTime) && !isNaN(onSceneTime)) {
+                                    // Calculate minutes
+                                    const diffMs = onSceneTime - dispatchTime;
+                                    const diffMinutes = diffMs / 60000;
+                                    
+                                    if (diffMinutes >= 0 && diffMinutes < 120) { // Sanity check
+                                        item['Response Time'] = diffMinutes.toFixed(2);
+                                    }
+                                }
+                            } catch (e) {
+                                // Silently fail individual calculations
+                            }
+                        }
+                    });
+                    break;
+                    
+                case 'call-density':
+                    // Ensure coordinates are parsed as numbers
+                    preparedData.forEach(item => {
+                        if (item['Latitude'] && typeof item['Latitude'] === 'string') {
+                            item['Latitude'] = parseFloat(item['Latitude']);
+                        }
+                        if (item['Longitude'] && typeof item['Longitude'] === 'string') {
+                            item['Longitude'] = parseFloat(item['Longitude']);
+                        }
+                        
+                        // Extract time components from incident timestamps if available
+                        if (item['Incident Date'] && item['Incident Time']) {
+                            try {
+                                const dateTime = new Date(`${item['Incident Date']}T${item['Incident Time']}`);
+                                if (!isNaN(dateTime)) {
+                                    item['hour'] = dateTime.getHours();
+                                    item['dayOfWeek'] = dateTime.getDay();
+                                    item['month'] = dateTime.getMonth() + 1;
+                                }
+                            } catch (e) {
+                                // Silently fail individual conversions
+                            }
+                        }
+                    });
+                    break;
+                    
+                // Add tool-specific preparations for other tools as needed
+            }
+            
+            return preparedData;
+        } catch (error) {
+            appendLog(`Warning: Error during final data preparation: ${error.message}`, 'warning');
+            console.error('Data preparation error:', error);
+            return data; // Return original data if preparation fails
+        }
     }
     
     // Initialize the application

@@ -36,6 +36,93 @@
     <section class="tool-header">
       <h1><i class="fas fa-exchange-alt"></i> Data Formatter</h1>
       <p>Convert, standardize, and prepare your data for use with FireEMS.ai tools</p>
+      
+      <div class="instructions-toggle">
+        <button id="show-instructions" class="secondary-btn">
+          <i class="fas fa-question-circle"></i> How to Use This Tool
+        </button>
+      </div>
+    </section>
+    
+    <section id="instructions-panel" class="instructions-panel" style="display: none;">
+      <div class="instructions-header">
+        <h2><i class="fas fa-book"></i> Data Formatter Instructions</h2>
+        <button id="close-instructions" class="close-btn"><i class="fas fa-times"></i></button>
+      </div>
+      
+      <div class="instructions-content">
+        <div class="instruction-block">
+          <h3>Overview</h3>
+          <p>The Data Formatter tool helps you transform your raw data files into formats that work perfectly with any FireEMS.ai tool. It automatically maps fields, standardizes formats, and prepares your data for analysis.</p>
+        </div>
+        
+        <div class="instruction-block">
+          <h3>Step-by-Step Guide</h3>
+          <ol>
+            <li><strong>Upload your data file</strong> - Select a CSV, Excel, JSON, XML, or KML/KMZ file to upload.</li>
+            <li><strong>Select your target tool</strong> - Choose which FireEMS.ai tool you want to prepare data for.</li>
+            <li><strong>Review the required fields</strong> - The tool shows which fields are required for your selected tool.</li>
+            <li><strong>Set transformation options</strong> - Adjust advanced settings if needed.</li>
+            <li><strong>Transform the data</strong> - Click the "Transform Data" button to process your file.</li>
+            <li><strong>Review the results</strong> - Check the preview and transformation log.</li>
+            <li><strong>Download or send to tool</strong> - Save the transformed data or send it directly to your chosen tool.</li>
+          </ol>
+        </div>
+        
+        <div class="instruction-block">
+          <h3>Examples</h3>
+          
+          <div class="example-box">
+            <h4>Example 1: Prepare Incident Data for Response Time Analyzer</h4>
+            <p><strong>Input file:</strong> incident_log.csv (contains incident dates, times, coordinates)</p>
+            <p><strong>Target tool:</strong> Response Time Analyzer</p>
+            <p><strong>What the formatter does:</strong></p>
+            <ul>
+              <li>Maps your incident fields to required fields (Incident ID, Date, Times, Coordinates)</li>
+              <li>Standardizes date formats to YYYY-MM-DD</li>
+              <li>Converts time fields to HH:MM:SS format</li>
+              <li>Ensures coordinate format is consistent</li>
+            </ul>
+          </div>
+          
+          <div class="example-box">
+            <h4>Example 2: Convert Station Data for Isochrone Map</h4>
+            <p><strong>Input file:</strong> stations.xlsx (contains station locations and details)</p>
+            <p><strong>Target tool:</strong> Isochrone Map Generator</p>
+            <p><strong>What the formatter does:</strong></p>
+            <ul>
+              <li>Extracts station IDs, names, and addresses</li>
+              <li>Geocodes addresses if coordinates are missing</li>
+              <li>Formats unit types for proper display</li>
+              <li>Removes unnecessary columns to reduce file size</li>
+            </ul>
+          </div>
+          
+          <div class="example-box">
+            <h4>Example 3: Prepare Call Data for Density Heatmap</h4>
+            <p><strong>Input file:</strong> calls_2024.json (contains call locations and times)</p>
+            <p><strong>Target tool:</strong> Call Density Heatmap</p>
+            <p><strong>What the formatter does:</strong></p>
+            <ul>
+              <li>Extracts latitude and longitude from location data</li>
+              <li>Breaks down timestamps into hour, day, month components</li>
+              <li>Categorizes incident types for filtering</li>
+              <li>Normalizes coordinates to standard decimal degrees</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="instruction-block">
+          <h3>Tips for Best Results</h3>
+          <ul>
+            <li><strong>Use headers in your files</strong> - Column names help the tool correctly map your data.</li>
+            <li><strong>Check the transformation log</strong> - It shows what changes were made to your data.</li>
+            <li><strong>Review field mappings</strong> - The tool will highlight matched and missing fields.</li>
+            <li><strong>Use compression for large files</strong> - Reduce size while keeping essential information.</li>
+            <li><strong>Save your formatted data</strong> - You can reuse it with any FireEMS.ai tool.</li>
+          </ul>
+        </div>
+      </div>
     </section>
 
     <section class="formatter-container">
