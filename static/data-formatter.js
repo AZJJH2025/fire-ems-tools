@@ -1583,26 +1583,54 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Keep only essential fields
                 const requirements = toolRequirements[selectedTool];
                 if (requirements && requirements.requiredFields) {
+                    // Create a list of critical fields that must be preserved for Response Time Analyzer
+                    const criticalTimeFields = [
+                        'Unit', 'Reported', 'Unit Dispatched', 'Unit Enroute', 'Unit Onscene',
+                        'Response Time (min)', 'Latitude', 'Longitude', 'Run No', 'Incident City',
+                        'Full Address', 'Incident Type', '_source', '_formatted', '_timestamp'
+                    ];
+                    
                     preparedData = preparedData.map(item => {
                         const essentialItem = {};
                         
-                        // Include only required and a subset of optional fields
-                        requirements.requiredFields.forEach(field => {
-                            essentialItem[field] = item[field];
-                        });
-                        
-                        // Add a few optional fields if present
-                        if (requirements.optionalFields && requirements.optionalFields.length > 0) {
-                            const optionalFieldsToInclude = requirements.optionalFields.slice(0, 3); // Limit to first 3 optional fields
-                            optionalFieldsToInclude.forEach(field => {
+                        // Special handling for Response Time Analyzer - preserve all time-related fields
+                        if (selectedTool === 'response-time') {
+                            criticalTimeFields.forEach(field => {
                                 if (item[field] !== undefined) {
                                     essentialItem[field] = item[field];
                                 }
                             });
+                        } else {
+                            // Standard handling for other tools
+                            
+                            // Include required fields
+                            requirements.requiredFields.forEach(field => {
+                                essentialItem[field] = item[field];
+                            });
+                            
+                            // Add a few optional fields if present
+                            if (requirements.optionalFields && requirements.optionalFields.length > 0) {
+                                const optionalFieldsToInclude = requirements.optionalFields.slice(0, 3); // Limit to first 3 optional fields
+                                optionalFieldsToInclude.forEach(field => {
+                                    if (item[field] !== undefined) {
+                                        essentialItem[field] = item[field];
+                                    }
+                                });
+                            }
                         }
+                        
+                        // Always preserve metadata fields
+                        if (item._source) essentialItem._source = item._source;
+                        if (item._formatted) essentialItem._formatted = item._formatted;
+                        if (item._timestamp) essentialItem._timestamp = item._timestamp;
                         
                         return essentialItem;
                     });
+                    
+                    // Log the first record after optimization for debugging
+                    if (preparedData.length > 0) {
+                        console.log("First record after optimization:", preparedData[0]);
+                    }
                     
                     appendLog(`Data optimized: Keeping only essential fields for ${selectedTool}`);
                 }

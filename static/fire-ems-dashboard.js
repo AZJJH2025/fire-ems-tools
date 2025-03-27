@@ -199,6 +199,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 record._source = 'formatter'; // Add metadata to track source
             });
             
+            // Log a sample record for debugging
+            if (dataToProcess.length > 0) {
+                console.log("Sample record from Data Formatter (before validation):", dataToProcess[0]);
+                console.log("Field names present:", Object.keys(dataToProcess[0]).join(", "));
+            }
+            
             // Validate that the data includes required fields for Response Time Analyzer
             const requiredFields = ['Unit', 'Reported', 'Unit Dispatched', 'Unit Onscene', 'Latitude', 'Longitude'];
             const missingFields = requiredFields.filter(field => 
@@ -208,6 +214,22 @@ document.addEventListener('DOMContentLoaded', function() {
             if (missingFields.length > 0) {
                 console.warn(`Data is missing required fields: ${missingFields.join(', ')}`);
                 console.warn("Will attempt to process anyway, but some visualizations may not work correctly");
+                
+                // Create warning to display to user
+                const warningMessage = document.createElement('div');
+                warningMessage.className = 'notice warning';
+                warningMessage.style.cssText = 'background-color: #fff3cd; padding: 15px; border-radius: 4px; margin-bottom: 20px; border-left: 4px solid #ffc107;';
+                warningMessage.innerHTML = `
+                    <strong>⚠️ Warning: Some required fields are missing</strong><br>
+                    The following fields are missing: ${missingFields.join(', ')}<br>
+                    This may affect some visualizations.
+                `;
+                
+                // Add it to the result container before processing
+                const resultElement = document.getElementById('result');
+                if (resultElement) {
+                    resultElement.appendChild(warningMessage);
+                }
             }
             
             // Process the data (bypass file upload)
