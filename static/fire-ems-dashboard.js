@@ -76,7 +76,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 filename: 'formatter-data.json',
                 rows: dataToProcess.length,
                 first_reported_date: getFirstReportedDate(dataToProcess),
-                columns: getDataColumns(dataToProcess)
+                columns: getDataColumns(dataToProcess),
+                source: 'formatter' // Mark data source as formatter
             });
             
             // Clear the sessionStorage to prevent reprocessing on page refresh
@@ -416,77 +417,9 @@ async function uploadFile() {
         
         console.log("✅ File uploaded successfully:", data.filename);
         
-        // Format and process data
-        const formattedData = formatFireEMSData(data.data);
-        const stats = calculateDataStatistics(formattedData);
-        
-        // Display basic file stats
-        resultDiv.innerHTML = `
-            <div style="color: green; margin-bottom: 15px;">
-                <p>✅ File uploaded: ${data.filename}</p>
-                <p>📊 Incidents: ${data.rows || (data.data ? data.data.length : 'Unknown')}</p>
-                <p>📅 First reported date: ${data.first_reported_date || 'N/A'}</p>
-            </div>
-        `;
-        
-        // Optionally update file stats container if available
-        const fileStatsElement = document.getElementById('file-stats');
-        if (fileStatsElement) {
-            let statsHtml = `
-                <div style="margin-bottom: 10px;">📄 File: ${data.filename}</div>
-                <div style="margin-bottom: 10px;">📊 Incidents: ${stats.totalIncidents}</div>
-                <div style="margin-bottom: 10px;">📅 First Date: ${data.first_reported_date || 'N/A'}</div>
-            `;
-            if (stats.avgResponseTime !== null) {
-                statsHtml += `<div style="margin-bottom: 10px;">⏱️ Avg Response: ${stats.avgResponseTime} min</div>`;
-            }
-            if (stats.busyHours && stats.busyHours.length > 0) {
-                statsHtml += `<div style="margin-bottom: 10px;">🔥 Busiest Hour: ${stats.busyHours[0].hour}</div>`;
-            }
-            if (stats.topUnit) {
-                statsHtml += `<div style="margin-bottom: 10px;">🚒 Top Unit: ${stats.topUnit.unit} (${stats.topUnit.count})</div>`;
-            }
-            fileStatsElement.innerHTML = statsHtml;
-        }
-        
-        // Render data table
-        renderDataTable({ ...data, data: formattedData }, document.getElementById('data-table'));
-        
-        // Show dashboard
-        dashboardDiv.style.display = 'block';
-        
-        // Create visualizations
-        try {
-            createIncidentMap(formattedData);
-            console.log("✅ Map created successfully");
-        } catch (error) {
-            console.error("❌ Error creating map:", error);
-            document.getElementById('incident-map').innerHTML = `<p style="color: red;">Error creating map: ${error.message}</p>`;
-        }
-        
-        try {
-            createTimeChart(formattedData, stats);
-            console.log("✅ Time chart created successfully");
-        } catch (error) {
-            console.error("❌ Error creating time chart:", error);
-            document.getElementById('time-chart').innerHTML = `<p style="color: red;">Error creating time chart: ${error.message}</p>`;
-        }
-        
-        try {
-            createUnitChart(formattedData, stats);
-            console.log("✅ Unit chart created successfully");
-        } catch (error) {
-            console.error("❌ Error creating unit chart:", error);
-            document.getElementById('unit-chart').parentElement.innerHTML = `<p style="color: red;">Error creating unit chart: ${error.message}</p>`;
-        }
-        
-        try {
-            createLocationChart(formattedData, stats);
-            console.log("✅ Location chart created successfully");
-        } catch (error) {
-            console.error("❌ Error creating location chart:", error);
-            document.getElementById('location-chart').parentElement.innerHTML = `<p style="color: red;">Error creating location chart: ${error.message}</p>`;
-        }
+        // Process the data with our common processor function
+        data.source = 'upload'; // Mark data source as file upload
+        processData(data);
         
     } catch (error) {
         console.error("❌ Upload error:", error);
@@ -821,6 +754,102 @@ function renderDataTable(data, container) {
     container.innerHTML = '';
     container.appendChild(table);
     console.log("✅ Table rendered successfully!");
+}
+
+// ----------------------------------------------------------------------------
+// Process data function - used by both file upload and Data Formatter
+// ----------------------------------------------------------------------------
+/**
+ * Process and display data from either file upload or Data Formatter
+ * @param {Object} data - Data object including records and metadata
+ */
+function processData(data) {
+    console.log("🔄 Processing data...", data);
+    const resultDiv = document.getElementById('result');
+    const dashboardDiv = document.getElementById('dashboard');
+    
+    try {
+        // Format and process data
+        const formattedData = formatFireEMSData(data.data);
+        const stats = calculateDataStatistics(formattedData);
+        
+        // Display basic file stats
+        if (data.source !== 'formatter') {
+            resultDiv.innerHTML = `
+                <div style="color: green; margin-bottom: 15px;">
+                    <p>✅ ${data.filename ? `File uploaded: ${data.filename}` : 'Data processed successfully'}</p>
+                    <p>📊 Incidents: ${data.rows || (data.data ? data.data.length : 'Unknown')}</p>
+                    <p>📅 First reported date: ${data.first_reported_date || 'N/A'}</p>
+                </div>
+            `;
+        }
+        
+        // Optionally update file stats container if available
+        const fileStatsElement = document.getElementById('file-stats');
+        if (fileStatsElement) {
+            let statsHtml = `
+                <div style="margin-bottom: 10px;">📄 Data source: ${data.filename || 'Data Formatter'}</div>
+                <div style="margin-bottom: 10px;">📊 Incidents: ${stats.totalIncidents}</div>
+                <div style="margin-bottom: 10px;">📅 First Date: ${data.first_reported_date || 'N/A'}</div>
+            `;
+            if (stats.avgResponseTime !== null) {
+                statsHtml += `<div style="margin-bottom: 10px;">⏱️ Avg Response: ${stats.avgResponseTime} min</div>`;
+            }
+            if (stats.busyHours && stats.busyHours.length > 0) {
+                statsHtml += `<div style="margin-bottom: 10px;">🔥 Busiest Hour: ${stats.busyHours[0].hour}</div>`;
+            }
+            if (stats.topUnit) {
+                statsHtml += `<div style="margin-bottom: 10px;">🚒 Top Unit: ${stats.topUnit.unit} (${stats.topUnit.count})</div>`;
+            }
+            fileStatsElement.innerHTML = statsHtml;
+        }
+        
+        // Render data table
+        renderDataTable({ 
+            ...data, 
+            data: formattedData,
+            columns: data.columns || getDataColumns(formattedData)
+        }, document.getElementById('data-table'));
+        
+        // Show dashboard
+        dashboardDiv.style.display = 'block';
+        
+        // Create visualizations
+        try {
+            createIncidentMap(formattedData);
+            console.log("✅ Map created successfully");
+        } catch (error) {
+            console.error("❌ Error creating map:", error);
+            document.getElementById('incident-map').innerHTML = `<p style="color: red;">Error creating map: ${error.message}</p>`;
+        }
+        
+        try {
+            createTimeChart(formattedData, stats);
+            console.log("✅ Time chart created successfully");
+        } catch (error) {
+            console.error("❌ Error creating time chart:", error);
+            document.getElementById('time-chart').innerHTML = `<p style="color: red;">Error creating time chart: ${error.message}</p>`;
+        }
+        
+        try {
+            createUnitChart(formattedData, stats);
+            console.log("✅ Unit chart created successfully");
+        } catch (error) {
+            console.error("❌ Error creating unit chart:", error);
+            document.getElementById('unit-chart').parentElement.innerHTML = `<p style="color: red;">Error creating unit chart: ${error.message}</p>`;
+        }
+        
+        try {
+            createLocationChart(formattedData, stats);
+            console.log("✅ Location chart created successfully");
+        } catch (error) {
+            console.error("❌ Error creating location chart:", error);
+            document.getElementById('location-chart').parentElement.innerHTML = `<p style="color: red;">Error creating location chart: ${error.message}</p>`;
+        }
+    } catch (error) {
+        console.error("❌ Processing error:", error);
+        resultDiv.innerHTML = `<p style="color: red;">Processing error: ${error.message}</p>`;
+    }
 }
 
 // ----------------------------------------------------------------------------
