@@ -177,8 +177,9 @@
                     record._source = 'formatter'; // Add metadata to track source
                 });
                 
-                // Process the data
-                processStationData(dataToProcess);
+                // Process the data by calling loadSampleData
+                // (Using existing function that handles station data)
+                loadSampleData(dataToProcess);
                 
                 // Clear the sessionStorage to prevent reprocessing on page refresh
                 sessionStorage.removeItem('formattedData');

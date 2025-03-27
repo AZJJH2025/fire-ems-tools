@@ -155,8 +155,8 @@ var populationLayer; // Population density layer
                     // Store the station data
                     stationData = dataToProcess;
                     
-                    // Process stations for display
-                    processStations(stationData);
+                    // Process stations for display - using addStationsToMap function
+                    addStationsToMap(stationData);
                     
                     showMessage(`Successfully loaded ${dataToProcess.length} stations from Data Formatter.`, "success");
                 }
@@ -947,6 +947,51 @@ var populationLayer; // Population density layer
     
     /**
      * Adds a station marker manually from form inputs
+     */
+    function addStationsToMap(stations) {
+        if (!map) {
+            console.error("Map not initialized yet");
+            showMessage("Error: Map not initialized yet. Please refresh the page.", "error");
+            return;
+        }
+        
+        console.log(`Adding ${stations.length} stations to map`);
+        
+        // Process each station
+        stations.forEach((station, index) => {
+            try {
+                // Extract station properties
+                const name = station['Station Name'] || station['Station ID'] || `Station ${index + 1}`;
+                let lat = parseFloat(station.Latitude);
+                let lng = parseFloat(station.Longitude);
+                
+                if (isNaN(lat) || isNaN(lng)) {
+                    console.warn(`Invalid coordinates for station "${name}": ${station.Latitude}, ${station.Longitude}`);
+                    return;
+                }
+                
+                // Use the existing addStationMarker function to add the station
+                addStationMarker(name, lat, lng);
+                
+            } catch (err) {
+                console.error(`Error adding station: ${err.message}`, err);
+            }
+        });
+        
+        // Fit map to station markers
+        if (stationMarkers.length > 0) {
+            const group = L.featureGroup(stationMarkers);
+            map.fitBounds(group.getBounds(), { padding: [50, 50] });
+            
+            // Update coverage calculations
+            updateCoverageCalculations();
+        }
+        
+        return stationMarkers.length;
+    }
+    
+    /**
+     * Adds a station to the map from manual entry
      */
     function addStationManually() {
         const stationName = document.getElementById('stationName').value.trim();
