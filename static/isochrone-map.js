@@ -433,8 +433,45 @@ document.addEventListener('DOMContentLoaded', function() {
             throw new Error('File contains insufficient data');
         }
         
-        // Parse header and find column indexes
-        const header = lines[0].split(',').map(h => h.trim().toLowerCase());
+        // Handle quoted values correctly
+        const parseCSVLine = (line) => {
+            const result = [];
+            let inQuote = false;
+            let currentValue = '';
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    // Toggle quote state but only add to value if inside quotes
+                    inQuote = !inQuote;
+                } else if (char === ',' && !inQuote) {
+                    // Found a delimiter outside quotes, add the value to results
+                    result.push(currentValue.trim());
+                    currentValue = '';
+                } else {
+                    // Add character to current value
+                    currentValue += char;
+                }
+            }
+            
+            // Add the last value
+            result.push(currentValue.trim());
+            
+            // Clean up quotes from values - remove any remaining quotes that might be part of values
+            return result.map(value => {
+                // Remove any surrounding quotes
+                value = value.trim();
+                if (value.startsWith('"') && value.endsWith('"')) {
+                    value = value.substring(1, value.length - 1);
+                }
+                return value;
+            });
+        };
+        
+        // Parse header
+        const header = parseCSVLine(lines[0]).map(h => h.trim().toLowerCase());
+        const numColumns = header.length;
         
         const results = [];
         
@@ -442,19 +479,41 @@ document.addEventListener('DOMContentLoaded', function() {
         for (let i = 1; i < lines.length; i++) {
             if (!lines[i].trim()) continue; // Skip empty lines
             
-            const values = lines[i].split(',').map(v => v.trim());
-            if (values.length !== header.length) {
-                console.warn(`Skipping line ${i+1}: Column count mismatch`);
-                continue;
+            try {
+                const values = parseCSVLine(lines[i]);
+                
+                // Don't skip rows with different column counts - allow partial data
+                // Instead, just map what we have and fill in what we can
+                const entry = {};
+                header.forEach((key, index) => {
+                    if (index < values.length) {
+                        entry[key] = values[index];
+                    }
+                });
+                
+                // Check if we have the required latitude and longitude fields
+                const hasLat = entry.latitude !== undefined || 
+                             entry.lat !== undefined;
+                             
+                const hasLng = entry.longitude !== undefined || 
+                             entry.lng !== undefined || 
+                             entry.long !== undefined;
+                
+                // Only add entries that have at least latitude and longitude
+                if (hasLat && hasLng) {
+                    results.push(entry);
+                } else {
+                    console.warn(`Skipping line ${i+1}: Missing required latitude/longitude`);
+                }
+            } catch (error) {
+                console.warn(`Skipping line ${i+1}: ${error.message}`);
             }
-            
-            // Create an object with the header keys and corresponding values
-            const entry = {};
-            header.forEach((key, index) => {
-                entry[key] = values[index];
-            });
-            
-            results.push(entry);
+        }
+        
+        if (results.length === 0) {
+            console.error('Could not parse any valid data from CSV');
+        } else {
+            console.log(`Successfully parsed ${results.length} valid entries from CSV`);
         }
         
         return results;
