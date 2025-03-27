@@ -621,32 +621,45 @@ document.addEventListener('DOMContentLoaded', function() {
         // Identify column names for required fields
         const possibleLatFields = ['lat', 'latitude', 'y', 'ylat', 'lat_y'];
         const possibleLngFields = ['lon', 'long', 'longitude', 'x', 'xlong', 'lng', 'long_x'];
-        const possibleTypeFields = ['type', 'incident_type', 'call_type', 'calltype', 'category'];
+        const possibleTypeFields = ['type', 'incident_type', 'incident type', 'call_type', 'calltype', 'category'];
         
         let latField = null;
         let lngField = null;
         let typeField = null;
         
         // Find the actual field names in this dataset
-        const sampleKeys = Object.keys(incidents[0]).map(k => k.toLowerCase());
+        const originalKeys = Object.keys(incidents[0]);
+        const sampleKeys = originalKeys.map(k => k.toLowerCase());
+        
+        // Debug log to see available fields
+        console.log("Incident data fields:", originalKeys);
+        
+        // Map from lowercase field name to actual case-sensitive field name
+        const fieldMap = {};
+        originalKeys.forEach(key => {
+            fieldMap[key.toLowerCase()] = key;
+        });
         
         for (const field of possibleLatFields) {
             if (sampleKeys.includes(field)) {
-                latField = field;
+                latField = fieldMap[field];
+                console.log(`Found latitude field: ${latField}`);
                 break;
             }
         }
         
         for (const field of possibleLngFields) {
             if (sampleKeys.includes(field)) {
-                lngField = field;
+                lngField = fieldMap[field];
+                console.log(`Found longitude field: ${lngField}`);
                 break;
             }
         }
         
         for (const field of possibleTypeFields) {
             if (sampleKeys.includes(field)) {
-                typeField = field;
+                typeField = fieldMap[field];
+                console.log(`Found incident type field: ${typeField}`);
                 break;
             }
         }
@@ -658,7 +671,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Process each incident
         incidents.forEach((incident, index) => {
-            const type = typeField ? incident[typeField] : 'Unknown';
+            // Get incident type with fallback for missing field
+            let type = 'Unknown';
+            if (typeField && incident[typeField]) {
+                type = incident[typeField];
+            } else if (incident['Incident Type']) {
+                type = incident['Incident Type'];
+            }
+            
             const lat = parseFloat(incident[latField]);
             const lng = parseFloat(incident[lngField]);
             
@@ -731,34 +751,101 @@ document.addEventListener('DOMContentLoaded', function() {
         incidentMarkers.forEach(marker => map.removeLayer(marker));
         incidentMarkers = [];
         
+        console.log(`Displaying ${incidentData.length} incidents on the map`);
+        
         // Add new markers
-        incidentData.forEach(incident => {
-            const marker = L.circleMarker([incident.latitude, incident.longitude], {
-                radius: 4,
-                fillColor: '#ff7800',
-                color: '#000',
-                weight: 1,
-                opacity: 0.7,
-                fillOpacity: 0.7
-            }).addTo(map);
-            
-            // Add popup with incident details
-            let popupContent = `<strong>Incident</strong><br>Type: ${incident.type}<br>Location: ${incident.latitude.toFixed(6)}, ${incident.longitude.toFixed(6)}`;
-            
-            // Add any additional fields
-            const originalData = incident.originalData;
-            if (originalData) {
-                Object.entries(originalData)
-                    .filter(([key]) => !['latitude', 'longitude', 'lat', 'lng', 'type'].includes(key.toLowerCase()))
-                    .slice(0, 5) // Limit to 5 additional fields
-                    .forEach(([key, value]) => {
-                        popupContent += `<br>${key}: ${value}`;
+        incidentData.forEach((incident, index) => {
+            try {
+                // Log first few incidents for debugging
+                if (index < 3) {
+                    console.log(`Incident ${index} data:`, incident);
+                }
+                
+                // Apply color based on incident type
+                let fillColor = '#ff7800'; // Default orange
+                
+                // Adjust color based on incident type
+                if (incident.type && typeof incident.type === 'string') {
+                    const lowerType = incident.type.toLowerCase();
+                    if (lowerType.includes('fire')) {
+                        fillColor = '#ff3300'; // Red for fires
+                    } else if (lowerType.includes('medical')) {
+                        fillColor = '#33cc33'; // Green for medical
+                    } else if (lowerType.includes('traffic') || lowerType.includes('collision')) {
+                        fillColor = '#3366ff'; // Blue for traffic incidents
+                    } else if (lowerType.includes('hazard') || lowerType.includes('gas')) {
+                        fillColor = '#ffcc00'; // Yellow for hazardous materials
+                    }
+                }
+                
+                const marker = L.circleMarker([incident.latitude, incident.longitude], {
+                    radius: 5,
+                    fillColor: fillColor,
+                    color: '#000',
+                    weight: 1,
+                    opacity: 0.8,
+                    fillOpacity: 0.8
+                }).addTo(map);
+                
+                // Add popup with incident details
+                let popupContent = `<strong>Incident</strong><br>Type: ${incident.type}<br>Location: ${incident.latitude.toFixed(6)}, ${incident.longitude.toFixed(6)}`;
+                
+                // Add any additional fields
+                const originalData = incident.originalData;
+                if (originalData) {
+                    // Add the most important fields first
+                    const priorityFields = ['Incident ID', 'Incident Date', 'Incident Time', 'Priority', 'Responding Station'];
+                    
+                    priorityFields.forEach(field => {
+                        if (originalData[field]) {
+                            popupContent += `<br>${field}: ${originalData[field]}`;
+                        }
                     });
+                    
+                    // Add other fields that aren't coordinates or already shown
+                    Object.entries(originalData)
+                        .filter(([key]) => {
+                            const lowerKey = key.toLowerCase();
+                            return !['latitude', 'longitude', 'lat', 'lng', 'type', 'incident type'].includes(lowerKey) && 
+                                  !priorityFields.includes(key);
+                        })
+                        .slice(0, 3) // Limit to 3 additional fields
+                        .forEach(([key, value]) => {
+                            popupContent += `<br>${key}: ${value}`;
+                        });
+                }
+                
+                marker.bindPopup(popupContent);
+                incidentMarkers.push(marker);
+            } catch (error) {
+                console.error(`Error creating marker for incident ${index}:`, error);
+            }
+        });
+        
+        // If we have incidents, fit the map to show them
+        if (incidentMarkers.length > 0) {
+            // Create bounds that include both stations and incidents
+            const bounds = L.latLngBounds([]);
+            
+            // Add station markers to bounds
+            stationMarkers.forEach(marker => {
+                bounds.extend(marker.getLatLng());
+            });
+            
+            // Add incident markers to bounds
+            incidentMarkers.forEach(marker => {
+                bounds.extend(marker.getLatLng());
+            });
+            
+            // Fit map to bounds if we have any points
+            if (bounds.isValid()) {
+                map.fitBounds(bounds, { padding: [50, 50] });
             }
             
-            marker.bindPopup(popupContent);
-            incidentMarkers.push(marker);
-        });
+            console.log(`Successfully displayed ${incidentMarkers.length} incident markers on the map`);
+        } else {
+            console.warn('No valid incidents to display on the map');
+        }
     }
     
     // Display heatmap of incidents
@@ -766,22 +853,70 @@ document.addEventListener('DOMContentLoaded', function() {
         // Clear existing heatmap
         if (incidentHeatmap) {
             map.removeLayer(incidentHeatmap);
+            incidentHeatmap = null;
         }
+        
+        console.log(`Generating heatmap for ${incidentData.length} incidents`);
         
         // Create heatmap if we have the Leaflet.heat plugin
         if (typeof L.heatLayer === 'function') {
-            const heatData = incidentData.map(incident => [
-                incident.latitude,
-                incident.longitude,
-                1 // Intensity
-            ]);
-            
-            incidentHeatmap = L.heatLayer(heatData, {
-                radius: 25,
-                blur: 15,
-                maxZoom: 17,
-                gradient: { 0.4: 'blue', 0.65: 'lime', 1: 'red' }
-            }).addTo(map);
+            try {
+                // Assign intensity based on incident type for a more useful heatmap
+                const heatData = incidentData.map(incident => {
+                    // Base intensity
+                    let intensity = 1;
+                    
+                    // Adjust intensity based on incident type if available
+                    if (incident.type && typeof incident.type === 'string') {
+                        const lowerType = incident.type.toLowerCase();
+                        if (lowerType.includes('fire')) {
+                            intensity = 1.5; // Higher intensity for fires
+                        } else if (lowerType.includes('medical') && lowerType.includes('emergency')) {
+                            intensity = 1.2; // Higher for medical emergencies
+                        } else if (lowerType.includes('hazard') || lowerType.includes('gas')) {
+                            intensity = 1.3; // Higher for hazardous situations
+                        }
+                    }
+                    
+                    // Priority from original data (if available)
+                    if (incident.originalData && incident.originalData.Priority) {
+                        const priority = incident.originalData.Priority.toLowerCase();
+                        if (priority.includes('high')) {
+                            intensity *= 1.3; // Boost for high priority calls
+                        } else if (priority.includes('low')) {
+                            intensity *= 0.7; // Reduce for low priority calls
+                        }
+                    }
+                    
+                    return [
+                        incident.latitude,
+                        incident.longitude,
+                        intensity
+                    ];
+                });
+                
+                // Create the heatmap layer with more refined settings
+                incidentHeatmap = L.heatLayer(heatData, {
+                    radius: 20,       // Radius of each point in the heatmap
+                    blur: 12,         // Amount of blur
+                    maxZoom: 17,      // Max zoom level for heatmap
+                    max: 2.0,         // Maximum intensity value
+                    // Color gradient: blue (low) to red (high) through green/yellow
+                    gradient: { 
+                        0.2: '#0000ff',  // Blue for low density
+                        0.4: '#00ffff',  // Cyan
+                        0.6: '#00ff00',  // Green
+                        0.8: '#ffff00',  // Yellow
+                        1.0: '#ff0000'   // Red for high density
+                    }
+                }).addTo(map);
+                
+                console.log('Heatmap successfully created and added to map');
+                
+            } catch (error) {
+                console.error('Error creating incident heatmap:', error);
+                showMessage('Error creating heatmap: ' + error.message, 'error');
+            }
         } else {
             console.warn('Leaflet.heat plugin not available. Heatmap cannot be displayed.');
             showMessage('Heatmap feature requires the Leaflet.heat plugin which is not loaded.', 'error');
