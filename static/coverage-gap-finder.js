@@ -29,6 +29,152 @@ var populationLayer; // Population density layer
     const avgResponseTimeElement = document.getElementById('avgResponseTime');
     const stationTableBody = document.querySelector('#stationTable tbody');
     
+    // Function to display messages to the user
+    function showMessage(message, type = 'info') {
+        // Create message container if it doesn't exist
+        let messageContainer = document.getElementById('message-container');
+        if (!messageContainer) {
+            messageContainer = document.createElement('div');
+            messageContainer.id = 'message-container';
+            messageContainer.style.position = 'fixed';
+            messageContainer.style.top = '20px';
+            messageContainer.style.right = '20px';
+            messageContainer.style.zIndex = '9999';
+            messageContainer.style.maxWidth = '400px';
+            document.body.appendChild(messageContainer);
+        }
+        
+        // Create message element
+        const messageElement = document.createElement('div');
+        messageElement.style.margin = '10px';
+        messageElement.style.padding = '15px';
+        messageElement.style.borderRadius = '5px';
+        messageElement.style.boxShadow = '0 3px 6px rgba(0,0,0,0.16)';
+        messageElement.style.position = 'relative';
+        messageElement.style.paddingRight = '30px';
+        
+        // Set styles based on message type
+        if (type === 'success') {
+            messageElement.style.backgroundColor = '#d4edda';
+            messageElement.style.color = '#155724';
+            messageElement.style.borderLeft = '5px solid #28a745';
+        } else if (type === 'error') {
+            messageElement.style.backgroundColor = '#f8d7da';
+            messageElement.style.color = '#721c24';
+            messageElement.style.borderLeft = '5px solid #dc3545';
+        } else {
+            messageElement.style.backgroundColor = '#cce5ff';
+            messageElement.style.color = '#004085';
+            messageElement.style.borderLeft = '5px solid #007bff';
+        }
+        
+        // Add message content
+        messageElement.innerHTML = message;
+        
+        // Add close button
+        const closeButton = document.createElement('button');
+        closeButton.innerHTML = '&times;';
+        closeButton.style.position = 'absolute';
+        closeButton.style.top = '5px';
+        closeButton.style.right = '5px';
+        closeButton.style.backgroundColor = 'transparent';
+        closeButton.style.border = 'none';
+        closeButton.style.fontSize = '20px';
+        closeButton.style.fontWeight = 'bold';
+        closeButton.style.cursor = 'pointer';
+        closeButton.style.color = 'inherit';
+        closeButton.onclick = function() {
+            messageElement.remove();
+        };
+        
+        messageElement.appendChild(closeButton);
+        messageContainer.appendChild(messageElement);
+        
+        // Auto-remove after 10 seconds for non-error messages
+        if (type !== 'error') {
+            setTimeout(() => {
+                if (messageElement.parentNode) {
+                    messageElement.remove();
+                }
+            }, 10000);
+        }
+    }
+    
+    // Check for data from the Data Formatter
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("Checking for Data Formatter data in Coverage Gap Finder");
+        const formattedData = sessionStorage.getItem('formattedData');
+        const dataSource = sessionStorage.getItem('dataSource');
+        const formatterToolId = sessionStorage.getItem('formatterToolId');
+        const formatterTarget = sessionStorage.getItem('formatterTarget');
+        
+        console.log("SessionStorage state:", {
+            dataSource,
+            formatterToolId,
+            formatterTarget
+        });
+        
+        // Check if the data is intended for this tool
+        const isTargetTool = 
+            formatterToolId === 'coverage-gap' || 
+            formatterTarget === 'coverage-gap';
+        
+        if (formattedData && dataSource === 'formatter' && isTargetTool) {
+            console.log("📦 Data received from Data Formatter tool");
+            try {
+                // Parse the data
+                const parsedData = JSON.parse(formattedData);
+                
+                // Check if data is in the expected format
+                let dataToProcess;
+                if (parsedData.data && Array.isArray(parsedData.data)) {
+                    dataToProcess = parsedData.data;
+                    console.log(`Processing ${dataToProcess.length} records from Data Formatter`);
+                } else if (Array.isArray(parsedData)) {
+                    dataToProcess = parsedData;
+                    console.log(`Processing ${dataToProcess.length} records from Data Formatter`);
+                } else {
+                    console.error("Unexpected data format from Data Formatter");
+                    showMessage("The received data format is not supported.", "error");
+                    return;
+                }
+                
+                // Validate required fields for stations
+                const requiredFields = ['Station ID', 'Station Name', 'Latitude', 'Longitude', 'Coverage Area'];
+                const missingFields = requiredFields.filter(field => 
+                    !dataToProcess.some(record => record[field] !== undefined)
+                );
+                
+                if (missingFields.length > 0) {
+                    console.warn(`Data is missing required fields: ${missingFields.join(', ')}`);
+                    showMessage(`Warning: Data is missing required fields: ${missingFields.join(', ')}. Some features may not work correctly.`, "error");
+                }
+                
+                // Process the stations
+                if (dataToProcess.length > 0) {
+                    // Store the station data
+                    stationData = dataToProcess;
+                    
+                    // Process stations for display
+                    processStations(stationData);
+                    
+                    showMessage(`Successfully loaded ${dataToProcess.length} stations from Data Formatter.`, "success");
+                }
+                
+                // Clear the sessionStorage to prevent reprocessing on page refresh
+                sessionStorage.removeItem('formattedData');
+                sessionStorage.removeItem('dataSource');
+                sessionStorage.removeItem('formatterToolId');
+                sessionStorage.removeItem('formatterTarget');
+                sessionStorage.removeItem('formatterTimestamp');
+                
+            } catch (error) {
+                console.error("Error processing data from Data Formatter:", error);
+                showMessage(`Error processing data: ${error.message}`, "error");
+            }
+        }
+    });
+    
     // Constants for calculations
     const METERS_PER_MILE = 1609.34;
     const DEFAULT_STATION_COLOR = '#0000FF'; // Blue

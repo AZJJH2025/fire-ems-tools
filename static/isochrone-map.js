@@ -1,6 +1,157 @@
 // Isochrone Map Generator for FireEMS.ai
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Isochrone Map Generator initialized');
+    
+    // Show info/success messages to the user
+    function showMessage(message, type = 'info') {
+        const alertBox = document.createElement('div');
+        alertBox.className = 'alert-box';
+        alertBox.style.position = 'fixed';
+        alertBox.style.top = '20px';
+        alertBox.style.right = '20px';
+        alertBox.style.zIndex = '1000';
+        alertBox.style.padding = '15px';
+        alertBox.style.borderRadius = '5px';
+        alertBox.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+        alertBox.style.maxWidth = '400px';
+        
+        // Set styles based on message type
+        if (type === 'success') {
+            alertBox.style.backgroundColor = '#d4edda';
+            alertBox.style.color = '#155724';
+            alertBox.style.borderLeft = '4px solid #28a745';
+        } else if (type === 'error') {
+            alertBox.style.backgroundColor = '#f8d7da';
+            alertBox.style.color = '#721c24';
+            alertBox.style.borderLeft = '4px solid #dc3545';
+        } else {
+            alertBox.style.backgroundColor = '#cce5ff';
+            alertBox.style.color = '#004085';
+            alertBox.style.borderLeft = '4px solid #007bff';
+        }
+        
+        // Add close button
+        const closeBtn = document.createElement('button');
+        closeBtn.innerHTML = '&times;';
+        closeBtn.style.position = 'absolute';
+        closeBtn.style.right = '10px';
+        closeBtn.style.top = '10px';
+        closeBtn.style.background = 'none';
+        closeBtn.style.border = 'none';
+        closeBtn.style.fontSize = '18px';
+        closeBtn.style.cursor = 'pointer';
+        closeBtn.style.color = 'inherit';
+        closeBtn.addEventListener('click', () => alertBox.remove());
+        
+        // Set message
+        const messageText = document.createElement('div');
+        messageText.innerHTML = message;
+        
+        // Add elements to the alert box
+        alertBox.appendChild(closeBtn);
+        alertBox.appendChild(messageText);
+        
+        // Add to the document
+        document.body.appendChild(alertBox);
+        
+        // Auto remove after 10 seconds
+        setTimeout(() => {
+            if (document.body.contains(alertBox)) {
+                alertBox.remove();
+            }
+        }, 10000);
+    }
+    
+    // Check if there's data in sessionStorage from the Data Formatter
+    console.log("Checking for Data Formatter data in Isochrone Map Generator");
+    const formattedData = sessionStorage.getItem('formattedData');
+    const dataSource = sessionStorage.getItem('dataSource');
+    const formatterToolId = sessionStorage.getItem('formatterToolId');
+    const formatterTarget = sessionStorage.getItem('formatterTarget');
+    
+    console.log("SessionStorage state:", {
+        dataSource,
+        formatterToolId,
+        formatterTarget
+    });
+    
+    // Check if the data is intended for this tool
+    const isTargetTool = 
+        formatterToolId === 'isochrone' || 
+        formatterTarget === 'isochrone';
+    
+    if (formattedData && dataSource === 'formatter' && isTargetTool) {
+        console.log("📦 Data received from Data Formatter tool");
+        try {
+            // Parse the data
+            const parsedData = JSON.parse(formattedData);
+            
+            // Check if data is in the expected format
+            let dataToProcess;
+            if (parsedData.data && Array.isArray(parsedData.data)) {
+                dataToProcess = parsedData.data;
+                console.log(`Processing ${dataToProcess.length} records from Data Formatter`);
+            } else if (Array.isArray(parsedData)) {
+                dataToProcess = parsedData;
+                console.log(`Processing ${dataToProcess.length} records from Data Formatter`);
+            } else {
+                console.error("Unexpected data format from Data Formatter");
+                showMessage("Error: The received data is not in the expected format.", "error");
+                return;
+            }
+            
+            // Validate required fields for isochrone calculation
+            const requiredFields = ['Station ID', 'Station Name', 'Latitude', 'Longitude'];
+            const missingFields = requiredFields.filter(field => 
+                !dataToProcess.some(record => record[field] !== undefined)
+            );
+            
+            if (missingFields.length > 0) {
+                console.warn(`Data is missing required fields: ${missingFields.join(', ')}`);
+                showMessage(`Warning: Data is missing required fields: ${missingFields.join(', ')}. Some features may not work correctly.`, "error");
+            }
+            
+            // Process the station data
+            if (dataToProcess.length > 0) {
+                console.log("First station record:", dataToProcess[0]);
+                
+                // If we have valid stations, populate them on the map
+                dataToProcess.forEach(station => {
+                    if (station.Latitude && station.Longitude) {
+                        const stationName = station['Station Name'] || station['Station ID'] || 'Unknown Station';
+                        
+                        // Create a marker for the station
+                        const marker = L.marker([station.Latitude, station.Longitude])
+                            .addTo(map)
+                            .bindPopup(`<b>${stationName}</b><br>ID: ${station['Station ID'] || 'N/A'}`);
+                            
+                        // If you have functions to calculate isochrones, call them here
+                        // Example: calculateIsochroneForStation(station);
+                    }
+                });
+                
+                // Fit the map to the loaded stations if any had valid coordinates
+                const validStations = dataToProcess.filter(s => s.Latitude && s.Longitude);
+                if (validStations.length > 0) {
+                    const bounds = L.latLngBounds(validStations.map(s => [s.Latitude, s.Longitude]));
+                    map.fitBounds(bounds, { padding: [50, 50] });
+                }
+                
+                showMessage(`Successfully processed ${dataToProcess.length} stations from Data Formatter`, "success");
+            }
+            
+            // Clear the sessionStorage to prevent reprocessing on page refresh
+            sessionStorage.removeItem('formattedData');
+            sessionStorage.removeItem('dataSource');
+            sessionStorage.removeItem('formatterToolId');
+            sessionStorage.removeItem('formatterTarget');
+            sessionStorage.removeItem('formatterTimestamp');
+            
+        } catch (error) {
+            console.error("Error processing data from Data Formatter:", error);
+            showMessage(`Error processing data: ${error.message}`, "error");
+        }
+    }
 
     // -------------------------------------------------------------------------
     // State Center Coordinates and Map Initialization

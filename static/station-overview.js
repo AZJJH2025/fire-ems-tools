@@ -38,6 +38,91 @@
     /**
      * Initialize the dashboard once the DOM is loaded
      */
+    /**
+     * Show info/success message to the user
+     * @param {string} message - Message to display
+     * @param {string} type - Message type (info, success, warning)
+     */
+    function showInfoMessage(message, type = 'info') {
+        const messageContainer = document.getElementById('messageContainer') || 
+            createMessageContainer();
+        
+        const messageElement = document.createElement('div');
+        messageElement.className = `alert alert-${type}`;
+        messageElement.style.padding = '15px';
+        messageElement.style.marginBottom = '10px';
+        messageElement.style.borderRadius = '4px';
+        messageElement.style.position = 'relative';
+        
+        // Set background color based on type
+        if (type === 'success') {
+            messageElement.style.backgroundColor = '#d4edda';
+            messageElement.style.color = '#155724';
+            messageElement.style.border = '1px solid #c3e6cb';
+        } else if (type === 'danger') {
+            messageElement.style.backgroundColor = '#f8d7da';
+            messageElement.style.color = '#721c24';
+            messageElement.style.border = '1px solid #f5c6cb';
+        } else {
+            messageElement.style.backgroundColor = '#cce5ff';
+            messageElement.style.color = '#004085';
+            messageElement.style.border = '1px solid #b8daff';
+        }
+        
+        messageElement.innerHTML = message;
+        
+        // Add close button
+        const closeButton = document.createElement('button');
+        closeButton.type = 'button';
+        closeButton.style.position = 'absolute';
+        closeButton.style.top = '5px';
+        closeButton.style.right = '10px';
+        closeButton.style.cursor = 'pointer';
+        closeButton.style.background = 'transparent';
+        closeButton.style.border = 'none';
+        closeButton.style.fontSize = '20px';
+        closeButton.innerHTML = '&times;';
+        closeButton.addEventListener('click', function() {
+            messageElement.remove();
+        });
+        
+        messageElement.prepend(closeButton);
+        messageContainer.appendChild(messageElement);
+        
+        // Auto-remove after 10 seconds if it's not an error
+        if (type !== 'danger') {
+            setTimeout(() => {
+                if (messageElement.parentNode) {
+                    messageElement.remove();
+                }
+            }, 10000);
+        }
+    }
+    
+    /**
+     * Show error message to the user
+     * @param {string} message - Error message to display
+     */
+    function showErrorMessage(message) {
+        showInfoMessage(message, 'danger');
+    }
+    
+    /**
+     * Create a message container if it doesn't exist
+     * @returns {HTMLElement} The message container
+     */
+    function createMessageContainer() {
+        const container = document.createElement('div');
+        container.id = 'messageContainer';
+        container.style.position = 'fixed';
+        container.style.top = '20px';
+        container.style.right = '20px';
+        container.style.zIndex = '1000';
+        container.style.maxWidth = '400px';
+        document.body.appendChild(container);
+        return container;
+    }
+    
     document.addEventListener('DOMContentLoaded', function() {
         console.log("Station Overview initialized");
         
@@ -48,6 +133,78 @@
         document.getElementById('uploadBtn').addEventListener('click', handleFileUpload);
         document.getElementById('applyFilters').addEventListener('click', applyFilters);
         document.getElementById('resetFilters').addEventListener('click', resetFilters);
+
+        // Check if there's data in sessionStorage from the Data Formatter
+        console.log("Checking for Data Formatter data in Station Overview tool");
+        const formattedData = sessionStorage.getItem('formattedData');
+        const dataSource = sessionStorage.getItem('dataSource');
+        const formatterToolId = sessionStorage.getItem('formatterToolId');
+        const formatterTarget = sessionStorage.getItem('formatterTarget');
+        
+        console.log("SessionStorage state:", {
+            dataSource,
+            formatterToolId,
+            formatterTarget
+        });
+        
+        // Check if the data is intended for this tool
+        const isTargetTool = 
+            formatterToolId === 'station-overview' || 
+            formatterTarget === 'station-overview';
+        
+        if (formattedData && dataSource === 'formatter' && isTargetTool) {
+            console.log("📦 Data received from Data Formatter tool");
+            try {
+                // Parse the data
+                const parsedData = JSON.parse(formattedData);
+                
+                // Check if data is in the expected format
+                let dataToProcess;
+                if (parsedData.data && Array.isArray(parsedData.data)) {
+                    dataToProcess = parsedData.data;
+                    console.log(`Processing ${dataToProcess.length} records from Data Formatter`);
+                } else if (Array.isArray(parsedData)) {
+                    dataToProcess = parsedData;
+                    console.log(`Processing ${dataToProcess.length} records from Data Formatter`);
+                } else {
+                    console.error("Unexpected data format from Data Formatter");
+                    showErrorMessage("Data format error: The received data is not in the expected format.");
+                    return;
+                }
+                
+                // Add source indication
+                dataToProcess.forEach(record => {
+                    record._source = 'formatter'; // Add metadata to track source
+                });
+                
+                // Process the data
+                processStationData(dataToProcess);
+                
+                // Clear the sessionStorage to prevent reprocessing on page refresh
+                sessionStorage.removeItem('formattedData');
+                sessionStorage.removeItem('dataSource');
+                sessionStorage.removeItem('formatterToolId');
+                sessionStorage.removeItem('formatterTarget');
+                sessionStorage.removeItem('formatterTimestamp');
+                
+                // Hide the upload section
+                document.querySelector('.file-upload-container').style.display = 'none';
+                
+                // Show success message
+                showInfoMessage(`
+                    <strong>📊 Data successfully received from Data Formatter tool</strong><br>
+                    ${dataToProcess.length} station records loaded.
+                `, 'success');
+                
+            } catch (error) {
+                console.error("Error processing data from Data Formatter:", error);
+                showErrorMessage(`
+                    <strong>⚠️ Error processing data from Data Formatter</strong><br>
+                    ${error.message}<br>
+                    Please try again or upload a file directly.
+                `);
+            }
+        }
         document.getElementById('stationSelect').addEventListener('change', function() {
             currentFilters.station = this.value;
         });
