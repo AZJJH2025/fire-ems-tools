@@ -612,11 +612,37 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
         
-        // Simulate processing time
+        // Create a safe copy of the original data to prevent mutation issues
+        let dataCopy;
+        try {
+            dataCopy = JSON.parse(JSON.stringify(originalData));
+        } catch (error) {
+            appendLog(`Error creating data copy: ${error.message}. Using original data.`, 'warning');
+            dataCopy = originalData;
+        }
+        
+        // Add a small processing delay to allow UI updates
         setTimeout(() => {
             try {
-                // Perform the actual transformation
-                transformedData = performToolSpecificTransformation(originalData, selectedTool);
+                // First, validate the data
+                if (!Array.isArray(dataCopy)) {
+                    throw new Error('Data must be an array of records');
+                }
+                
+                if (dataCopy.length === 0) {
+                    throw new Error('No data records to process');
+                }
+                
+                // Log data structure for debugging
+                appendLog(`Processing ${dataCopy.length} records with ${Object.keys(dataCopy[0]).length} fields`);
+                
+                // Perform the actual transformation with enhanced error handling
+                transformedData = performToolSpecificTransformation(dataCopy, selectedTool);
+                
+                // Verify the transformation result
+                if (!transformedData || !Array.isArray(transformedData)) {
+                    throw new Error('Transformation did not produce valid data');
+                }
                 
                 // Display the transformed data
                 displayOutputPreview(transformedData);
@@ -628,19 +654,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 appendLog(`Transformation complete: ${transformedData.length} records processed`, 'success');
                 
                 // Add transformation stats
-                appendTransformationStats(originalData, transformedData);
+                appendTransformationStats(dataCopy, transformedData);
             } catch (error) {
                 appendLog(`Error during transformation: ${error.message}`, 'error');
                 console.error('Transformation error:', error);
+                
+                // Display detailed error information for troubleshooting
+                let errorInfo = error.stack ? error.stack.split('\n')[0] : error.message;
                 
                 outputPreview.innerHTML = `
                     <div class="placeholder-message">
                         <i class="fas fa-exclamation-triangle" style="color: #d32f2f;"></i>
                         <p>Error during transformation</p>
+                        <div style="margin-top: 10px; font-size: 0.8rem; color: #777; text-align: left;">
+                            <code>${errorInfo}</code>
+                            <p style="margin-top: 10px;">Possible solutions:</p>
+                            <ul style="text-align: left;">
+                                <li>Check your data format and structure</li>
+                                <li>Try selecting a different input format</li>
+                                <li>Use the "Remove duplicates" option if your data contains duplicates</li>
+                                <li>For coordinate data issues, ensure your latitude and longitude are in decimal format</li>
+                            </ul>
+                        </div>
                     </div>
                 `;
             }
-        }, 1500); // Simulate processing delay
+        }, 500);
     }
     
     // Perform tool-specific data transformation
@@ -769,42 +808,86 @@ document.addEventListener('DOMContentLoaded', function() {
     // Standardize data formats based on field types
     function standardizeFormats(data, requirements) {
         return data.map(item => {
-            const newItem = {...item};
-            
-            // Format date fields
-            if (requirements.dateFields) {
-                requirements.dateFields.forEach(field => {
-                    if (newItem[field]) {
-                        newItem[field] = standardizeDate(newItem[field]);
-                    }
-                });
+            try {
+                const newItem = {...item};
+                
+                // Format date fields
+                if (requirements.dateFields) {
+                    requirements.dateFields.forEach(field => {
+                        try {
+                            if (newItem[field] !== undefined && newItem[field] !== null && newItem[field] !== '') {
+                                newItem[field] = standardizeDate(newItem[field]);
+                            }
+                        } catch (err) {
+                            console.warn(`Error standardizing date field '${field}':`, err);
+                        }
+                    });
+                }
+                
+                // Format time fields
+                if (requirements.timeFields) {
+                    requirements.timeFields.forEach(field => {
+                        try {
+                            if (newItem[field] !== undefined && newItem[field] !== null && newItem[field] !== '') {
+                                newItem[field] = standardizeTime(newItem[field]);
+                            }
+                        } catch (err) {
+                            console.warn(`Error standardizing time field '${field}':`, err);
+                        }
+                    });
+                }
+                
+                // Format coordinate fields
+                if (requirements.coordinateFields) {
+                    requirements.coordinateFields.forEach(field => {
+                        try {
+                            if (newItem[field] !== undefined && newItem[field] !== null && newItem[field] !== '') {
+                                newItem[field] = standardizeCoordinate(newItem[field]);
+                            }
+                        } catch (err) {
+                            console.warn(`Error standardizing coordinate field '${field}':`, err);
+                        }
+                    });
+                }
+                
+                return newItem;
+            } catch (error) {
+                console.error("Error in standardization, returning original item:", error);
+                return item; // Return original item if standardization fails
             }
-            
-            // Format time fields
-            if (requirements.timeFields) {
-                requirements.timeFields.forEach(field => {
-                    if (newItem[field]) {
-                        newItem[field] = standardizeTime(newItem[field]);
-                    }
-                });
-            }
-            
-            // Format coordinate fields
-            if (requirements.coordinateFields) {
-                requirements.coordinateFields.forEach(field => {
-                    if (newItem[field]) {
-                        newItem[field] = standardizeCoordinate(newItem[field]);
-                    }
-                });
-            }
-            
-            return newItem;
         });
     }
     
     // Standardize date format (to YYYY-MM-DD)
-    function standardizeDate(dateStr) {
-        // Try to parse the date
+    function standardizeDate(dateValue) {
+        // If it's already a Date object
+        if (dateValue instanceof Date) {
+            return dateValue.toISOString().split('T')[0]; // YYYY-MM-DD
+        }
+        
+        // If it's a number (timestamp), convert to date
+        if (typeof dateValue === 'number') {
+            return new Date(dateValue).toISOString().split('T')[0];
+        }
+        
+        // If it's not a string, return as is
+        if (typeof dateValue !== 'string') {
+            return dateValue;
+        }
+        
+        const dateStr = dateValue.trim();
+        
+        // Try to use the browser's built-in date parsing first for common formats
+        try {
+            const parsedDate = new Date(dateStr);
+            if (!isNaN(parsedDate) && parsedDate.getFullYear() > 1900) {
+                return parsedDate.toISOString().split('T')[0];
+            }
+        } catch (e) {
+            // Continue with our manual parsing if built-in parsing fails
+        }
+        
+        // Define common date formats
         const formats = [
             // MM/DD/YYYY
             {
@@ -813,6 +896,16 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             // DD/MM/YYYY
             {
+                regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/,
+                format: (match) => `${match[3]}-${match[2].padStart(2, '0')}-${match[1].padStart(2, '0')}`
+            },
+            // MM-DD-YYYY
+            {
+                regex: /^(\d{1,2})-(\d{1,2})-(\d{4})$/,
+                format: (match) => `${match[3]}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`
+            },
+            // DD-MM-YYYY
+            {
                 regex: /^(\d{1,2})-(\d{1,2})-(\d{4})$/,
                 format: (match) => `${match[3]}-${match[2].padStart(2, '0')}-${match[1].padStart(2, '0')}`
             },
@@ -820,6 +913,34 @@ document.addEventListener('DOMContentLoaded', function() {
             {
                 regex: /^(\d{4})-(\d{1,2})-(\d{1,2})$/,
                 format: (match) => `${match[1]}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`
+            },
+            // YYYY/MM/DD
+            {
+                regex: /^(\d{4})\/(\d{1,2})\/(\d{1,2})$/,
+                format: (match) => `${match[1]}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`
+            },
+            // MM.DD.YYYY
+            {
+                regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/,
+                format: (match) => `${match[3]}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`
+            },
+            // YYYY.MM.DD
+            {
+                regex: /^(\d{4})\.(\d{1,2})\.(\d{1,2})$/,
+                format: (match) => `${match[1]}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`
+            },
+            // Month DD, YYYY (e.g., "January 1, 2023")
+            {
+                regex: /^([a-zA-Z]+)\s+(\d{1,2}),?\s+(\d{4})$/,
+                format: (match) => {
+                    const months = {
+                        january: '01', february: '02', march: '03', april: '04',
+                        may: '05', june: '06', july: '07', august: '08',
+                        september: '09', october: '10', november: '11', december: '12'
+                    };
+                    const month = months[match[1].toLowerCase()];
+                    return month ? `${match[3]}-${month}-${match[2].padStart(2, '0')}` : dateStr;
+                }
             }
         ];
         
@@ -827,11 +948,20 @@ document.addEventListener('DOMContentLoaded', function() {
         for (const format of formats) {
             const match = dateStr.match(format.regex);
             if (match) {
-                return format.format(match);
+                try {
+                    const formatted = format.format(match);
+                    // Verify it's a valid date by parsing it
+                    const testDate = new Date(formatted);
+                    if (!isNaN(testDate) && testDate.getFullYear() > 1900) {
+                        return formatted;
+                    }
+                } catch (e) {
+                    // Continue to next format if this fails
+                }
             }
         }
         
-        // If no format matched, return original
+        // If all else fails, return original
         return dateStr;
     }
     
@@ -869,18 +999,36 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Standardize coordinate format (decimal degrees, 6 decimal places)
-    function standardizeCoordinate(coordStr) {
-        // Remove any non-numeric characters except decimal point and minus sign
-        const cleanStr = coordStr.replace(/[^\d.-]/g, '');
-        
-        // Try to parse as float
-        const coord = parseFloat(cleanStr);
-        if (isNaN(coord)) {
-            return coordStr;
+    function standardizeCoordinate(coordValue) {
+        // Handle case where coordinate is already a number
+        if (typeof coordValue === 'number') {
+            // Format to 6 decimal places
+            return coordValue.toFixed(6);
         }
         
-        // Format to 6 decimal places
-        return coord.toFixed(6);
+        // If it's not a string or number, return as is
+        if (typeof coordValue !== 'string') {
+            return coordValue;
+        }
+        
+        // For strings, clean up first
+        try {
+            // Remove any non-numeric characters except decimal point and minus sign
+            const cleanStr = coordValue.replace(/[^\d.-]/g, '');
+            
+            // Try to parse as float
+            const coord = parseFloat(cleanStr);
+            if (isNaN(coord)) {
+                return coordValue;
+            }
+            
+            // Format to 6 decimal places
+            return coord.toFixed(6);
+        } catch (e) {
+            // If any error occurs during processing, return the original value
+            console.warn('Error standardizing coordinate:', e);
+            return coordValue;
+        }
     }
     
     // Handle missing values based on strategy
