@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
         sessionStorage.removeItem('formatterTarget');
         sessionStorage.removeItem('formatterTimestamp');
     });
+    
     // Check if there's data in sessionStorage from the Data Formatter
     console.log("Checking for formatter data in Response Time Analyzer");
     const formattedData = sessionStorage.getItem('formattedData');
@@ -25,8 +26,16 @@ document.addEventListener('DOMContentLoaded', function() {
         formatterTarget
     });
     
-    if (formattedData && dataSource === 'formatter' && 
-        (formatterToolId === 'response-time' || formatterTarget === 'response-time' || !formatterToolId)) {
+    // Check multiple possible matches to ensure compatibility with different naming conventions
+    const isResponseTool = 
+        formatterToolId === 'response-time' || 
+        formatterToolId === 'response_time' || 
+        formatterTarget === 'response-time' || 
+        formatterTarget === 'response_time' || 
+        formatterToolId === 'fire-ems-dashboard' || 
+        formatterTarget === 'fire-ems-dashboard';
+    
+    if (formattedData && dataSource === 'formatter' && (isResponseTool || !formatterToolId)) {
         console.log("📦 Data received from Data Formatter tool");
         try {
             // Parse the data
@@ -45,8 +54,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
+            // Validate that the data includes required fields for Response Time Analyzer
+            const requiredFields = ['Unit', 'Reported', 'Unit Dispatched', 'Unit Onscene', 'Latitude', 'Longitude'];
+            const missingFields = requiredFields.filter(field => 
+                !dataToProcess.some(record => record[field] !== undefined)
+            );
+            
+            if (missingFields.length > 0) {
+                console.warn(`Data is missing required fields: ${missingFields.join(', ')}`);
+                console.warn("Will attempt to process anyway, but some visualizations may not work correctly");
+            }
+            
+            // Add source indication
+            dataToProcess.forEach(record => {
+                record._source = 'formatter'; // Add metadata to track source
+            });
+            
             // Process the data (bypass file upload)
-            processData({ data: dataToProcess });
+            processData({ 
+                data: dataToProcess,
+                filename: 'formatter-data.json',
+                rows: dataToProcess.length,
+                first_reported_date: getFirstReportedDate(dataToProcess),
+                columns: getDataColumns(dataToProcess)
+            });
             
             // Clear the sessionStorage to prevent reprocessing on page refresh
             sessionStorage.removeItem('formattedData');
@@ -58,13 +89,79 @@ document.addEventListener('DOMContentLoaded', function() {
             // Hide the file upload section since we already have data
             document.querySelector('.file-upload-container').style.display = 'none';
             document.getElementById('result').innerHTML = 
-                '<div class="notice"><strong>Data received from Data Formatter tool.</strong><br>' +
-                'File upload has been bypassed. Refresh the page if you want to upload a new file.</div>';
+                '<div class="notice" style="background-color: #e3f2fd; padding: 15px; border-radius: 4px; margin-bottom: 20px;">' +
+                '<strong>📊 Data successfully received from Data Formatter tool</strong><br>' +
+                `${dataToProcess.length} records loaded. File upload has been bypassed.<br>` +
+                '<small>Refresh the page if you want to upload a new file.</small></div>';
         } catch (error) {
             console.error("Error processing data from Data Formatter:", error);
+            document.getElementById('result').innerHTML = 
+                '<div class="notice" style="background-color: #ffebee; padding: 15px; border-radius: 4px; margin-bottom: 20px;">' +
+                '<strong>⚠️ Error processing data from Data Formatter</strong><br>' +
+                `${error.message}<br>` +
+                'Please try again or upload a file directly.</div>';
         }
     }
 });
+
+/**
+ * Helper function to extract the earliest reported date from the dataset.
+ * @param {Array} data - The dataset to analyze
+ * @returns {string} The first reported date or 'Unknown'
+ */
+function getFirstReportedDate(data) {
+    try {
+        if (!data || !data.length) return 'Unknown';
+        
+        let earliestDate = null;
+        
+        data.forEach(record => {
+            const dateValue = record['Reported'] || record['Incident Date'] || record['Date'];
+            if (!dateValue) return;
+            
+            try {
+                const recordDate = new Date(dateValue);
+                if (!isNaN(recordDate) && (!earliestDate || recordDate < earliestDate)) {
+                    earliestDate = recordDate;
+                }
+            } catch (e) {
+                // Skip invalid dates
+            }
+        });
+        
+        return earliestDate ? earliestDate.toLocaleDateString('en-US') : 'Unknown';
+    } catch (e) {
+        console.error("Error getting first reported date:", e);
+        return 'Unknown';
+    }
+}
+
+/**
+ * Helper function to extract a consistent set of columns from the dataset.
+ * @param {Array} data - The dataset to analyze
+ * @returns {Array} An array of column names
+ */
+function getDataColumns(data) {
+    try {
+        if (!data || !data.length) return [];
+        
+        // Collect all possible column names across all records
+        const columnSet = new Set();
+        data.forEach(record => {
+            Object.keys(record).forEach(key => {
+                // Filter out metadata fields that start with underscore
+                if (!key.startsWith('_')) {
+                    columnSet.add(key);
+                }
+            });
+        });
+        
+        return Array.from(columnSet);
+    } catch (e) {
+        console.error("Error extracting columns:", e);
+        return Object.keys(data[0] || {});
+    }
+}
 
 // ----------------------------------------------------------------------------
 // Data Formatting Functions
@@ -87,15 +184,33 @@ function formatFireEMSData(data) {
         // Create a copy to avoid modifying the original object.
         const formattedRecord = { ...record };
         
+        // Check if this record came from the formatter - it might already have properly formatted dates
+        const isFormatterData = formattedRecord._source === 'formatter';
+        
+        if (isFormatterData) {
+            console.log("Processing pre-formatted data from Data Formatter");
+        }
+        
         // Process date fields: store both formatted string and Date object.
         const dateFields = ['Reported', 'Unit Dispatched', 'Unit Enroute', 'Unit Onscene'];
         dateFields.forEach(field => {
             if (formattedRecord[field]) {
                 try {
+                    // Skip re-processing if it's already a Date object
+                    if (formattedRecord[`${field}_obj`] instanceof Date) {
+                        return;
+                    }
+                    
+                    // Parse the date
                     const date = new Date(formattedRecord[field]);
                     if (!isNaN(date.getTime())) {
                         formattedRecord[`${field}_obj`] = date;
-                        formattedRecord[field] = formatDateTime(date);
+                        
+                        // Only overwrite the original string if it's not already formatted
+                        if (!isFormatterData || typeof formattedRecord[field] !== 'string' || 
+                            !formattedRecord[field].includes('/')) {
+                            formattedRecord[field] = formatDateTime(date);
+                        }
                     }
                 } catch (e) {
                     console.warn(`Could not parse date for field ${field}: ${formattedRecord[field]}`);
@@ -104,30 +219,60 @@ function formatFireEMSData(data) {
         });
         
         // Process coordinates: parse as floats and check validity.
-        if (formattedRecord['Latitude'] && formattedRecord['Longitude']) {
-            formattedRecord['Latitude'] = parseFloat(formattedRecord['Latitude']);
-            formattedRecord['Longitude'] = parseFloat(formattedRecord['Longitude']);
-            formattedRecord['validCoordinates'] = !isNaN(formattedRecord['Latitude']) && !isNaN(formattedRecord['Longitude']);
+        if (formattedRecord['Latitude'] !== undefined && formattedRecord['Longitude'] !== undefined) {
+            // Ensure coordinates are parsed as floats
+            if (typeof formattedRecord['Latitude'] !== 'number') {
+                formattedRecord['Latitude'] = parseFloat(formattedRecord['Latitude']);
+            }
+            if (typeof formattedRecord['Longitude'] !== 'number') {
+                formattedRecord['Longitude'] = parseFloat(formattedRecord['Longitude']);
+            }
+            
+            formattedRecord['validCoordinates'] = 
+                !isNaN(formattedRecord['Latitude']) && 
+                !isNaN(formattedRecord['Longitude']) &&
+                Math.abs(formattedRecord['Latitude']) <= 90 &&
+                Math.abs(formattedRecord['Longitude']) <= 180;
         } else {
             formattedRecord['validCoordinates'] = false;
         }
         
-        // Calculate response time (in minutes) if both timestamps are available.
-        if (formattedRecord['Unit Dispatched_obj'] && formattedRecord['Unit Onscene_obj']) {
+        // Calculate response time (in minutes) if not already present and both timestamps are available.
+        if (!formattedRecord['Response Time (min)'] && 
+            formattedRecord['Unit Dispatched_obj'] && formattedRecord['Unit Onscene_obj']) {
+            
             const dispatchTime = formattedRecord['Unit Dispatched_obj'].getTime();
             const onSceneTime = formattedRecord['Unit Onscene_obj'].getTime();
+            
             if (onSceneTime >= dispatchTime) {
                 const responseTimeMin = Math.round((onSceneTime - dispatchTime) / (1000 * 60));
                 formattedRecord['Response Time (min)'] = responseTimeMin;
             }
         }
         
+        // Convert response time to number if it's a string
+        if (formattedRecord['Response Time (min)'] !== undefined && 
+            typeof formattedRecord['Response Time (min)'] === 'string') {
+            formattedRecord['Response Time (min)'] = parseFloat(formattedRecord['Response Time (min)']);
+        }
+        
         // Normalize text fields.
         if (formattedRecord['Unit']) {
-            formattedRecord['Unit'] = formattedRecord['Unit'].trim();
+            formattedRecord['Unit'] = String(formattedRecord['Unit']).trim();
         }
+        
         if (formattedRecord['Incident City']) {
-            formattedRecord['Incident City'] = formattedRecord['Incident City'].trim();
+            formattedRecord['Incident City'] = String(formattedRecord['Incident City']).trim();
+        }
+        
+        // Normalize Run No / Incident ID field
+        if (!formattedRecord['Run No'] && formattedRecord['Incident ID']) {
+            formattedRecord['Run No'] = formattedRecord['Incident ID'];
+        }
+        
+        // Ensure Full Address exists
+        if (!formattedRecord['Full Address'] && formattedRecord['Address']) {
+            formattedRecord['Full Address'] = formattedRecord['Address'];
         }
         
         return formattedRecord;

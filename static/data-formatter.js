@@ -452,6 +452,82 @@ document.addEventListener('DOMContentLoaded', function() {
         ];
     }
     
+    // Create sample data for Response Time Analyzer
+    function createSampleResponseTimeData() {
+        return [
+            {
+                "Run No": "INC-2024-001",
+                "Reported": "2024-01-15T08:23:45.000Z",
+                "Unit Dispatched": "2024-01-15T08:24:12.000Z",
+                "Unit Enroute": "2024-01-15T08:26:35.000Z",
+                "Unit Onscene": "2024-01-15T08:32:18.000Z",
+                "Incident Type": "Medical Emergency",
+                "Latitude": 33.4484,
+                "Longitude": -112.0740,
+                "Unit": "M23",
+                "Incident City": "Phoenix",
+                "Full Address": "123 Main St, Phoenix, AZ",
+                "Response Time (min)": 8
+            },
+            {
+                "Run No": "INC-2024-002",
+                "Reported": "2024-01-15T09:15:22.000Z",
+                "Unit Dispatched": "2024-01-15T09:15:45.000Z",
+                "Unit Enroute": "2024-01-15T09:17:30.000Z",
+                "Unit Onscene": "2024-01-15T09:22:55.000Z",
+                "Incident Type": "Structure Fire",
+                "Latitude": 33.4518,
+                "Longitude": -112.0658,
+                "Unit": "E12",
+                "Incident City": "Phoenix",
+                "Full Address": "456 Oak Ave, Phoenix, AZ",
+                "Response Time (min)": 7
+            },
+            {
+                "Run No": "INC-2024-003",
+                "Reported": "2024-01-15T10:05:18.000Z",
+                "Unit Dispatched": "2024-01-15T10:06:05.000Z",
+                "Unit Enroute": "2024-01-15T10:08:23.000Z",
+                "Unit Onscene": "2024-01-15T10:15:47.000Z",
+                "Incident Type": "Traffic Accident",
+                "Latitude": 33.4395,
+                "Longitude": -112.0891,
+                "Unit": "R8",
+                "Incident City": "Phoenix",
+                "Full Address": "789 Elm Blvd, Phoenix, AZ",
+                "Response Time (min)": 10
+            },
+            {
+                "Run No": "INC-2024-004",
+                "Reported": "2024-01-15T11:30:10.000Z",
+                "Unit Dispatched": "2024-01-15T11:31:22.000Z",
+                "Unit Enroute": "2024-01-15T11:33:45.000Z",
+                "Unit Onscene": "2024-01-15T11:38:12.000Z",
+                "Incident Type": "Medical Emergency",
+                "Latitude": 33.4562,
+                "Longitude": -112.0712,
+                "Unit": "M15",
+                "Incident City": "Phoenix",
+                "Full Address": "101 Pine St, Phoenix, AZ",
+                "Response Time (min)": 7
+            },
+            {
+                "Run No": "INC-2024-005",
+                "Reported": "2024-01-15T13:45:30.000Z",
+                "Unit Dispatched": "2024-01-15T13:46:10.000Z",
+                "Unit Enroute": "2024-01-15T13:48:25.000Z",
+                "Unit Onscene": "2024-01-15T13:53:40.000Z",
+                "Incident Type": "Gas Leak",
+                "Latitude": 33.4427,
+                "Longitude": -112.0819,
+                "Unit": "E7",
+                "Incident City": "Phoenix",
+                "Full Address": "222 Maple Dr, Phoenix, AZ",
+                "Response Time (min)": 8
+            }
+        ];
+    }
+    
     // Generate mock spatial data for demo purposes
     function mockSpatialData() {
         return [
@@ -1650,83 +1726,130 @@ document.addEventListener('DOMContentLoaded', function() {
                 case 'response-time':
                     // Ensure response time is calculated if not present and fields are properly named
                     preparedData.forEach(item => {
-                        // Look for alternative field names and standardize them
-                        const timeFieldMappings = {
-                            'Dispatch Time': ['Unit Dispatched', 'Dispatched', 'Time Dispatched', 'Dispatch'],
-                            'En Route Time': ['Unit Enroute', 'Enroute', 'Time Enroute', 'Responding Time'],
-                            'On Scene Time': ['Unit Onscene', 'Onscene', 'Time Onscene', 'Arrival Time', 'Arrived'],
-                            'Incident Time': ['Reported', 'Time Reported', 'Call Time', 'Alarm Time']
+                        // Map the Response Time Analyzer expected field names
+                        const keyMappings = {
+                            'Reported': ['Incident Time', 'Reported Time', 'Time Reported', 'Call Time', 'Alarm Time'],
+                            'Unit Dispatched': ['Dispatch Time', 'Dispatched', 'Time Dispatched', 'Dispatch'],
+                            'Unit Enroute': ['En Route Time', 'Enroute', 'Time Enroute', 'Responding Time'],
+                            'Unit Onscene': ['On Scene Time', 'Onscene', 'Time Onscene', 'Arrival Time', 'Arrived'],
+                            'Run No': ['Incident ID', 'Call No', 'Call ID', 'Incident Number'],
+                            'Incident City': ['City', 'Location City', 'Municipality'],
+                            'Full Address': ['Address', 'Incident Address', 'Location', 'Location Address'],
+                            'Unit': ['Unit ID', 'Responding Unit', 'Apparatus']
                         };
                         
-                        // Map fields - look for alternate field names and map them to standard names
-                        Object.entries(timeFieldMappings).forEach(([standardField, alternateFields]) => {
-                            if (!item[standardField]) {
-                                // Try to find one of the alternate fields
-                                for (const altField of alternateFields) {
-                                    if (item[altField] !== undefined) {
-                                        item[standardField] = item[altField];
-                                        break;
-                                    }
+                        // Map fields to the format expected by the Response Time Analyzer
+                        Object.entries(keyMappings).forEach(([targetField, possibleSourceFields]) => {
+                            // Skip if already exists
+                            if (item[targetField] !== undefined && item[targetField] !== '') {
+                                return;
+                            }
+                            
+                            // Try to find one of the source fields
+                            for (const sourceField of possibleSourceFields) {
+                                if (item[sourceField] !== undefined && item[sourceField] !== '') {
+                                    item[targetField] = item[sourceField];
+                                    break;
                                 }
                             }
                         });
                         
+                        // Handle date and time fields that might be combined in a single timestamp
+                        const timestampFields = ['timestamp', 'datetime', 'incident_datetime', 'created_at', 'Timestamp', 'DateTime'];
+                        let hasTimestamp = false;
+                        
+                        for (const field of timestampFields) {
+                            if (item[field] !== undefined && item[field] !== '') {
+                                hasTimestamp = true;
+                                try {
+                                    // Try to parse as a standard date format
+                                    const timestamp = new Date(item[field]);
+                                    
+                                    if (!isNaN(timestamp)) {
+                                        // For each time field component, set if it doesn't exist
+                                        if (!item['Reported']) {
+                                            item['Reported'] = timestamp.toISOString();
+                                        }
+                                        
+                                        if (!item['Incident Date']) {
+                                            item['Incident Date'] = timestamp.toISOString().split('T')[0];
+                                        }
+                                    }
+                                } catch (e) {
+                                    console.warn(`Failed to parse timestamp field ${field}:`, e);
+                                }
+                                break;
+                            }
+                        }
+                        
+                        // Handle separate date/time fields that need to be combined
+                        if (!hasTimestamp) {
+                            // Check for separate date and time fields
+                            if ((item['Incident Date'] || item['Date']) && (item['Incident Time'] || item['Time'])) {
+                                const dateStr = item['Incident Date'] || item['Date'];
+                                const timeStr = item['Incident Time'] || item['Time'];
+                                
+                                try {
+                                    // Combine date and time
+                                    const dateTimeStr = `${standardizeDate(dateStr)}T${standardizeTime(timeStr)}`;
+                                    const timestamp = new Date(dateTimeStr);
+                                    
+                                    if (!isNaN(timestamp)) {
+                                        if (!item['Reported']) {
+                                            item['Reported'] = timestamp.toISOString();
+                                        }
+                                    }
+                                } catch (e) {
+                                    console.warn('Failed to combine date and time fields:', e);
+                                }
+                            }
+                        }
+                        
+                        // For each time field, try to convert it to a standard format if it exists
+                        const timeFields = ['Unit Dispatched', 'Unit Enroute', 'Unit Onscene'];
+                        const dateFields = timeFields.concat(['Reported']);
+                        
+                        dateFields.forEach(field => {
+                            // Skip if the field doesn't exist
+                            if (item[field] === undefined || item[field] === '') {
+                                return;
+                            }
+                            
+                            try {
+                                // Parse as Date object if it's not already
+                                if (!(item[field] instanceof Date)) {
+                                    const parsedDate = new Date(item[field]);
+                                    
+                                    if (!isNaN(parsedDate)) {
+                                        // Store in ISO format for consistent processing
+                                        item[field] = parsedDate.toISOString();
+                                    }
+                                }
+                            } catch (e) {
+                                console.warn(`Failed to parse date field ${field}:`, e);
+                            }
+                        });
+                        
                         // Calculate response times if missing but component times are available
-                        const missingResponseTime = !item['Response Time'];
-                        const hasDispatchTime = item['Dispatch Time'] !== undefined && item['Dispatch Time'] !== '';
-                        const hasOnSceneTime = item['On Scene Time'] !== undefined && item['On Scene Time'] !== '';
+                        const missingResponseTime = !item['Response Time (min)'];
+                        const hasDispatchTime = item['Unit Dispatched'] !== undefined && item['Unit Dispatched'] !== '';
+                        const hasOnSceneTime = item['Unit Onscene'] !== undefined && item['Unit Onscene'] !== '';
                         
                         if (missingResponseTime && hasDispatchTime && hasOnSceneTime) {
                             try {
-                                // Parse times - this is a simplified version, a real implementation would be more robust
-                                let dispatchTimeStr = item['Dispatch Time'];
-                                let onSceneTimeStr = item['On Scene Time'];
-                                
-                                // Clean the time strings if needed
-                                if (typeof dispatchTimeStr === 'string' && !dispatchTimeStr.includes(':')) {
-                                    // Try to format numeric time (e.g. "1200" -> "12:00:00")
-                                    if (/^\d{3,4}$/.test(dispatchTimeStr.trim())) {
-                                        const hour = dispatchTimeStr.slice(0, -2).padStart(2, '0');
-                                        const min = dispatchTimeStr.slice(-2);
-                                        dispatchTimeStr = `${hour}:${min}:00`;
-                                    }
-                                }
-                                
-                                if (typeof onSceneTimeStr === 'string' && !onSceneTimeStr.includes(':')) {
-                                    // Try to format numeric time (e.g. "1200" -> "12:00:00")
-                                    if (/^\d{3,4}$/.test(onSceneTimeStr.trim())) {
-                                        const hour = onSceneTimeStr.slice(0, -2).padStart(2, '0');
-                                        const min = onSceneTimeStr.slice(-2);
-                                        onSceneTimeStr = `${hour}:${min}:00`;
-                                    }
-                                }
-                                
-                                // Try parsing with a full ISO date
-                                let dispatchTime, onSceneTime;
-                                
-                                try {
-                                    dispatchTime = new Date(`2023-01-01T${dispatchTimeStr}`);
-                                    onSceneTime = new Date(`2023-01-01T${onSceneTimeStr}`);
-                                } catch (e) {
-                                    // If that fails, try just comparing the strings as timestamps
-                                    const isTimeObj1 = dispatchTimeStr instanceof Date;
-                                    const isTimeObj2 = onSceneTimeStr instanceof Date;
-                                    
-                                    if (isTimeObj1 && isTimeObj2) {
-                                        dispatchTime = dispatchTimeStr;
-                                        onSceneTime = onSceneTimeStr;
-                                    }
-                                }
+                                // Parse times - converting them to Date objects for calculation
+                                const dispatchTime = new Date(item['Unit Dispatched']);
+                                const onSceneTime = new Date(item['Unit Onscene']);
                                 
                                 // Calculate if we have valid times
                                 if (!isNaN(dispatchTime) && !isNaN(onSceneTime)) {
                                     // Calculate minutes
                                     const diffMs = onSceneTime - dispatchTime;
-                                    const diffMinutes = diffMs / 60000;
+                                    const diffMinutes = Math.round(diffMs / 60000);
                                     
                                     if (diffMinutes >= 0 && diffMinutes < 120) { // Sanity check
-                                        item['Response Time'] = diffMinutes.toFixed(2);
-                                        console.log(`Calculated response time: ${item['Response Time']} minutes`);
+                                        item['Response Time (min)'] = diffMinutes;
+                                        console.log(`Calculated response time: ${item['Response Time (min)']} minutes`);
                                     } else {
                                         console.warn(`Suspicious response time calculated (${diffMinutes} minutes) - ignoring`);
                                     }
@@ -1735,7 +1858,23 @@ document.addEventListener('DOMContentLoaded', function() {
                                 console.warn('Error calculating response time:', e);
                             }
                         }
+                        
+                        // Ensure latitude and longitude are converted to numbers
+                        if (item['Latitude'] !== undefined && typeof item['Latitude'] === 'string') {
+                            item['Latitude'] = parseFloat(item['Latitude']);
+                        }
+                        
+                        if (item['Longitude'] !== undefined && typeof item['Longitude'] === 'string') {
+                            item['Longitude'] = parseFloat(item['Longitude']);
+                        }
                     });
+                    
+                    // Create sample data if the formatted data is empty
+                    if (preparedData.length === 0) {
+                        console.warn("No data was prepared. Creating sample data for demonstration.");
+                        preparedData = createSampleResponseTimeData();
+                        appendLog("Created sample Response Time Analyzer data for demonstration", "info");
+                    }
                     
                     // Debug report of the data being sent
                     console.log('Response Time Analyzer data sample:', 

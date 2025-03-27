@@ -269,6 +269,32 @@ tr:hover {
   line-height: 1.4;
 }
 
+/* Formatter link styling */
+.formatter-link {
+  display: inline-block;
+  color: #2196f3;
+  font-weight: 500;
+  text-decoration: none;
+  border-bottom: 1px dashed #2196f3;
+  padding-bottom: 2px;
+  transition: all 0.2s ease;
+}
+
+.formatter-link:hover {
+  color: #0d8aee;
+  border-bottom: 1px solid #0d8aee;
+}
+
+/* Notice styling for formatter data indication */
+.notice {
+  background-color: #e3f2fd;
+  border-left: 4px solid #2196f3;
+  padding: 15px;
+  margin: 15px 0;
+  border-radius: 0 4px 4px 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .dashboard-row {
