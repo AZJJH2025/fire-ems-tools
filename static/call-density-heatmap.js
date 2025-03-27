@@ -1,4 +1,13 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Clean up session storage when navigating away from the page
+    window.addEventListener('beforeunload', function() {
+        // Only clear formatter-related storage items
+        sessionStorage.removeItem('formattedData');
+        sessionStorage.removeItem('dataSource');
+        sessionStorage.removeItem('formatterToolId');
+        sessionStorage.removeItem('formatterTarget');
+        sessionStorage.removeItem('formatterTimestamp');
+    });
     // Make sure the map container has a proper height
     const mapContainer = document.getElementById('map');
     if (mapContainer) {
@@ -631,8 +640,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to check for and process data from the Data Formatter
     function checkForFormatterData() {
         // Check if we have data from the Data Formatter tool
+        console.log("Checking for formatter data, tool ID:", sessionStorage.getItem('formatterToolId'));
         if (sessionStorage.getItem('dataSource') === 'formatter' && 
-            sessionStorage.getItem('formatterToolId') === 'call-density') {
+            (sessionStorage.getItem('formatterToolId') === 'call-density' || 
+             sessionStorage.getItem('formatterTarget') === 'call-density')) {
             try {
                 console.log("Detected data from Data Formatter");
                 

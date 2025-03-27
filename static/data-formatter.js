@@ -595,6 +595,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Function to ensure consistent tool ID format
+    function normalizeToolId(toolId) {
+        // Make sure we're using the correct IDs that match with the receiving tools
+        const toolMap = {
+            'response-time': 'response-time',
+            'isochrone': 'isochrone',
+            'call-density': 'call-density',
+            'incident-logger': 'incident-logger',
+            'coverage-gap': 'coverage-gap',
+            'station-overview': 'station-overview',
+            'fire-map-pro': 'fire-map-pro'
+        };
+        
+        return toolMap[toolId] || toolId;
+    }
+    
     // Transform data for the selected tool
     function transformData() {
         if (!originalData || !selectedTool) {
@@ -1545,10 +1561,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Store the data in sessionStorage for the target tool to access
+            const normalizedTool = normalizeToolId(selectedTool);
             sessionStorage.setItem('formattedData', JSON.stringify(dataToStore));
             sessionStorage.setItem('dataSource', 'formatter');
             sessionStorage.setItem('formatterTimestamp', new Date().toISOString());
-            sessionStorage.setItem('formatterToolId', selectedTool);
+            sessionStorage.setItem('formatterToolId', normalizedTool);
+            sessionStorage.setItem('formatterTarget', normalizedTool);
+            
+            // Log for debugging
+            console.log("Data stored in sessionStorage with toolId:", selectedTool);
             
             // Remove processing indicator
             setTimeout(() => {
@@ -1592,6 +1613,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Add a query parameter to indicate data is available
                     toolUrl += `?source=formatter&ts=${Date.now()}`;
+                    
+                    console.log(`Redirecting to ${toolUrl} with data for ${normalizedTool}`);
+                    console.log("SessionStorage contents:", {
+                        formattedData: "LARGE_DATA_OBJECT",
+                        dataSource: sessionStorage.getItem('dataSource'),
+                        formatterToolId: sessionStorage.getItem('formatterToolId'),
+                        formatterTarget: sessionStorage.getItem('formatterTarget')
+                    });
                     
                     // Redirect to the tool
                     window.location.href = toolUrl;
