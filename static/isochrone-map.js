@@ -91,6 +91,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
+
+    // Define additional tile layers
+    const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri'
+    });
+    const terrainLayer = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.png', {
+        attribution: 'Map tiles by Stamen Design',
+        subdomains: 'abcd'
+    });
     
     // Check if there's data in sessionStorage from the Data Formatter
     console.log("Checking for Data Formatter data in Isochrone Map Generator");
@@ -182,45 +191,6 @@ document.addEventListener('DOMContentLoaded', function() {
             showMessage(`Error processing data: ${error.message}`, "error");
         }
     }
-
-    // -------------------------------------------------------------------------
-    // State Center Coordinates and Map Initialization
-    // -------------------------------------------------------------------------
-    // State center coordinates
-    const stateCoordinates = {
-        'AZ': { lat: 33.4484, lng: -112.0740, zoom: 7, name: 'Arizona' },       // Phoenix
-        'CA': { lat: 37.7749, lng: -122.4194, zoom: 6, name: 'California' },    // San Francisco
-        'TX': { lat: 30.2672, lng: -97.7431, zoom: 6, name: 'Texas' },          // Austin
-        'NY': { lat: 40.7128, lng: -74.0060, zoom: 7, name: 'New York' },       // New York City
-        'FL': { lat: 27.9944, lng: -82.4451, zoom: 7, name: 'Florida' },        // Tampa
-        'IL': { lat: 41.8781, lng: -87.6298, zoom: 7, name: 'Illinois' },       // Chicago
-        'PA': { lat: 39.9526, lng: -75.1652, zoom: 7, name: 'Pennsylvania' },   // Philadelphia
-        'OH': { lat: 39.9612, lng: -82.9988, zoom: 7, name: 'Ohio' },           // Columbus
-        'GA': { lat: 33.7490, lng: -84.3880, zoom: 7, name: 'Georgia' },        // Atlanta
-        'NC': { lat: 35.2271, lng: -80.8431, zoom: 7, name: 'North Carolina' }  // Charlotte
-        // Add more states as needed
-    };
-
-    // Set initial state (Arizona by default)
-    let currentState = 'AZ';
-    const defaultState = stateCoordinates[currentState];
-
-    // Initialize map with default state (Arizona)
-    const map = L.map('isochrone-map').setView([defaultState.lat, defaultState.lng], defaultState.zoom);
-
-    // Add OpenStreetMap tile layer (default)
-    const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
-    // Define additional tile layers
-    const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles &copy; Esri'
-    });
-    const terrainLayer = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.png', {
-        attribution: 'Map tiles by Stamen Design',
-        subdomains: 'abcd'
-    });
 
     // Variables to store state
     let stationMarker = null;
