@@ -101,12 +101,16 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         'station-overview': {
             requiredFields: [
-                'Station ID', 'Station Name', 'Unit IDs',
-                'Call Volume', 'Average Response Time'
+                'Station ID', 'Unit IDs'
             ],
-            dateFields: ['Data Period Start', 'Data Period End'],
-            timeFields: ['Average Response Time'],
-            optionalFields: ['Personnel Count', 'Coverage Area', 'Utilization Rate']
+            dateFields: ['Data Period Start', 'Data Period End', 'CALL_RECEIVED_DATE', 'Incident Date'],
+            timeFields: ['Average Response Time', 'CALL_RECEIVED_TIME', 'Incident Time'],
+            coordinateFields: ['Latitude', 'Longitude'],
+            optionalFields: [
+                'Station Name', 'Call Volume', 'Average Response Time',
+                'Personnel Count', 'Coverage Area', 'Utilization Rate',
+                'Address', 'City', 'Priority', 'Response Time (min)', 'Incident Type'
+            ]
         },
         'fire-map-pro': {
             requiredFields: [
@@ -666,12 +670,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 isochroneOptions.innerHTML = `
                     <h4 style="margin-top: 0; margin-bottom: 10px;">Isochrone Map Data Type</h4>
                     <p style="margin-bottom: 10px;">Choose how your data should be interpreted:</p>
-                    <div style="display: flex; gap: 10px;">
+                    <div class="data-type-buttons" style="display: flex; gap: 10px; margin-bottom: 10px;">
                         <button id="send-as-stations" class="secondary-btn">
                             <i class="fas fa-building"></i> Send as Stations
                         </button>
                         <button id="send-as-incidents" class="secondary-btn">
                             <i class="fas fa-map-marker-alt"></i> Send as Incidents
+                        </button>
+                    </div>
+                    <div id="combined-data-section" style="display: none; margin-top: 15px; border-top: 1px solid #ddd; padding-top: 15px;">
+                        <p style="margin-bottom: 10px;"><strong>Combined Data Available:</strong> You can now send both stations and incidents data together.</p>
+                        <button id="send-combined-data" class="primary-btn" style="width: 100%;">
+                            <i class="fas fa-exchange-alt"></i> Send Both Stations & Incidents
                         </button>
                     </div>
                 `;
@@ -683,6 +693,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('send-as-stations').addEventListener('click', function() {
                     if (transformedData) {
                         sendToIsochroneMap('stations');
+                        // Check if we can enable the combined data option
+                        if (storedIncidentsData) {
+                            document.getElementById('combined-data-section').style.display = 'block';
+                        }
                     } else {
                         appendLog('Please transform your data first', 'error');
                     }
@@ -691,12 +705,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('send-as-incidents').addEventListener('click', function() {
                     if (transformedData) {
                         sendToIsochroneMap('incidents');
+                        // Check if we can enable the combined data option
+                        if (storedStationsData) {
+                            document.getElementById('combined-data-section').style.display = 'block';
+                        }
                     } else {
                         appendLog('Please transform your data first', 'error');
                     }
                 });
+                
+                // Add event listener for the combined data button
+                const combinedButton = document.getElementById('send-combined-data');
+                if (combinedButton) {
+                    combinedButton.addEventListener('click', function() {
+                        if (storedStationsData && storedIncidentsData) {
+                            sendToIsochroneMap('combined');
+                        } else {
+                            appendLog('You need to send both station and incident data first', 'warning');
+                        }
+                    });
+                }
             } else {
                 isochroneOptions.style.display = 'block';
+                
+                // Check if we should show the combined data section
+                const combinedSection = document.getElementById('combined-data-section');
+                if (combinedSection) {
+                    if (storedStationsData && storedIncidentsData) {
+                        combinedSection.style.display = 'block';
+                    } else {
+                        combinedSection.style.display = 'none';
+                    }
+                }
             }
         } else if (isochroneOptions) {
             // Hide the options if not isochrone
@@ -1683,7 +1723,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Send data to the selected tool
-    // Function to send data specifically to Isochrone Map as either stations or incidents
+    // Store transformed data for later use in multiple tools
+    let storedStationsData = null;
+    let storedIncidentsData = null;
+    
+    // Function to send data specifically to Isochrone Map as either stations or incidents or both
     function sendToIsochroneMap(dataType) {
         if (!transformedData) {
             appendLog('Cannot send data: missing transformed data', 'error');
@@ -1773,38 +1817,68 @@ document.addEventListener('DOMContentLoaded', function() {
                 dataToStore = { data: preparedData, meta: { originalSize: preparedData.length } };
             }
             
-            // Store the data in sessionStorage for the isochrone map to access
-            sessionStorage.setItem('formattedData', JSON.stringify(dataToStore));
-            sessionStorage.setItem('dataSource', 'formatter');
-            sessionStorage.setItem('formatterTimestamp', new Date().toISOString());
-            sessionStorage.setItem('formatterToolId', isochroneTool);
-            sessionStorage.setItem('formatterTarget', 'isochrone');
+            // Store the data in variable for potential combined use
+            if (dataType === 'stations') {
+                storedStationsData = dataToStore;
+            } else {
+                storedIncidentsData = dataToStore;
+            }
             
-            // Log for debugging
-            console.log(`Data stored in sessionStorage as ${dataType} for Isochrone Map`);
+            // Store the data in sessionStorage for the isochrone map to access
+            if (dataType === 'combined' && storedStationsData && storedIncidentsData) {
+                // Create a combined data object with both stations and incidents
+                const combinedData = {
+                    stations: storedStationsData,
+                    incidents: storedIncidentsData,
+                    meta: {
+                        combinedData: true,
+                        timestamp: new Date().toISOString()
+                    }
+                };
+                
+                sessionStorage.setItem('formattedData', JSON.stringify(combinedData));
+                sessionStorage.setItem('dataSource', 'formatter');
+                sessionStorage.setItem('formatterTimestamp', new Date().toISOString());
+                sessionStorage.setItem('formatterToolId', 'isochrone-combined');
+                sessionStorage.setItem('formatterTarget', 'isochrone');
+                
+                console.log(`Combined data stored in sessionStorage for Isochrone Map`);
+            } else {
+                // Store single type of data
+                sessionStorage.setItem('formattedData', JSON.stringify(dataToStore));
+                sessionStorage.setItem('dataSource', 'formatter');
+                sessionStorage.setItem('formatterTimestamp', new Date().toISOString());
+                sessionStorage.setItem('formatterToolId', isochroneTool);
+                sessionStorage.setItem('formatterTarget', 'isochrone');
+                
+                console.log(`Data stored in sessionStorage as ${dataType} for Isochrone Map`);
+            }
             
             // Remove processing indicator
             setTimeout(() => {
                 document.querySelector('.download-section').removeChild(processingStatus);
                 
-                appendLog(`Data successfully prepared for Isochrone Map as ${dataType} (${formatBytes(JSON.stringify(dataToStore).length)})`, 'success');
+                if (dataType === 'combined') {
+                    appendLog(`Combined stations and incidents data successfully prepared for Isochrone Map`, 'success');
+                } else {
+                    appendLog(`Data successfully prepared for Isochrone Map as ${dataType} (${formatBytes(JSON.stringify(dataToStore).length)})`, 'success');
+                }
                 
                 // Offer to redirect to the tool
-                const confirmRedirect = confirm(
-                    `Data is ready for use in Isochrone Map Generator as ${dataType}.\n\nWould you like to open the tool now?`
-                );
+                let redirectMessage = '';
+                if (dataType === 'combined') {
+                    redirectMessage = 'Combined stations and incidents data is ready for use in Isochrone Map Generator.\n\nWould you like to open the tool now?';
+                } else {
+                    redirectMessage = `Data is ready for use in Isochrone Map Generator as ${dataType}.\n\nWould you like to open the tool now?`;
+                }
+                
+                const confirmRedirect = confirm(redirectMessage);
                 
                 if (confirmRedirect) {
                     // Redirect to isochrone map
                     const toolUrl = `/isochrone-map?source=formatter&dataType=${dataType}&ts=${Date.now()}`;
                     
                     console.log(`Redirecting to ${toolUrl}`);
-                    console.log("SessionStorage contents:", {
-                        formattedData: "LARGE_DATA_OBJECT",
-                        dataSource: sessionStorage.getItem('dataSource'),
-                        formatterToolId: sessionStorage.getItem('formatterToolId'),
-                        formatterTarget: sessionStorage.getItem('formatterTarget')
-                    });
                     
                     // Redirect to the tool
                     window.location.href = toolUrl;
@@ -2949,10 +3023,96 @@ document.addEventListener('DOMContentLoaded', function() {
                (fields.includes('LOCATION_ADDR') && fields.includes('LOCATION_CITY'));
     }
     
+    // Process Motorola data for station-overview
+    function processMotorolaForStationOverview(data) {
+        appendLog("Specifically processing Motorola data for Station Overview", "info");
+        console.log("Starting specific Motorola processing for Station Overview");
+        
+        // Extract required fields from Motorola format to match station-overview expectations
+        return data.map(item => {
+            const processedItem = {};
+            
+            // Map key fields for unit
+            processedItem.unit = item.UNIT_ID || item.UNIT || item.PRIMARY_UNIT || item.APPARATUS || "";
+            processedItem.Unit_ID = item.UNIT_ID || item.UNIT || item.PRIMARY_UNIT || item.APPARATUS || "";
+            
+            // Map station information 
+            const stationId = item.STATION_ID || item.STATION || "";
+            processedItem.station = stationId ? `Station ${stationId}` : "";
+            processedItem['Station ID'] = stationId || "";
+            processedItem['Station Name'] = processedItem.station;
+            
+            // Map call information
+            processedItem['Incident ID'] = item.INCIDENT_NO || item.INCIDENT_ID || "";
+            processedItem['Incident Type'] = item.CALL_TYPE || item.INCIDENT_TYPE || item.NATURE || "";
+            processedItem.call_type = item.CALL_TYPE || item.INCIDENT_TYPE || item.NATURE || "";
+            
+            // Map address information
+            processedItem.Address = item.LOCATION_ADDR || item.ADDRESS || "";
+            processedItem.City = item.LOCATION_CITY || item.CITY || "";
+            
+            // Map coordinates
+            processedItem.latitude = parseFloat(item.LAT) || null;
+            processedItem.longitude = parseFloat(item.LON) || null;
+            processedItem.Latitude = parseFloat(item.LAT) || null;
+            processedItem.Longitude = parseFloat(item.LON) || null;
+            
+            // Map and calculate time fields
+            if (item.CALL_RECEIVED_DATE) {
+                processedItem['Incident Date'] = item.CALL_RECEIVED_DATE;
+            }
+            
+            if (item.CALL_RECEIVED_TIME) {
+                processedItem['Incident Time'] = item.CALL_RECEIVED_TIME;
+                processedItem.timestamp = item.CALL_RECEIVED_DATE ? 
+                    `${item.CALL_RECEIVED_DATE}T${item.CALL_RECEIVED_TIME}` : 
+                    `2023-01-01T${item.CALL_RECEIVED_TIME}`;
+            }
+            
+            // Calculate response time if available
+            if (item.RESPONSE_TIME) {
+                processedItem.response_time = parseFloat(item.RESPONSE_TIME);
+                processedItem['Response Time'] = parseFloat(item.RESPONSE_TIME);
+                processedItem['Response Time (min)'] = parseFloat(item.RESPONSE_TIME);
+            } else if (item.ARRIVAL_TIME && item.DISPATCH_TIME) {
+                try {
+                    // Calculate response time from dispatch to arrival
+                    const arrivalTime = new Date(`1970-01-01T${item.ARRIVAL_TIME}`);
+                    const dispatchTime = new Date(`1970-01-01T${item.DISPATCH_TIME}`);
+                    
+                    if (!isNaN(arrivalTime) && !isNaN(dispatchTime)) {
+                        const responseTimeMin = (arrivalTime - dispatchTime) / 60000; // Convert ms to minutes
+                        processedItem.response_time = responseTimeMin;
+                        processedItem['Response Time'] = responseTimeMin;
+                        processedItem['Response Time (min)'] = responseTimeMin;
+                    }
+                } catch (e) {
+                    console.warn("Error calculating response time:", e);
+                }
+            }
+            
+            // Map priority information
+            processedItem.Priority = item.PRIORITY || "";
+            
+            // For user clarity in the UI, copy values to commonly expected fields
+            if (!processedItem.PrimaryUnit && processedItem.unit) {
+                processedItem.PrimaryUnit = processedItem.unit;
+            }
+            
+            console.log("Processed Motorola record for Station Overview:", processedItem);
+            return processedItem;
+        });
+    }
+    
     // Helper function to process Motorola data
     function processMotorolaData(data, toolId) {
         console.log("Processing Motorola CAD data for tool:", toolId);
         appendLog("Processing Motorola CAD format");
+        
+        // Special handling for Station Overview tool
+        if (toolId === 'station-overview') {
+            return processMotorolaForStationOverview(data);
+        }
         
         return data.map(item => {
             const newItem = {...item};
