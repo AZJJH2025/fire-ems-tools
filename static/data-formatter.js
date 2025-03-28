@@ -181,6 +181,18 @@ document.addEventListener('DOMContentLoaded', function() {
         handleMissing.addEventListener('change', function() {
             missingValuesOptions.style.display = handleMissing.checked ? 'block' : 'none';
         });
+        
+        // Add the CAD system detection option to input format dropdown
+        const formatSelect = document.getElementById('input-format');
+        if (formatSelect) {
+            // Add option for CAD system auto-detection if it doesn't exist
+            if (!Array.from(formatSelect.options).some(option => option.value === 'cad-auto')) {
+                const cadOption = document.createElement('option');
+                cadOption.value = 'cad-auto';
+                cadOption.text = 'Auto-detect CAD/RMS System';
+                formatSelect.add(cadOption, 1); // Add after auto-detect
+            }
+        }
     }
     
     // Handle file upload
@@ -919,40 +931,55 @@ document.addEventListener('DOMContentLoaded', function() {
         // Clone data to avoid modifying original
         let transformedData = JSON.parse(JSON.stringify(data));
         
+        // Identify CAD/RMS system based on the data structure
+        const cadSystem = identifyCADSystem(transformedData[0]);
+        
         // Special handling for different CAD data formats
         if (transformedData.length > 0) {
             const firstRecord = transformedData[0];
             
-            // Check for Central Square format
-            const isCentralSquare = detectCentralSquareFormat(firstRecord);
-            if (isCentralSquare) {
-                appendLog("Detected Central Square CAD format - applying special handling");
-                console.log("Pre-processing Central Square CAD data");
-                transformedData = processCentralSquareData(transformedData, toolId);
+            // Apply detected CAD system handling
+            if (cadSystem) {
+                appendLog(`Detected ${cadSystem.name} format - applying special handling`);
+                console.log(`Pre-processing ${cadSystem.name} data`);
+                transformedData = processCADSystemData(transformedData, cadSystem, toolId);
+            }
+            // Legacy format detection - keep for backward compatibility
+            else {
+                // Check for Central Square format
+                const isCentralSquare = detectCentralSquareFormat(firstRecord);
+                if (isCentralSquare) {
+                    appendLog("Detected Central Square CAD format - applying special handling");
+                    console.log("Pre-processing Central Square CAD data");
+                    transformedData = processCentralSquareData(transformedData, toolId);
+                }
+                
+                // Check for Motorola format
+                const isMotorolaFormat = detectMotorolaFormat(firstRecord);
+                if (isMotorolaFormat) {
+                    appendLog("Detected Motorola CAD format - applying special handling");
+                    console.log("Pre-processing Motorola CAD data");
+                    transformedData = processMotorolaData(transformedData, toolId);
+                }
+                
+                // Check for Tyler format
+                const isTylerFormat = detectTylerFormat(firstRecord);
+                if (isTylerFormat) {
+                    appendLog("Detected Tyler New World CAD format - applying special handling");
+                    console.log("Pre-processing Tyler CAD data");
+                    transformedData = processTylerData(transformedData, toolId);
+                }
             }
             
-            // Check for Motorola format
-            const isMotorolaFormat = detectMotorolaFormat(firstRecord);
-            if (isMotorolaFormat) {
-                appendLog("Detected Motorola CAD format - applying special handling");
-                console.log("Pre-processing Motorola CAD data");
-                transformedData = processMotorolaData(transformedData, toolId);
-            }
-            
-            // Check for Tyler format
-            const isTylerFormat = detectTylerFormat(firstRecord);
-            if (isTylerFormat) {
-                appendLog("Detected Tyler New World CAD format - applying special handling");
-                console.log("Pre-processing Tyler CAD data");
-                transformedData = processTylerData(transformedData, toolId);
-            }
-            
-            // Check for Hexagon format
-            const isHexagonFormat = detectHexagonFormat(firstRecord);
-            if (isHexagonFormat) {
-                appendLog("Detected Hexagon/Intergraph CAD format - applying special handling");
-                console.log("Pre-processing Hexagon CAD data");
-                transformedData = processHexagonData(transformedData, toolId);
+            // Legacy format detection (continued)
+            if (!cadSystem) {
+                // Check for Hexagon format
+                const isHexagonFormat = detectHexagonFormat(firstRecord);
+                if (isHexagonFormat) {
+                    appendLog("Detected Hexagon/Intergraph CAD format - applying special handling");
+                    console.log("Pre-processing Hexagon CAD data");
+                    transformedData = processHexagonData(transformedData, toolId);
+                }
             }
         }
         
@@ -1063,6 +1090,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
             }
+
+            // Retain original fields for inspection/debugging
+            newItem._original = item;
             
             return newItem;
         });
