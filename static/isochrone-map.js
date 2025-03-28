@@ -258,7 +258,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     showMessage(`Successfully processed ${incidentData.length} incidents from Data Formatter`, "success");
                 }
             }
-            }
             
             // Clear the sessionStorage to prevent reprocessing on page refresh
             sessionStorage.removeItem('formattedData');
