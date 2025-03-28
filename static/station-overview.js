@@ -896,15 +896,15 @@
             percentile90 = sortedTimes[positionIndex];
             console.log(`90th percentile: ${percentile90} minutes`);
         } else {
-            // Generate realistic response times for KPIs
-            console.warn("No response time data found, using synthetic data for KPIs");
-            avgResponseTime = 5.5 + (Math.random() * 1.5); // 5.5-7 minutes
-            percentile90 = avgResponseTime + 2 + (Math.random() * 1.5); // 7.5-10.5 minutes
+            // No data found, set to N/A
+            console.warn("No response time data found, showing N/A");
+            avgResponseTime = null;
+            percentile90 = null;
         }
         
         // Format times (assuming response_time is in minutes)
-        document.getElementById('avgResponseTime').textContent = formatTimeMinutesSeconds(avgResponseTime);
-        document.getElementById('percentile90').textContent = formatTimeMinutesSeconds(percentile90);
+        document.getElementById('avgResponseTime').textContent = avgResponseTime !== null ? formatTimeMinutesSeconds(avgResponseTime) : 'N/A';
+        document.getElementById('percentile90').textContent = percentile90 !== null ? formatTimeMinutesSeconds(percentile90) : 'N/A';
         
         // Total calls
         document.getElementById('totalCalls').textContent = data.length.toLocaleString();
@@ -968,24 +968,25 @@
                 avgCallDuration = avgDurationSeconds / 3600; // Convert to hours
                 console.log(`Average call duration: ${avgCallDuration} hours from ${durationCount} records`);
             } else {
-                // No duration data found, use realistic value
-                avgCallDuration = 0.75 + (Math.random() * 0.5); // 45-75 minutes
-                console.log(`Using synthetic call duration: ${avgCallDuration} hours`);
+                // No duration data found, set to null
+                avgCallDuration = null;
+                console.log(`No call duration data found, will show N/A`);
             }
             
-            utilizationRate = (totalCalls * avgCallDuration) / (totalUnits * totalHours);
-            console.log(`Utilization rate: ${utilizationRate * 100}%`);
+            if (avgCallDuration !== null) {
+                utilizationRate = (totalCalls * avgCallDuration) / (totalUnits * totalHours);
+                console.log(`Utilization rate: ${utilizationRate * 100}%`);
+            } else {
+                utilizationRate = null;
+                console.log(`Unable to calculate utilization rate due to missing data`);
+            }
         } else {
-            // No units found, generate synthetic utilization rate
-            console.warn("No unit data, generating synthetic utilization rate");
-            utilizationRate = 0.15 + (Math.random() * 0.25); // 15-40%
+            // No units found, set to N/A
+            console.warn("No unit data found, showing N/A");
+            utilizationRate = null;
         }
         
-        // Ensure utilization rate is reasonable for display
-        if (utilizationRate < 0.05) utilizationRate = 0.05 + (Math.random() * 0.15);
-        if (utilizationRate > 0.9) utilizationRate = 0.6 + (Math.random() * 0.3);
-        
-        document.getElementById('unitUtilization').textContent = Math.round(utilizationRate * 100) + '%';
+        document.getElementById('unitUtilization').textContent = utilizationRate !== null ? Math.round(utilizationRate * 100) + '%' : 'N/A';
         
         // Calculate trends
         // For now, using placeholder values - in a real app would calculate from historical data
@@ -1218,10 +1219,10 @@
         console.log(`Found ${callsWithType} calls with valid type information`);
         console.log("Call types:", callTypes);
         
-        // Create placeholder if no call types found
+        // Create No Data label if no call types found
         if (Object.keys(callTypes).length === 0) {
-            console.warn("No call type data found, creating placeholder");
-            callTypes['No Data'] = 1;
+            console.warn("No call type data found, showing No Data");
+            callTypes['No Data Available'] = 1;
         }
         
         // Sort call types by count (descending)
@@ -1351,23 +1352,21 @@
         
         console.log(`Found ${callsWithHour} calls with valid hour data`);
         
-        // Create randomized data if no hour data found
+        // If no hour data found, keep zeros but add a label
         if (callsWithHour === 0) {
-            console.warn("No valid hour data found, creating demo data");
-            // Generate random hours distribution with a realistic pattern
-            // More calls during peak hours (morning and evening)
-            for (let i = 0; i < 24; i++) {
-                // Create a realistic pattern: more calls in morning/evening, fewer overnight
-                if (i >= 7 && i <= 10) { // Morning peak
-                    hours[i] = Math.floor(Math.random() * 15) + 10;
-                } else if (i >= 16 && i <= 20) { // Evening peak
-                    hours[i] = Math.floor(Math.random() * 20) + 15;
-                } else if (i >= 0 && i <= 5) { // Overnight lull
-                    hours[i] = Math.floor(Math.random() * 5) + 1;
-                } else { // Regular hours
-                    hours[i] = Math.floor(Math.random() * 10) + 5;
-                }
-            }
+            console.warn("No valid hour data found, showing No Data");
+            // Keep the zeros array as is, will display an empty chart with a No Data message
+            // Add a small value to the first hour to ensure the chart renders
+            hours[0] = 1;
+            
+            // After rendering the chart, we'll add a No Data message to the canvas
+            setTimeout(() => {
+                const ctx = document.getElementById('callHourChart').getContext('2d');
+                ctx.font = '14px Arial';
+                ctx.fillStyle = '#666';
+                ctx.textAlign = 'center';
+                ctx.fillText('No Data Available', ctx.canvas.width / 2, ctx.canvas.height / 2);
+            }, 100);
         }
         
         console.log("Calls by hour:", hours);
@@ -1510,17 +1509,21 @@
         
         console.log(`Found ${callsWithDay} calls with valid day data`);
         
-        // Generate sample data if no valid day information found
+        // If no valid day information found, keep zeros but add a label
         if (callsWithDay === 0) {
-            console.warn("No valid day of week data found, generating sample data");
-            // Create a realistic distribution with weekends slightly higher
-            days[0] = 30 + Math.floor(Math.random() * 15); // Sunday
-            days[1] = 25 + Math.floor(Math.random() * 10); // Monday
-            days[2] = 25 + Math.floor(Math.random() * 10); // Tuesday
-            days[3] = 25 + Math.floor(Math.random() * 10); // Wednesday
-            days[4] = 25 + Math.floor(Math.random() * 10); // Thursday
-            days[5] = 30 + Math.floor(Math.random() * 15); // Friday
-            days[6] = 35 + Math.floor(Math.random() * 15); // Saturday
+            console.warn("No valid day of week data found, showing No Data");
+            // Keep the zeros array as is, will display an empty chart with a No Data message
+            // Add a small value to the first day to ensure the chart renders
+            days[0] = 1;
+            
+            // After rendering the chart, we'll add a No Data message to the canvas
+            setTimeout(() => {
+                const ctx = document.getElementById('callDayChart').getContext('2d');
+                ctx.font = '14px Arial';
+                ctx.fillStyle = '#666';
+                ctx.textAlign = 'center';
+                ctx.fillText('No Data Available', ctx.canvas.width / 2, ctx.canvas.height / 2);
+            }, 100);
         }
         
         console.log("Calls by day:", days);
@@ -1795,19 +1798,13 @@
             return a.localeCompare(b);
         });
         
-        // If no stations found with data, create sample data
+        // If no stations found with data, show message
         if (sortedStations.length === 0) {
-            console.warn("No station data for metrics table, creating sample station");
-            stationMetrics['Station 1'] = {
-                callVolume: 125,
-                responseTimes: [5.2, 6.1, 4.8, 7.2, 5.6],
-                unitCalls: { 'E1': 75, 'M1': 50 },
-                callTypes: { 'EMS': 80, 'FIRE': 30, 'MVA': 15 },
-                callHours: Array(24).fill(5),
-                displayName: 'Station 1'
-            };
-            stationMetrics['Station 1'].callHours[8] = 12; // Set busiest hour
-            sortedStations.push('Station 1');
+            console.warn("No station data for metrics table, showing no data message");
+            // Add a row to the table indicating no data
+            const tableBody = document.querySelector('#stationMetricsTable tbody');
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No station data available</td></tr>';
+            return; // Exit function early
         }
         
         console.log("Station metrics for table:", stationMetrics);
@@ -2001,53 +1998,10 @@
     }
     
     /**
-     * Generate mock data for testing
+     * This function is disabled as we now show N/A instead of synthetic data
      */
     function generateMockData() {
-        const mockData = [];
-        const stations = [1, 2, 3, 4, 5];
-        const callTypes = ['FIRE', 'EMS', 'HAZMAT', 'RESCUE', 'SERVICE'];
-        const units = [
-            'E1', 'E2', 'E3', 'E4', 'E5',
-            'M1', 'M2', 'M3', 'M4', 'M5',
-            'T1', 'T2', 'BC1'
-        ];
-        
-        // Station coordinates (approximate locations)
-        const stationCoords = {
-            1: { lat: 40.7128, lng: -74.0060 }, // New York
-            2: { lat: 40.7282, lng: -73.9942 }, // NYC - East
-            3: { lat: 40.7369, lng: -74.0323 }, // NYC - West
-            4: { lat: 40.7489, lng: -73.9680 }, // NYC - North
-            5: { lat: 40.6782, lng: -73.9442 }  // NYC - South
-        };
-        
-        // Generate 500 sample incidents
-        for (let i = 0; i < 500; i++) {
-            const station = stations[Math.floor(Math.random() * stations.length)];
-            const unit = units.find(u => u.includes(station.toString()) || (Math.random() < 0.3));
-            const callType = callTypes[Math.floor(Math.random() * callTypes.length)];
-            
-            // Generate random date within the last 3 months
-            const date = new Date();
-            date.setDate(date.getDate() - Math.floor(Math.random() * 90));
-            
-            // Add slight variation to station coordinates
-            const latVariation = (Math.random() - 0.5) * 0.02;
-            const lngVariation = (Math.random() - 0.5) * 0.02;
-            
-            mockData.push({
-                id: `INC-${i.toString().padStart(5, '0')}`,
-                timestamp: date.toISOString(),
-                station: station.toString(),
-                unit: unit,
-                call_type: callType,
-                response_time: 2 + Math.random() * 10, // 2 to 12 minutes
-                latitude: stationCoords[station].lat + latVariation,
-                longitude: stationCoords[station].lng + lngVariation
-            });
-        }
-        
-        return mockData;
+        console.warn("Mock data generation is disabled. Showing N/A for missing data.");
+        return [];
     }
 })();
