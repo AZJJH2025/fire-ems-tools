@@ -168,25 +168,27 @@
       <div class="formatter-panel center-panel">
         <h2>Transformation Settings</h2>
         
-        <div class="target-tool-section">
-          <label for="target-tool">Target Tool:</label>
-          <select id="target-tool">
-            <option value="" disabled selected>Select target tool</option>
-            <option value="response-time">Response Time Analyzer</option>
-            <option value="isochrone">Isochrone Map Generator</option>
-            <option value="isochrone-stations">Isochrone Map - Station Locations</option>
-            <option value="isochrone-incidents">Isochrone Map - Incident Data</option>
-            <option value="call-density">Call Density Heatmap</option>
-            <option value="incident-logger">Incident Logger</option>
-            <option value="coverage-gap">Coverage Gap Finder</option>
-            <option value="station-overview">Station Overview</option>
-            <option value="fire-map-pro">FireMapPro</option>
-          </select>
-          
-          <div class="info-tooltip">
-            <i class="fas fa-info-circle"></i>
-            <div class="tooltip-content">
-              Select the tool you want to prepare data for. The formatter will automatically adjust data to meet that tool's requirements.
+        <div class="transformation-options">
+          <div class="target-tool-section">
+            <label for="target-tool">Target Tool:</label>
+            <select id="target-tool">
+              <option value="" disabled selected>Select target tool</option>
+              <option value="response-time">Response Time Analyzer</option>
+              <option value="isochrone">Isochrone Map Generator</option>
+              <option value="isochrone-stations">Isochrone Map - Station Locations</option>
+              <option value="isochrone-incidents">Isochrone Map - Incident Data</option>
+              <option value="call-density">Call Density Heatmap</option>
+              <option value="incident-logger">Incident Logger</option>
+              <option value="coverage-gap">Coverage Gap Finder</option>
+              <option value="station-overview">Station Overview</option>
+              <option value="fire-map-pro">FireMapPro</option>
+            </select>
+            
+            <div class="info-tooltip">
+              <i class="fas fa-info-circle"></i>
+              <div class="tooltip-content">
+                Select the tool you want to prepare data for. The formatter will automatically adjust data to meet that tool's requirements.
+              </div>
             </div>
           </div>
         </div>
