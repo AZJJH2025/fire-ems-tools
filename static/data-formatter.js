@@ -54,6 +54,24 @@ document.addEventListener('DOMContentLoaded', function() {
             coordinateFields: ['Latitude', 'Longitude'],
             optionalFields: ['Personnel Count', 'Station Type', 'Active Units']
         },
+        'isochrone-stations': {
+            requiredFields: [
+                'Station ID', 'Station Name',
+                'Latitude', 'Longitude'
+            ],
+            coordinateFields: ['Latitude', 'Longitude'],
+            optionalFields: ['Station Address', 'Unit Types', 'Personnel Count', 'Station Type', 'Active Units']
+        },
+        'isochrone-incidents': {
+            requiredFields: [
+                'Incident ID', 'Incident Type',
+                'Latitude', 'Longitude'
+            ],
+            coordinateFields: ['Latitude', 'Longitude'],
+            dateFields: ['Incident Date'],
+            timeFields: ['Incident Time'],
+            optionalFields: ['Address', 'City', 'Priority', 'Response Time (min)']
+        },
         'call-density': {
             requiredFields: [
                 'Incident ID', 'Incident Date', 'Incident Time',
@@ -622,9 +640,67 @@ document.addEventListener('DOMContentLoaded', function() {
                 transformBtn.disabled = false;
             }
             
+            // Show isochrone map data type options if Isochrone is selected
+            updateIsochroneOptions();
+            
             appendLog(`Selected target tool: ${getToolName(selectedTool)}`);
         } else {
             transformBtn.disabled = true;
+        }
+    }
+    
+    // Update UI to show isochrone-specific options when needed
+    function updateIsochroneOptions() {
+        // Get or create the isochrone options container
+        let isochroneOptions = document.getElementById('isochrone-data-options');
+        
+        // If Isochrone is selected, show the options
+        if (selectedTool === 'isochrone') {
+            // Create the options container if it doesn't exist
+            if (!isochroneOptions) {
+                isochroneOptions = document.createElement('div');
+                isochroneOptions.id = 'isochrone-data-options';
+                isochroneOptions.className = 'isochrone-data-options';
+                isochroneOptions.style.cssText = 'margin-top: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 4px; border: 1px solid #ddd;';
+                
+                isochroneOptions.innerHTML = `
+                    <h4 style="margin-top: 0; margin-bottom: 10px;">Isochrone Map Data Type</h4>
+                    <p style="margin-bottom: 10px;">Choose how your data should be interpreted:</p>
+                    <div style="display: flex; gap: 10px;">
+                        <button id="send-as-stations" class="secondary-btn">
+                            <i class="fas fa-building"></i> Send as Stations
+                        </button>
+                        <button id="send-as-incidents" class="secondary-btn">
+                            <i class="fas fa-map-marker-alt"></i> Send as Incidents
+                        </button>
+                    </div>
+                `;
+                
+                // Add it to the download section
+                document.querySelector('.download-section').appendChild(isochroneOptions);
+                
+                // Add event listeners to the new buttons
+                document.getElementById('send-as-stations').addEventListener('click', function() {
+                    if (transformedData) {
+                        sendToIsochroneMap('stations');
+                    } else {
+                        appendLog('Please transform your data first', 'error');
+                    }
+                });
+                
+                document.getElementById('send-as-incidents').addEventListener('click', function() {
+                    if (transformedData) {
+                        sendToIsochroneMap('incidents');
+                    } else {
+                        appendLog('Please transform your data first', 'error');
+                    }
+                });
+            } else {
+                isochroneOptions.style.display = 'block';
+            }
+        } else if (isochroneOptions) {
+            // Hide the options if not isochrone
+            isochroneOptions.style.display = 'none';
         }
     }
     
@@ -1607,9 +1683,152 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Send data to the selected tool
+    // Function to send data specifically to Isochrone Map as either stations or incidents
+    function sendToIsochroneMap(dataType) {
+        if (!transformedData) {
+            appendLog('Cannot send data: missing transformed data', 'error');
+            return;
+        }
+        
+        // Set the selected tool based on data type
+        const isochroneTool = dataType === 'stations' ? 'isochrone-stations' : 'isochrone-incidents';
+        
+        try {
+            // Show processing indicator
+            const processingStatus = document.createElement('div');
+            processingStatus.innerHTML = `
+                <div style="display: flex; align-items: center; margin: 15px 0; padding: 10px; background-color: #e3f2fd; border-radius: 4px;">
+                    <div class="loading-spinner"></div>
+                    <span>Sending data to Isochrone Map as ${dataType}...</span>
+                </div>
+            `;
+            document.querySelector('.download-section').appendChild(processingStatus);
+            
+            // Prepare data for the specific isochrone map data type
+            let preparedData = prepareDataForTool(transformedData, isochroneTool);
+            
+            // Compress large datasets for storage
+            let dataToStore;
+            if (preparedData.length > 1000) {
+                appendLog(`Large dataset detected (${preparedData.length} records). Optimizing for transfer...`);
+                
+                // Keep only essential fields
+                const requirements = toolRequirements[isochroneTool];
+                if (requirements && requirements.requiredFields) {
+                    preparedData = preparedData.map(item => {
+                        const essentialItem = {};
+                        
+                        // Include required fields
+                        requirements.requiredFields.forEach(field => {
+                            if (item[field] !== undefined) {
+                                essentialItem[field] = item[field];
+                            }
+                        });
+                        
+                        // Add a few optional fields if present
+                        if (requirements.optionalFields && requirements.optionalFields.length > 0) {
+                            requirements.optionalFields.slice(0, 5).forEach(field => {
+                                if (item[field] !== undefined) {
+                                    essentialItem[field] = item[field];
+                                }
+                            });
+                        }
+                        
+                        // Always preserve metadata fields
+                        if (item._source) essentialItem._source = item._source;
+                        if (item._formatted) essentialItem._formatted = item._formatted;
+                        if (item._timestamp) essentialItem._timestamp = item._timestamp;
+                        
+                        return essentialItem;
+                    });
+                    
+                    appendLog(`Data optimized: Keeping only essential fields for ${dataType}`);
+                }
+                
+                // For extremely large datasets, sample the data
+                if (preparedData.length > 5000) {
+                    const sampleSize = 5000;
+                    const sampledData = [];
+                    const interval = Math.floor(preparedData.length / sampleSize);
+                    
+                    for (let i = 0; i < preparedData.length; i += interval) {
+                        sampledData.push(preparedData[i]);
+                        if (sampledData.length >= sampleSize) break;
+                    }
+                    
+                    dataToStore = {
+                        data: sampledData,
+                        meta: {
+                            originalSize: preparedData.length,
+                            sampled: true,
+                            sampleRatio: sampledData.length / preparedData.length
+                        }
+                    };
+                    
+                    appendLog(`Data sampled: Using ${sampledData.length} representative records out of ${preparedData.length}`);
+                } else {
+                    dataToStore = { data: preparedData, meta: { originalSize: preparedData.length } };
+                }
+            } else {
+                dataToStore = { data: preparedData, meta: { originalSize: preparedData.length } };
+            }
+            
+            // Store the data in sessionStorage for the isochrone map to access
+            sessionStorage.setItem('formattedData', JSON.stringify(dataToStore));
+            sessionStorage.setItem('dataSource', 'formatter');
+            sessionStorage.setItem('formatterTimestamp', new Date().toISOString());
+            sessionStorage.setItem('formatterToolId', isochroneTool);
+            sessionStorage.setItem('formatterTarget', 'isochrone');
+            
+            // Log for debugging
+            console.log(`Data stored in sessionStorage as ${dataType} for Isochrone Map`);
+            
+            // Remove processing indicator
+            setTimeout(() => {
+                document.querySelector('.download-section').removeChild(processingStatus);
+                
+                appendLog(`Data successfully prepared for Isochrone Map as ${dataType} (${formatBytes(JSON.stringify(dataToStore).length)})`, 'success');
+                
+                // Offer to redirect to the tool
+                const confirmRedirect = confirm(
+                    `Data is ready for use in Isochrone Map Generator as ${dataType}.\n\nWould you like to open the tool now?`
+                );
+                
+                if (confirmRedirect) {
+                    // Redirect to isochrone map
+                    const toolUrl = `/isochrone-map?source=formatter&dataType=${dataType}&ts=${Date.now()}`;
+                    
+                    console.log(`Redirecting to ${toolUrl}`);
+                    console.log("SessionStorage contents:", {
+                        formattedData: "LARGE_DATA_OBJECT",
+                        dataSource: sessionStorage.getItem('dataSource'),
+                        formatterToolId: sessionStorage.getItem('formatterToolId'),
+                        formatterTarget: sessionStorage.getItem('formatterTarget')
+                    });
+                    
+                    // Redirect to the tool
+                    window.location.href = toolUrl;
+                }
+            }, 1500);
+            
+        } catch (error) {
+            console.error("Error sending data to Isochrone Map:", error);
+            appendLog(`Error: ${error.message}`, 'error');
+        }
+    }
+
     function sendToTool() {
         if (!transformedData || !selectedTool) {
             appendLog('Cannot send data: missing transformed data or tool selection', 'error');
+            return;
+        }
+        
+        // If the selected tool is one of the isochrone tools, use the specialized function
+        if (selectedTool === 'isochrone-stations') {
+            sendToIsochroneMap('stations');
+            return;
+        } else if (selectedTool === 'isochrone-incidents') {
+            sendToIsochroneMap('incidents');
             return;
         }
         

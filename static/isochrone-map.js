@@ -117,10 +117,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const formatterToolId = sessionStorage.getItem('formatterToolId');
     const formatterTarget = sessionStorage.getItem('formatterTarget');
     
+    // Check URL parameters for data type override
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlDataType = urlParams.get('dataType');
+    
     console.log("SessionStorage state:", {
         dataSource,
         formatterToolId,
-        formatterTarget
+        formatterTarget,
+        urlDataType
     });
     
     // Check if the data is intended for this tool
@@ -150,13 +155,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Determine data type based on tool ID
-            let dataType = 'stations'; // Default
-            if (formatterToolId === 'isochrone-incidents' || 
-                (dataToProcess.length > 0 && 
-                 !dataToProcess[0]['Station Name'] && 
-                 !dataToProcess[0]['Station ID'])) {
+            // Determine data type - prioritize URL parameter, then formatterToolId, then infer from data
+            let dataType;
+            
+            // First check URL parameter
+            if (urlDataType === 'stations' || urlDataType === 'incidents') {
+                dataType = urlDataType;
+                console.log(`Using data type from URL parameter: ${dataType}`);
+            } 
+            // Then check formatter tool ID
+            else if (formatterToolId === 'isochrone-stations') {
+                dataType = 'stations';
+                console.log(`Using data type from formatter tool ID: ${dataType}`);
+            }
+            else if (formatterToolId === 'isochrone-incidents') {
                 dataType = 'incidents';
+                console.log(`Using data type from formatter tool ID: ${dataType}`);
+            }
+            // Otherwise infer from data structure
+            else {
+                dataType = 'stations'; // Default
+                if (dataToProcess.length > 0 && 
+                    !dataToProcess[0]['Station Name'] && 
+                    !dataToProcess[0]['Station ID']) {
+                    dataType = 'incidents';
+                }
+                console.log(`Inferred data type from content: ${dataType}`);
             }
             
             console.log(`Processing ${dataType} data from Data Formatter`);
