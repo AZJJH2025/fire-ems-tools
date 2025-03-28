@@ -29,21 +29,7 @@
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     
-    header {
-        background-color: white;
-        padding: 15px 0;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    
-    .header-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 20px;
-    }
+    /* Using the global navbar styles from styles.css */
     
     button {
         background-color: #4a89dc;
@@ -124,24 +110,32 @@
     </style>
 </head>
 <body>
-    <header>
-        <div class="header-container">
-            <div class="logo">
-                <a href="/">
-                    <h1><i class="fas fa-fire-extinguisher"></i> FireEMS.ai</h1>
-                </a>
-            </div>
-            <nav>
-                <ul class="nav-links">
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/fire-ems-dashboard">Response Time</a></li>
-                    <li><a href="/isochrone-map">Isochrone Map</a></li>
-                    <li><a href="/call-density-heatmap">Density Map</a></li>
-                    <li><a href="/incident-logger" class="active">Incident Logger</a></li>
-                </ul>
-            </nav>
+    <div class="navbar">
+        <div class="logo">
+            <a href="/">
+                <i class="fas fa-fire"></i> FireEMS.ai
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/fire-ems-dashboard">Response Time Analyzer</a>
+            <a href="/isochrone-map">Isochrone Map</a>
+            <a href="/call-density-heatmap">Call Density</a>
+            <a href="/station-overview">Station Overview</a>
+            <a href="/incident-logger" class="active">Incident Logger</a>
+            <a href="/fire-map-pro">FireMapPro</a>
+            <a href="/data-formatter">Data Formatter</a>
+        </div>
+    </div>
+
+    <header class="tool-header">
+        <div class="container">
+            <h1><i class="fas fa-clipboard-list"></i> Incident Logger</h1>
+            <p>Streamlined incident data entry and management system</p>
         </div>
     </header>
+    
+    <div class="container">
 
     <main>
         <div class="container">

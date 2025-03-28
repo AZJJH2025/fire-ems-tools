@@ -12,30 +12,33 @@
   <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
 </head>
 <body>
-  <header>
-    <div class="navbar">
-      <div class="logo">
-        <a href="/">🚒 FireEMS.ai 🚑</a>
-      </div>
-      <nav>
-        <ul>
-          <li><a href="/fire-ems-dashboard">Dashboard</a></li>
-          <li><a href="/isochrone-map">Isochrone Map</a></li>
-          <li><a href="/call-density-heatmap">Call Density</a></li>
-          <li><a href="/coverage-gap-finder">Coverage Gaps</a></li>
-          <li><a href="/incident-logger">Incident Logger</a></li>
-          <li><a href="/station-overview">Station Overview</a></li>
-          <li><a href="/fire-map-pro">FireMapPro</a></li>
-          <li class="active"><a href="/data-formatter">Data Formatter</a></li>
-        </ul>
-      </nav>
+  <div class="navbar">
+    <div class="logo">
+      <a href="/">
+        <i class="fas fa-fire"></i> FireEMS.ai
+      </a>
+    </div>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/fire-ems-dashboard">Response Time Analyzer</a>
+      <a href="/isochrone-map">Isochrone Map</a>
+      <a href="/call-density-heatmap">Call Density</a>
+      <a href="/station-overview">Station Overview</a>
+      <a href="/incident-logger">Incident Logger</a>
+      <a href="/coverage-gap-finder">Coverage Gap Finder</a>
+      <a href="/fire-map-pro">FireMapPro</a>
+      <a href="/data-formatter" class="active">Data Formatter</a>
+    </div>
+  </div>
+  
+  <header class="tool-header">
+    <div class="container">
+      <h1><i class="fas fa-exchange-alt"></i> Data Formatter</h1>
+      <p>Convert, standardize, and prepare your data for use with FireEMS.ai tools</p>
     </div>
   </header>
 
   <main class="container">
-    <section class="tool-header">
-      <h1><i class="fas fa-exchange-alt"></i> Data Formatter</h1>
-      <p>Convert, standardize, and prepare your data for use with FireEMS.ai tools</p>
       
       <div class="instructions-toggle">
         <button id="show-instructions" class="secondary-btn">

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direct Test</title>
+    <style>
+        body {
+            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+        .test-box {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #4a89dc;
+        }
+        button {
+            background-color: #4a89dc;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #3a70b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-box">
+        <h1>Direct HTML Test Page</h1>
+        <p>This is a simple test page with no external CSS or JS files. If you can see this with styling (blue heading, white box with shadow), then the base HTML serving is working correctly.</p>
+        
+        <h2>CSS Status</h2>
+        <div id="css-status">
+            <p>The heading above should be blue and this box should have a white background with a shadow. If not, there's a CSS issue.</p>
+        </div>
+        
+        <button id="test-btn">Click me to test JavaScript</button>
+        
+        <h2>JavaScript Status</h2>
+        <div id="js-status">JavaScript status will appear here when you click the button above.</div>
+    </div>
+    
+    <script>
+        // Simple JavaScript to test if JS is working
+        document.getElementById('test-btn').addEventListener('click', function() {
+            document.getElementById('js-status').innerHTML = '<p style="color: green;">JavaScript is working correctly!</p>';
+        });
+    </script>
+</body>
+</html>
