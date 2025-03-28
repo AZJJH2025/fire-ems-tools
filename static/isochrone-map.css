@@ -100,6 +100,34 @@
   color: #555;
 }
 
+/* Proximity filter styles */
+.proximity-filter {
+  margin-top: 10px;
+  padding: 8px;
+  background-color: #e8f4fd;
+  border-radius: 4px;
+  border: 1px solid #cce5ff;
+}
+
+.proximity-filter .input-group {
+  margin-bottom: 5px;
+}
+
+.proximity-filter label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+
+.proximity-filter select {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
 .incident-point {
   background-color: rgba(255, 165, 0, 0.7);
   border-radius: 50%;
@@ -236,6 +264,75 @@ button:hover {
 
 .result-content {
   font-size: 14px;
+}
+
+/* Combined data stats styles */
+.combined-stats {
+  margin-top: 15px;
+  padding: 12px;
+  border-radius: 4px;
+  background-color: #f0f7ff;
+  border: 1px solid #b3d7ff;
+}
+
+.combined-stats h4 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  color: #0056b3;
+  font-size: 15px;
+}
+
+.combined-stats p {
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.coverage-stats {
+  margin-top: 10px;
+}
+
+.coverage-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.coverage-item:last-child {
+  border-bottom: none;
+}
+
+.coverage-label {
+  font-weight: 500;
+  color: #444;
+}
+
+.coverage-value {
+  font-weight: bold;
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+.coverage-value.good {
+  background-color: rgba(40, 167, 69, 0.2);
+  color: #218838;
+}
+
+.coverage-value.moderate {
+  background-color: rgba(255, 193, 7, 0.2);
+  color: #c69500;
+}
+
+.coverage-value.poor {
+  background-color: rgba(220, 53, 69, 0.2);
+  color: #bd2130;
+}
+
+.coverage-detail {
+  font-size: 12px;
+  font-weight: normal;
+  opacity: 0.8;
 }
 
 /* Station management styles */

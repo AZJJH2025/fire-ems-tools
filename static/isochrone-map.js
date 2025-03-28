@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let incidentMarkers = []; // Array to hold incident markers
     let incidentHeatmap = null; // Heatmap layer for incidents
     let incidentData = []; // Raw incident data
+    let stationData = []; // Raw station data for combined mode
     
     // Show info/success messages to the user
     function showMessage(message, type = 'info') {
@@ -159,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let dataType;
             
             // First check URL parameter
-            if (urlDataType === 'stations' || urlDataType === 'incidents') {
+            if (urlDataType === 'stations' || urlDataType === 'incidents' || urlDataType === 'combined') {
                 dataType = urlDataType;
                 console.log(`Using data type from URL parameter: ${dataType}`);
             } 
@@ -172,10 +173,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 dataType = 'incidents';
                 console.log(`Using data type from formatter tool ID: ${dataType}`);
             }
+            else if (formatterToolId === 'isochrone-combined') {
+                dataType = 'combined';
+                console.log(`Using data type from formatter tool ID: ${dataType}`);
+            }
             // Otherwise infer from data structure
             else {
                 dataType = 'stations'; // Default
-                if (dataToProcess.length > 0 && 
+                
+                // Check if it's a combined data structure
+                if (dataToProcess.stations && dataToProcess.incidents) {
+                    dataType = 'combined';
+                    console.log('Detected combined data structure with stations and incidents');
+                }
+                // Check if it looks like incidents data
+                else if (dataToProcess.length > 0 && 
                     !dataToProcess[0]['Station Name'] && 
                     !dataToProcess[0]['Station ID']) {
                     dataType = 'incidents';
@@ -200,6 +212,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Process the station data
                 if (dataToProcess.length > 0) {
                     console.log("First station record:", dataToProcess[0]);
+                    
+                    // Store station data for future reference
+                    stationData = dataToProcess.filter(station => 
+                        station.Latitude && station.Longitude && 
+                        !isNaN(station.Latitude) && !isNaN(station.Longitude)
+                    );
                     
                     // If we have valid stations, populate them on the map
                     dataToProcess.forEach(station => {
@@ -290,6 +308,308 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     showMessage(`Successfully processed ${incidentData.length} incidents from Data Formatter`, "success");
                 }
+            } else if (dataType === 'combined') {
+                console.log("Processing combined stations and incidents data");
+                
+                // Handle combined data structure
+                let stationsToProcess, incidentsToProcess;
+                
+                if (dataToProcess.stations && dataToProcess.incidents) {
+                    // Data is in expected combined format
+                    stationsToProcess = dataToProcess.stations;
+                    incidentsToProcess = dataToProcess.incidents;
+                    console.log(`Found ${stationsToProcess.length} stations and ${incidentsToProcess.length} incidents in combined data`);
+                } else {
+                    // Try to parse out stations vs incidents based on properties
+                    console.log("Combined data not in expected format, attempting to separate stations and incidents");
+                    stationsToProcess = dataToProcess.filter(record => 
+                        record['Station Name'] || record['Station ID'] || 
+                        (record.recordType && record.recordType.toLowerCase() === 'station')
+                    );
+                    
+                    incidentsToProcess = dataToProcess.filter(record => 
+                        !record['Station Name'] && !record['Station ID'] &&
+                        (!record.recordType || record.recordType.toLowerCase() !== 'station')
+                    );
+                    console.log(`Separated ${stationsToProcess.length} stations and ${incidentsToProcess.length} incidents from data`);
+                }
+                
+                // Process stations
+                if (stationsToProcess && stationsToProcess.length > 0) {
+                    console.log("Processing stations from combined data");
+                    console.log("First station record:", stationsToProcess[0]);
+                    
+                    // Store station data for future reference
+                    stationData = stationsToProcess.filter(station => 
+                        station.Latitude && station.Longitude && 
+                        !isNaN(station.Latitude) && !isNaN(station.Longitude)
+                    );
+                    
+                    // Process valid stations
+                    stationData.forEach(station => {
+                        const stationName = station['Station Name'] || station['Station ID'] || 'Unknown Station';
+                        
+                        // Create a marker for the station
+                        const marker = L.marker([station.Latitude, station.Longitude])
+                            .addTo(map)
+                            .bindPopup(`<b>${stationName}</b><br>ID: ${station['Station ID'] || 'N/A'}`);
+                            
+                        // Store the marker
+                        stationMarkers.push(marker);
+                    });
+                    
+                    // Update station count and list
+                    if (stationData.length > 0) {
+                        document.getElementById('station-count').textContent = `(${stationData.length})`;
+                        
+                        // Clear the "no stations" message
+                        const stationsList = document.getElementById('stations-list');
+                        stationsList.innerHTML = '';
+                        
+                        // Add each station to the list
+                        stationData.forEach((station, index) => {
+                            const stationName = station['Station Name'] || station['Station ID'] || `Station ${index + 1}`;
+                            const stationItem = document.createElement('div');
+                            stationItem.className = 'station-item';
+                            stationItem.textContent = stationName;
+                            stationItem.dataset.index = index;
+                            stationItem.addEventListener('click', () => selectStation(index));
+                            stationsList.appendChild(stationItem);
+                        });
+                        
+                        showMessage(`Successfully processed ${stationData.length} stations from combined data`, "success");
+                    }
+                }
+                
+                // Process incidents
+                if (incidentsToProcess && incidentsToProcess.length > 0) {
+                    console.log("Processing incidents from combined data");
+                    console.log("First incident record:", incidentsToProcess[0]);
+                    
+                    // Filter valid incidents
+                    incidentData = incidentsToProcess.filter(incident => 
+                        incident.Latitude && incident.Longitude && 
+                        !isNaN(incident.Latitude) && !isNaN(incident.Longitude)
+                    );
+                    
+                    if (incidentData.length > 0) {
+                        // Update incidents summary
+                        const incidentsSummary = document.getElementById('incidents-summary');
+                        incidentsSummary.innerHTML = `<p>${incidentData.length} incidents loaded</p>`;
+                        
+                        // Enable incident checkboxes
+                        document.getElementById('show-incidents').disabled = false;
+                        document.getElementById('show-heatmap').disabled = false;
+                        
+                        // Auto-check show incidents
+                        document.getElementById('show-incidents').checked = true;
+                        
+                        // Show incidents on map
+                        showIncidentsOnMap();
+                        
+                        showMessage(`Successfully processed ${incidentData.length} incidents from combined data`, "success");
+                    }
+                }
+                
+                // Fit map to include all data points
+                if ((stationData && stationData.length > 0) || (incidentData && incidentData.length > 0)) {
+                    const allPoints = [
+                        ...(stationData || []).map(s => [s.Latitude, s.Longitude]),
+                        ...(incidentData || []).map(i => [i.Latitude, i.Longitude])
+                    ];
+                    
+                    if (allPoints.length > 0) {
+                        const bounds = L.latLngBounds(allPoints);
+                        map.fitBounds(bounds, { padding: [50, 50] });
+                    }
+                }
+                
+                // Add a new UI section showing combined data statistics
+                const statsContainer = document.createElement('div');
+                statsContainer.className = 'combined-stats';
+                statsContainer.innerHTML = `
+                    <h4>Combined Data Summary</h4>
+                    <p>${stationData.length} stations and ${incidentData.length} incidents loaded</p>
+                    <button id="analyze-coverage-button" class="primary-button">Analyze Coverage</button>
+                `;
+                
+                // Add to the appropriate section of the page
+                const incidentsSummary = document.getElementById('incidents-summary');
+                incidentsSummary.appendChild(statsContainer);
+                
+                // Add event listener for the analyze button
+                document.getElementById('analyze-coverage-button').addEventListener('click', analyzeCoverage);
+            }
+            
+            // Function to analyze coverage of stations relative to incidents
+            function analyzeCoverage() {
+                console.log("Analyzing coverage of stations relative to incidents");
+                
+                // Make sure we have both stations and incidents
+                if (!stationData || stationData.length === 0) {
+                    showMessage("No station data available for analysis", "error");
+                    return;
+                }
+                
+                if (!incidentData || incidentData.length === 0) {
+                    showMessage("No incident data available for analysis", "error");
+                    return;
+                }
+                
+                // Get selected time intervals
+                const timeIntervals = [];
+                document.querySelectorAll('input[name="time-interval"]:checked').forEach(checkbox => {
+                    timeIntervals.push(parseInt(checkbox.value));
+                });
+                
+                if (timeIntervals.length === 0) {
+                    showMessage("Please select at least one time interval for analysis", "error");
+                    return;
+                }
+                
+                // Start the analysis
+                showMessage("Analyzing coverage... This may take a moment.", "info");
+                
+                // Calculate travel times for each incident from the nearest station
+                const incidentCoverage = {};
+                timeIntervals.forEach(interval => {
+                    incidentCoverage[interval] = {
+                        covered: 0,
+                        total: incidentData.length,
+                        percentage: 0
+                    };
+                });
+                
+                // For our simple estimation, we'll use a rough calculation of travel time
+                // Average speed of emergency vehicle: ~35mph or ~56 km/h = ~0.93 km/min
+                // So 4 minutes = ~3.7km, 8 minutes = ~7.5km, 12 minutes = ~11.2km
+                const minuteToKm = 0.93;
+                const timeToDistance = {};
+                timeIntervals.forEach(interval => {
+                    timeToDistance[interval] = interval * minuteToKm * 1000; // in meters
+                });
+                
+                // Count incidents within each time interval
+                incidentData.forEach(incident => {
+                    const incidentPos = L.latLng(incident.Latitude, incident.Longitude);
+                    
+                    // Find closest station
+                    let closestDistance = Infinity;
+                    stationData.forEach(station => {
+                        const stationPos = L.latLng(station.Latitude, station.Longitude);
+                        const distance = incidentPos.distanceTo(stationPos);
+                        if (distance < closestDistance) {
+                            closestDistance = distance;
+                        }
+                    });
+                    
+                    // Check which time intervals this incident falls within
+                    timeIntervals.forEach(interval => {
+                        if (closestDistance <= timeToDistance[interval]) {
+                            incidentCoverage[interval].covered++;
+                        }
+                    });
+                });
+                
+                // Calculate percentages
+                timeIntervals.forEach(interval => {
+                    incidentCoverage[interval].percentage = 
+                        (incidentCoverage[interval].covered / incidentCoverage[interval].total) * 100;
+                });
+                
+                // Update the coverage statistics in the UI
+                updateIncidentCoverageDisplay(incidentCoverage);
+                
+                // Update color of incidents based on coverage
+                updateIncidentColorsByProximity();
+                
+                showMessage("Coverage analysis complete", "success");
+            }
+            
+            // Function to update the UI with coverage statistics
+            function updateIncidentCoverageDisplay(coverageData) {
+                const container = document.getElementById('area-coverage');
+                
+                let html = '<div class="coverage-stats">';
+                
+                // Add a summary heading
+                html += '<h4>Incident Coverage</h4>';
+                
+                // Add stats for each time interval
+                Object.keys(coverageData).forEach(interval => {
+                    const data = coverageData[interval];
+                    html += `
+                        <div class="coverage-item">
+                            <div class="coverage-label">${interval} minute response:</div>
+                            <div class="coverage-value ${data.percentage > 80 ? 'good' : data.percentage > 50 ? 'moderate' : 'poor'}">
+                                ${data.percentage.toFixed(1)}% 
+                                <span class="coverage-detail">(${data.covered} of ${data.total})</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                container.innerHTML = html;
+            }
+            
+            // Function to update incident colors based on proximity to stations
+            function updateIncidentColorsByProximity() {
+                // First clear existing incident markers
+                incidentMarkers.forEach(marker => map.removeLayer(marker));
+                incidentMarkers = [];
+                
+                // Recreate incident markers with colors based on proximity
+                incidentData.forEach(incident => {
+                    const incidentPos = L.latLng(incident.Latitude, incident.Longitude);
+                    
+                    // Find closest station
+                    let closestDistance = Infinity;
+                    stationData.forEach(station => {
+                        const stationPos = L.latLng(station.Latitude, station.Longitude);
+                        const distance = incidentPos.distanceTo(stationPos);
+                        if (distance < closestDistance) {
+                            closestDistance = distance;
+                        }
+                    });
+                    
+                    // Determine color based on distance
+                    // 0-4 min = green, 4-8 min = yellow, 8+ min = red
+                    // Assuming average speed of ~0.93 km/min
+                    let color = '#dc3545'; // Default red (>8 min)
+                    
+                    if (closestDistance <= 3.7 * 1000) { // 0-4 min
+                        color = '#28a745'; // Green
+                    } else if (closestDistance <= 7.5 * 1000) { // 4-8 min
+                        color = '#ffc107'; // Yellow
+                    }
+                    
+                    // Create circle marker with appropriate color
+                    const marker = L.circleMarker([incident.Latitude, incident.Longitude], {
+                        radius: 6,
+                        fillColor: color,
+                        color: '#000',
+                        weight: 1,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(map);
+                    
+                    // Add popup with incident info
+                    const incidentType = incident['Incident Type'] || 'Unknown Type';
+                    const responseTime = (closestDistance / (0.93 * 1000)).toFixed(1); // Estimated response time in minutes
+                    
+                    marker.bindPopup(`
+                        <b>${incidentType}</b><br>
+                        Estimated Response Time: ${responseTime} minutes<br>
+                        Distance to Nearest Station: ${(closestDistance / 1000).toFixed(2)} km
+                    `);
+                    
+                    // Store the marker
+                    incidentMarkers.push(marker);
+                });
+                
+                // Update incidents display
+                document.getElementById('show-incidents').checked = true;
             }
             
             // Clear the sessionStorage to prevent reprocessing on page refresh
@@ -1832,7 +2152,92 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        console.log(`Processing ${incidentData.length} incidents for display`);
+        // Check if we should filter by station proximity
+        let filterByProximity = false;
+        let filteredIncidents = incidentData;
+        
+        // Check if we have combined data (both stations and incidents)
+        if (stationMarkers.length > 0 && stationData.length > 0) {
+            // If we have stations, add station proximity filter options to the incidents panel
+            const incidentsSummary = document.getElementById('incidents-summary');
+            if (!document.getElementById('station-proximity-filter')) {
+                const filterContainer = document.createElement('div');
+                filterContainer.className = 'proximity-filter';
+                filterContainer.innerHTML = `
+                    <div class="input-group">
+                        <label>
+                            <input type="checkbox" id="station-proximity-filter"> 
+                            Filter by station proximity
+                        </label>
+                        <select id="proximity-filter-distance" disabled>
+                            <option value="4">4 minute response</option>
+                            <option value="8" selected>8 minute response</option>
+                            <option value="12">12 minute response</option>
+                        </select>
+                    </div>
+                `;
+                incidentsSummary.appendChild(filterContainer);
+                
+                // Add event listeners for the filter controls
+                document.getElementById('station-proximity-filter').addEventListener('change', function(e) {
+                    document.getElementById('proximity-filter-distance').disabled = !e.target.checked;
+                    showIncidentsOnMap(); // Redraw based on new filter settings
+                });
+                
+                document.getElementById('proximity-filter-distance').addEventListener('change', function() {
+                    if (document.getElementById('station-proximity-filter').checked) {
+                        showIncidentsOnMap(); // Redraw with new distance setting
+                    }
+                });
+            }
+            
+            // Check if filter is enabled
+            filterByProximity = document.getElementById('station-proximity-filter')?.checked || false;
+            
+            if (filterByProximity) {
+                console.log("Filtering incidents by station proximity");
+                
+                // Get selected response time
+                const responseMinutes = parseInt(document.getElementById('proximity-filter-distance').value || "8");
+                
+                // Calculate the approximate distance for the response time (0.93 km/min)
+                const responseDistanceMeters = responseMinutes * 930;
+                
+                // Filter incidents by proximity to any station
+                filteredIncidents = incidentData.filter(incident => {
+                    // Skip invalid coordinates
+                    if (!incident.Latitude || !incident.Longitude || 
+                        isNaN(parseFloat(incident.Latitude)) || isNaN(parseFloat(incident.Longitude))) {
+                        return false;
+                    }
+                    
+                    const incidentPos = L.latLng(parseFloat(incident.Latitude), parseFloat(incident.Longitude));
+                    
+                    // Check distance to each station, keep if within range of any station
+                    for (const station of stationData) {
+                        if (!station.Latitude || !station.Longitude || 
+                            isNaN(parseFloat(station.Latitude)) || isNaN(parseFloat(station.Longitude))) {
+                            continue;
+                        }
+                        
+                        const stationPos = L.latLng(parseFloat(station.Latitude), parseFloat(station.Longitude));
+                        const distance = incidentPos.distanceTo(stationPos);
+                        
+                        // If incident is within range of this station, include it
+                        if (distance <= responseDistanceMeters) {
+                            return true;
+                        }
+                    }
+                    
+                    // Not within range of any station
+                    return false;
+                });
+                
+                console.log(`Filtered to ${filteredIncidents.length} incidents within ${responseMinutes} min response time`);
+            }
+        }
+        
+        console.log(`Processing ${filteredIncidents.length} incidents for display`);
         
         // Create markers for individual incidents if enabled
         if (showIncidents) {
@@ -1841,7 +2246,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Track valid markers for map bounds
             const validCoordinates = [];
             
-            incidentData.forEach((incident, index) => {
+            filteredIncidents.forEach((incident, index) => {
                 // Skip invalid coordinates with detailed error checking
                 if (!incident.Latitude || !incident.Longitude || 
                     isNaN(parseFloat(incident.Latitude)) || isNaN(parseFloat(incident.Longitude))) {
@@ -1971,7 +2376,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 // Prepare heatmap points with intensity calculation based on incident properties
-                const heatmapPoints = incidentData
+                const heatmapPoints = filteredIncidents
                     .filter(incident => {
                         if (!incident.Latitude || !incident.Longitude || 
                             isNaN(parseFloat(incident.Latitude)) || isNaN(parseFloat(incident.Longitude))) {
