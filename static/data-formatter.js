@@ -799,15 +799,24 @@ document.addEventListener('DOMContentLoaded', function() {
         // Clone data to avoid modifying original
         let transformedData = JSON.parse(JSON.stringify(data));
         
-        // Special handling for Central Square CAD data
+        // Special handling for different CAD data formats
         if (transformedData.length > 0) {
             const firstRecord = transformedData[0];
-            const isCentralSquare = detectCentralSquareFormat(firstRecord);
             
+            // Check for Central Square format
+            const isCentralSquare = detectCentralSquareFormat(firstRecord);
             if (isCentralSquare) {
                 appendLog("Detected Central Square CAD format - applying special handling");
                 console.log("Pre-processing Central Square CAD data");
                 transformedData = processCentralSquareData(transformedData, toolId);
+            }
+            
+            // Check for Motorola format
+            const isMotorolaFormat = detectMotorolaFormat(firstRecord);
+            if (isMotorolaFormat) {
+                appendLog("Detected Motorola CAD format - applying special handling");
+                console.log("Pre-processing Motorola CAD data");
+                transformedData = processMotorolaData(transformedData, toolId);
             }
         }
         
@@ -2650,6 +2659,268 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (item['ADDR_STATE']) {
                 // If city is missing but state exists, use state as a fallback for location chart
                 newItem['Incident City'] = item['ADDR_STATE'];
+            } else {
+                // Provide at least some location data for location chart
+                newItem['Incident City'] = 'Unknown';
+            }
+            
+            if (item['PRIORITY']) {
+                newItem['Priority'] = item['PRIORITY'];
+            }
+            
+            // Calculate response time if we have dispatch and arrival times
+            if (newItem['Unit Dispatched_obj'] && newItem['Unit Onscene_obj']) {
+                try {
+                    const dispatchTime = newItem['Unit Dispatched_obj'];
+                    const onSceneTime = newItem['Unit Onscene_obj'];
+                    
+                    if (!isNaN(dispatchTime) && !isNaN(onSceneTime)) {
+                        const diffMs = onSceneTime - dispatchTime;
+                        const diffMinutes = Math.round(diffMs / 60000);
+                        
+                        if (diffMinutes >= 0 && diffMinutes < 120) { // Sanity check
+                            newItem['Response Time (min)'] = diffMinutes;
+                            console.log(`Calculated response time: ${diffMinutes} minutes`);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Error calculating response time:', e);
+                }
+            }
+            
+            // Add metadata properties that fire-ems-dashboard.js expects
+            newItem._source = 'formatter';
+            newItem._formatted = true;
+            newItem._timestamp = new Date().toISOString();
+            
+            return newItem;
+        });
+    }
+    
+    // Helper function to detect Motorola format
+    function detectMotorolaFormat(record) {
+        if (!record) return false;
+        
+        const fields = Object.keys(record);
+        return fields.includes('INCIDENT_NO') || 
+               fields.includes('CALL_RECEIVED_TIME') || 
+               fields.includes('CALL_RECEIVED_DATE') ||
+               (fields.includes('LOCATION_ADDR') && fields.includes('LOCATION_CITY'));
+    }
+    
+    // Helper function to process Motorola data
+    function processMotorolaData(data, toolId) {
+        console.log("Processing Motorola CAD data for tool:", toolId);
+        appendLog("Processing Motorola CAD format");
+        
+        return data.map(item => {
+            const newItem = {...item};
+            
+            // Process timestamps - Motorola typically has separate date and time fields
+            if (item['CALL_RECEIVED_DATE'] && item['CALL_RECEIVED_TIME']) {
+                try {
+                    // Combine date and time
+                    const dateStr = standardizeDate(item['CALL_RECEIVED_DATE']);
+                    const timeStr = standardizeTime(item['CALL_RECEIVED_TIME']);
+                    const dtStr = `${dateStr}T${timeStr}`;
+                    const dt = new Date(dtStr);
+                    
+                    if (!isNaN(dt)) {
+                        // Set standard fields for Response Time Analyzer
+                        newItem['Incident Date'] = dateStr;
+                        newItem['Incident Time'] = timeStr;
+                        
+                        // Set both string and Date object versions of the Reported field
+                        newItem['Reported'] = timeStr;
+                        newItem['Reported_obj'] = dt; // Store Date object for charting
+                        newItem['Reported_ISO'] = dt.toISOString();
+                        
+                        console.log(`Created datetime from CALL_RECEIVED_DATE/TIME: ${dtStr}`);
+                    }
+                } catch (e) {
+                    console.warn('Error processing CALL_RECEIVED_DATE/TIME:', e);
+                }
+            }
+            
+            // Process dispatch time
+            if (item['DISPATCH_DATE'] && item['DISPATCH_TIME']) {
+                try {
+                    const dateStr = standardizeDate(item['DISPATCH_DATE']);
+                    const timeStr = standardizeTime(item['DISPATCH_TIME']);
+                    const dtStr = `${dateStr}T${timeStr}`;
+                    const dt = new Date(dtStr);
+                    
+                    if (!isNaN(dt)) {
+                        newItem['Dispatch Time'] = timeStr;
+                        newItem['Unit Dispatched'] = timeStr;
+                        newItem['Unit Dispatched_obj'] = dt; // Store Date object for time calculations
+                        console.log(`Created datetime from DISPATCH_DATE/TIME: ${dtStr}`);
+                    }
+                } catch (e) {
+                    console.warn('Error processing DISPATCH_DATE/TIME:', e);
+                }
+            } else if (item['DISPATCH_TIME']) {
+                try {
+                    // Use CALL_RECEIVED_DATE with DISPATCH_TIME if DISPATCH_DATE not available
+                    if (item['CALL_RECEIVED_DATE']) {
+                        const dateStr = standardizeDate(item['CALL_RECEIVED_DATE']);
+                        const timeStr = standardizeTime(item['DISPATCH_TIME']);
+                        const dtStr = `${dateStr}T${timeStr}`;
+                        const dt = new Date(dtStr);
+                        
+                        if (!isNaN(dt)) {
+                            newItem['Dispatch Time'] = timeStr;
+                            newItem['Unit Dispatched'] = timeStr;
+                            newItem['Unit Dispatched_obj'] = dt; // Store Date object for time calculations
+                            console.log(`Created datetime from CALL_RECEIVED_DATE and DISPATCH_TIME: ${dtStr}`);
+                        }
+                    } else {
+                        newItem['Dispatch Time'] = standardizeTime(item['DISPATCH_TIME']);
+                        newItem['Unit Dispatched'] = standardizeTime(item['DISPATCH_TIME']);
+                    }
+                } catch (e) {
+                    console.warn('Error processing DISPATCH_TIME:', e);
+                }
+            }
+            
+            // Process arrival time
+            if (item['ARRIVAL_DATE'] && item['ARRIVAL_TIME']) {
+                try {
+                    const dateStr = standardizeDate(item['ARRIVAL_DATE']);
+                    const timeStr = standardizeTime(item['ARRIVAL_TIME']);
+                    const dtStr = `${dateStr}T${timeStr}`;
+                    const dt = new Date(dtStr);
+                    
+                    if (!isNaN(dt)) {
+                        newItem['On Scene Time'] = timeStr;
+                        newItem['Unit Onscene'] = timeStr;
+                        newItem['Unit Onscene_obj'] = dt; // Store Date object for time calculations
+                        console.log(`Created datetime from ARRIVAL_DATE/TIME: ${dtStr}`);
+                    }
+                } catch (e) {
+                    console.warn('Error processing ARRIVAL_DATE/TIME:', e);
+                }
+            } else if (item['ARRIVAL_TIME']) {
+                try {
+                    // Use CALL_RECEIVED_DATE with ARRIVAL_TIME if ARRIVAL_DATE not available
+                    if (item['CALL_RECEIVED_DATE']) {
+                        const dateStr = standardizeDate(item['CALL_RECEIVED_DATE']);
+                        const timeStr = standardizeTime(item['ARRIVAL_TIME']);
+                        const dtStr = `${dateStr}T${timeStr}`;
+                        const dt = new Date(dtStr);
+                        
+                        if (!isNaN(dt)) {
+                            newItem['On Scene Time'] = timeStr;
+                            newItem['Unit Onscene'] = timeStr;
+                            newItem['Unit Onscene_obj'] = dt; // Store Date object for time calculations
+                            console.log(`Created datetime from CALL_RECEIVED_DATE and ARRIVAL_TIME: ${dtStr}`);
+                        }
+                    } else {
+                        newItem['On Scene Time'] = standardizeTime(item['ARRIVAL_TIME']);
+                        newItem['Unit Onscene'] = standardizeTime(item['ARRIVAL_TIME']);
+                    }
+                } catch (e) {
+                    console.warn('Error processing ARRIVAL_TIME:', e);
+                }
+            }
+            
+            // Process enroute time
+            if (item['ENROUTE_DATE'] && item['ENROUTE_TIME']) {
+                try {
+                    const dateStr = standardizeDate(item['ENROUTE_DATE']);
+                    const timeStr = standardizeTime(item['ENROUTE_TIME']);
+                    const dtStr = `${dateStr}T${timeStr}`;
+                    const dt = new Date(dtStr);
+                    
+                    if (!isNaN(dt)) {
+                        newItem['En Route Time'] = timeStr;
+                        newItem['Unit Enroute'] = timeStr;
+                        newItem['Unit Enroute_obj'] = dt; // Store Date object for time calculations
+                        console.log(`Created datetime from ENROUTE_DATE/TIME: ${dtStr}`);
+                    }
+                } catch (e) {
+                    console.warn('Error processing ENROUTE_DATE/TIME:', e);
+                }
+            } else if (item['ENROUTE_TIME']) {
+                try {
+                    // Use CALL_RECEIVED_DATE with ENROUTE_TIME if ENROUTE_DATE not available
+                    if (item['CALL_RECEIVED_DATE']) {
+                        const dateStr = standardizeDate(item['CALL_RECEIVED_DATE']);
+                        const timeStr = standardizeTime(item['ENROUTE_TIME']);
+                        const dtStr = `${dateStr}T${timeStr}`;
+                        const dt = new Date(dtStr);
+                        
+                        if (!isNaN(dt)) {
+                            newItem['En Route Time'] = timeStr;
+                            newItem['Unit Enroute'] = timeStr;
+                            newItem['Unit Enroute_obj'] = dt; // Store Date object for time calculations
+                            console.log(`Created datetime from CALL_RECEIVED_DATE and ENROUTE_TIME: ${dtStr}`);
+                        }
+                    } else {
+                        newItem['En Route Time'] = standardizeTime(item['ENROUTE_TIME']);
+                        newItem['Unit Enroute'] = standardizeTime(item['ENROUTE_TIME']);
+                    }
+                } catch (e) {
+                    console.warn('Error processing ENROUTE_TIME:', e);
+                }
+            }
+            
+            // Process coordinates
+            if (item['LAT'] !== undefined) {
+                const lat = parseFloat(item['LAT']);
+                if (!isNaN(lat)) {
+                    newItem['Latitude'] = lat;
+                    console.log(`Converted LAT to Latitude: ${lat}`);
+                }
+            }
+            
+            if (item['LON'] !== undefined) {
+                const lng = parseFloat(item['LON']);
+                if (!isNaN(lng)) {
+                    newItem['Longitude'] = lng;
+                    console.log(`Converted LON to Longitude: ${lng}`);
+                }
+            }
+            
+            // Add validCoordinates flag which is used by the mapping function
+            if (newItem['Latitude'] !== undefined && newItem['Longitude'] !== undefined) {
+                newItem['validCoordinates'] = 
+                    !isNaN(newItem['Latitude']) && 
+                    !isNaN(newItem['Longitude']) &&
+                    Math.abs(newItem['Latitude']) <= 90 &&
+                    Math.abs(newItem['Longitude']) <= 180;
+            }
+            
+            // Map Motorola fields to standard fields
+            if (item['INCIDENT_NO']) {
+                newItem['Incident ID'] = item['INCIDENT_NO'];
+                newItem['Run No'] = item['INCIDENT_NO'];
+            }
+            
+            if (item['UNIT_ID']) {
+                newItem['Unit ID'] = item['UNIT_ID'];
+                newItem['Unit'] = item['UNIT_ID'];
+            }
+            
+            if (item['INCIDENT_TYPE_DESC']) {
+                newItem['Incident Type'] = item['INCIDENT_TYPE_DESC'];
+                newItem['Nature'] = item['INCIDENT_TYPE_DESC'];
+            } else if (item['INCIDENT_TYPE']) {
+                newItem['Incident Type'] = item['INCIDENT_TYPE'];
+                newItem['Nature'] = item['INCIDENT_TYPE'];
+            }
+            
+            if (item['LOCATION_ADDR']) {
+                newItem['Address'] = item['LOCATION_ADDR'];
+                newItem['Full Address'] = item['LOCATION_ADDR'];
+            }
+            
+            if (item['LOCATION_CITY']) {
+                newItem['City'] = item['LOCATION_CITY'];
+                newItem['Incident City'] = item['LOCATION_CITY'];
+            } else if (item['LOCATION_STATE']) {
+                // If city is missing but state exists, use state as a fallback for location chart
+                newItem['Incident City'] = item['LOCATION_STATE'];
             } else {
                 // Provide at least some location data for location chart
                 newItem['Incident City'] = 'Unknown';
