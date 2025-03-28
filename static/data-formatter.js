@@ -799,6 +799,18 @@ document.addEventListener('DOMContentLoaded', function() {
         // Clone data to avoid modifying original
         let transformedData = JSON.parse(JSON.stringify(data));
         
+        // Special handling for Central Square CAD data
+        if (transformedData.length > 0) {
+            const firstRecord = transformedData[0];
+            const isCentralSquare = detectCentralSquareFormat(firstRecord);
+            
+            if (isCentralSquare) {
+                appendLog("Detected Central Square CAD format - applying special handling");
+                console.log("Pre-processing Central Square CAD data");
+                transformedData = processCentralSquareData(transformedData, toolId);
+            }
+        }
+        
         // Step 1: Map fields based on heuristics
         transformedData = mapFieldsToRequirements(transformedData, requirements);
         
@@ -2493,6 +2505,156 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         }
+    }
+
+    // Helper function to detect Central Square format
+    function detectCentralSquareFormat(record) {
+        if (!record) return false;
+        
+        const fields = Object.keys(record);
+        return fields.includes('CAD_INCIDENT_ID') || 
+               fields.includes('REPORTED_DT') || 
+               (fields.includes('GEOX') && fields.includes('GEOY'));
+    }
+    
+    // Helper function to process Central Square data
+    function processCentralSquareData(data, toolId) {
+        console.log("Processing Central Square data for tool:", toolId);
+        appendLog("Processing Central Square data format");
+        
+        return data.map(item => {
+            const newItem = {...item};
+            
+            // Process REPORTED_DT for timestamp
+            if (item['REPORTED_DT']) {
+                try {
+                    const dt = new Date(item['REPORTED_DT']);
+                    if (!isNaN(dt)) {
+                        // Set standard fields for Response Time Analyzer
+                        newItem['Incident Date'] = dt.toISOString().split('T')[0];
+                        newItem['Incident Time'] = dt.toTimeString().split(' ')[0];
+                        newItem['Reported'] = dt.toTimeString().split(' ')[0];
+                        console.log(`Extracted from REPORTED_DT: Date=${newItem['Incident Date']}, Time=${newItem['Incident Time']}`);
+                    }
+                } catch (e) {
+                    console.warn('Error processing REPORTED_DT:', e);
+                }
+            }
+            
+            // Process DISPATCH_DT
+            if (item['DISPATCH_DT']) {
+                try {
+                    const dt = new Date(item['DISPATCH_DT']);
+                    if (!isNaN(dt)) {
+                        newItem['Dispatch Time'] = dt.toTimeString().split(' ')[0];
+                        newItem['Unit Dispatched'] = dt.toTimeString().split(' ')[0];
+                        console.log(`Extracted from DISPATCH_DT: ${newItem['Dispatch Time']}`);
+                    }
+                } catch (e) {
+                    console.warn('Error processing DISPATCH_DT:', e);
+                }
+            }
+            
+            // Process ARRIVAL_DT
+            if (item['ARRIVAL_DT']) {
+                try {
+                    const dt = new Date(item['ARRIVAL_DT']);
+                    if (!isNaN(dt)) {
+                        newItem['On Scene Time'] = dt.toTimeString().split(' ')[0];
+                        newItem['Unit Onscene'] = dt.toTimeString().split(' ')[0];
+                        console.log(`Extracted from ARRIVAL_DT: ${newItem['On Scene Time']}`);
+                    }
+                } catch (e) {
+                    console.warn('Error processing ARRIVAL_DT:', e);
+                }
+            }
+            
+            // Process ENROUTE_DT if available
+            if (item['ENROUTE_DT']) {
+                try {
+                    const dt = new Date(item['ENROUTE_DT']);
+                    if (!isNaN(dt)) {
+                        newItem['En Route Time'] = dt.toTimeString().split(' ')[0];
+                        newItem['Unit Enroute'] = dt.toTimeString().split(' ')[0];
+                        console.log(`Extracted from ENROUTE_DT: ${newItem['En Route Time']}`);
+                    }
+                } catch (e) {
+                    console.warn('Error processing ENROUTE_DT:', e);
+                }
+            }
+            
+            // Process coordinates
+            if (item['GEOY'] !== undefined) {
+                const lat = parseFloat(item['GEOY']);
+                if (!isNaN(lat)) {
+                    newItem['Latitude'] = lat;
+                    console.log(`Converted GEOY to Latitude: ${lat}`);
+                }
+            }
+            
+            if (item['GEOX'] !== undefined) {
+                const lng = parseFloat(item['GEOX']);
+                if (!isNaN(lng)) {
+                    newItem['Longitude'] = lng;
+                    console.log(`Converted GEOX to Longitude: ${lng}`);
+                }
+            }
+            
+            // Map Central Square fields to standard fields
+            if (item['CAD_INCIDENT_ID']) {
+                newItem['Incident ID'] = item['CAD_INCIDENT_ID'];
+                newItem['Run No'] = item['CAD_INCIDENT_ID'];
+            }
+            
+            if (item['APPARATUS_ID']) {
+                newItem['Unit ID'] = item['APPARATUS_ID'];
+                newItem['Unit'] = item['APPARATUS_ID'];
+            }
+            
+            if (item['CALL_DESCRIPTION']) {
+                newItem['Incident Type'] = item['CALL_DESCRIPTION'];
+                newItem['Nature'] = item['CALL_DESCRIPTION'];
+            } else if (item['CALL_TYPE']) {
+                newItem['Incident Type'] = item['CALL_TYPE'];
+                newItem['Nature'] = item['CALL_TYPE'];
+            }
+            
+            if (item['ADDR_STR']) {
+                newItem['Address'] = item['ADDR_STR'];
+                newItem['Full Address'] = item['ADDR_STR'];
+            }
+            
+            if (item['ADDR_CITY']) {
+                newItem['City'] = item['ADDR_CITY'];
+                newItem['Incident City'] = item['ADDR_CITY'];
+            }
+            
+            if (item['PRIORITY']) {
+                newItem['Priority'] = item['PRIORITY'];
+            }
+            
+            // Calculate response time if we have dispatch and arrival times
+            if (newItem['Unit Dispatched'] && newItem['Unit Onscene']) {
+                try {
+                    const dispatchTime = new Date(`2000-01-01T${newItem['Unit Dispatched']}`);
+                    const onSceneTime = new Date(`2000-01-01T${newItem['Unit Onscene']}`);
+                    
+                    if (!isNaN(dispatchTime) && !isNaN(onSceneTime)) {
+                        const diffMs = onSceneTime - dispatchTime;
+                        const diffMinutes = Math.round(diffMs / 60000);
+                        
+                        if (diffMinutes >= 0 && diffMinutes < 120) { // Sanity check
+                            newItem['Response Time (min)'] = diffMinutes;
+                            console.log(`Calculated response time: ${diffMinutes} minutes`);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Error calculating response time:', e);
+                }
+            }
+            
+            return newItem;
+        });
     }
 
     // Initialize the application
