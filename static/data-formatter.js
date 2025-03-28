@@ -676,6 +676,8 @@ document.addEventListener('DOMContentLoaded', function() {
         switch (toolId) {
             case 'response-time': return 'Response Time Analyzer';
             case 'isochrone': return 'Isochrone Map Generator';
+            case 'isochrone-stations': return 'Isochrone Map Generator (Stations)';
+            case 'isochrone-incidents': return 'Isochrone Map Generator (Incidents)';
             case 'call-density': return 'Call Density Heatmap';
             case 'incident-logger': return 'Incident Logger';
             case 'coverage-gap': return 'Coverage Gap Finder';
@@ -691,6 +693,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const toolMap = {
             'response-time': 'response-time',
             'isochrone': 'isochrone',
+            'isochrone-stations': 'isochrone',
+            'isochrone-incidents': 'isochrone',
             'call-density': 'call-density',
             'incident-logger': 'incident-logger',
             'coverage-gap': 'coverage-gap',
@@ -1745,6 +1749,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             toolUrl = '/fire-ems-dashboard';
                             break;
                         case 'isochrone':
+                        case 'isochrone-stations':
+                        case 'isochrone-incidents':
                             toolUrl = '/isochrone-map';
                             break;
                         case 'call-density':
