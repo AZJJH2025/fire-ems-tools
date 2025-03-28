@@ -818,6 +818,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log("Pre-processing Motorola CAD data");
                 transformedData = processMotorolaData(transformedData, toolId);
             }
+            
+            // Check for Tyler format
+            const isTylerFormat = detectTylerFormat(firstRecord);
+            if (isTylerFormat) {
+                appendLog("Detected Tyler New World CAD format - applying special handling");
+                console.log("Pre-processing Tyler CAD data");
+                transformedData = processTylerData(transformedData, toolId);
+            }
+            
+            // Check for Hexagon format
+            const isHexagonFormat = detectHexagonFormat(firstRecord);
+            if (isHexagonFormat) {
+                appendLog("Detected Hexagon/Intergraph CAD format - applying special handling");
+                console.log("Pre-processing Hexagon CAD data");
+                transformedData = processHexagonData(transformedData, toolId);
+            }
         }
         
         // Step 1: Map fields based on heuristics
@@ -2921,6 +2937,365 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (item['LOCATION_STATE']) {
                 // If city is missing but state exists, use state as a fallback for location chart
                 newItem['Incident City'] = item['LOCATION_STATE'];
+            } else {
+                // Provide at least some location data for location chart
+                newItem['Incident City'] = 'Unknown';
+            }
+            
+            if (item['PRIORITY']) {
+                newItem['Priority'] = item['PRIORITY'];
+            }
+            
+            // Calculate response time if we have dispatch and arrival times
+            if (newItem['Unit Dispatched_obj'] && newItem['Unit Onscene_obj']) {
+                try {
+                    const dispatchTime = newItem['Unit Dispatched_obj'];
+                    const onSceneTime = newItem['Unit Onscene_obj'];
+                    
+                    if (!isNaN(dispatchTime) && !isNaN(onSceneTime)) {
+                        const diffMs = onSceneTime - dispatchTime;
+                        const diffMinutes = Math.round(diffMs / 60000);
+                        
+                        if (diffMinutes >= 0 && diffMinutes < 120) { // Sanity check
+                            newItem['Response Time (min)'] = diffMinutes;
+                            console.log(`Calculated response time: ${diffMinutes} minutes`);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Error calculating response time:', e);
+                }
+            }
+            
+            // Add metadata properties that fire-ems-dashboard.js expects
+            newItem._source = 'formatter';
+            newItem._formatted = true;
+            newItem._timestamp = new Date().toISOString();
+            
+            return newItem;
+        });
+    }
+
+    // Helper function to detect Tyler format
+    function detectTylerFormat(record) {
+        if (!record) return false;
+        
+        const fields = Object.keys(record);
+        return fields.includes('CAD_CALL_ID') || 
+               fields.includes('DISP_DATE_TIME') || 
+               fields.includes('ARRV_DATE_TIME') ||
+               fields.includes('NATURE_CODE') ||
+               fields.includes('NATURE_DESC');
+    }
+    
+    // Helper function to process Tyler data
+    function processTylerData(data, toolId) {
+        console.log("Processing Tyler New World CAD data for tool:", toolId);
+        appendLog("Processing Tyler New World CAD format");
+        
+        return data.map(item => {
+            const newItem = {...item};
+            
+            // Process call received date/time
+            if (item['CALL_DATE_TIME']) {
+                try {
+                    const dt = new Date(item['CALL_DATE_TIME']);
+                    if (!isNaN(dt)) {
+                        // Set standard fields for Response Time Analyzer
+                        newItem['Incident Date'] = dt.toISOString().split('T')[0];
+                        newItem['Incident Time'] = dt.toTimeString().split(' ')[0];
+                        
+                        // Set both string and Date object versions of the Reported field
+                        newItem['Reported'] = dt.toTimeString().split(' ')[0];
+                        newItem['Reported_obj'] = dt; // Store Date object for charting
+                        newItem['Reported_ISO'] = dt.toISOString();
+                        
+                        console.log(`Extracted from CALL_DATE_TIME: Date=${newItem['Incident Date']}, Time=${newItem['Incident Time']}`);
+                    }
+                } catch (e) {
+                    console.warn('Error processing CALL_DATE_TIME:', e);
+                }
+            }
+            
+            // Process dispatch time
+            if (item['DISP_DATE_TIME']) {
+                try {
+                    const dt = new Date(item['DISP_DATE_TIME']);
+                    if (!isNaN(dt)) {
+                        newItem['Dispatch Time'] = dt.toTimeString().split(' ')[0];
+                        newItem['Unit Dispatched'] = dt.toTimeString().split(' ')[0];
+                        newItem['Unit Dispatched_obj'] = dt; // Store Date object for time calculations
+                        console.log(`Extracted from DISP_DATE_TIME: ${newItem['Dispatch Time']}`);
+                    }
+                } catch (e) {
+                    console.warn('Error processing DISP_DATE_TIME:', e);
+                }
+            }
+            
+            // Process arrival time
+            if (item['ARRV_DATE_TIME']) {
+                try {
+                    const dt = new Date(item['ARRV_DATE_TIME']);
+                    if (!isNaN(dt)) {
+                        newItem['On Scene Time'] = dt.toTimeString().split(' ')[0];
+                        newItem['Unit Onscene'] = dt.toTimeString().split(' ')[0];
+                        newItem['Unit Onscene_obj'] = dt; // Store Date object for time calculations
+                        console.log(`Extracted from ARRV_DATE_TIME: ${newItem['On Scene Time']}`);
+                    }
+                } catch (e) {
+                    console.warn('Error processing ARRV_DATE_TIME:', e);
+                }
+            }
+            
+            // Process enroute time
+            if (item['ENRT_DATE_TIME']) {
+                try {
+                    const dt = new Date(item['ENRT_DATE_TIME']);
+                    if (!isNaN(dt)) {
+                        newItem['En Route Time'] = dt.toTimeString().split(' ')[0];
+                        newItem['Unit Enroute'] = dt.toTimeString().split(' ')[0];
+                        newItem['Unit Enroute_obj'] = dt; // Store Date object for time calculations
+                        console.log(`Extracted from ENRT_DATE_TIME: ${newItem['En Route Time']}`);
+                    }
+                } catch (e) {
+                    console.warn('Error processing ENRT_DATE_TIME:', e);
+                }
+            }
+            
+            // Process coordinates
+            if (item['LATITUDE'] !== undefined) {
+                const lat = parseFloat(item['LATITUDE']);
+                if (!isNaN(lat)) {
+                    newItem['Latitude'] = lat;
+                    console.log(`Converted LATITUDE to Latitude: ${lat}`);
+                }
+            }
+            
+            if (item['LONGITUDE'] !== undefined) {
+                const lng = parseFloat(item['LONGITUDE']);
+                if (!isNaN(lng)) {
+                    newItem['Longitude'] = lng;
+                    console.log(`Converted LONGITUDE to Longitude: ${lng}`);
+                }
+            }
+            
+            // Add validCoordinates flag which is used by the mapping function
+            if (newItem['Latitude'] !== undefined && newItem['Longitude'] !== undefined) {
+                newItem['validCoordinates'] = 
+                    !isNaN(newItem['Latitude']) && 
+                    !isNaN(newItem['Longitude']) &&
+                    Math.abs(newItem['Latitude']) <= 90 &&
+                    Math.abs(newItem['Longitude']) <= 180;
+            }
+            
+            // Map Tyler New World fields to standard fields
+            if (item['CAD_CALL_ID']) {
+                newItem['Incident ID'] = item['CAD_CALL_ID'];
+                newItem['Run No'] = item['CAD_CALL_ID'];
+            }
+            
+            if (item['UNIT_ASSIGNED']) {
+                newItem['Unit ID'] = item['UNIT_ASSIGNED'];
+                newItem['Unit'] = item['UNIT_ASSIGNED'];
+            }
+            
+            if (item['NATURE_DESC']) {
+                newItem['Incident Type'] = item['NATURE_DESC'];
+                newItem['Nature'] = item['NATURE_DESC'];
+            } else if (item['NATURE_CODE']) {
+                newItem['Incident Type'] = item['NATURE_CODE'];
+                newItem['Nature'] = item['NATURE_CODE'];
+            }
+            
+            if (item['ADDRESS']) {
+                newItem['Address'] = item['ADDRESS'];
+                newItem['Full Address'] = item['ADDRESS'];
+            }
+            
+            if (item['CITY']) {
+                newItem['City'] = item['CITY'];
+                newItem['Incident City'] = item['CITY'];
+            } else if (item['STATE']) {
+                // If city is missing but state exists, use state as a fallback for location chart
+                newItem['Incident City'] = item['STATE'];
+            } else {
+                // Provide at least some location data for location chart
+                newItem['Incident City'] = 'Unknown';
+            }
+            
+            if (item['PRIORITY']) {
+                newItem['Priority'] = item['PRIORITY'];
+            }
+            
+            // Calculate response time if we have dispatch and arrival times
+            if (newItem['Unit Dispatched_obj'] && newItem['Unit Onscene_obj']) {
+                try {
+                    const dispatchTime = newItem['Unit Dispatched_obj'];
+                    const onSceneTime = newItem['Unit Onscene_obj'];
+                    
+                    if (!isNaN(dispatchTime) && !isNaN(onSceneTime)) {
+                        const diffMs = onSceneTime - dispatchTime;
+                        const diffMinutes = Math.round(diffMs / 60000);
+                        
+                        if (diffMinutes >= 0 && diffMinutes < 120) { // Sanity check
+                            newItem['Response Time (min)'] = diffMinutes;
+                            console.log(`Calculated response time: ${diffMinutes} minutes`);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Error calculating response time:', e);
+                }
+            }
+            
+            // Add metadata properties that fire-ems-dashboard.js expects
+            newItem._source = 'formatter';
+            newItem._formatted = true;
+            newItem._timestamp = new Date().toISOString();
+            
+            return newItem;
+        });
+    }
+    
+    // Helper function to detect Hexagon format
+    function detectHexagonFormat(record) {
+        if (!record) return false;
+        
+        const fields = Object.keys(record);
+        return fields.includes('EVENT_NUMBER') || 
+               fields.includes('EVENT_OPEN_DATETIME') || 
+               fields.includes('ARRIVE_DATETIME') ||
+               (fields.includes('EVENT_X_COORDINATE') && fields.includes('EVENT_Y_COORDINATE'));
+    }
+    
+    // Helper function to process Hexagon data
+    function processHexagonData(data, toolId) {
+        console.log("Processing Hexagon/Intergraph CAD data for tool:", toolId);
+        appendLog("Processing Hexagon/Intergraph CAD format");
+        
+        return data.map(item => {
+            const newItem = {...item};
+            
+            // Process event open datetime
+            if (item['EVENT_OPEN_DATETIME']) {
+                try {
+                    const dt = new Date(item['EVENT_OPEN_DATETIME']);
+                    if (!isNaN(dt)) {
+                        // Set standard fields for Response Time Analyzer
+                        newItem['Incident Date'] = dt.toISOString().split('T')[0];
+                        newItem['Incident Time'] = dt.toTimeString().split(' ')[0];
+                        
+                        // Set both string and Date object versions of the Reported field
+                        newItem['Reported'] = dt.toTimeString().split(' ')[0];
+                        newItem['Reported_obj'] = dt; // Store Date object for charting
+                        newItem['Reported_ISO'] = dt.toISOString();
+                        
+                        console.log(`Extracted from EVENT_OPEN_DATETIME: Date=${newItem['Incident Date']}, Time=${newItem['Incident Time']}`);
+                    }
+                } catch (e) {
+                    console.warn('Error processing EVENT_OPEN_DATETIME:', e);
+                }
+            }
+            
+            // Process dispatch time
+            if (item['DISPATCH_DATETIME']) {
+                try {
+                    const dt = new Date(item['DISPATCH_DATETIME']);
+                    if (!isNaN(dt)) {
+                        newItem['Dispatch Time'] = dt.toTimeString().split(' ')[0];
+                        newItem['Unit Dispatched'] = dt.toTimeString().split(' ')[0];
+                        newItem['Unit Dispatched_obj'] = dt; // Store Date object for time calculations
+                        console.log(`Extracted from DISPATCH_DATETIME: ${newItem['Dispatch Time']}`);
+                    }
+                } catch (e) {
+                    console.warn('Error processing DISPATCH_DATETIME:', e);
+                }
+            }
+            
+            // Process arrival time
+            if (item['ARRIVE_DATETIME']) {
+                try {
+                    const dt = new Date(item['ARRIVE_DATETIME']);
+                    if (!isNaN(dt)) {
+                        newItem['On Scene Time'] = dt.toTimeString().split(' ')[0];
+                        newItem['Unit Onscene'] = dt.toTimeString().split(' ')[0];
+                        newItem['Unit Onscene_obj'] = dt; // Store Date object for time calculations
+                        console.log(`Extracted from ARRIVE_DATETIME: ${newItem['On Scene Time']}`);
+                    }
+                } catch (e) {
+                    console.warn('Error processing ARRIVE_DATETIME:', e);
+                }
+            }
+            
+            // Process enroute time
+            if (item['ENROUTE_DATETIME']) {
+                try {
+                    const dt = new Date(item['ENROUTE_DATETIME']);
+                    if (!isNaN(dt)) {
+                        newItem['En Route Time'] = dt.toTimeString().split(' ')[0];
+                        newItem['Unit Enroute'] = dt.toTimeString().split(' ')[0];
+                        newItem['Unit Enroute_obj'] = dt; // Store Date object for time calculations
+                        console.log(`Extracted from ENROUTE_DATETIME: ${newItem['En Route Time']}`);
+                    }
+                } catch (e) {
+                    console.warn('Error processing ENROUTE_DATETIME:', e);
+                }
+            }
+            
+            // Process coordinates (Hexagon typically uses X and Y coordinates)
+            if (item['EVENT_Y_COORDINATE'] !== undefined) {
+                const lat = parseFloat(item['EVENT_Y_COORDINATE']);
+                if (!isNaN(lat)) {
+                    newItem['Latitude'] = lat;
+                    console.log(`Converted EVENT_Y_COORDINATE to Latitude: ${lat}`);
+                }
+            }
+            
+            if (item['EVENT_X_COORDINATE'] !== undefined) {
+                const lng = parseFloat(item['EVENT_X_COORDINATE']);
+                if (!isNaN(lng)) {
+                    newItem['Longitude'] = lng;
+                    console.log(`Converted EVENT_X_COORDINATE to Longitude: ${lng}`);
+                }
+            }
+            
+            // Add validCoordinates flag which is used by the mapping function
+            if (newItem['Latitude'] !== undefined && newItem['Longitude'] !== undefined) {
+                newItem['validCoordinates'] = 
+                    !isNaN(newItem['Latitude']) && 
+                    !isNaN(newItem['Longitude']) &&
+                    Math.abs(newItem['Latitude']) <= 90 &&
+                    Math.abs(newItem['Longitude']) <= 180;
+            }
+            
+            // Map Hexagon fields to standard fields
+            if (item['EVENT_NUMBER']) {
+                newItem['Incident ID'] = item['EVENT_NUMBER'];
+                newItem['Run No'] = item['EVENT_NUMBER'];
+            }
+            
+            if (item['UNIT_NUMBER']) {
+                newItem['Unit ID'] = item['UNIT_NUMBER'];
+                newItem['Unit'] = item['UNIT_NUMBER'];
+            }
+            
+            if (item['PROBLEM_DESCRIPTION']) {
+                newItem['Incident Type'] = item['PROBLEM_DESCRIPTION'];
+                newItem['Nature'] = item['PROBLEM_DESCRIPTION'];
+            } else if (item['PROBLEM_CODE']) {
+                newItem['Incident Type'] = item['PROBLEM_CODE'];
+                newItem['Nature'] = item['PROBLEM_CODE'];
+            }
+            
+            if (item['EVENT_STREET']) {
+                newItem['Address'] = item['EVENT_STREET'];
+                newItem['Full Address'] = item['EVENT_STREET'];
+            }
+            
+            if (item['EVENT_CITY']) {
+                newItem['City'] = item['EVENT_CITY'];
+                newItem['Incident City'] = item['EVENT_CITY'];
+            } else if (item['EVENT_STATE']) {
+                // If city is missing but state exists, use state as a fallback for location chart
+                newItem['Incident City'] = item['EVENT_STATE'];
             } else {
                 // Provide at least some location data for location chart
                 newItem['Incident City'] = 'Unknown';
