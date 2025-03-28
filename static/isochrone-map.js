@@ -2,6 +2,15 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Isochrone Map Generator initialized');
     
+    // Variables to store state - declared early to prevent reference errors
+    let stationMarkers = []; // Array to hold multiple station markers
+    let activeStationIndex = -1; // Track the currently active station
+    let isochrones = [];
+    let isPlacingStation = false;
+    let incidentMarkers = []; // Array to hold incident markers
+    let incidentHeatmap = null; // Heatmap layer for incidents
+    let incidentData = []; // Raw incident data
+    
     // Show info/success messages to the user
     function showMessage(message, type = 'info') {
         const alertBox = document.createElement('div');
@@ -272,14 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Variables to store state
-    let stationMarkers = []; // Array to hold multiple station markers
-    let activeStationIndex = -1; // Track the currently active station
-    let isochrones = [];
-    let isPlacingStation = false;
-    let incidentMarkers = []; // Array to hold incident markers
-    let incidentHeatmap = null; // Heatmap layer for incidents
-    let incidentData = []; // Raw incident data
+    // All state variables are now declared at the top of the script
 
     // -------------------------------------------------------------------------
     // Event Listeners
