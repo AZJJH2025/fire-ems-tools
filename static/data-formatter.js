@@ -1763,24 +1763,147 @@ document.addEventListener('DOMContentLoaded', function() {
             // Create a deep copy to avoid modifying the original data
             const preparedData = JSON.parse(JSON.stringify(data));
             
+            // Detect CAD system based on field names in the first record
+            const cadSystem = detectCADSystem(preparedData[0]);
+            if (cadSystem) {
+                appendLog(`Detected ${cadSystem} CAD system format`);
+            }
+            
             // Apply tool-specific transformations
             switch (toolId) {
                 case 'response-time':
                     // Ensure response time is calculated if not present and fields are properly named
                     preparedData.forEach(item => {
-                        // Map the Response Time Analyzer expected field names
+                        // Enhanced field mappings with CAD-specific fields
                         const keyMappings = {
-                            'Reported': ['Incident Time', 'Reported Time', 'Time Reported', 'Call Time', 'Alarm Time', 'Incident_Time', 'Call_Time'],
-                            'Unit Dispatched': ['Dispatch Time', 'Dispatched', 'Time Dispatched', 'Dispatch', 'Dispatch_Time', 'TimeDispatched'],
-                            'Unit Enroute': ['En Route Time', 'Enroute', 'Time Enroute', 'Responding Time', 'EnRouteTime', 'TimeEnroute'],
-                            'Unit Onscene': ['On Scene Time', 'Onscene', 'Time Onscene', 'Arrival Time', 'Arrived', 'OnSceneTime', 'TimeOnScene', 'ArrivalTime'],
-                            'Run No': ['Incident ID', 'Call No', 'Call ID', 'Incident Number', 'IncidentID', 'CallNumber'],
-                            'Incident City': ['City', 'Location City', 'Municipality', 'City_Name'],
-                            'Full Address': ['Address', 'Incident Address', 'Location', 'Location Address', 'IncidentAddress'],
-                            'Unit': ['Unit ID', 'Responding Unit', 'Apparatus', 'UnitID', 'Unit_ID', 'UnitName']
+                            'Reported': [
+                                // General fields
+                                'Incident Time', 'Reported Time', 'Time Reported', 'Call Time', 'Alarm Time', 'Incident_Time', 'Call_Time',
+                                // Motorola fields
+                                'CALL_RECEIVED_TIME',
+                                // Tyler fields
+                                'CALL_DATE_TIME',
+                                // Hexagon fields
+                                'EVENT_OPEN_DATETIME',
+                                // Central Square fields
+                                'REPORTED_DT'
+                            ],
+                            'Unit Dispatched': [
+                                // General fields
+                                'Dispatch Time', 'Dispatched', 'Time Dispatched', 'Dispatch', 'Dispatch_Time', 'TimeDispatched',
+                                // Motorola fields
+                                'DISPATCH_TIME',
+                                // Tyler fields
+                                'DISP_DATE_TIME',
+                                // Hexagon fields
+                                'DISPATCH_DATETIME',
+                                // Central Square fields
+                                'DISPATCH_DT'
+                            ],
+                            'Unit Enroute': [
+                                // General fields
+                                'En Route Time', 'Enroute', 'Time Enroute', 'Responding Time', 'EnRouteTime', 'TimeEnroute',
+                                // Specific CAD fields would be added here - most systems combine with unit status tables
+                                'ENROUTE_TIME', 'ENROUTE_DATETIME', 'ENROUTE_DT'
+                            ],
+                            'Unit Onscene': [
+                                // General fields
+                                'On Scene Time', 'Onscene', 'Time Onscene', 'Arrival Time', 'Arrived', 'OnSceneTime', 'TimeOnScene', 'ArrivalTime',
+                                // Motorola fields
+                                'ARRIVAL_TIME',
+                                // Tyler fields
+                                'ARRV_DATE_TIME',
+                                // Hexagon fields
+                                'ARRIVE_DATETIME',
+                                // Central Square fields
+                                'ARRIVAL_DT'
+                            ],
+                            'Run No': [
+                                // General fields
+                                'Incident ID', 'Call No', 'Call ID', 'Incident Number', 'IncidentID', 'CallNumber',
+                                // Motorola fields
+                                'INCIDENT_NO',
+                                // Tyler fields
+                                'CAD_CALL_ID',
+                                // Hexagon fields
+                                'EVENT_NUMBER',
+                                // Central Square fields
+                                'CAD_INCIDENT_ID'
+                            ],
+                            'Incident City': [
+                                // General fields
+                                'City', 'Location City', 'Municipality', 'City_Name',
+                                // Motorola fields
+                                'LOCATION_CITY',
+                                // Tyler fields
+                                'CITY',
+                                // Hexagon fields
+                                'EVENT_CITY',
+                                // Central Square fields
+                                'ADDR_CITY'
+                            ],
+                            'Full Address': [
+                                // General fields
+                                'Address', 'Incident Address', 'Location', 'Location Address', 'IncidentAddress',
+                                // Motorola fields
+                                'LOCATION_ADDR',
+                                // Tyler fields
+                                'ADDRESS',
+                                // Hexagon fields
+                                'EVENT_STREET',
+                                // Central Square fields
+                                'ADDR_STR'
+                            ],
+                            'Unit': [
+                                // General fields
+                                'Unit ID', 'Responding Unit', 'Apparatus', 'UnitID', 'Unit_ID', 'UnitName',
+                                // Motorola fields
+                                'UNIT_ID',
+                                // Tyler fields
+                                'UNIT_ASSIGNED',
+                                // Hexagon fields
+                                'UNIT_NUMBER',
+                                // Central Square fields
+                                'APPARATUS_ID'
+                            ],
+                            'Nature': [
+                                // Incident type fields from different systems
+                                'Incident Type', 'Call Type', 'Call_Type', 'Nature',
+                                // Motorola fields
+                                'INCIDENT_TYPE_DESC',
+                                // Tyler fields
+                                'NATURE_DESC',
+                                // Hexagon fields
+                                'PROBLEM_DESCRIPTION',
+                                // Central Square fields
+                                'CALL_DESCRIPTION'
+                            ],
+                            // Add lat/long mappings to ensure coordinates are available
+                            'Latitude': [
+                                'Latitude', 'Lat', 'lat', 'LAT', 'latitude',
+                                // Motorola fields
+                                'LAT',
+                                // Tyler fields
+                                'LATITUDE',
+                                // Hexagon fields
+                                'EVENT_Y_COORDINATE',
+                                // Central Square fields
+                                'GEOY'
+                            ],
+                            'Longitude': [
+                                'Longitude', 'Long', 'lng', 'LON', 'longitude',
+                                // Motorola fields
+                                'LON',
+                                // Tyler fields
+                                'LONGITUDE',
+                                // Hexagon fields
+                                'EVENT_X_COORDINATE',
+                                // Central Square fields
+                                'GEOX'
+                            ]
                         };
                         
-                        // Map fields to the format expected by the Response Time Analyzer
+                        // Enhanced field mapping with explicit console output for debugging
                         Object.entries(keyMappings).forEach(([targetField, possibleSourceFields]) => {
                             // Skip if already exists and not empty
                             if (item[targetField] !== undefined && item[targetField] !== '') {
@@ -1791,122 +1914,58 @@ document.addEventListener('DOMContentLoaded', function() {
                             // Try to find one of the source fields
                             for (const sourceField of possibleSourceFields) {
                                 if (item[sourceField] !== undefined && item[sourceField] !== '') {
-                                    item[targetField] = item[sourceField];
-                                    console.log(`Mapped ${sourceField} → ${targetField}: ${item[targetField]}`);
+                                    // Store the original field for reference
+                                    console.log(`Found field mapping: ${sourceField} → ${targetField}: ${item[sourceField]}`);
+                                    
+                                    // Handle special cases for date/time fields
+                                    if (['Reported', 'Unit Dispatched', 'Unit Enroute', 'Unit Onscene'].includes(targetField)) {
+                                        // If the source field is a full datetime, extract the time portion
+                                        if (sourceField.toLowerCase().includes('datetime') || 
+                                            sourceField.includes('_DT') || 
+                                            sourceField.endsWith('_DATE_TIME')) {
+                                            try {
+                                                const datetime = new Date(item[sourceField]);
+                                                if (!isNaN(datetime)) {
+                                                    item[targetField] = datetime.toTimeString().split(' ')[0];
+                                                    console.log(`Extracted time from ${sourceField}: ${item[targetField]}`);
+                                                } else {
+                                                    item[targetField] = item[sourceField];
+                                                }
+                                            } catch (e) {
+                                                console.warn(`Error extracting time from ${sourceField}:`, e);
+                                                item[targetField] = item[sourceField];
+                                            }
+                                        } else {
+                                            item[targetField] = item[sourceField];
+                                        }
+                                    } else {
+                                        item[targetField] = item[sourceField];
+                                    }
                                     break;
                                 }
                             }
                         });
                         
-                        // Log available fields for debugging
+                        // For debugging - log all available fields in this record
                         console.log(`Available fields in record: ${Object.keys(item).join(', ')}`);
                         
-                        // Handle date and time fields that might be combined in a single timestamp
-                        const timestampFields = ['timestamp', 'datetime', 'incident_datetime', 'created_at', 'Timestamp', 'DateTime', 'Date_Time', 'CreateTime'];
-                        let hasTimestamp = false;
-                        
-                        for (const field of timestampFields) {
-                            if (item[field] !== undefined && item[field] !== '') {
-                                hasTimestamp = true;
-                                console.log(`Found timestamp field: ${field} = ${item[field]}`);
-                                try {
-                                    // Try to parse as a standard date format
-                                    const timestamp = new Date(item[field]);
-                                    
-                                    if (!isNaN(timestamp)) {
-                                        // For each time field component, set if it doesn't exist
-                                        if (!item['Reported']) {
-                                            item['Reported'] = timestamp.toISOString();
-                                            console.log(`Set Reported from ${field}: ${item['Reported']}`);
-                                        }
-                                        
-                                        if (!item['Incident Date']) {
-                                            item['Incident Date'] = timestamp.toISOString().split('T')[0];
-                                            console.log(`Set Incident Date from ${field}: ${item['Incident Date']}`);
-                                        }
-                                    }
-                                } catch (e) {
-                                    console.warn(`Failed to parse timestamp field ${field}:`, e);
-                                }
-                                break;
+                        // Special handling for latitude/longitude to ensure numeric values
+                        if (item['Latitude'] !== undefined) {
+                            const lat = parseFloat(item['Latitude']);
+                            if (!isNaN(lat)) {
+                                item['Latitude'] = lat;
                             }
                         }
                         
-                        // Handle separate date/time fields that need to be combined
-                        if (!hasTimestamp) {
-                            // Expanded list of date field names
-                            const dateFieldNames = ['Incident Date', 'Date', 'Call Date', 'Alarm Date', 'Date_Reported', 'Date_Created'];
-                            const timeFieldNames = ['Incident Time', 'Time', 'Call Time', 'Alarm Time', 'Time_Reported', 'Time_Created'];
-                            
-                            let dateStr = null;
-                            let timeStr = null;
-                            
-                            // Find first available date field
-                            for (const dateField of dateFieldNames) {
-                                if (item[dateField]) {
-                                    dateStr = item[dateField];
-                                    console.log(`Found date field: ${dateField} = ${dateStr}`);
-                                    break;
-                                }
-                            }
-                            
-                            // Find first available time field
-                            for (const timeField of timeFieldNames) {
-                                if (item[timeField]) {
-                                    timeStr = item[timeField];
-                                    console.log(`Found time field: ${timeField} = ${timeStr}`);
-                                    break;
-                                }
-                            }
-                            
-                            if (dateStr && timeStr) {
-                                try {
-                                    // Combine date and time
-                                    const standardizedDate = standardizeDate(dateStr);
-                                    const standardizedTime = standardizeTime(timeStr);
-                                    console.log(`Standardized date: ${standardizedDate}, time: ${standardizedTime}`);
-                                    
-                                    const dateTimeStr = `${standardizedDate}T${standardizedTime}`;
-                                    const timestamp = new Date(dateTimeStr);
-                                    
-                                    if (!isNaN(timestamp)) {
-                                        if (!item['Reported']) {
-                                            item['Reported'] = timestamp.toISOString();
-                                            console.log(`Combined date/time into Reported: ${item['Reported']}`);
-                                        }
-                                    }
-                                } catch (e) {
-                                    console.warn('Failed to combine date and time fields:', e);
-                                }
+                        if (item['Longitude'] !== undefined) {
+                            const lng = parseFloat(item['Longitude']);
+                            if (!isNaN(lng)) {
+                                item['Longitude'] = lng;
                             }
                         }
                         
-                        // For each time field, try to convert it to a standard format if it exists
-                        const timeFields = ['Unit Dispatched', 'Unit Enroute', 'Unit Onscene'];
-                        const dateFields = timeFields.concat(['Reported']);
-                        
-                        dateFields.forEach(field => {
-                            // Skip if the field doesn't exist
-                            if (item[field] === undefined || item[field] === '') {
-                                return;
-                            }
-                            
-                            try {
-                                // Parse as Date object if it's not already
-                                if (!(item[field] instanceof Date)) {
-                                    const parsedDate = new Date(item[field]);
-                                    
-                                    if (!isNaN(parsedDate)) {
-                                        // Store in ISO format for consistent processing
-                                        const oldValue = item[field];
-                                        item[field] = parsedDate.toISOString();
-                                        console.log(`Standardized ${field} from "${oldValue}" to "${item[field]}"`);
-                                    }
-                                }
-                            } catch (e) {
-                                console.warn(`Failed to parse date field ${field}:`, e);
-                            }
-                        });
+                        // Special handling for timestamps in various formats
+                        processTimestamps(item);
                         
                         // Calculate response times if missing but component times are available
                         const missingResponseTime = !item['Response Time (min)'];
@@ -1934,39 +1993,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                 }
                             } catch (e) {
                                 console.warn('Error calculating response time:', e);
-                            }
-                        }
-                        
-                        // Ensure latitude and longitude are converted to numbers
-                        if (item['Latitude'] !== undefined && typeof item['Latitude'] === 'string') {
-                            item['Latitude'] = parseFloat(item['Latitude']);
-                        }
-                        
-                        if (item['Longitude'] !== undefined && typeof item['Longitude'] === 'string') {
-                            item['Longitude'] = parseFloat(item['Longitude']);
-                        }
-                        
-                        // Handle case where Latitude/Longitude fields might be named differently
-                        if (item['Latitude'] === undefined || item['Longitude'] === undefined) {
-                            const latNames = ['lat', 'latitude', 'y', 'Lat', 'GPS_Lat', 'Incident_Lat'];
-                            const lngNames = ['lng', 'lon', 'longitude', 'x', 'Long', 'GPS_Long', 'Incident_Long'];
-                            
-                            for (const latField of latNames) {
-                                if (item[latField] !== undefined) {
-                                    item['Latitude'] = typeof item[latField] === 'string' ? 
-                                        parseFloat(item[latField]) : item[latField];
-                                    console.log(`Mapped ${latField} → Latitude: ${item['Latitude']}`);
-                                    break;
-                                }
-                            }
-                            
-                            for (const lngField of lngNames) {
-                                if (item[lngField] !== undefined) {
-                                    item['Longitude'] = typeof item[lngField] === 'string' ? 
-                                        parseFloat(item[lngField]) : item[lngField];
-                                    console.log(`Mapped ${lngField} → Longitude: ${item['Longitude']}`);
-                                    break;
-                                }
                             }
                         }
                     });
@@ -2002,6 +2028,120 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     break;
                     
+                case 'isochrone-stations':
+                    // Ensure stations have proper fields
+                    preparedData.forEach((item, index) => {
+                        // Expanded field name handling for different CAD systems
+                        const coordMappings = {
+                            'Latitude': [
+                                'Latitude', 'latitude', 'lat', 'y', 'LAT', 'Lat',
+                                'STATION_LAT', 'LAT', 'Y_COORDINATE', 'GEOY'
+                            ],
+                            'Longitude': [
+                                'Longitude', 'longitude', 'long', 'lng', 'x', 'LONG', 'Lng', 'LON', 'Lon',
+                                'STATION_LONG', 'LON', 'X_COORDINATE', 'GEOX'
+                            ],
+                            'Station Name': [
+                                'Station Name', 'station_name', 'stationName', 'name', 'Name', 'STATION_NAME', 'Station',
+                                'STATION_NAME', 'FACILITY_NAME', 'STATION_DESC', 'STATION_TITLE'
+                            ],
+                            'Station ID': [
+                                'Station ID', 'station_id', 'stationID', 'id', 'ID', 'STATION_ID', 'StationID',
+                                'STATION_ID', 'FACILITY_ID', 'STATION_NUMBER', 'STATION_CODE'
+                            ]
+                        };
+                        
+                        // Map fields with expanded mappings
+                        Object.entries(coordMappings).forEach(([targetField, sourceFields]) => {
+                            if (item[targetField] === undefined) {
+                                for (const field of sourceFields) {
+                                    if (item[field] !== undefined) {
+                                        // For coordinates, ensure numeric values
+                                        if (targetField === 'Latitude' || targetField === 'Longitude') {
+                                            const coordValue = parseFloat(item[field]);
+                                            if (!isNaN(coordValue)) {
+                                                item[targetField] = coordValue;
+                                                console.log(`Mapped ${field} to ${targetField}: ${coordValue}`);
+                                                break;
+                                            }
+                                        } else {
+                                            item[targetField] = item[field];
+                                            console.log(`Mapped ${field} to ${targetField}: ${item[field]}`);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        
+                        // If still no name but we have ID, use ID as name
+                        if (item['Station Name'] === undefined && item['Station ID'] !== undefined) {
+                            item['Station Name'] = `Station ${item['Station ID']}`;
+                        } else if (item['Station Name'] === undefined) {
+                            // Generate a name if none exists
+                            item['Station Name'] = `Station ${index + 1}`;
+                        }
+                    });
+                    
+                    console.log('Isochrone Map Station data sample:', preparedData.length > 0 ? preparedData[0] : 'No data');
+                    break;
+                    
+                case 'isochrone-incidents':
+                    // Enhanced field mapping for incidents across different CAD systems
+                    preparedData.forEach(item => {
+                        // Expanded coordinate and type mappings
+                        const incidentMappings = {
+                            'Latitude': [
+                                'Latitude', 'latitude', 'lat', 'y', 'LAT', 'Lat',
+                                'LAT', 'LATITUDE', 'EVENT_Y_COORDINATE', 'GEOY'
+                            ],
+                            'Longitude': [
+                                'Longitude', 'longitude', 'long', 'lng', 'x', 'LONG', 'Lng', 'LON', 'Lon',
+                                'LON', 'LONGITUDE', 'EVENT_X_COORDINATE', 'GEOX'
+                            ],
+                            'Incident Type': [
+                                'Incident Type', 'incident_type', 'incidentType', 'type', 'Type', 'call_type', 'callType',
+                                'INCIDENT_TYPE_DESC', 'NATURE_DESC', 'PROBLEM_DESCRIPTION', 'CALL_DESCRIPTION'
+                            ],
+                            'Incident ID': [
+                                'Incident ID', 'incident_id', 'incidentID', 'id', 'ID', 'INCIDENT_ID', 'IncidentID',
+                                'INCIDENT_NO', 'CAD_CALL_ID', 'EVENT_NUMBER', 'CAD_INCIDENT_ID'
+                            ]
+                        };
+                        
+                        // Map fields with expanded mappings
+                        Object.entries(incidentMappings).forEach(([targetField, sourceFields]) => {
+                            if (item[targetField] === undefined) {
+                                for (const field of sourceFields) {
+                                    if (item[field] !== undefined) {
+                                        // For coordinates, ensure numeric values
+                                        if (targetField === 'Latitude' || targetField === 'Longitude') {
+                                            const coordValue = parseFloat(item[field]);
+                                            if (!isNaN(coordValue)) {
+                                                item[targetField] = coordValue;
+                                                console.log(`Mapped ${field} to ${targetField}: ${coordValue}`);
+                                                break;
+                                            }
+                                        } else {
+                                            item[targetField] = item[field];
+                                            console.log(`Mapped ${field} to ${targetField}: ${item[field]}`);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        
+                        // If still no incident type, use a default
+                        if (item['Incident Type'] === undefined) {
+                            item['Incident Type'] = 'Unknown';
+                        }
+                    });
+                    
+                    console.log('Isochrone Map Incident data sample:', preparedData.length > 0 ? preparedData[0] : 'No data');
+                    break;
+                
+                // For call-density and coverage-gap, preserving existing transformations
                 case 'call-density':
                     // Ensure coordinates are parsed as numbers and map fields for Call Density Heatmap
                     preparedData.forEach(item => {
@@ -2134,7 +2274,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Log a sample of the prepared data
                     console.log('Call Density Heatmap data sample:', preparedData.length > 0 ? preparedData[0] : 'No data');
                     break;
-                
+                    
                 case 'coverage-gap':
                     // Ensure stations have required fields properly mapped
                     preparedData.forEach(item => {
@@ -2212,111 +2352,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     console.log('Coverage Gap Finder data sample:', preparedData.length > 0 ? preparedData[0] : 'No data');
                     break;
-                    
-                case 'isochrone-stations':
-                    // Ensure stations have proper fields
-                    preparedData.forEach((item, index) => {
-                        // Standardize coordinates
-                        for (const field of ['Latitude', 'Longitude']) {
-                            // Try standard field names first
-                            if (item[field] !== undefined) {
-                                const coordValue = parseFloat(item[field]);
-                                if (!isNaN(coordValue)) {
-                                    item[field] = coordValue;
-                                }
-                            } else {
-                                // Try alternate field names
-                                const alternates = field === 'Latitude' ? 
-                                    ['latitude', 'lat', 'y', 'LAT', 'Lat'] : 
-                                    ['longitude', 'long', 'lng', 'x', 'LONG', 'Lng', 'LON', 'Lon'];
-                                
-                                for (const altField of alternates) {
-                                    if (item[altField] !== undefined) {
-                                        const coordValue = parseFloat(item[altField]);
-                                        if (!isNaN(coordValue)) {
-                                            item[field] = coordValue;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        
-                        // Map station identification fields
-                        if (item['Station Name'] === undefined) {
-                            // Try alternate fields for Station Name
-                            const nameFields = ['station_name', 'stationName', 'name', 'Name', 'STATION_NAME', 'Station'];
-                            for (const field of nameFields) {
-                                if (item[field] !== undefined) {
-                                    item['Station Name'] = item[field];
-                                    break;
-                                }
-                            }
-                            
-                            // If still no name but we have ID, use ID as name
-                            if (item['Station Name'] === undefined && item['Station ID'] !== undefined) {
-                                item['Station Name'] = `Station ${item['Station ID']}`;
-                            } else if (item['Station Name'] === undefined) {
-                                // Generate a name if none exists
-                                item['Station Name'] = `Station ${index + 1}`;
-                            }
-                        }
-                    });
-                    
-                    console.log('Isochrone Map Station data sample:', preparedData.length > 0 ? preparedData[0] : 'No data');
-                    break;
-                    
-                case 'isochrone-incidents':
-                    // Ensure incidents have proper fields
-                    preparedData.forEach(item => {
-                        // Standardize coordinates
-                        for (const field of ['Latitude', 'Longitude']) {
-                            // Try standard field names first
-                            if (item[field] !== undefined) {
-                                const coordValue = parseFloat(item[field]);
-                                if (!isNaN(coordValue)) {
-                                    item[field] = coordValue;
-                                }
-                            } else {
-                                // Try alternate field names
-                                const alternates = field === 'Latitude' ? 
-                                    ['latitude', 'lat', 'y', 'LAT', 'Lat'] : 
-                                    ['longitude', 'long', 'lng', 'x', 'LONG', 'Lng', 'LON', 'Lon'];
-                                
-                                for (const altField of alternates) {
-                                    if (item[altField] !== undefined) {
-                                        const coordValue = parseFloat(item[altField]);
-                                        if (!isNaN(coordValue)) {
-                                            item[field] = coordValue;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        
-                        // Map incident type field
-                        if (item['Incident Type'] === undefined) {
-                            // Try alternate fields for Incident Type
-                            const typeFields = ['incident_type', 'incidentType', 'type', 'Type', 'call_type', 'callType'];
-                            for (const field of typeFields) {
-                                if (item[field] !== undefined) {
-                                    item['Incident Type'] = item[field];
-                                    break;
-                                }
-                            }
-                            
-                            // If still no type, use a default
-                            if (item['Incident Type'] === undefined) {
-                                item['Incident Type'] = 'Unknown';
-                            }
-                        }
-                    });
-                    
-                    console.log('Isochrone Map Incident data sample:', preparedData.length > 0 ? preparedData[0] : 'No data');
-                    break;
                 
-                // Add tool-specific preparations for other tools as needed
+                // Add mappings for other tools as needed
             }
             
             return preparedData;
@@ -2327,6 +2364,137 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Helper function to detect CAD system based on field names
+    function detectCADSystem(sampleRecord) {
+        if (!sampleRecord) return null;
+        
+        const fields = Object.keys(sampleRecord);
+        
+        // Detect Motorola PremierOne CAD
+        if (fields.some(f => f.includes('INCIDENT_NO')) || 
+            fields.some(f => f.includes('CALL_RECEIVED'))) {
+            return 'Motorola PremierOne';
+        }
+        
+        // Detect Tyler New World CAD
+        if (fields.some(f => f.includes('CAD_CALL_ID')) || 
+            fields.some(f => f.includes('NATURE_CODE'))) {
+            return 'Tyler New World';
+        }
+        
+        // Detect Hexagon/Intergraph CAD
+        if (fields.some(f => f.includes('EVENT_NUMBER')) || 
+            fields.some(f => f.includes('EVENT_OPEN_DATETIME'))) {
+            return 'Hexagon/Intergraph';
+        }
+        
+        // Detect Central Square CAD
+        if (fields.some(f => f.includes('CAD_INCIDENT_ID')) || 
+            fields.some(f => f.includes('REPORTED_DT')) ||
+            fields.includes('GEOX') || fields.includes('GEOY')) {
+            return 'Central Square';
+        }
+        
+        return null;
+    }
+    
+    // Helper function to process various timestamp formats
+    function processTimestamps(item) {
+        // Handle date and time fields that might be combined in a single timestamp
+        const timestampFields = [
+            // General fields
+            'timestamp', 'datetime', 'incident_datetime', 'created_at', 'Timestamp', 'DateTime', 'Date_Time', 'CreateTime',
+            // System specific fields
+            'CALL_DATE_TIME', 'EVENT_OPEN_DATETIME', 'REPORTED_DT', 'CALL_RECEIVED_DATE'
+        ];
+        
+        let hasProcessedTimestamp = false;
+        
+        for (const field of timestampFields) {
+            if (item[field] !== undefined && item[field] !== '') {
+                console.log(`Processing timestamp field: ${field} = ${item[field]}`);
+                try {
+                    // Try to parse as a standard date format
+                    const timestamp = new Date(item[field]);
+                    
+                    if (!isNaN(timestamp)) {
+                        // Set date fields if they don't exist
+                        if (!item['Incident Date']) {
+                            item['Incident Date'] = timestamp.toISOString().split('T')[0];
+                            console.log(`Set Incident Date from ${field}: ${item['Incident Date']}`);
+                        }
+                        
+                        // Set time fields if they don't exist
+                        if (!item['Reported']) {
+                            item['Reported'] = timestamp.toISOString().split('T')[1].substring(0, 8);
+                            console.log(`Set Reported time from ${field}: ${item['Reported']}`);
+                        }
+                        
+                        hasProcessedTimestamp = true;
+                    }
+                } catch (e) {
+                    console.warn(`Failed to parse timestamp field ${field}:`, e);
+                }
+            }
+        }
+        
+        // If we didn't process any timestamps, try to look for separate date/time fields
+        if (!hasProcessedTimestamp) {
+            // First, check for fields that might contain dates
+            const dateFields = [
+                'Date', 'Incident Date', 'Call Date', 'Alarm Date', 'Date_Reported', 'Date_Created',
+                'CALL_RECEIVED_DATE'
+            ];
+            
+            // Then, check for fields that might contain times
+            const timeFields = [
+                'Time', 'Incident Time', 'Call Time', 'Alarm Time', 'Time_Reported', 'Time_Created',
+                'CALL_RECEIVED_TIME'
+            ];
+            
+            // Try to find date and time fields
+            let dateField = null;
+            let timeField = null;
+            
+            for (const field of dateFields) {
+                if (item[field] !== undefined && item[field] !== '') {
+                    dateField = field;
+                    break;
+                }
+            }
+            
+            for (const field of timeFields) {
+                if (item[field] !== undefined && item[field] !== '') {
+                    timeField = field;
+                    break;
+                }
+            }
+            
+            // If we found both date and time fields, combine them
+            if (dateField && timeField) {
+                console.log(`Found separate date field: ${dateField} and time field: ${timeField}`);
+                try {
+                    // Try to standardize date format
+                    const dateStr = standardizeDate(item[dateField]);
+                    const timeStr = standardizeTime(item[timeField]);
+                    
+                    // Set fields
+                    if (!item['Incident Date']) {
+                        item['Incident Date'] = dateStr;
+                        console.log(`Set Incident Date from ${dateField}: ${dateStr}`);
+                    }
+                    
+                    if (!item['Reported']) {
+                        item['Reported'] = timeStr;
+                        console.log(`Set Reported from ${timeField}: ${timeStr}`);
+                    }
+                } catch (e) {
+                    console.warn(`Error processing date/time fields:`, e);
+                }
+            }
+        }
+    }
+
     // Initialize the application
     init();
 });
