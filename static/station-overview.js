@@ -134,6 +134,9 @@
         document.getElementById('applyFilters').addEventListener('click', applyFilters);
         document.getElementById('resetFilters').addEventListener('click', resetFilters);
 
+        // Initialize map first to ensure it's available before processing data
+        initializeMap();
+
         // Check if there's data in sessionStorage from the Data Formatter
         console.log("Checking for Data Formatter data in Station Overview tool");
         const formattedData = sessionStorage.getItem('formattedData');
@@ -177,14 +180,25 @@
                     record._source = 'formatter'; // Add metadata to track source
                 });
                 
-                // Process the data 
-                stationData = dataToProcess;
-                processData(stationData);
-                
-                // Show controls and dashboard
-                document.getElementById('controls').style.display = 'flex';
-                document.getElementById('dashboard').style.display = 'block';
-                document.getElementById('noDataMessage').style.display = 'none';
+                // Process the data - wait until map is fully initialized
+                setTimeout(() => {
+                    stationData = dataToProcess;
+                    processData(stationData);
+                    
+                    // Show controls and dashboard
+                    document.getElementById('controls').style.display = 'flex';
+                    document.getElementById('dashboard').style.display = 'block';
+                    document.getElementById('noDataMessage').style.display = 'none';
+                    
+                    // Hide the upload section
+                    document.querySelector('.file-upload-container').style.display = 'none';
+                    
+                    // Show success message
+                    showInfoMessage(`
+                        <strong>📊 Data successfully received from Data Formatter tool</strong><br>
+                        ${dataToProcess.length} station records loaded.
+                    `, 'success');
+                }, 500);
                 
                 // Clear the sessionStorage to prevent reprocessing on page refresh
                 sessionStorage.removeItem('formattedData');
@@ -192,15 +206,6 @@
                 sessionStorage.removeItem('formatterToolId');
                 sessionStorage.removeItem('formatterTarget');
                 sessionStorage.removeItem('formatterTimestamp');
-                
-                // Hide the upload section
-                document.querySelector('.file-upload-container').style.display = 'none';
-                
-                // Show success message
-                showInfoMessage(`
-                    <strong>📊 Data successfully received from Data Formatter tool</strong><br>
-                    ${dataToProcess.length} station records loaded.
-                `, 'success');
                 
             } catch (error) {
                 console.error("Error processing data from Data Formatter:", error);
@@ -217,9 +222,6 @@
         document.getElementById('callTypeSelect').addEventListener('change', function() {
             currentFilters.callType = this.value;
         });
-        
-        // Initialize map
-        initializeMap();
     });
     
     /**
@@ -256,32 +258,48 @@
     function initializeMap() {
         // Check if Leaflet is available
         if (typeof L !== 'undefined') {
-            // Create map centered on Phoenix (default location)
-            stationMap = L.map('stationMap', {
-                zoomControl: true,  // Ensure zoom controls are visible
-                scrollWheelZoom: true,  // Enable mouse wheel zoom
-                doubleClickZoom: true,  // Enable double click zoom
-                dragging: true  // Enable dragging
-            }).setView([33.4484, -112.0740], 10);  // Center on Phoenix
-            
-            // Add OpenStreetMap tiles
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                maxZoom: 19  // Allow zooming in quite far
-            }).addTo(stationMap);
-            
-            // Add zoom controls explicitly
-            L.control.zoom({
-                position: 'topright'
-            }).addTo(stationMap);
-            
-            // Add a scale control
-            L.control.scale().addTo(stationMap);
-            
-            // Force map to recalculate size after it's fully loaded
-            setTimeout(function() {
-                stationMap.invalidateSize();
-            }, 500);
+            try {
+                // Make sure the map container exists
+                const mapContainer = document.getElementById('stationMap');
+                if (!mapContainer) {
+                    console.error("Map container element not found");
+                    return;
+                }
+                
+                // Create map centered on Phoenix (default location)
+                stationMap = L.map('stationMap', {
+                    zoomControl: true,  // Ensure zoom controls are visible
+                    scrollWheelZoom: true,  // Enable mouse wheel zoom
+                    doubleClickZoom: true,  // Enable double click zoom
+                    dragging: true  // Enable dragging
+                }).setView([33.4484, -112.0740], 10);  // Center on Phoenix
+                
+                // Add OpenStreetMap tiles
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    maxZoom: 19  // Allow zooming in quite far
+                }).addTo(stationMap);
+                
+                // Add zoom controls explicitly
+                L.control.zoom({
+                    position: 'topright'
+                }).addTo(stationMap);
+                
+                // Add a scale control
+                L.control.scale().addTo(stationMap);
+                
+                // Force map to recalculate size after it's fully loaded
+                setTimeout(function() {
+                    if (stationMap) {
+                        stationMap.invalidateSize();
+                        console.log("Map size recalculated");
+                    }
+                }, 500);
+                
+                console.log("Map initialized successfully");
+            } catch (error) {
+                console.error("Error initializing map:", error);
+            }
         } else {
             console.error("Leaflet library not loaded");
         }
@@ -421,9 +439,33 @@
      * Add station markers to the map
      */
     function updateStationMap(data) {
+        // First, check if the map is initialized
+        if (!stationMap) {
+            console.error("Map not initialized, reinitializing...");
+            initializeMap();
+            
+            // If map still not initialized, return with error
+            if (!stationMap) {
+                console.error("Failed to initialize map, cannot update station markers");
+                return;
+            }
+            
+            // Give time for the map to initialize properly
+            setTimeout(() => updateStationMap(data), 500);
+            return;
+        }
+        
         // Clear existing markers
-        markers.forEach(marker => marker.remove());
-        markers = [];
+        try {
+            markers.forEach(marker => {
+                if (marker && marker.remove) {
+                    marker.remove();
+                }
+            });
+            markers = [];
+        } catch (error) {
+            console.error("Error clearing markers:", error);
+        }
         
         console.log("Updating station map with", data.length, "records");
         
@@ -544,102 +586,122 @@
             'Station 50': { lat: 33.3991, lng: -112.1141 }
         };
         
-        // Add markers for each station
-        Object.values(stationGroups).forEach(station => {
-            // Use fallback coordinates if necessary
-            let lat = station.latitude;
-            let lng = station.longitude;
-            
-            // Check if coordinates are valid
-            if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0) {
-                // Try to use fallback coordinates
-                if (phoenixFireCoordinates[station.station]) {
-                    lat = phoenixFireCoordinates[station.station].lat;
-                    lng = phoenixFireCoordinates[station.station].lng;
-                    console.log(`Using fallback coordinates for ${station.station}: ${lat}, ${lng}`);
-                } else {
-                    console.error(`No valid coordinates for ${station.station}`);
-                    return; // Skip this station
+        try {
+            // Add markers for each station
+            Object.values(stationGroups).forEach(station => {
+                // Use fallback coordinates if necessary
+                let lat = station.latitude;
+                let lng = station.longitude;
+                
+                // Check if coordinates are valid
+                if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0) {
+                    // Try to use fallback coordinates
+                    if (phoenixFireCoordinates[station.station]) {
+                        lat = phoenixFireCoordinates[station.station].lat;
+                        lng = phoenixFireCoordinates[station.station].lng;
+                        console.log(`Using fallback coordinates for ${station.station}: ${lat}, ${lng}`);
+                    } else {
+                        console.error(`No valid coordinates for ${station.station}`);
+                        return; // Skip this station
+                    }
                 }
-            }
-            
-            // Create marker content
-            let popupContent = `<h3>${station.station}</h3>`;
-            
-            // Add address if available
-            if (station.address) {
-                popupContent += `<p><strong>Address:</strong> ${station.address}</p>`;
-            }
-            
-            popupContent += `<p><strong>Calls:</strong> ${station.callCount}</p>`;
-            
-            if (station.units.length > 0) {
-                // Sort units and limit to 10 for display
-                const sortedUnits = station.units.sort();
-                const displayUnits = sortedUnits.length > 10 ? 
-                    sortedUnits.slice(0, 10).join(', ') + ` (+ ${sortedUnits.length - 10} more)` :
-                    sortedUnits.join(', ');
                 
-                popupContent += `<p><strong>Units:</strong> ${displayUnits}</p>`;
-            } else {
-                popupContent += `<p><strong>Units:</strong> None</p>`;
-            }
-            
-            // Create custom marker with station info
-            const marker = L.marker([lat, lng])
-                .addTo(stationMap)
-                .bindPopup(popupContent);
-            
-            markers.push(marker);
-        });
-        
-        // Add default Phoenix center if no markers
-        if (markers.length === 0) {
-            // Add a default marker at Phoenix downtown
-            const phoenixCenter = [33.4484, -112.0740]; // Phoenix downtown coordinates
-            const marker = L.marker(phoenixCenter)
-                .addTo(stationMap)
-                .bindPopup("Phoenix Fire Department<br>No station data available");
-            markers.push(marker);
-            
-            // Set view to Phoenix with zoom level 10
-            stationMap.setView(phoenixCenter, 10);
-        } else {
-            // Create a feature group with all markers
-            const group = new L.featureGroup(markers);
-            
-            // Fit map to show all markers with padding
-            try {
-                const bounds = group.getBounds();
-                console.log("Map bounds:", bounds);
+                // Create marker content
+                let popupContent = `<h3>${station.station}</h3>`;
                 
-                // Check if bounds are valid
-                if (bounds.isValid()) {
-                    stationMap.fitBounds(bounds, {
-                        padding: [50, 50],  // Add padding around markers
-                        maxZoom: 13,        // Don't zoom in too far
-                        animate: true       // Animate the transition
-                    });
+                // Add address if available
+                if (station.address) {
+                    popupContent += `<p><strong>Address:</strong> ${station.address}</p>`;
+                }
+                
+                popupContent += `<p><strong>Calls:</strong> ${station.callCount}</p>`;
+                
+                if (station.units.length > 0) {
+                    // Sort units and limit to 10 for display
+                    const sortedUnits = station.units.sort();
+                    const displayUnits = sortedUnits.length > 10 ? 
+                        sortedUnits.slice(0, 10).join(', ') + ` (+ ${sortedUnits.length - 10} more)` :
+                        sortedUnits.join(', ');
                     
-                    // Force map to recalculate size
-                    stationMap.invalidateSize();
+                    popupContent += `<p><strong>Units:</strong> ${displayUnits}</p>`;
                 } else {
-                    console.warn("Invalid bounds, using default view");
+                    popupContent += `<p><strong>Units:</strong> None</p>`;
+                }
+                
+                // Create custom marker with station info
+                try {
+                    const marker = L.marker([lat, lng])
+                        .addTo(stationMap)
+                        .bindPopup(popupContent);
+                    
+                    markers.push(marker);
+                } catch (error) {
+                    console.error(`Error adding marker for station ${station.station}:`, error);
+                }
+            });
+            
+            // Add default Phoenix center if no markers
+            if (markers.length === 0) {
+                // Add a default marker at Phoenix downtown
+                const phoenixCenter = [33.4484, -112.0740]; // Phoenix downtown coordinates
+                try {
+                    const marker = L.marker(phoenixCenter)
+                        .addTo(stationMap)
+                        .bindPopup("Phoenix Fire Department<br>No station data available");
+                    markers.push(marker);
+                    
+                    // Set view to Phoenix with zoom level 10
+                    stationMap.setView(phoenixCenter, 10);
+                } catch (error) {
+                    console.error("Error adding default marker:", error);
+                }
+            } else {
+                try {
+                    // Create a feature group with all markers
+                    const group = new L.featureGroup(markers);
+                    
+                    // Fit map to show all markers with padding
+                    try {
+                        const bounds = group.getBounds();
+                        console.log("Map bounds:", bounds);
+                        
+                        // Check if bounds are valid
+                        if (bounds.isValid()) {
+                            stationMap.fitBounds(bounds, {
+                                padding: [50, 50],  // Add padding around markers
+                                maxZoom: 13,        // Don't zoom in too far
+                                animate: true       // Animate the transition
+                            });
+                            
+                            // Force map to recalculate size
+                            stationMap.invalidateSize();
+                        } else {
+                            console.warn("Invalid bounds, using default view");
+                            stationMap.setView([33.4484, -112.0740], 10);
+                        }
+                    } catch (e) {
+                        console.error("Error fitting bounds:", e);
+                        // Fallback to Phoenix center
+                        stationMap.setView([33.4484, -112.0740], 10);
+                    }
+                } catch (error) {
+                    console.error("Error creating feature group:", error);
+                    // Fallback to Phoenix center
                     stationMap.setView([33.4484, -112.0740], 10);
                 }
-            } catch (e) {
-                console.error("Error fitting bounds:", e);
-                // Fallback to Phoenix center
-                stationMap.setView([33.4484, -112.0740], 10);
             }
+            
+            // Force Leaflet to recalculate container size
+            setTimeout(function() {
+                if (stationMap) {
+                    stationMap.invalidateSize();
+                }
+            }, 200);
+            
+            console.log(`Added ${markers.length} station markers to map`);
+        } catch (error) {
+            console.error("Error updating station map:", error);
         }
-        
-        // Force Leaflet to recalculate container size
-        setTimeout(function() {
-            stationMap.invalidateSize();
-        }, 200);
-        
-        console.log(`Added ${markers.length} station markers to map`);
     }
     
     /**
