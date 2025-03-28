@@ -18,7 +18,8 @@
     <!-- Required scripts before content loads -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <!-- Font Awesome JS is conflicting with our custom styles, removing -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script> -->
     
     <!-- Export libraries (lazy loaded, but defined here for faster response) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -505,7 +506,7 @@
     <div class="navbar">
         <div class="logo">
             <a href="/">
-                <i class="fas fa-fire"></i> FireEMS.ai
+                <i class="fas fa-fire" style="color: #ff6b4a;"></i> FireEMS.ai
             </a>
         </div>
         <div class="nav-links">
