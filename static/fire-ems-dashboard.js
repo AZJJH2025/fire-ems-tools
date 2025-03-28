@@ -203,6 +203,26 @@ document.addEventListener('DOMContentLoaded', function() {
             if (dataToProcess.length > 0) {
                 console.log("Sample record from Data Formatter (before validation):", dataToProcess[0]);
                 console.log("Field names present:", Object.keys(dataToProcess[0]).join(", "));
+                
+                // Check for Date objects and time fields specifically
+                if (dataToProcess[0].Reported_obj) {
+                    console.log("Found pre-existing Reported_obj Date:", dataToProcess[0].Reported_obj);
+                } else {
+                    console.log("No pre-existing Reported_obj. 'Reported' field contents:", dataToProcess[0].Reported);
+                }
+                
+                if (dataToProcess[0]['Incident City']) {
+                    console.log("Found Incident City:", dataToProcess[0]['Incident City']);
+                } else {
+                    console.log("No Incident City field found in first record");
+                }
+                
+                // Check how many records have date objects or city data
+                const withReportedDate = dataToProcess.filter(r => r.Reported_obj instanceof Date).length;
+                const withReportedField = dataToProcess.filter(r => r.Reported !== undefined).length;
+                const withCityField = dataToProcess.filter(r => r['Incident City'] !== undefined).length;
+                
+                console.log(`Data statistics: ${dataToProcess.length} total records, ${withReportedDate} with Reported_obj, ${withReportedField} with Reported field, ${withCityField} with Incident City field`);
             }
             
             // Validate that the data includes required fields for Response Time Analyzer
@@ -361,22 +381,90 @@ function formatFireEMSData(data) {
                 try {
                     // Skip re-processing if it's already a Date object
                     if (formattedRecord[`${field}_obj`] instanceof Date) {
+                        console.log(`${field}_obj already exists as Date:`, formattedRecord[`${field}_obj`]);
                         return;
                     }
                     
-                    // Parse the date
-                    const date = new Date(formattedRecord[field]);
+                    // Check if we have an ISO string version from data formatter
+                    if (field === 'Reported' && formattedRecord['Reported_ISO']) {
+                        const date = new Date(formattedRecord['Reported_ISO']);
+                        if (!isNaN(date.getTime())) {
+                            formattedRecord[`${field}_obj`] = date;
+                            console.log(`Used Reported_ISO to create Date object: ${date}`);
+                            if (!isFormatterData) {
+                                formattedRecord[field] = formatDateTime(date);
+                            }
+                            return;
+                        }
+                    }
+                    
+                    // Parse the date - ensure we have a valid Date object
+                    let date;
+                    
+                    // Handle various date formats that could be coming from different CAD systems
+                    if (typeof formattedRecord[field] === 'string') {
+                        // Try different parsing strategies
+                        if (formattedRecord[field].includes('T')) {
+                            // ISO format: 2023-03-15T14:30:00
+                            date = new Date(formattedRecord[field]);
+                            console.log(`Parsed ISO date format: ${date}`);
+                        } else if (formattedRecord[field].match(/^\d{4}-\d{2}-\d{2}/)) {
+                            // YYYY-MM-DD format
+                            date = new Date(formattedRecord[field]);
+                            console.log(`Parsed YYYY-MM-DD format: ${date}`);
+                        } else if (formattedRecord[field].match(/^\d{1,2}\/\d{1,2}\/\d{4}/)) {
+                            // MM/DD/YYYY format
+                            date = new Date(formattedRecord[field]);
+                            console.log(`Parsed MM/DD/YYYY format: ${date}`);
+                        } else if (formattedRecord[field].match(/^\d{1,2}:\d{1,2}:\d{1,2}$/)) {
+                            // Time only format (like "14:30:00") - use current date
+                            const timeStr = formattedRecord[field];
+                            // If we have an Incident Date field, use that
+                            if (formattedRecord['Incident Date']) {
+                                const dateStr = formattedRecord['Incident Date'];
+                                date = new Date(`${dateStr}T${timeStr}`);
+                                console.log(`Combined Incident Date with time: ${date}`);
+                            } else {
+                                // Use today's date with the time
+                                const today = new Date();
+                                const dateStr = today.toISOString().split('T')[0];
+                                date = new Date(`${dateStr}T${timeStr}`);
+                                console.log(`Used today's date with time: ${date}`);
+                            }
+                        } else {
+                            // Try local parsing as a fallback
+                            date = new Date(formattedRecord[field]);
+                            console.log(`Used fallback date parsing: ${date}`);
+                        }
+                    } else {
+                        date = new Date(formattedRecord[field]);
+                        console.log(`Parsed non-string date: ${date}`);
+                    }
+                    
                     if (!isNaN(date.getTime())) {
                         formattedRecord[`${field}_obj`] = date;
+                        
+                        // Debug date object creation
+                        if (field === 'Reported') {
+                            console.log(`Successfully created Date object for ${field}:`, {
+                                original: formattedRecord[field],
+                                parsedDate: date,
+                                parsedTime: date.getTime(),
+                                sourceType: typeof formattedRecord[field],
+                                isValidDate: !isNaN(date.getTime())
+                            });
+                        }
                         
                         // Only overwrite the original string if it's not already formatted
                         if (!isFormatterData || typeof formattedRecord[field] !== 'string' || 
                             !formattedRecord[field].includes('/')) {
                             formattedRecord[field] = formatDateTime(date);
                         }
+                    } else {
+                        console.warn(`Created invalid Date from ${field}: ${formattedRecord[field]}`);
                     }
                 } catch (e) {
-                    console.warn(`Could not parse date for field ${field}: ${formattedRecord[field]}`);
+                    console.warn(`Could not parse date for field ${field}: ${formattedRecord[field]}`, e);
                 }
             }
         });
@@ -606,8 +694,78 @@ function createTimeChart(data, stats) {
         return;
     }
     
-    // Check if time data exists.
+    // Check if we need to ensure all records have Reported_obj Date objects
+    const recordsWithDateObj = data.filter(record => record['Reported_obj'] instanceof Date).length;
+    console.log(`Records with Date objects: ${recordsWithDateObj} out of ${data.length}`);
+    
+    // If some records are missing Date objects but have timestamp fields, try to create them
+    if (recordsWithDateObj < data.length) {
+        console.log("Attempting to create missing Date objects for time chart");
+        data.forEach(record => {
+            if (!(record['Reported_obj'] instanceof Date)) {
+                // Try to create Date object from various fields
+                if (record['Reported'] && !record['Reported_obj']) {
+                    try {
+                        // If it's just a time value, combine with Incident Date if available
+                        if (record['Reported'].match(/^\d{1,2}:\d{1,2}:\d{1,2}$/)) {
+                            if (record['Incident Date']) {
+                                const timestamp = new Date(`${record['Incident Date']}T${record['Reported']}`);
+                                if (!isNaN(timestamp)) {
+                                    record['Reported_obj'] = timestamp;
+                                    console.log(`Created Date from combined Incident Date and Reported time: ${timestamp}`);
+                                }
+                            } else {
+                                // Use today's date with the time as last resort
+                                const today = new Date().toISOString().split('T')[0];
+                                const timestamp = new Date(`${today}T${record['Reported']}`);
+                                if (!isNaN(timestamp)) {
+                                    record['Reported_obj'] = timestamp;
+                                    console.log(`Created Date using today's date with Reported time: ${timestamp}`);
+                                }
+                            }
+                        } else {
+                            // Try standard date parsing
+                            const timestamp = new Date(record['Reported']);
+                            if (!isNaN(timestamp)) {
+                                record['Reported_obj'] = timestamp;
+                                console.log(`Created Date from Reported field: ${timestamp}`);
+                            }
+                        }
+                    } catch (e) {
+                        console.warn("Failed to create Date object from Reported field:", e);
+                    }
+                }
+                
+                // Try alternative timestamp fields if still no Date object
+                if (!record['Reported_obj']) {
+                    const timeFields = ['Incident Date', 'REPORTED_DT', 'CALL_DATE_TIME', 'EVENT_OPEN_DATETIME'];
+                    for (const field of timeFields) {
+                        if (record[field]) {
+                            try {
+                                const timestamp = new Date(record[field]);
+                                if (!isNaN(timestamp)) {
+                                    record['Reported_obj'] = timestamp;
+                                    console.log(`Created Date from ${field}: ${timestamp}`);
+                                    break;
+                                }
+                            } catch (e) {
+                                console.warn(`Failed to create Date from ${field}:`, e);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Check if time data exists after attempts to create Date objects
     const hasTimeData = data.some(record => record['Reported_obj']);
+    console.log("Time chart data check after processing:", {
+        recordCount: data.length,
+        recordsWithReportedObj: data.filter(record => record['Reported_obj'] instanceof Date).length,
+        reportedObjSamples: data.filter(record => record['Reported_obj']).slice(0, 3).map(record => record['Reported_obj'])
+    });
+    
     if (!hasTimeData) {
         container.innerHTML = '<p>No time data available for heatmap</p>';
         return;
@@ -617,13 +775,23 @@ function createTimeChart(data, stats) {
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const heatmapData = Array.from({ length: 7 }, () => Array(24).fill(0));
     
+    let processedRecords = 0;
     data.forEach(record => {
         if (record['Reported_obj'] && record['Reported_obj'] instanceof Date) {
             const day = record['Reported_obj'].getDay();
             const hour = record['Reported_obj'].getHours();
-            heatmapData[day][hour]++;
+            
+            // Only count if day and hour are valid
+            if (day >= 0 && day < 7 && hour >= 0 && hour < 24) {
+                heatmapData[day][hour]++;
+                processedRecords++;
+            } else {
+                console.warn(`Invalid day or hour value: day=${day}, hour=${hour} for record:`, record);
+            }
         }
     });
+    
+    console.log(`Processed ${processedRecords} records for time heatmap`);
     
     const maxCount = Math.max(...heatmapData.flat());
     let heatmapHtml = '<table style="width: 100%; border-collapse: collapse; font-size: 12px;">';
@@ -805,18 +973,57 @@ function createLocationChart(data, stats) {
         return;
     }
     
-    const locationField = data.some(record => record['Incident City']) ? 'Incident City' : null;
+    // Look for location data in multiple possible fields
+    const locationFields = ['Incident City', 'City', 'ADDR_CITY', 'EVENT_CITY', 'CITY', 'Location City'];
+    let locationField = null;
+    
+    // Find the first location field that has data
+    for (const field of locationFields) {
+        if (data.some(record => record[field])) {
+            locationField = field;
+            console.log(`Found location data in field: ${field}`);
+            break;
+        }
+    }
+    
+    console.log("Location chart data check:", {
+        recordCount: data.length,
+        firstRecord: data.length > 0 ? data[0] : null,
+        selectedLocationField: locationField,
+        locationFieldsSamples: locationFields.map(field => ({
+            field,
+            hasData: data.some(record => record[field]),
+            count: data.filter(record => record[field]).length
+        }))
+    });
+    
     if (!locationField) {
         canvas.parentElement.innerHTML = '<p>No location data available for chart</p>';
         return;
     }
     
-    const locationCounts = {};
+    // Normalize data - ensure all records have standard Incident City field
     data.forEach(record => {
-        if (record[locationField]) {
-            locationCounts[record[locationField]] = (locationCounts[record[locationField]] || 0) + 1;
+        if (!record['Incident City'] && record[locationField]) {
+            record['Incident City'] = record[locationField];
         }
     });
+    
+    // Use standardized Incident City field for consistency
+    const locationCounts = {};
+    data.forEach(record => {
+        if (record['Incident City']) {
+            locationCounts[record['Incident City']] = (locationCounts[record['Incident City']] || 0) + 1;
+        }
+    });
+    
+    console.log(`Found ${Object.keys(locationCounts).length} unique locations`);
+    
+    // If no location data found after processing
+    if (Object.keys(locationCounts).length === 0) {
+        canvas.parentElement.innerHTML = '<p>No location data available after processing</p>';
+        return;
+    }
     
     let topLocations = Object.entries(locationCounts)
         .sort((a, b) => b[1] - a[1])
