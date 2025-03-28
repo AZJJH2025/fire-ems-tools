@@ -105,6 +105,11 @@ body {
 /* Navbar Styles - Overriding to use global styles */
 /* Styles moved to global styles.css */
 
+/* Make sure the flame icon is red */
+.navbar .logo a i {
+    color: #ff6b4a !important;
+}
+
 .logo span {
     font-size: 1.5rem;
     font-weight: bold;
