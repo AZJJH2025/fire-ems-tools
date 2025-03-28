@@ -1219,10 +1219,19 @@
         console.log(`Found ${callsWithType} calls with valid type information`);
         console.log("Call types:", callTypes);
         
-        // Create No Data label if no call types found
+        // If no call types found, show a message instead of the chart
         if (Object.keys(callTypes).length === 0) {
-            console.warn("No call type data found, showing No Data");
-            callTypes['No Data Available'] = 1;
+            console.warn("No call type data found, showing No Data message");
+            // Get the container and clear it
+            const container = document.getElementById('callTypeChart').parentNode;
+            container.innerHTML = '<div class="no-data-message">No Call Type Data Available</div>';
+            // Apply styling to the message if it doesn't exist
+            if (!document.querySelector('style:contains(".no-data-message")')) {
+                const style = document.createElement('style');
+                style.textContent = '.no-data-message { display: flex; justify-content: center; align-items: center; height: 200px; color: #666; font-size: 14px; }';
+                document.head.appendChild(style);
+            }
+            return; // Exit the function early
         }
         
         // Sort call types by count (descending)
@@ -1352,21 +1361,17 @@
         
         console.log(`Found ${callsWithHour} calls with valid hour data`);
         
-        // If no hour data found, keep zeros but add a label
+        // If no hour data found, show a message instead of the chart
         if (callsWithHour === 0) {
-            console.warn("No valid hour data found, showing No Data");
-            // Keep the zeros array as is, will display an empty chart with a No Data message
-            // Add a small value to the first hour to ensure the chart renders
-            hours[0] = 1;
-            
-            // After rendering the chart, we'll add a No Data message to the canvas
-            setTimeout(() => {
-                const ctx = document.getElementById('callHourChart').getContext('2d');
-                ctx.font = '14px Arial';
-                ctx.fillStyle = '#666';
-                ctx.textAlign = 'center';
-                ctx.fillText('No Data Available', ctx.canvas.width / 2, ctx.canvas.height / 2);
-            }, 100);
+            console.warn("No valid hour data found, showing No Data message");
+            // Get the container and clear it
+            const container = document.getElementById('callHourChart').parentNode;
+            container.innerHTML = '<div class="no-data-message">No Call Hour Data Available</div>';
+            // Apply styling to the message
+            const style = document.createElement('style');
+            style.textContent = '.no-data-message { display: flex; justify-content: center; align-items: center; height: 200px; color: #666; font-size: 14px; }';
+            document.head.appendChild(style);
+            return; // Exit the function early
         }
         
         console.log("Calls by hour:", hours);
@@ -1509,21 +1514,19 @@
         
         console.log(`Found ${callsWithDay} calls with valid day data`);
         
-        // If no valid day information found, keep zeros but add a label
+        // If no valid day information found, show a message instead of the chart
         if (callsWithDay === 0) {
-            console.warn("No valid day of week data found, showing No Data");
-            // Keep the zeros array as is, will display an empty chart with a No Data message
-            // Add a small value to the first day to ensure the chart renders
-            days[0] = 1;
-            
-            // After rendering the chart, we'll add a No Data message to the canvas
-            setTimeout(() => {
-                const ctx = document.getElementById('callDayChart').getContext('2d');
-                ctx.font = '14px Arial';
-                ctx.fillStyle = '#666';
-                ctx.textAlign = 'center';
-                ctx.fillText('No Data Available', ctx.canvas.width / 2, ctx.canvas.height / 2);
-            }, 100);
+            console.warn("No valid day of week data found, showing No Data message");
+            // Get the container and clear it
+            const container = document.getElementById('callDayChart').parentNode;
+            container.innerHTML = '<div class="no-data-message">No Call Day Data Available</div>';
+            // Apply styling to the message
+            const style = document.createElement('style');
+            if (!document.querySelector('style:contains(".no-data-message")')) {
+                style.textContent = '.no-data-message { display: flex; justify-content: center; align-items: center; height: 200px; color: #666; font-size: 14px; }';
+                document.head.appendChild(style);
+            }
+            return; // Exit the function early
         }
         
         console.log("Calls by day:", days);
