@@ -102,21 +102,10 @@ body {
     overflow-y: auto;
 }
 
-/* Navbar Styles */
-.navbar {
-    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 70%);
-    color: white;
-    padding: 15px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-}
+/* Navbar Styles - Overriding to use global styles */
+/* Styles moved to global styles.css */
 
-.logo a {
-    color: white;
-    text-decoration: none;
+.logo span {
     font-size: 1.5rem;
     font-weight: bold;
     display: flex;
@@ -124,29 +113,7 @@ body {
     gap: 10px;
 }
 
-.nav-links {
-    display: flex;
-    gap: 20px;
-}
-
-.nav-links a {
-    color: rgba(255, 255, 255, 0.85);
-    text-decoration: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    transition: all 0.3s;
-}
-
-.nav-links a:hover {
-    color: white;
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.nav-links a.active {
-    color: white;
-    background-color: rgba(255, 255, 255, 0.2);
-    font-weight: 500;
-}
+/* Nav styles moved to global styles.css */
 
 /* Panel Content Styles */
 .left-panel h2 {
@@ -761,16 +728,7 @@ footer {
         padding: 10px;
     }
 
-    .navbar {
-        flex-direction: column;
-        gap: 10px;
-        padding: 15px;
-    }
-
-    .nav-links {
-        flex-wrap: wrap;
-        justify-content: center;
-    }
+    /* Responsive navbar styles moved to global styles.css */
 
     #map {
         height: 400px;
