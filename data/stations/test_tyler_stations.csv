@@ -1,0 +1,6 @@
+FACILITY_ID,FACILITY_NAME,FACILITY_ADDRESS,CITY,STATE,ZIP_CODE,LAT,LON,FACILITY_TYPE,ACTIVE_FLAG
+201,"Station 201","2001 West Oak Drive","Dallas","TX","75201",32.7801,-96.8054,"Engine",Y
+202,"Station 202","2020 East Pine Street","Dallas","TX","75202",32.7891,-96.7854,"Ladder",Y
+203,"Station 203","2035 North Cedar Road","Dallas","TX","75207",32.8012,-96.8145,"Engine/Medic",Y
+204,"Station 204","2050 South Elm Avenue","Fort Worth","TX","76102",32.7503,-97.3308,"Engine",Y
+205,"Station 205","2075 Central Parkway","Fort Worth","TX","76104",32.7408,-97.3217,"Medic",Y

@@ -1,0 +1,6 @@
+STATION_CODE,STATION_TITLE,FULL_ADDRESS,MUNICIPALITY,STATE_NAME,POSTAL_CODE,GEOY,GEOX,APPARATUS_TYPES,STATUS_FLAG
+401,"Station 401","401 Sunrise Blvd","Miami","FL","33136",25.7913,-80.1903,"Engine",1
+402,"Station 402","402 Ocean Drive","Miami Beach","FL","33139",25.7732,-80.1340,"Ladder",1
+403,"Station 403","403 Coral Way","Coral Gables","FL","33146",25.7452,-80.2568,"Engine/Medic",1
+404,"Station 404","404 Bay Shore Drive","Miami","FL","33132",25.7875,-80.1861,"Medic",1
+405,"Station 405","405 Biscayne Blvd","Miami","FL","33131",25.7764,-80.1894,"Engine/Ladder",1
