@@ -686,15 +686,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const transformedData = JSON.parse(JSON.stringify(data));
         
-        // Auto-detect CAD system based on field names
-        const cadSystem = identifyCADSystem(transformedData[0]);
-        if (cadSystem) {
-            appendLog(`Detected ${cadSystem} CAD system format`);
-            
-            // Apply CAD system specific transformations
-            return processCADSystemData(transformedData, cadSystem, toolId);
-        }
-        
         // Process based on tool type (generic processing if no CAD system detected)
         switch (toolId) {
             case 'response-time':
