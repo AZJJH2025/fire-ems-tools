@@ -2533,7 +2533,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Set standard fields for Response Time Analyzer
                         newItem['Incident Date'] = dt.toISOString().split('T')[0];
                         newItem['Incident Time'] = dt.toTimeString().split(' ')[0];
+                        
+                        // Set both the string and Date object versions of the Reported field
+                        // This is critical for the time chart functionality
                         newItem['Reported'] = dt.toTimeString().split(' ')[0];
+                        newItem['Reported_obj'] = dt; // Store the actual Date object for charting
+                        
+                        // Also store full ISO string for compatibility with various code paths
+                        newItem['Reported_ISO'] = dt.toISOString();
+                        
                         console.log(`Extracted from REPORTED_DT: Date=${newItem['Incident Date']}, Time=${newItem['Incident Time']}`);
                     }
                 } catch (e) {
@@ -2548,6 +2556,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (!isNaN(dt)) {
                         newItem['Dispatch Time'] = dt.toTimeString().split(' ')[0];
                         newItem['Unit Dispatched'] = dt.toTimeString().split(' ')[0];
+                        newItem['Unit Dispatched_obj'] = dt; // Store Date object for time calculations
                         console.log(`Extracted from DISPATCH_DT: ${newItem['Dispatch Time']}`);
                     }
                 } catch (e) {
@@ -2562,6 +2571,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (!isNaN(dt)) {
                         newItem['On Scene Time'] = dt.toTimeString().split(' ')[0];
                         newItem['Unit Onscene'] = dt.toTimeString().split(' ')[0];
+                        newItem['Unit Onscene_obj'] = dt; // Store Date object for time calculations
                         console.log(`Extracted from ARRIVAL_DT: ${newItem['On Scene Time']}`);
                     }
                 } catch (e) {
@@ -2576,6 +2586,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (!isNaN(dt)) {
                         newItem['En Route Time'] = dt.toTimeString().split(' ')[0];
                         newItem['Unit Enroute'] = dt.toTimeString().split(' ')[0];
+                        newItem['Unit Enroute_obj'] = dt; // Store Date object for time calculations
                         console.log(`Extracted from ENROUTE_DT: ${newItem['En Route Time']}`);
                     }
                 } catch (e) {
@@ -2598,6 +2609,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     newItem['Longitude'] = lng;
                     console.log(`Converted GEOX to Longitude: ${lng}`);
                 }
+            }
+            
+            // Add validCoordinates flag which is used by the mapping function
+            if (newItem['Latitude'] !== undefined && newItem['Longitude'] !== undefined) {
+                newItem['validCoordinates'] = 
+                    !isNaN(newItem['Latitude']) && 
+                    !isNaN(newItem['Longitude']) &&
+                    Math.abs(newItem['Latitude']) <= 90 &&
+                    Math.abs(newItem['Longitude']) <= 180;
             }
             
             // Map Central Square fields to standard fields
@@ -2627,6 +2647,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (item['ADDR_CITY']) {
                 newItem['City'] = item['ADDR_CITY'];
                 newItem['Incident City'] = item['ADDR_CITY'];
+            } else if (item['ADDR_STATE']) {
+                // If city is missing but state exists, use state as a fallback for location chart
+                newItem['Incident City'] = item['ADDR_STATE'];
+            } else {
+                // Provide at least some location data for location chart
+                newItem['Incident City'] = 'Unknown';
             }
             
             if (item['PRIORITY']) {
@@ -2634,10 +2660,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Calculate response time if we have dispatch and arrival times
-            if (newItem['Unit Dispatched'] && newItem['Unit Onscene']) {
+            if (newItem['Unit Dispatched_obj'] && newItem['Unit Onscene_obj']) {
                 try {
-                    const dispatchTime = new Date(`2000-01-01T${newItem['Unit Dispatched']}`);
-                    const onSceneTime = new Date(`2000-01-01T${newItem['Unit Onscene']}`);
+                    const dispatchTime = newItem['Unit Dispatched_obj'];
+                    const onSceneTime = newItem['Unit Onscene_obj'];
                     
                     if (!isNaN(dispatchTime) && !isNaN(onSceneTime)) {
                         const diffMs = onSceneTime - dispatchTime;
@@ -2652,6 +2678,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.warn('Error calculating response time:', e);
                 }
             }
+            
+            // Add metadata properties that fire-ems-dashboard.js expects
+            newItem._source = 'formatter';
+            newItem._formatted = true;
+            newItem._timestamp = new Date().toISOString();
             
             return newItem;
         });
