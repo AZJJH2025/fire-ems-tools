@@ -453,6 +453,11 @@ def test_central_square():
     """Serve the Central Square data validation tool"""
     return send_from_directory('data/incidents', 'test_centralsquare_validation.html')
 
+@app.route('/test-imagetrend')
+def test_imagetrend():
+    """Serve the ImageTrend integration test page"""
+    return send_from_directory('static', 'test_imagetrend_integration.html')
+
 @app.route('/test-static')
 def test_static():
     """Serve a simple test page for static files"""

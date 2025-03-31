@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ImageTrend Integration Test - FireEMS.ai</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #0066cc;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #0055aa;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .result {
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            display: none;
+        }
+        .success {
+            background-color: #dff0d8;
+            border: 1px solid #d6e9c6;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            border: 1px solid #ebccd1;
+            color: #a94442;
+        }
+        code {
+            font-family: monospace;
+            background-color: #f5f5f5;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .log-container {
+            height: 300px;
+            overflow-y: auto;
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        .test-result-icon {
+            font-size: 18px;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ImageTrend Integration Test</h1>
+        <p>This page helps you test the ImageTrend integration with the Data Formatter tool.</p>
+        
+        <div class="test-section">
+            <h2>1. CAD System Detection Test</h2>
+            <p>Tests if the Data Formatter can correctly identify ImageTrend data format.</p>
+            <button id="test-detection">Run Detection Test</button>
+            <div id="detection-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>2. Field Mapping Tests</h2>
+            <p>Tests if fields from ImageTrend are correctly mapped to standardized fields for different tools.</p>
+            <button id="test-response-time">Test Response Time Analyzer Mapping</button>
+            <button id="test-call-density">Test Call Density Mapping</button>
+            <button id="test-incident-logger">Test Incident Logger Mapping</button>
+            <div id="mapping-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>3. SessionStorage Integration Test</h2>
+            <p>Tests if data is correctly stored in sessionStorage for transfer between tools.</p>
+            <button id="test-session-storage">Test SessionStorage Integration</button>
+            <div id="storage-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>4. Run All Tests</h2>
+            <button id="run-all-tests">Run All Tests</button>
+            <div id="all-tests-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test Log</h2>
+            <div id="log-container" class="log-container"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Sample ImageTrend data for testing
+        const sampleImageTrendData = [
+            {
+                "IncidentPK": "IT001",
+                "IncidentDate": "2023-01-01",
+                "IncidentTime": "08:15:00",
+                "NatureOfCall": "Structure Fire",
+                "AlarmLevel": "First Alarm",
+                "StreetAddress": "123 Main St",
+                "City": "Cityville",
+                "State": "AZ",
+                "PostalCode": "85001",
+                "Latitude": "33.4502",
+                "Longitude": "-112.0731",
+                "CommonName": "Downtown Apartments",
+                "DispatchTime": "08:15:23",
+                "EnRouteTime": "08:17:45",
+                "ArriveTime": "08:23:12",
+                "DepartSceneTime": "10:05:45",
+                "InQuartersTime": "10:25:30",
+                "VehicleID": "E15",
+                "StationID": "Station 3",
+                "CrewList": "Smith J, Johnson S, Brown M",
+                "RoleOnScene": "First Due",
+                "UnitType": "Engine",
+                "IncidentTypeCode": "111-Building fire",
+                "ActionsTaken": "11-Extinguishment, 12-Salvage",
+                "PropertyUse": "429-Multi-family dwelling",
+                "ResourceCount": "5",
+                "PatientCount": "0",
+                "AreaOfOrigin": "Kitchen,11",
+                "ItemFirstIgnited": "Cooking materials",
+                "IgnitionSource": "Cooking equipment",
+                "PresenceOfDetectors": "Present and operated",
+                "FormType": "NFIRS Basic",
+                "FormVersion": "5.0",
+                "FormStatus": "Complete",
+                "FormCompletionRate": "100"
+            }
+        ];
+        
+        // Logging function
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('log-container');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            
+            if (type === 'error') {
+                logEntry.style.color = '#a94442';
+            } else if (type === 'success') {
+                logEntry.style.color = '#3c763d';
+            } else if (type === 'warning') {
+                logEntry.style.color = '#8a6d3b';
+            }
+            
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        // Test detection functionality
+        function testDetection() {
+            const resultElement = document.getElementById('detection-result');
+            
+            try {
+                // Create a script to load data-formatter.js
+                const script = document.createElement('script');
+                script.src = '/static/data-formatter.js';
+                script.onload = function() {
+                    try {
+                        // Check if identifyCADSystem exists
+                        if (typeof identifyCADSystem !== 'function') {
+                            throw new Error('identifyCADSystem function not found');
+                        }
+                        
+                        // Run the detection
+                        const detectedSystem = identifyCADSystem(sampleImageTrendData[0]);
+                        log(`CAD System Detection result: ${detectedSystem}`);
+                        
+                        if (detectedSystem === 'ImageTrend') {
+                            resultElement.className = 'result success';
+                            resultElement.innerHTML = '<span class="test-result-icon">✅</span> Success: ImageTrend format correctly identified';
+                        } else {
+                            resultElement.className = 'result error';
+                            resultElement.innerHTML = `<span class="test-result-icon">❌</span> Failure: Expected 'ImageTrend', got '${detectedSystem}'`;
+                            log(`Error: Expected 'ImageTrend', got '${detectedSystem}'`, 'error');
+                        }
+                    } catch (error) {
+                        resultElement.className = 'result error';
+                        resultElement.innerHTML = `<span class="test-result-icon">❌</span> Error: ${error.message}`;
+                        log(`Error during detection test: ${error.message}`, 'error');
+                    }
+                };
+                
+                script.onerror = function() {
+                    resultElement.className = 'result error';
+                    resultElement.innerHTML = '<span class="test-result-icon">❌</span> Error: Failed to load data-formatter.js';
+                    log('Error: Failed to load data-formatter.js', 'error');
+                };
+                
+                document.head.appendChild(script);
+                
+                // Show loading state
+                resultElement.className = 'result';
+                resultElement.style.display = 'block';
+                resultElement.innerHTML = 'Running test...';
+                log('Running detection test...');
+            } catch (error) {
+                resultElement.className = 'result error';
+                resultElement.innerHTML = `<span class="test-result-icon">❌</span> Error: ${error.message}`;
+                log(`Error initiating detection test: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test field mapping for specific tools
+        function testFieldMapping(toolId) {
+            const resultElement = document.getElementById('mapping-result');
+            try {
+                // Create a script to load data-formatter.js if not already loaded
+                if (typeof processImageTrendData !== 'function') {
+                    const script = document.createElement('script');
+                    script.src = '/static/data-formatter.js';
+                    script.onload = function() {
+                        performMappingTest(toolId);
+                    };
+                    script.onerror = function() {
+                        resultElement.className = 'result error';
+                        resultElement.innerHTML = '<span class="test-result-icon">❌</span> Error: Failed to load data-formatter.js';
+                        log('Error: Failed to load data-formatter.js', 'error');
+                    };
+                    document.head.appendChild(script);
+                } else {
+                    performMappingTest(toolId);
+                }
+                
+                // Show loading state
+                resultElement.className = 'result';
+                resultElement.style.display = 'block';
+                resultElement.innerHTML = 'Running test...';
+                log(`Running field mapping test for ${toolId}...`);
+            } catch (error) {
+                resultElement.className = 'result error';
+                resultElement.innerHTML = `<span class="test-result-icon">❌</span> Error: ${error.message}`;
+                log(`Error initiating mapping test: ${error.message}`, 'error');
+            }
+        }
+        
+        function performMappingTest(toolId) {
+            const resultElement = document.getElementById('mapping-result');
+            
+            try {
+                // Check if processImageTrendData exists
+                if (typeof processImageTrendData !== 'function') {
+                    throw new Error('processImageTrendData function not found');
+                }
+                
+                // Define expected field mappings for each tool
+                const fieldMappings = {
+                    'response-time': [
+                        { source: "IncidentPK", target: "Incident ID" },
+                        { source: "IncidentDate", target: "Incident Date" },
+                        { source: "IncidentTime", target: "Reported" },
+                        { source: "DispatchTime", target: "Unit Dispatched" },
+                        { source: "EnRouteTime", target: "Unit Enroute" },
+                        { source: "ArriveTime", target: "Unit Onscene" },
+                        { source: "Latitude", target: "Latitude" },
+                        { source: "Longitude", target: "Longitude" },
+                        { source: "VehicleID", target: "Unit" }
+                    ],
+                    'call-density': [
+                        { source: "IncidentPK", target: "Incident ID" },
+                        { source: "IncidentDate", target: "Incident Date" },
+                        { source: "IncidentTime", target: "Incident Time" },
+                        { source: "Latitude", target: "Latitude" },
+                        { source: "Longitude", target: "Longitude" },
+                        { source: "IncidentTypeCode", target: "Incident Type" }
+                    ],
+                    'incident-logger': [
+                        { source: "IncidentPK", target: "Incident ID" },
+                        { source: "IncidentDate", target: "Incident Date" },
+                        { source: "IncidentTime", target: "Incident Time" },
+                        { source: "IncidentTypeCode", target: "Incident Type" },
+                        { source: "StreetAddress", target: "Address" },
+                        { source: "VehicleID", target: "Unit ID" }
+                    ]
+                };
+                
+                // Process data
+                const processedData = processImageTrendData(sampleImageTrendData, toolId);
+                log(`Processed ${processedData.length} records for ${toolId}`);
+                
+                // Check mappings
+                const mappingsToCheck = fieldMappings[toolId] || [];
+                let failedMappings = [];
+                
+                mappingsToCheck.forEach(mapping => {
+                    const sourceValue = sampleImageTrendData[0][mapping.source];
+                    const targetValue = processedData[0][mapping.target];
+                    
+                    if (sourceValue != null && targetValue == null) {
+                        failedMappings.push({
+                            source: mapping.source,
+                            target: mapping.target,
+                            sourceValue: sourceValue,
+                            targetValue: targetValue
+                        });
+                    }
+                });
+                
+                // Generate result HTML
+                if (failedMappings.length === 0) {
+                    const toolName = {
+                        'response-time': 'Response Time Analyzer',
+                        'call-density': 'Call Density Heatmap',
+                        'incident-logger': 'Incident Logger'
+                    }[toolId] || toolId;
+                    
+                    resultElement.className = 'result success';
+                    resultElement.innerHTML = `
+                        <span class="test-result-icon">✅</span> Success: All field mappings correct for ${toolName}
+                        <p>Verified ${mappingsToCheck.length} field mappings.</p>
+                        <pre>${JSON.stringify(processedData[0], null, 2)}</pre>
+                    `;
+                    log(`Success: All field mappings correct for ${toolName}`, 'success');
+                } else {
+                    let failureHtml = `<span class="test-result-icon">❌</span> Failure: ${failedMappings.length} field mapping issues found<br>`;
+                    failureHtml += '<ul>';
+                    failedMappings.forEach(fail => {
+                        failureHtml += `<li>${fail.source} → ${fail.target}: Source value "${fail.sourceValue}" not mapped correctly</li>`;
+                        log(`Mapping failure: ${fail.source} → ${fail.target}`, 'error');
+                    });
+                    failureHtml += '</ul>';
+                    failureHtml += '<h4>Processed Data:</h4>';
+                    failureHtml += `<pre>${JSON.stringify(processedData[0], null, 2)}</pre>`;
+                    
+                    resultElement.className = 'result error';
+                    resultElement.innerHTML = failureHtml;
+                }
+            } catch (error) {
+                resultElement.className = 'result error';
+                resultElement.innerHTML = `<span class="test-result-icon">❌</span> Error: ${error.message}`;
+                log(`Error during mapping test: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test sessionStorage integration
+        function testSessionStorage() {
+            const resultElement = document.getElementById('storage-result');
+            try {
+                // Create a script to load data-formatter.js if not already loaded
+                if (typeof processImageTrendData !== 'function') {
+                    const script = document.createElement('script');
+                    script.src = '/static/data-formatter.js';
+                    script.onload = function() {
+                        performStorageTest();
+                    };
+                    script.onerror = function() {
+                        resultElement.className = 'result error';
+                        resultElement.innerHTML = '<span class="test-result-icon">❌</span> Error: Failed to load data-formatter.js';
+                        log('Error: Failed to load data-formatter.js', 'error');
+                    };
+                    document.head.appendChild(script);
+                } else {
+                    performStorageTest();
+                }
+                
+                // Show loading state
+                resultElement.className = 'result';
+                resultElement.style.display = 'block';
+                resultElement.innerHTML = 'Running test...';
+                log('Running sessionStorage integration test...');
+            } catch (error) {
+                resultElement.className = 'result error';
+                resultElement.innerHTML = `<span class="test-result-icon">❌</span> Error: ${error.message}`;
+                log(`Error initiating storage test: ${error.message}`, 'error');
+            }
+        }
+        
+        function performStorageTest() {
+            const resultElement = document.getElementById('storage-result');
+            
+            try {
+                // Process data for Response Time Analyzer
+                const processedData = processImageTrendData(sampleImageTrendData, 'response-time');
+                
+                // Simulate storing in sessionStorage like the Data Formatter does
+                sessionStorage.setItem('formattedData', JSON.stringify(processedData));
+                sessionStorage.setItem('dataSource', 'formatter');
+                sessionStorage.setItem('formatterToolId', 'response-time');
+                sessionStorage.setItem('formatterTarget', 'response-time');
+                sessionStorage.setItem('formatterTimestamp', new Date().toISOString());
+                
+                // Verify the data was stored correctly
+                const storedData = JSON.parse(sessionStorage.getItem('formattedData'));
+                const dataSource = sessionStorage.getItem('dataSource');
+                const formatterToolId = sessionStorage.getItem('formatterToolId');
+                
+                if (storedData && dataSource === 'formatter' && formatterToolId === 'response-time') {
+                    resultElement.className = 'result success';
+                    resultElement.innerHTML = `
+                        <span class="test-result-icon">✅</span> Success: Data successfully stored in sessionStorage
+                        <p>The following keys were verified in sessionStorage:</p>
+                        <ul>
+                            <li>formattedData: ${storedData.length} records</li>
+                            <li>dataSource: ${dataSource}</li>
+                            <li>formatterToolId: ${formatterToolId}</li>
+                            <li>formatterTarget: ${sessionStorage.getItem('formatterTarget')}</li>
+                            <li>formatterTimestamp: ${sessionStorage.getItem('formatterTimestamp')}</li>
+                        </ul>
+                    `;
+                    log('Success: Data successfully stored in sessionStorage', 'success');
+                } else {
+                    resultElement.className = 'result error';
+                    resultElement.innerHTML = '<span class="test-result-icon">❌</span> Failure: Data not correctly stored in sessionStorage';
+                    log('Failure: Data not correctly stored in sessionStorage', 'error');
+                }
+                
+                // Clean up to avoid interfering with actual application
+                sessionStorage.removeItem('formattedData');
+                sessionStorage.removeItem('dataSource');
+                sessionStorage.removeItem('formatterToolId');
+                sessionStorage.removeItem('formatterTarget');
+                sessionStorage.removeItem('formatterTimestamp');
+            } catch (error) {
+                resultElement.className = 'result error';
+                resultElement.innerHTML = `<span class="test-result-icon">❌</span> Error: ${error.message}`;
+                log(`Error during storage test: ${error.message}`, 'error');
+            }
+        }
+        
+        // Run all tests
+        function runAllTests() {
+            const resultElement = document.getElementById('all-tests-result');
+            resultElement.className = 'result';
+            resultElement.style.display = 'block';
+            resultElement.innerHTML = 'Running all tests...';
+            log('Running all tests...', 'info');
+            
+            // Create a script to load data-formatter.js if not already loaded
+            if (typeof processImageTrendData !== 'function') {
+                const script = document.createElement('script');
+                script.src = '/static/data-formatter.js';
+                script.onload = function() {
+                    performAllTests();
+                };
+                script.onerror = function() {
+                    resultElement.className = 'result error';
+                    resultElement.innerHTML = '<span class="test-result-icon">❌</span> Error: Failed to load data-formatter.js';
+                    log('Error: Failed to load data-formatter.js', 'error');
+                };
+                document.head.appendChild(script);
+            } else {
+                performAllTests();
+            }
+        }
+        
+        function performAllTests() {
+            try {
+                const resultElement = document.getElementById('all-tests-result');
+                const results = {
+                    detection: false,
+                    responseTimeMapping: false,
+                    callDensityMapping: false,
+                    incidentLoggerMapping: false,
+                    sessionStorage: false
+                };
+                
+                // Run detection test
+                const detectedSystem = identifyCADSystem(sampleImageTrendData[0]);
+                results.detection = detectedSystem === 'ImageTrend';
+                log(`Detection test: ${results.detection ? 'PASS' : 'FAIL'}`);
+                
+                // Run mapping tests
+                const responseTimeData = processImageTrendData(sampleImageTrendData, 'response-time');
+                results.responseTimeMapping = responseTimeData && 
+                    responseTimeData[0]['Incident ID'] === sampleImageTrendData[0].IncidentPK && 
+                    responseTimeData[0]['Unit Dispatched'] === sampleImageTrendData[0].DispatchTime;
+                log(`Response Time mapping test: ${results.responseTimeMapping ? 'PASS' : 'FAIL'}`);
+                
+                const callDensityData = processImageTrendData(sampleImageTrendData, 'call-density');
+                results.callDensityMapping = callDensityData && 
+                    callDensityData[0]['Incident ID'] === sampleImageTrendData[0].IncidentPK && 
+                    callDensityData[0]['Incident Time'] === sampleImageTrendData[0].IncidentTime;
+                log(`Call Density mapping test: ${results.callDensityMapping ? 'PASS' : 'FAIL'}`);
+                
+                const incidentLoggerData = processImageTrendData(sampleImageTrendData, 'incident-logger');
+                results.incidentLoggerMapping = incidentLoggerData && 
+                    incidentLoggerData[0]['Incident ID'] === sampleImageTrendData[0].IncidentPK && 
+                    incidentLoggerData[0]['Address'] === sampleImageTrendData[0].StreetAddress;
+                log(`Incident Logger mapping test: ${results.incidentLoggerMapping ? 'PASS' : 'FAIL'}`);
+                
+                // Run sessionStorage test
+                try {
+                    sessionStorage.setItem('testKey', 'testValue');
+                    const testValue = sessionStorage.getItem('testKey');
+                    sessionStorage.removeItem('testKey');
+                    results.sessionStorage = testValue === 'testValue';
+                    log(`SessionStorage test: ${results.sessionStorage ? 'PASS' : 'FAIL'}`);
+                } catch (e) {
+                    results.sessionStorage = false;
+                    log(`SessionStorage test: FAIL - ${e.message}`, 'error');
+                }
+                
+                // Generate summary
+                const passedCount = Object.values(results).filter(r => r).length;
+                const totalCount = Object.values(results).length;
+                
+                let summaryHtml = '';
+                
+                if (passedCount === totalCount) {
+                    summaryHtml = `
+                        <span class="test-result-icon">✅</span> Success: All ${totalCount} tests passed!
+                        <p>The ImageTrend integration appears to be working correctly.</p>
+                    `;
+                    resultElement.className = 'result success';
+                } else {
+                    summaryHtml = `
+                        <span class="test-result-icon">⚠️</span> Warning: ${passedCount} of ${totalCount} tests passed
+                        <p>Some tests failed. See details below:</p>
+                    `;
+                    resultElement.className = 'result';
+                    resultElement.style.backgroundColor = '#fcf8e3';
+                    resultElement.style.borderColor = '#faebcc';
+                    resultElement.style.color = '#8a6d3b';
+                }
+                
+                // Add detailed results
+                summaryHtml += '<ul>';
+                summaryHtml += `<li>Detection Test: ${results.detection ? '✅ PASS' : '❌ FAIL'}</li>`;
+                summaryHtml += `<li>Response Time Analyzer Mapping: ${results.responseTimeMapping ? '✅ PASS' : '❌ FAIL'}</li>`;
+                summaryHtml += `<li>Call Density Mapping: ${results.callDensityMapping ? '✅ PASS' : '❌ FAIL'}</li>`;
+                summaryHtml += `<li>Incident Logger Mapping: ${results.incidentLoggerMapping ? '✅ PASS' : '❌ FAIL'}</li>`;
+                summaryHtml += `<li>SessionStorage Integration: ${results.sessionStorage ? '✅ PASS' : '❌ FAIL'}</li>`;
+                summaryHtml += '</ul>';
+                
+                resultElement.innerHTML = summaryHtml;
+                log(`All tests completed: ${passedCount}/${totalCount} passed`, passedCount === totalCount ? 'success' : 'warning');
+            } catch (error) {
+                const resultElement = document.getElementById('all-tests-result');
+                resultElement.className = 'result error';
+                resultElement.innerHTML = `<span class="test-result-icon">❌</span> Error running tests: ${error.message}`;
+                log(`Error running all tests: ${error.message}`, 'error');
+            }
+        }
+        
+        // Set up event listeners
+        document.getElementById('test-detection').addEventListener('click', testDetection);
+        document.getElementById('test-response-time').addEventListener('click', () => testFieldMapping('response-time'));
+        document.getElementById('test-call-density').addEventListener('click', () => testFieldMapping('call-density'));
+        document.getElementById('test-incident-logger').addEventListener('click', () => testFieldMapping('incident-logger'));
+        document.getElementById('test-session-storage').addEventListener('click', testSessionStorage);
+        document.getElementById('run-all-tests').addEventListener('click', runAllTests);
+        
+        // Initial log
+        log('ImageTrend integration test page loaded');
+    </script>
+</body>
+</html>
