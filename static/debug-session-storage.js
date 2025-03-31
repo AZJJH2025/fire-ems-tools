@@ -125,6 +125,19 @@ function updateDebugInfo() {
     contentElement.appendChild(sizeInfo);
     contentElement.appendChild(document.createElement('hr'));
     
+    // Check for browser storage limits
+    const storageLimit = getStorageLimit();
+    const limitInfo = document.createElement('div');
+    limitInfo.innerHTML = `<strong>Browser Storage Limit:</strong> ~${storageLimit} MB`;
+    contentElement.appendChild(limitInfo);
+    
+    const usagePercentage = (totalSize / (storageLimit * 1024 * 1024)) * 100;
+    const usageInfo = document.createElement('div');
+    usageInfo.innerHTML = `<strong>Usage:</strong> ${usagePercentage.toFixed(2)}% of available storage`;
+    contentElement.appendChild(usageInfo);
+    
+    contentElement.appendChild(document.createElement('hr'));
+    
     // Check for formatter-specific data
     const formatterKeys = ['formattedData', 'dataSource', 'formatterToolId', 'formatterTarget', 'formatterTimestamp'];
     const hasFormatterData = formatterKeys.some(key => sessionStorage.getItem(key));
@@ -144,9 +157,103 @@ function updateDebugInfo() {
                         const parsed = JSON.parse(value);
                         const recordCount = Array.isArray(parsed) ? parsed.length : 
                                           (parsed.data && Array.isArray(parsed.data)) ? parsed.data.length : 'unknown';
-                        keyElement.innerHTML += `<span style="color: #66ff66">[${recordCount} records]</span>`;
+                        
+                        // Show more detailed information about the parsed data
+                        let dataStructure = 'Unknown format';
+                        if (Array.isArray(parsed)) {
+                            dataStructure = 'Array of records';
+                        } else if (parsed.data && Array.isArray(parsed.data)) {
+                            dataStructure = 'Object with data array';
+                        } else if (typeof parsed === 'object' && parsed !== null) {
+                            dataStructure = 'Single object record';
+                        }
+                        
+                        // Get a sample of what fields are available in the first record
+                        let sampleFields = '';
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            sampleFields = Object.keys(parsed[0] || {}).slice(0, 5).join(', ') + 
+                                (Object.keys(parsed[0] || {}).length > 5 ? '...' : '');
+                        } else if (parsed.data && Array.isArray(parsed.data) && parsed.data.length > 0) {
+                            sampleFields = Object.keys(parsed.data[0] || {}).slice(0, 5).join(', ') + 
+                                (Object.keys(parsed.data[0] || {}).length > 5 ? '...' : '');
+                        }
+                        
+                        keyElement.innerHTML += `<span style="color: #66ff66">[${recordCount} records, ${dataStructure}]</span>`;
+                        
+                        // Add a way to see more details
+                        const detailsButton = document.createElement('button');
+                        detailsButton.innerText = 'Show Sample';
+                        detailsButton.style.cssText = 'background-color: #00aa00; color: white; border: none; border-radius: 3px; padding: 1px 5px; margin-left: 5px; cursor: pointer; font-size: 10px;';
+                        detailsButton.onclick = () => {
+                            const sampleElement = document.createElement('pre');
+                            sampleElement.style.cssText = 'background-color: #111; color: #aaffaa; padding: 8px; max-height: 150px; overflow: auto; font-size: 11px; margin-top: 5px; border-radius: 3px;';
+                            
+                            // Show sample of first record
+                            let sampleData;
+                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                sampleData = parsed[0];
+                            } else if (parsed.data && Array.isArray(parsed.data) && parsed.data.length > 0) {
+                                sampleData = parsed.data[0];
+                            } else {
+                                sampleData = parsed;
+                            }
+                            
+                            sampleElement.textContent = `Sample Record:\n${JSON.stringify(sampleData, null, 2).slice(0, 500)}${JSON.stringify(sampleData, null, 2).length > 500 ? '...' : ''}`;
+                            
+                            // Add field list to see if required fields are present
+                            const fieldList = document.createElement('div');
+                            fieldList.style.cssText = 'margin-top: 5px; font-size: 11px;';
+                            fieldList.innerHTML = `<strong>Fields:</strong> ${sampleFields || 'None found'}`;
+                            
+                            const requiredFields = ['Incident ID', 'Unit', 'Reported', 'Unit Dispatched', 'Unit Onscene', 'Latitude', 'Longitude'];
+                            const missingFields = [];
+                            
+                            // Check for required fields
+                            if (sampleData) {
+                                requiredFields.forEach(field => {
+                                    if (sampleData[field] === undefined) {
+                                        missingFields.push(field);
+                                    }
+                                });
+                            }
+                            
+                            if (missingFields.length > 0) {
+                                const missingEl = document.createElement('div');
+                                missingEl.style.cssText = 'color: #ff7777; margin-top: 5px; font-size: 11px;';
+                                missingEl.innerHTML = `<strong>Missing Required Fields:</strong> ${missingFields.join(', ')}`;
+                                fieldList.appendChild(missingEl);
+                            }
+                            
+                            // Add a close button for the sample
+                            const closeSampleBtn = document.createElement('button');
+                            closeSampleBtn.innerText = 'Close Sample';
+                            closeSampleBtn.style.cssText = 'background-color: #aa0000; color: white; border: none; border-radius: 3px; padding: 1px 5px; margin-top: 5px; cursor: pointer; font-size: 10px;';
+                            closeSampleBtn.onclick = () => {
+                                sampleElement.remove();
+                                fieldList.remove();
+                                closeSampleBtn.remove();
+                            };
+                            
+                            keyElement.appendChild(sampleElement);
+                            keyElement.appendChild(fieldList);
+                            keyElement.appendChild(closeSampleBtn);
+                        };
+                        keyElement.appendChild(detailsButton);
+                        
                     } catch (e) {
                         keyElement.innerHTML += `<span style="color: #ff6666">[Invalid JSON: ${e.message}]</span>`;
+                        
+                        // Add a button to help regenerate the data
+                        const fixButton = document.createElement('button');
+                        fixButton.innerText = 'Fix Data Transfer';
+                        fixButton.style.cssText = 'background-color: #ff3300; color: white; border: none; border-radius: 3px; padding: 2px 5px; margin-left: 5px; cursor: pointer; font-size: 10px;';
+                        fixButton.onclick = () => {
+                            if (confirm('This will clear the current session storage and redirect you to the Data Formatter. Continue?')) {
+                                sessionStorage.clear();
+                                window.location.href = '/data-formatter';
+                            }
+                        };
+                        keyElement.appendChild(fixButton);
                     }
                 } else {
                     keyElement.innerHTML += `<span style="color: #66ff66">${value}</span>`;
@@ -158,7 +265,43 @@ function updateDebugInfo() {
         
         contentElement.appendChild(formatterInfo);
         contentElement.appendChild(document.createElement('hr'));
+    } else {
+        const noFormatterData = document.createElement('div');
+        noFormatterData.innerHTML = '<strong style="color: #ff6666">No Formatter Data Found</strong>';
+        noFormatterData.style.marginBottom = '15px';
+        contentElement.appendChild(noFormatterData);
+        
+        // Add a button to go to the Data Formatter
+        const formatterButton = document.createElement('button');
+        formatterButton.innerText = 'Go to Data Formatter';
+        formatterButton.style.cssText = 'background-color: #0066cc; color: white; border: none; border-radius: 3px; padding: 5px 10px; cursor: pointer; margin-bottom: 15px;';
+        formatterButton.onclick = () => {
+            window.location.href = '/data-formatter';
+        };
+        contentElement.appendChild(formatterButton);
+        contentElement.appendChild(document.createElement('hr'));
     }
+}
+
+// Helper function to estimate the browser's storage limit
+function getStorageLimit() {
+    // Default estimate based on common browser limits
+    let estimatedLimit = 5; // 5MB is common
+    
+    // Try to guess based on browser
+    const ua = navigator.userAgent;
+    if (ua.includes('Chrome')) {
+        estimatedLimit = 10; // Chrome usually has higher limits
+    } else if (ua.includes('Firefox')) {
+        estimatedLimit = 10; // Firefox has similar limits
+    } else if (ua.includes('Safari') && !ua.includes('Chrome')) {
+        estimatedLimit = 5; // Safari can be more restrictive
+    } else if (ua.includes('Edge')) {
+        estimatedLimit = 10; // Edge is based on Chromium
+    }
+    
+    return estimatedLimit;
+}
     
     // List all items
     const itemsTitle = document.createElement('div');
