@@ -262,9 +262,37 @@ document.addEventListener('DOMContentLoaded', function() {
     sendToToolBtn.addEventListener('click', function() {
         if (!transformedData || !selectedTool) return;
         
-        // Store in localStorage for the target tool to use
-        localStorage.setItem('fireems_formatted_data', JSON.stringify(transformedData));
-        localStorage.setItem('fireems_formatted_source', 'data-formatter');
+        // Log what we're about to send for debugging
+        console.log("Sending to tool:", selectedTool);
+        console.log("First record sample:", transformedData[0]);
+        console.log("Total records:", transformedData.length);
+        
+        try {
+            // Store in sessionStorage for the target tool to use
+            // Make sure the data is properly formatted for the Response Time Analyzer
+            // It expects data as an array, not wrapped in an object
+            sessionStorage.setItem('formattedData', JSON.stringify(transformedData));
+            sessionStorage.setItem('dataSource', 'formatter');
+            sessionStorage.setItem('formatterToolId', selectedTool);
+            sessionStorage.setItem('formatterTarget', selectedTool);
+            sessionStorage.setItem('formatterTimestamp', new Date().toISOString());
+            
+            // Add debug info to storage
+            sessionStorage.setItem('debug_info', JSON.stringify({
+                browser: navigator.userAgent,
+                timestamp: new Date().toISOString(),
+                tool: selectedTool,
+                recordCount: transformedData.length,
+                sampleKeys: Object.keys(transformedData[0] || {})
+            }));
+            
+            appendLog(`Data prepared for ${getToolName(selectedTool)} (${transformedData.length} records)`);
+        } catch (error) {
+            console.error("Error storing data in sessionStorage:", error);
+            appendLog(`Error storing data: ${error.message}`, 'error');
+            alert("Error preparing data for transfer. Check browser console for details.");
+            return;
+        }
         
         // Redirect to the selected tool
         const toolUrls = {
@@ -281,7 +309,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (toolUrls[selectedTool]) {
             appendLog(`Sending data to ${getToolName(selectedTool)}...`);
-            window.location.href = toolUrls[selectedTool];
+            // Add debug parameter to URL
+            const url = toolUrls[selectedTool] + (toolUrls[selectedTool].includes('?') ? '&' : '?') + 'from_formatter=true';
+            window.location.href = url;
         } else {
             appendLog(`Error: No URL defined for ${selectedTool}`, 'error');
         }

@@ -20,6 +20,60 @@
   <script
     src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"
   ></script>
+  
+  <script>
+    // Add event listener for the "from_formatter=true" parameter
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const fromFormatter = urlParams.get('from_formatter');
+      
+      // Show a help button if we came from formatter but no data was loaded
+      setTimeout(function() {
+        const dataLoaded = document.querySelector('.dashboard-grid');
+        const resultsVisible = dataLoaded && window.getComputedStyle(dataLoaded).display !== 'none';
+        
+        // If we came from the formatter but don't see loaded data
+        if (fromFormatter === 'true' && !resultsVisible) {
+          const storageHelp = document.getElementById('data-transfer-help');
+          if (storageHelp) {
+            storageHelp.style.display = 'block';
+          }
+        }
+      }, 3000); // Wait 3 seconds to check if data loaded
+      
+      // Close button for the help modal
+      const closeHelpBtn = document.getElementById('close-help-modal');
+      if (closeHelpBtn) {
+        closeHelpBtn.addEventListener('click', function() {
+          const storageHelp = document.getElementById('data-transfer-help');
+          if (storageHelp) {
+            storageHelp.style.display = 'none';
+          }
+        });
+      }
+      
+      // Check storage button
+      const checkStorageBtn = document.getElementById('check-storage-btn');
+      if (checkStorageBtn) {
+        checkStorageBtn.addEventListener('click', function() {
+          try {
+            // Load the debug script dynamically
+            const script = document.createElement('script');
+            script.src = '/static/debug-session-storage.js';
+            document.head.appendChild(script);
+            
+            // Hide the modal
+            const storageHelp = document.getElementById('data-transfer-help');
+            if (storageHelp) {
+              storageHelp.style.display = 'none';
+            }
+          } catch (e) {
+            alert('Error loading debug script: ' + e.message);
+          }
+        });
+      }
+    });
+  </script>
 </head>
 <body>
   <div class="navbar">
@@ -37,6 +91,35 @@
       <a href="/incident-logger">Incident Logger</a>
       <a href="/fire-map-pro">FireMapPro</a>
       <a href="/data-formatter">Data Formatter</a>
+    </div>
+  </div>
+  
+  <!-- Troubleshooting Modal -->
+  <div id="data-transfer-help" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 1000;">
+    <div style="position: relative; width: 80%; max-width: 600px; margin: 100px auto; background-color: white; padding: 20px; border-radius: 5px;">
+      <button id="close-help-modal" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 20px; cursor: pointer;">×</button>
+      <h2>Data Transfer Troubleshooting</h2>
+      <p>If you're seeing this message, there may be an issue with data transfer between the Data Formatter and Response Time Analyzer.</p>
+      
+      <h3>Common Issues:</h3>
+      <ol>
+        <li><strong>Browser Privacy Settings:</strong> Some browsers or privacy extensions block sessionStorage or clear it between page navigations.</li>
+        <li><strong>Data Size:</strong> Very large datasets might exceed the browser's storage limits.</li>
+        <li><strong>Browser Compatibility:</strong> Some older browsers might have limited support for sessionStorage.</li>
+      </ol>
+      
+      <h3>Troubleshooting Steps:</h3>
+      <ol>
+        <li>Try using a different browser (Chrome or Firefox recommended)</li>
+        <li>Disable privacy extensions temporarily</li>
+        <li>Clear your browser cache and cookies</li>
+        <li>If using the Data Formatter, try downloading the file and uploading it directly to this tool</li>
+        <li>Reduce the size of your dataset (if it's very large)</li>
+      </ol>
+      
+      <p>For technical users: Check the browser console for specific error messages that might help identify the issue.</p>
+      
+      <button id="check-storage-btn" style="background-color: #0066cc; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin-top: 10px;">Check Storage Status</button>
     </div>
   </div>
 

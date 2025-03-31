@@ -111,16 +111,54 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Check if there's data in sessionStorage from the Data Formatter
     console.log("Checking for formatter data in Response Time Analyzer");
+    
+    // Check if we came from the Data Formatter
+    const fromFormatter = window.location.search.includes('from_formatter=true');
+    if (fromFormatter) {
+        console.log("Detected redirect from Data Formatter based on URL parameter");
+    }
+    
+    // Add our debug script to the page
+    try {
+        const debugScript = document.createElement('script');
+        debugScript.src = '/static/debug-session-storage.js';
+        document.head.appendChild(debugScript);
+        console.log("Debug script added to page");
+    } catch (e) {
+        console.error("Failed to add debug script:", e);
+    }
+    
     const formattedData = sessionStorage.getItem('formattedData');
     const dataSource = sessionStorage.getItem('dataSource');
     const formatterToolId = sessionStorage.getItem('formatterToolId');
     const formatterTarget = sessionStorage.getItem('formatterTarget');
+    const debugInfo = sessionStorage.getItem('debug_info');
     
     console.log("SessionStorage state:", {
         dataSource,
         formatterToolId,
-        formatterTarget
+        formatterTarget,
+        hasFormattedData: !!formattedData,
+        formattedDataLength: formattedData ? formattedData.length : 0,
+        debugInfo: debugInfo ? JSON.parse(debugInfo) : null
     });
+    
+    // Check if formattedData is too large for console logging
+    if (formattedData && formattedData.length < 1000) {
+        console.log("Formatted data preview:", formattedData.substring(0, 500) + "...");
+    }
+    
+    // Try to parse the formatted data to see if it's valid JSON
+    let isValidJson = false;
+    try {
+        if (formattedData) {
+            JSON.parse(formattedData);
+            isValidJson = true;
+            console.log("formattedData is valid JSON");
+        }
+    } catch (e) {
+        console.error("formattedData is not valid JSON:", e);
+    }
     
     // Check multiple possible matches to ensure compatibility with different naming conventions
     const isResponseTool = 
@@ -131,24 +169,75 @@ document.addEventListener('DOMContentLoaded', function() {
         formatterToolId === 'fire-ems-dashboard' || 
         formatterTarget === 'fire-ems-dashboard';
     
-    if (formattedData && dataSource === 'formatter' && (isResponseTool || !formatterToolId)) {
+    if ((formattedData && isValidJson && dataSource === 'formatter' && (isResponseTool || !formatterToolId)) || (fromFormatter && formattedData && isValidJson)) {
         console.log("📦 Data received from Data Formatter tool");
         try {
             // Parse the data
             const parsedData = JSON.parse(formattedData);
             
-            // Check if data is in the expected format (with data property)
+            // Check if data is in the expected format (try multiple formats)
             let dataToProcess;
+            
+            // Try to determine what format the data is in
+            console.log("Attempting to determine data format...");
+            
             if (parsedData.data && Array.isArray(parsedData.data)) {
+                // Format 1: { data: [...] }
                 dataToProcess = parsedData.data;
-                console.log(`Processing ${dataToProcess.length} records from Data Formatter`);
+                console.log(`Data format recognized: Object with data array (${dataToProcess.length} records)`);
             } else if (Array.isArray(parsedData)) {
+                // Format 2: [...]
                 dataToProcess = parsedData;
-                console.log(`Processing ${dataToProcess.length} records from Data Formatter`);
+                console.log(`Data format recognized: Direct array (${dataToProcess.length} records)`);
+            } else if (typeof parsedData === 'object' && parsedData !== null) {
+                // Format 3: Just one record as an object
+                dataToProcess = [parsedData];
+                console.log(`Data format recognized: Single object (converted to array)`);
             } else {
-                console.error("Unexpected data format from Data Formatter");
+                // Format 4: Unknown
+                console.error("Unexpected data format from Data Formatter:", typeof parsedData);
+                
+                // Try to create a user-friendly error message
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'notice error';
+                errorDiv.style.cssText = 'background-color: #ffebee; padding: 15px; border-radius: 4px; margin-bottom: 20px;';
+                errorDiv.innerHTML = `
+                    <strong>⚠️ Error processing data from Data Formatter</strong><br>
+                    Unexpected data format: ${typeof parsedData}<br>
+                    <div style="margin-top: 10px;">
+                        <strong>Troubleshooting:</strong>
+                        <ul>
+                            <li>Try refreshing both pages</li>
+                            <li>Check the browser console for errors</li>
+                            <li>Clear your browser cache and try again</li>
+                            <li>Try using a different browser</li>
+                        </ul>
+                    </div>
+                `;
+                
+                document.getElementById('result').appendChild(errorDiv);
                 return;
             }
+            
+            // Add a check to make sure we have at least one record
+            if (!dataToProcess || dataToProcess.length === 0) {
+                console.error("No records found in data");
+                
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'notice error';
+                errorDiv.style.cssText = 'background-color: #ffebee; padding: 15px; border-radius: 4px; margin-bottom: 20px;';
+                errorDiv.innerHTML = `
+                    <strong>⚠️ Error processing data from Data Formatter</strong><br>
+                    No records found in the data<br>
+                `;
+                
+                document.getElementById('result').appendChild(errorDiv);
+                return;
+            }
+            
+            // Log more details about the first record for debugging
+            console.log("First record details:", dataToProcess[0]);
+            console.log("Available fields:", Object.keys(dataToProcess[0]).join(", "));
             
             // Add field mapping for potential alternative names of required fields
             const keyMappings = {
