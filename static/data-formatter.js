@@ -408,7 +408,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Detect ImageTrend
         if (fields.some(f => f.includes('IMAGETREND_ID')) || 
-            fields.some(f => f.includes('EMS_RUN_NUMBER'))) {
+            fields.some(f => f.includes('EMS_RUN_NUMBER')) ||
+            fields.some(f => f.includes('IncidentPK')) ||
+            (fields.includes('IncidentDate') && fields.includes('IncidentTime') && 
+             fields.includes('NatureOfCall') && fields.includes('ResponseMode'))) {
             return 'ImageTrend';
         }
         
@@ -453,6 +456,7 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'ESO FireRMS':
                 return processESOFireRMSData(data, toolId);
             case 'ImageTrend':
+                appendLog(`Processing ImageTrend Fire Records Management data...`);
                 return processImageTrendData(data, toolId);
             case 'Spillman Flex':
                 return processSpillmanFlexData(data, toolId);
@@ -550,6 +554,135 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (item.GEOY) item['Latitude'] = parseFloat(item.GEOY);
                 if (item.GEOX) item['Longitude'] = parseFloat(item.GEOX);
             });
+        }
+        
+        return processedData;
+    }
+    
+    function processImageTrendData(data, toolId) {
+        const processedData = JSON.parse(JSON.stringify(data));
+        
+        // Process based on the tool type
+        if (toolId === 'response-time' || toolId === 'call-density') {
+            processedData.forEach(item => {
+                // Basic identification fields
+                item['Incident ID'] = item.IncidentPK || '';
+                item['Run No'] = item.IncidentPK || '';
+                
+                // Date/time fields
+                item['Incident Date'] = item.IncidentDate || '';
+                item['Incident Time'] = item.IncidentTime || '';
+                item['Reported'] = item.IncidentTime || '';
+                item['Unit Dispatched'] = item.DispatchTime || '';
+                item['Unit Enroute'] = item.EnRouteTime || '';
+                item['Unit Onscene'] = item.ArriveTime || '';
+                
+                // Response time calculation if it doesn't exist
+                if (!item['Response Time'] && item.TotalResponseTimeMinutes) {
+                    item['Response Time'] = parseFloat(item.TotalResponseTimeMinutes);
+                }
+                
+                // Location information
+                item['Full Address'] = item.StreetAddress || '';
+                item['Incident City'] = item.City || '';
+                item['Incident State'] = item.State || '';
+                item['Address'] = [
+                    item.StreetAddress || '',
+                    item.City || '',
+                    item.State || '',
+                    item.PostalCode || ''
+                ].filter(Boolean).join(', ');
+                
+                // Lat/Lon coordinates
+                if (item.Latitude) item['Latitude'] = parseFloat(item.Latitude);
+                if (item.Longitude) item['Longitude'] = parseFloat(item.Longitude);
+                
+                // Incident type and nature
+                item['Incident Type'] = item.IncidentTypeCode || item.CallType || '';
+                item['Nature'] = item.NatureOfCall || '';
+                
+                // Unit information
+                item['Unit'] = item.VehicleID || '';
+                item['Station'] = item.StationID || '';
+                
+                // Priority based on alarm level
+                if (item.AlarmLevel) {
+                    // Convert alarm level to numeric priority (lower number = higher priority)
+                    const alarmLevel = parseInt(item.AlarmLevel.replace(/[^0-9]/g, ''));
+                    if (!isNaN(alarmLevel)) {
+                        item['Priority'] = alarmLevel;
+                    }
+                }
+            });
+        } else if (toolId === 'incident-logger') {
+            processedData.forEach(item => {
+                // Basic identification fields
+                item['Incident ID'] = item.IncidentPK || '';
+                
+                // Date/time fields
+                item['Incident Date'] = item.IncidentDate || '';
+                item['Incident Time'] = item.IncidentTime || '';
+                
+                // Incident details
+                item['Incident Type'] = item.IncidentTypeCode || item.CallType || '';
+                item['Address'] = item.StreetAddress || '';
+                
+                // Unit information
+                item['Unit ID'] = item.VehicleID || '';
+                
+                // Patient information
+                item['Patient Info'] = `Count: ${item.PatientCount || 'N/A'}, Age: ${item.PatientAge || 'N/A'}, Gender: ${item.PatientGender || 'N/A'}`;
+                
+                // Additional notes
+                const notes = [];
+                if (item.PrimaryImpression) notes.push(`Primary: ${item.PrimaryImpression}`);
+                if (item.SecondaryImpression) notes.push(`Secondary: ${item.SecondaryImpression}`);
+                if (item.SituationFound) notes.push(`Situation: ${item.SituationFound}`);
+                if (item.ActionsTaken) notes.push(`Actions: ${item.ActionsTaken}`);
+                
+                item['Notes'] = notes.join(' | ');
+                
+                // Coordinates
+                if (item.Latitude) item['Latitude'] = parseFloat(item.Latitude);
+                if (item.Longitude) item['Longitude'] = parseFloat(item.Longitude);
+            });
+        } else if (toolId.includes('isochrone')) {
+            // For isochrone maps, we need to extract station information
+            const stationData = [];
+            const seenStations = new Set();
+            
+            processedData.forEach(item => {
+                if (item.StationID && !seenStations.has(item.StationID)) {
+                    seenStations.add(item.StationID);
+                    
+                    // Create a station record
+                    const station = {
+                        'Station ID': item.StationID,
+                        'Station Name': `Station ${item.StationID}`,
+                        'Latitude': parseFloat(item.Latitude || 0),
+                        'Longitude': parseFloat(item.Longitude || 0),
+                        'Unit Types': item.UnitType || 'Unknown'
+                    };
+                    
+                    stationData.push(station);
+                }
+            });
+            
+            // For isochrone-stations, return the station data
+            if (toolId === 'isochrone-stations') {
+                return stationData.length > 0 ? stationData : processedData;
+            }
+            
+            // For isochrone-incidents, prepare incident data
+            if (toolId === 'isochrone-incidents') {
+                processedData.forEach(item => {
+                    item['Incident ID'] = item.IncidentPK || '';
+                    item['Incident Type'] = item.IncidentTypeCode || item.CallType || '';
+                    
+                    if (item.Latitude) item['Latitude'] = parseFloat(item.Latitude);
+                    if (item.Longitude) item['Longitude'] = parseFloat(item.Longitude);
+                });
+            }
         }
         
         return processedData;
