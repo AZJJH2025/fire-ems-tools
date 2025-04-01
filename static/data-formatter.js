@@ -2247,12 +2247,114 @@ document.addEventListener('DOMContentLoaded', function() {
         // Create table headers
         const headers = Object.keys(previewData[0]);
         
-        let tableHTML = '<table class="preview-table"><thead><tr>';
+        // Check if this looks like Motorola CAD data for context-aware feedback
+        const isMotorolaData = data.some(item => 
+            Object.keys(item).some(key => 
+                key.toUpperCase().includes('INCIDENT_NO') || 
+                key.toUpperCase().includes('CALL_RECEIVED') ||
+                (key.toUpperCase().includes('DISPATCH') && key.toUpperCase().includes('TIME'))
+            )
+        );
+        
+        // Add enhanced validation summary at the top if we have validation results
+        let tableHTML = '';
+        if (validationResults) {
+            const requiredMissing = validationResults.issues.filter(issue => issue.includes('required field') && issue.includes('missing')).length;
+            const invalidFormat = validationResults.issues.filter(issue => issue.includes('invalid') || issue.includes('format')).length;
+            const incompleteData = validationResults.issues.filter(issue => issue.includes('incomplete')).length;
+            
+            const severityClass = requiredMissing > 0 ? 'high-severity' : 
+                                 invalidFormat > 0 ? 'medium-severity' : 
+                                 incompleteData > 0 ? 'low-severity' : '';
+            
+            // Create a more visual validation summary
+            if (isMotorolaData) {
+                tableHTML += `
+                    <div class="validation-summary motorola-cad">
+                        <h4><i class="fas fa-info-circle"></i> Motorola CAD Data Detected</h4>
+                        <div class="validation-stats">
+                            <div class="stat-box">
+                                <span class="stat-number">${data.length}</span>
+                                <span class="stat-label">Records</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-number">${headers.length}</span>
+                                <span class="stat-label">Fields</span>
+                            </div>
+                            <div class="stat-box ${requiredMissing > 0 ? 'warning' : 'ok'}">
+                                <span class="stat-number">${requiredMissing}</span>
+                                <span class="stat-label">Missing<br>Required Fields</span>
+                            </div>
+                        </div>
+                        <p>Special Motorola CAD handling is enabled. Field mapping has been applied automatically.</p>
+                        <p>Common CAD field naming conventions have been recognized and transformed.</p>
+                        <p class="validation-tip"><i class="fas fa-lightbulb"></i> You can proceed with Send to Tool despite warnings.</p>
+                    </div>
+                `;
+            } else if (validationResults.issues.length > 0) {
+                tableHTML += `
+                    <div class="validation-summary ${severityClass}">
+                        <h4><i class="fas fa-exclamation-triangle"></i> Data Validation Results</h4>
+                        <div class="validation-stats">
+                            <div class="stat-box">
+                                <span class="stat-number">${data.length}</span>
+                                <span class="stat-label">Records</span>
+                            </div>
+                            <div class="stat-box ${requiredMissing > 0 ? 'critical' : 'ok'}">
+                                <span class="stat-number">${requiredMissing}</span>
+                                <span class="stat-label">Missing<br>Required Fields</span>
+                            </div>
+                            <div class="stat-box ${invalidFormat > 0 ? 'warning' : 'ok'}">
+                                <span class="stat-number">${invalidFormat}</span>
+                                <span class="stat-label">Format<br>Issues</span>
+                            </div>
+                            <div class="stat-box ${incompleteData > 0 ? 'info' : 'ok'}">
+                                <span class="stat-number">${incompleteData}</span>
+                                <span class="stat-label">Incomplete<br>Fields</span>
+                            </div>
+                        </div>
+                        <div class="validation-details">
+                            <h5>Details:</h5>
+                            <ul>
+                                ${validationResults.issues.slice(0, 5).map(issue => `<li>${issue}</li>`).join('')}
+                                ${validationResults.issues.length > 5 ? `<li class="more-issues">...and ${validationResults.issues.length - 5} more issues</li>` : ''}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            } else {
+                tableHTML += `
+                    <div class="validation-summary success">
+                        <h4><i class="fas fa-check-circle"></i> Data Validation Passed</h4>
+                        <p>All required fields are present and properly formatted.</p>
+                        <div class="validation-stats">
+                            <div class="stat-box">
+                                <span class="stat-number">${data.length}</span>
+                                <span class="stat-label">Records</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-number">${headers.length}</span>
+                                <span class="stat-label">Fields</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        // Now add the data table
+        tableHTML += '<table class="preview-table"><thead><tr>';
         
         // Add validation status indicators to headers if validation results are available
         headers.forEach(header => {
             let headerClass = '';
             let headerTitle = '';
+            let isRequired = false;
+            
+            // Check if this is a required field based on the current tool
+            if (selectedTool && toolRequirements[selectedTool]) {
+                isRequired = toolRequirements[selectedTool].requiredFields.includes(header);
+            }
             
             if (validationResults && validationResults.fieldIssues) {
                 const fieldIssue = validationResults.fieldIssues[header];
@@ -2270,8 +2372,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            tableHTML += `<th class="${headerClass}" title="${headerTitle}">
-                ${header}
+            tableHTML += `<th class="${headerClass} ${isRequired ? 'required-field' : ''}" title="${headerTitle}">
+                ${header} ${isRequired ? '<span class="required-indicator">*</span>' : ''}
                 ${headerClass ? `<span class="validation-indicator ${headerClass}"></span>` : ''}
             </th>`;
         });
@@ -2303,6 +2405,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
                 
+                // Add auto-generated indication 
+                if (value && typeof value === 'string' && 
+                   (value.startsWith('AUTO-') || value.startsWith('ERROR-') || value === 'AUTO_GENERATED')) {
+                    cellClass += ' auto-generated';
+                    cellTitle += (cellTitle ? ' | ' : '') + 'Auto-generated value';
+                }
+                
                 tableHTML += `<td class="${cellClass}" title="${cellTitle}">${value}</td>`;
             });
             tableHTML += '</tr>';
@@ -2310,51 +2419,112 @@ document.addEventListener('DOMContentLoaded', function() {
         
         tableHTML += '</tbody></table>';
         
-        // Add data quality summary if validation results are available
-        if (validationResults && validationResults.issues.length > 0) {
-            // Check if this looks like Motorola CAD data
-            const isMotorolaData = data.some(item => 
-                Object.keys(item).some(key => 
-                    key.toUpperCase().includes('INCIDENT_NO') || 
-                    key.toUpperCase().includes('CALL_RECEIVED') ||
-                    (key.toUpperCase().includes('DISPATCH') && key.toUpperCase().includes('TIME'))
-                )
-            );
-            
-            // Use a special message for Motorola CAD data
-            if (isMotorolaData) {
-                tableHTML += `
-                    <div class="validation-summary motorola-cad">
-                        <h4><i class="fas fa-info-circle"></i> Motorola CAD Data Detected</h4>
-                        <p>Some field mappings may show as issues, but the data should work with the Response Time Analyzer.</p>
-                        <p>Common Motorola CAD fields have been automatically mapped to the required fields.</p>
-                        <p>You can proceed with the "Send to Tool" option despite these warnings.</p>
-                        <div class="validation-details" style="font-size: 0.9em; color: #666;">
-                            <p>Technical details:</p>
-                            <ul>
-                                ${validationResults.issues.slice(0, 3).map(issue => `<li>${issue}</li>`).join('')}
-                                ${validationResults.issues.length > 3 ? `<li>...and ${validationResults.issues.length - 3} more issues</li>` : ''}
-                            </ul>
-                        </div>
-                    </div>
-                `;
-            } else {
-                tableHTML += `
-                    <div class="validation-summary">
-                        <h4><i class="fas fa-exclamation-triangle"></i> Data Quality Issues</h4>
-                        <ul>
-                            ${validationResults.issues.slice(0, 3).map(issue => `<li>${issue}</li>`).join('')}
-                            ${validationResults.issues.length > 3 ? `<li>...and ${validationResults.issues.length - 3} more issues</li>` : ''}
-                        </ul>
-                    </div>
-                `;
-            }
-        }
-        
         // Add record count
-        tableHTML += `<p class="preview-info">${data.length} total records, ${headers.length} fields</p>`;
+        tableHTML += `<p class="preview-info">${data.length} total records, ${headers.length} fields shown (first 5 records)</p>`;
         
         outputPreview.innerHTML = tableHTML;
+        
+        // Add custom CSS for the enhanced validation display
+        if (!document.getElementById('enhanced-validation-styles')) {
+            const styleElement = document.createElement('style');
+            styleElement.id = 'enhanced-validation-styles';
+            styleElement.textContent = `
+                .validation-summary {
+                    margin-bottom: 20px;
+                    padding: 15px;
+                    border-radius: 6px;
+                    background-color: #f8f9fa;
+                    border-left: 5px solid #6c757d;
+                }
+                .validation-summary.high-severity { border-left-color: #dc3545; background-color: #f8d7da; }
+                .validation-summary.medium-severity { border-left-color: #fd7e14; background-color: #fff3cd; }
+                .validation-summary.low-severity { border-left-color: #0dcaf0; background-color: #d1ecf1; }
+                .validation-summary.success { border-left-color: #28a745; background-color: #d4edda; }
+                .validation-summary.motorola-cad { border-left-color: #6610f2; background-color: #e2d9f3; }
+                
+                .validation-stats {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                    margin: 10px 0;
+                }
+                .stat-box {
+                    flex: 1;
+                    min-width: 100px;
+                    padding: 10px;
+                    border-radius: 5px;
+                    background: rgba(255,255,255,0.7);
+                    text-align: center;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                }
+                .stat-box.critical { background-color: #f8d7da; }
+                .stat-box.warning { background-color: #fff3cd; }
+                .stat-box.info { background-color: #d1ecf1; }
+                .stat-box.ok { background-color: #d4edda; }
+                
+                .stat-number {
+                    display: block;
+                    font-size: 24px;
+                    font-weight: bold;
+                }
+                .stat-label {
+                    font-size: 12px;
+                    color: #495057;
+                }
+                
+                .validation-details {
+                    margin-top: 10px;
+                    font-size: 0.9em;
+                }
+                
+                .validation-tip {
+                    margin-top: 10px;
+                    padding: 5px;
+                    background: rgba(255,255,255,0.7);
+                    border-radius: 4px;
+                    font-weight: bold;
+                }
+                
+                .required-field {
+                    background-color: #f8f9fa;
+                }
+                .required-indicator {
+                    color: #dc3545;
+                    margin-left: 2px;
+                }
+                
+                .auto-generated {
+                    background-color: #fff3cd !important;
+                    font-style: italic;
+                }
+                
+                .preview-table th.missing-field,
+                .preview-table th.invalid-field,
+                .preview-table th.incomplete-field {
+                    position: relative;
+                    padding-right: 20px;
+                }
+                
+                .validation-indicator {
+                    position: absolute;
+                    right: 5px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 10px;
+                    height: 10px;
+                    border-radius: 50%;
+                }
+                .validation-indicator.missing-field { background-color: #dc3545; }
+                .validation-indicator.invalid-field { background-color: #fd7e14; }
+                .validation-indicator.incomplete-field { background-color: #0dcaf0; }
+                
+                .more-issues {
+                    font-style: italic;
+                    color: #6c757d;
+                }
+            `;
+            document.head.appendChild(styleElement);
+        }
     }
     
     // Add a simple data visualization preview based on the tool type
@@ -2372,31 +2542,134 @@ document.addEventListener('DOMContentLoaded', function() {
         // Clear previous visualizations
         vizContainer.innerHTML = `
             <h3>Data Preview Visualization</h3>
+            <div class="viz-header">
+                <span class="viz-title">Preview of how your data will appear in the target tool</span>
+                <span class="viz-info">This is a simplified representation to help you verify the transformation.</span>
+            </div>
             <div class="viz-container" id="preview-chart"></div>
         `;
         
-        // Create different visualizations based on tool type
-        switch (toolId) {
-            case 'response-time':
-                createResponseTimePreview(data, vizContainer);
-                break;
-            case 'call-density':
-                createCallDensityPreview(data, vizContainer);
-                break;
-            case 'incident-logger':
-                createIncidentTypePreview(data, vizContainer);
-                break;
-            case 'isochrone':
-            case 'isochrone-stations':
-                createStationPreview(data, vizContainer);
-                break;
-            default:
-                // Simple count by date for other tools
-                createGenericDatePreview(data, vizContainer);
+        // Add Chart.js if it's not already included
+        if (!window.Chart) {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js';
+            script.onload = function() {
+                // Create visualization once Chart.js is loaded
+                createVisualizationForTool(data, toolId, vizContainer);
+            };
+            document.head.appendChild(script);
+        } else {
+            // Chart.js already loaded
+            createVisualizationForTool(data, toolId, vizContainer);
+        }
+        
+        // Add custom styles for the visualization
+        if (!document.getElementById('viz-preview-styles')) {
+            const styleElement = document.createElement('style');
+            styleElement.id = 'viz-preview-styles';
+            styleElement.textContent = `
+                .visualization-preview {
+                    margin: 30px 0;
+                    padding: 20px;
+                    border-radius: 8px;
+                    background-color: #f8f9fa;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                }
+                
+                .visualization-preview h3 {
+                    margin-top: 0;
+                    margin-bottom: 15px;
+                    color: #343a40;
+                    border-bottom: 2px solid #dee2e6;
+                    padding-bottom: 8px;
+                }
+                
+                .viz-header {
+                    display: flex;
+                    flex-direction: column;
+                    margin-bottom: 15px;
+                }
+                
+                .viz-title {
+                    font-weight: bold;
+                    font-size: 14px;
+                    color: #495057;
+                }
+                
+                .viz-info {
+                    font-size: 12px;
+                    color: #6c757d;
+                    font-style: italic;
+                }
+                
+                .viz-container {
+                    background-color: white;
+                    border-radius: 6px;
+                    padding: 15px;
+                    min-height: 250px;
+                    max-height: 400px;
+                    position: relative;
+                }
+                
+                .empty-viz-message {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    text-align: center;
+                    color: #6c757d;
+                    font-style: italic;
+                }
+                
+                .viz-legend {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                    margin-top: 15px;
+                    font-size: 12px;
+                }
+                
+                .viz-legend-item {
+                    display: flex;
+                    align-items: center;
+                    margin-right: 15px;
+                }
+                
+                .viz-legend-color {
+                    width: 12px;
+                    height: 12px;
+                    display: inline-block;
+                    margin-right: 5px;
+                    border-radius: 2px;
+                }
+            `;
+            document.head.appendChild(styleElement);
         }
     }
     
-    // Create a simple response time visualization
+    // Helper function to create appropriate visualization based on tool type
+    function createVisualizationForTool(data, toolId, container) {
+        switch (toolId) {
+            case 'response-time':
+                createResponseTimePreview(data, container);
+                break;
+            case 'call-density':
+                createCallDensityPreview(data, container);
+                break;
+            case 'incident-logger':
+                createIncidentTypePreview(data, container);
+                break;
+            case 'isochrone':
+            case 'isochrone-stations':
+                createStationPreview(data, container);
+                break;
+            default:
+                // Simple count by date for other tools
+                createGenericDatePreview(data, container);
+        }
+    }
+    
+    // Create a simple response time visualization with Chart.js
     function createResponseTimePreview(data, container) {
         // Extract and count response time ranges
         const responseTimes = [];
@@ -2535,7 +2808,7 @@ document.addEventListener('DOMContentLoaded', function() {
             else ranges['16+ min']++;
         });
         
-        // Create a simple HTML bar chart
+        // Create visualization using Chart.js if available, falling back to HTML
         const chartEl = container.querySelector('#preview-chart');
         
         if (!chartEl) return;
@@ -2600,36 +2873,280 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        let chartHTML = '<div class="simple-chart">';
-        let maxCount = Math.max(...Object.values(ranges));
-        
-        Object.entries(ranges).forEach(([range, count]) => {
-            const percentage = maxCount === 0 ? 0 : (count / maxCount) * 100;
-            chartHTML += `
-                <div class="chart-row">
-                    <div class="chart-label">${range}</div>
-                    <div class="chart-bar-container">
-                        <div class="chart-bar" style="width: ${percentage}%"></div>
-                        <div class="chart-value">${count}</div>
-                    </div>
-                </div>
-            `;
-        });
-        
-        chartHTML += '</div>';
-        
-        // Add data quality note if there were some issues but still valid data
-        if (missingTimeData > 0 || invalidTimeFormatCount > 0 || timeSequenceErrorCount > 0) {
+        // If Chart.js is available, create an interactive chart
+        if (window.Chart) {
+            // Clear container and add canvas element
+            chartEl.innerHTML = '';
+            const canvas = document.createElement('canvas');
+            canvas.id = 'response-time-chart';
+            chartEl.appendChild(canvas);
+            
+            // Prepare data for the chart
+            const labels = Object.keys(ranges);
+            const data = Object.values(ranges);
+            const backgroundColor = [
+                'rgba(40, 167, 69, 0.7)',  // green for faster responses
+                'rgba(23, 162, 184, 0.7)', // teal
+                'rgba(255, 193, 7, 0.7)',  // yellow
+                'rgba(253, 126, 20, 0.7)', // orange
+                'rgba(220, 53, 69, 0.7)'   // red for slower responses
+            ];
+            
+            const borderColor = backgroundColor.map(color => color.replace('0.7', '1'));
+            
+            // Calculate the average response time
+            const avgTime = responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length;
+            
+            // Create the chart
+            new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Number of Incidents',
+                        data: data,
+                        backgroundColor: backgroundColor,
+                        borderColor: borderColor,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Response Time Distribution',
+                            font: { size: 16 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const count = context.raw;
+                                    const total = data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((count / total) * 100).toFixed(1);
+                                    return `${count} incidents (${percentage}%)`;
+                                }
+                            }
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Incidents'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Add summary statistics beneath the chart
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = 'response-time-summary';
+            
             const totalRecords = data.length;
             const validPercentage = Math.round((responseTimes.length / totalRecords) * 100);
             
-            chartHTML += `<p class="chart-note">Response time distribution across ${responseTimes.length} valid incidents (${validPercentage}% of data). 
-                         ${totalRecords - responseTimes.length} records had missing or invalid time data.</p>`;
+            summaryDiv.innerHTML = `
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="summary-label">Average Response Time</span>
+                        <span class="summary-value">${avgTime.toFixed(1)} min</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Total Incidents</span>
+                        <span class="summary-value">${responseTimes.length}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Data Coverage</span>
+                        <span class="summary-value">${validPercentage}%</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Missing Time Data</span>
+                        <span class="summary-value">${missingTimeData}</span>
+                    </div>
+                </div>
+            `;
+            chartEl.appendChild(summaryDiv);
+            
+            // Add custom styles for the summary
+            if (!document.getElementById('chart-summary-styles')) {
+                const style = document.createElement('style');
+                style.id = 'chart-summary-styles';
+                style.textContent = `
+                    .response-time-summary {
+                        margin-top: 15px;
+                        padding: 10px;
+                        background-color: #f8f9fa;
+                        border-radius: 5px;
+                    }
+                    
+                    .summary-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                        gap: 10px;
+                    }
+                    
+                    .summary-item {
+                        background-color: white;
+                        padding: 8px;
+                        border-radius: 4px;
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                        text-align: center;
+                    }
+                    
+                    .summary-label {
+                        display: block;
+                        font-size: 12px;
+                        color: #6c757d;
+                        margin-bottom: 3px;
+                    }
+                    
+                    .summary-value {
+                        font-weight: bold;
+                        font-size: 16px;
+                        color: #212529;
+                    }
+                    
+                    .motorola-chart-message,
+                    .empty-chart-message {
+                        text-align: center;
+                        padding: 20px;
+                        background-color: #f8f9fa;
+                        border-radius: 5px;
+                        margin: 15px 0;
+                    }
+                    
+                    .motorola-chart-message i,
+                    .empty-chart-message i {
+                        font-size: 32px;
+                        color: #6c757d;
+                        margin-bottom: 10px;
+                    }
+                    
+                    .chart-placeholder {
+                        margin-top: 15px;
+                        background-color: white;
+                        border-radius: 5px;
+                        padding: 15px;
+                    }
+                    
+                    .placeholder-bar {
+                        height: 24px;
+                        background: linear-gradient(90deg, #28a745, #20c997);
+                        margin-bottom: 10px;
+                        border-radius: 3px;
+                        opacity: 0.5;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
         } else {
-            chartHTML += `<p class="chart-note">Response time distribution across ${responseTimes.length} incidents</p>`;
+            // Fallback to simple HTML chart if Chart.js is not available
+            let chartHTML = '<div class="simple-chart">';
+            let maxCount = Math.max(...Object.values(ranges));
+            
+            Object.entries(ranges).forEach(([range, count]) => {
+                const percentage = maxCount === 0 ? 0 : (count / maxCount) * 100;
+                const barClass = range === '0-4 min' ? 'excellent' :
+                               range === '4-8 min' ? 'good' :
+                               range === '8-12 min' ? 'fair' :
+                               range === '12-16 min' ? 'poor' : 'critical';
+                
+                chartHTML += `
+                    <div class="chart-row">
+                        <div class="chart-label">${range}</div>
+                        <div class="chart-bar-container">
+                            <div class="chart-bar ${barClass}" style="width: ${percentage}%">
+                                <span class="chart-value">${count}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            chartHTML += '</div>';
+            
+            // Add data quality note
+            const totalRecords = data.length;
+            const validPercentage = Math.round((responseTimes.length / totalRecords) * 100);
+            
+            chartHTML += `
+                <div class="chart-summary">
+                    <p><strong>Average Response Time:</strong> ${(responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length).toFixed(1)} minutes</p>
+                    <p><strong>Data Coverage:</strong> ${validPercentage}% (${responseTimes.length} of ${totalRecords} incidents)</p>
+                    ${missingTimeData > 0 ? `<p><strong>Missing Time Data:</strong> ${missingTimeData} incidents</p>` : ''}
+                </div>
+            `;
+            
+            chartEl.innerHTML = chartHTML;
+            
+            // Add styles for the HTML chart
+            if (!document.getElementById('simple-chart-styles')) {
+                const style = document.createElement('style');
+                style.id = 'simple-chart-styles';
+                style.textContent = `
+                    .simple-chart {
+                        padding: 15px 0;
+                    }
+                    
+                    .chart-row {
+                        display: flex;
+                        margin-bottom: 10px;
+                        align-items: center;
+                    }
+                    
+                    .chart-label {
+                        width: 80px;
+                        font-size: 13px;
+                        text-align: right;
+                        padding-right: 10px;
+                    }
+                    
+                    .chart-bar-container {
+                        flex-grow: 1;
+                        background-color: #eee;
+                        height: 24px;
+                        border-radius: 4px;
+                        overflow: hidden;
+                    }
+                    
+                    .chart-bar {
+                        height: 100%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: flex-end;
+                        padding: 0 8px;
+                        color: white;
+                        font-size: 13px;
+                        transition: width 0.5s ease;
+                    }
+                    
+                    .chart-bar.excellent { background-color: #28a745; }
+                    .chart-bar.good { background-color: #20c997; }
+                    .chart-bar.fair { background-color: #ffc107; }
+                    .chart-bar.poor { background-color: #fd7e14; }
+                    .chart-bar.critical { background-color: #dc3545; }
+                    
+                    .chart-summary {
+                        margin-top: 10px;
+                        padding: 10px;
+                        background-color: #f8f9fa;
+                        border-radius: 4px;
+                        font-size: 13px;
+                    }
+                    
+                    .chart-summary p {
+                        margin: 5px 0;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
         }
-        
-        chartEl.innerHTML = chartHTML;
     }
     
     // Create a simple incident type visualization
