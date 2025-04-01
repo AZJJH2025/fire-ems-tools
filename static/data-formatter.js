@@ -238,6 +238,137 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Validate data against tool requirements
+    function validateDataForTool(data, toolId) {
+        if (!data || !data.length || !toolId) return { valid: false, issues: ['No data to validate'] };
+        
+        const requirements = toolRequirements[toolId];
+        if (!requirements) return { valid: false, issues: ['Unknown tool requirements'] };
+        
+        const issues = [];
+        const fieldIssues = {};
+        const validatedResults = { valid: true, issues: [], fieldIssues: {}, data: data };
+        
+        // Check for required fields
+        requirements.requiredFields.forEach(field => {
+            const fieldIssue = { present: false, complete: false, valid: false, samples: [] };
+            
+            // Check if field exists
+            if (data[0].hasOwnProperty(field)) {
+                fieldIssue.present = true;
+                
+                // Check if field has values (not all empty)
+                const fieldValues = data.map(item => item[field]);
+                const hasValues = fieldValues.some(value => value !== null && value !== undefined && value !== '');
+                fieldIssue.complete = hasValues;
+                
+                // Collect sample values for diagnostics
+                fieldIssue.samples = fieldValues.filter(v => v !== null && v !== undefined && v !== '').slice(0, 3);
+                
+                // Specific validations by field type
+                if (requirements.dateFields && requirements.dateFields.includes(field)) {
+                    // Date fields validation
+                    fieldIssue.valid = fieldValues.every(value => {
+                        if (!value) return true; // Skip empty values
+                        try {
+                            // Check various date formats
+                            return !isNaN(new Date(value).getTime());
+                        } catch (e) {
+                            return false;
+                        }
+                    });
+                    
+                    if (!fieldIssue.valid) {
+                        issues.push(`Field '${field}' contains invalid date values. Example: "${fieldIssue.samples[0]}"`);
+                    }
+                } else if (requirements.coordinateFields && requirements.coordinateFields.includes(field)) {
+                    // Coordinate fields validation
+                    fieldIssue.valid = fieldValues.every(value => {
+                        if (!value) return true; // Skip empty values
+                        const numValue = parseFloat(value);
+                        if (field === 'Latitude') {
+                            return !isNaN(numValue) && numValue >= -90 && numValue <= 90;
+                        } else if (field === 'Longitude') {
+                            return !isNaN(numValue) && numValue >= -180 && numValue <= 180;
+                        }
+                        return !isNaN(numValue);
+                    });
+                    
+                    if (!fieldIssue.valid) {
+                        issues.push(`Field '${field}' contains invalid coordinate values. Example: "${fieldIssue.samples[0]}"`);
+                    }
+                } else if (requirements.timeFields && requirements.timeFields.includes(field)) {
+                    // Time fields validation
+                    fieldIssue.valid = fieldValues.every(value => {
+                        if (!value) return true; // Skip empty values
+                        // Basic time format check (HH:MM:SS or HH:MM)
+                        return /^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/.test(value) ||
+                               // Also allow datetime strings
+                               !isNaN(new Date(value).getTime());
+                    });
+                    
+                    if (!fieldIssue.valid) {
+                        issues.push(`Field '${field}' contains invalid time values. Example: "${fieldIssue.samples[0]}"`);
+                    }
+                } else {
+                    // Default validation - just check if not empty for required fields
+                    fieldIssue.valid = hasValues;
+                }
+                
+                if (!hasValues) {
+                    issues.push(`Required field '${field}' has no values in the dataset`);
+                }
+            } else {
+                issues.push(`Required field '${field}' is missing`);
+            }
+            
+            fieldIssues[field] = fieldIssue;
+        });
+        
+        // Additional validations for specific tools
+        if (toolId === 'response-time') {
+            // Check that time fields have a logical progression
+            if (fieldIssues['Incident Time'] && fieldIssues['Dispatch Time'] && 
+                fieldIssues['En Route Time'] && fieldIssues['On Scene Time']) {
+                
+                // Sample check on the first 10 records
+                const sampledData = data.slice(0, 10);
+                let timeSequenceIssues = 0;
+                
+                sampledData.forEach(item => {
+                    try {
+                        if (item['Incident Time'] && item['Dispatch Time'] && 
+                            item['En Route Time'] && item['On Scene Time']) {
+                            
+                            const incidentTime = new Date(`2000-01-01T${item['Incident Time']}`);
+                            const dispatchTime = new Date(`2000-01-01T${item['Dispatch Time']}`);
+                            const enRouteTime = new Date(`2000-01-01T${item['En Route Time']}`);
+                            const onSceneTime = new Date(`2000-01-01T${item['On Scene Time']}`);
+                            
+                            if (!(incidentTime <= dispatchTime && 
+                                  dispatchTime <= enRouteTime && 
+                                  enRouteTime <= onSceneTime)) {
+                                timeSequenceIssues++;
+                            }
+                        }
+                    } catch (e) {
+                        timeSequenceIssues++;
+                    }
+                });
+                
+                if (timeSequenceIssues > 0) {
+                    issues.push(`Found ${timeSequenceIssues} records with illogical time sequences (times should progress: Incident → Dispatch → En Route → On Scene)`);
+                }
+            }
+        }
+        
+        validatedResults.valid = issues.length === 0;
+        validatedResults.issues = issues;
+        validatedResults.fieldIssues = fieldIssues;
+        
+        return validatedResults;
+    }
+    
     // Transform data
     transformBtn.addEventListener('click', function() {
         if (!originalData || !selectedTool) return;
@@ -246,15 +377,41 @@ document.addEventListener('DOMContentLoaded', function() {
             appendLog(`Starting transformation for ${getToolName(selectedTool)}...`);
             appendLog(`Processing ${originalData.length} records with ${Object.keys(originalData[0]).length} fields`);
             
+            // Validate data before transformation
+            const validationResults = validateDataForTool(originalData, selectedTool);
+            
+            // Log validation issues
+            if (validationResults.issues.length > 0) {
+                appendLog(`Found ${validationResults.issues.length} data validation issues:`, 'warning');
+                validationResults.issues.forEach(issue => {
+                    appendLog(`- ${issue}`, 'warning');
+                });
+            }
+            
             // Apply transformations based on selected tool
             transformedData = transformData(originalData, selectedTool);
             
-            // Show preview and enable download
-            showOutputPreview(transformedData);
-            downloadBtn.disabled = false;
-            sendToToolBtn.disabled = false;
+            // Show preview with validation highlights
+            showOutputPreview(transformedData, validationResults);
             
-            appendLog(`Transformation complete. ${transformedData.length} records ready for ${getToolName(selectedTool)}.`);
+            // Show preview chart if we have valid data
+            if (transformedData.length > 0) {
+                showDataVisualizationPreview(transformedData, selectedTool);
+            }
+            
+            // Enable download even with warnings, but not for severe errors
+            const isUsable = !validationResults.issues.some(issue => 
+                issue.includes('missing') || issue.includes('invalid')
+            );
+            
+            downloadBtn.disabled = !isUsable;
+            sendToToolBtn.disabled = !isUsable;
+            
+            if (isUsable) {
+                appendLog(`Transformation complete. ${transformedData.length} records ready for ${getToolName(selectedTool)}.`);
+            } else {
+                appendLog(`Transformation completed with critical issues. Please fix data problems before continuing.`, 'error');
+            }
         } catch (error) {
             appendLog(`Error during transformation: ${error.message}`, 'error');
             console.error('Transformation error:', error);
@@ -1231,7 +1388,7 @@ document.addEventListener('DOMContentLoaded', function() {
         inputPreview.innerHTML = tableHTML;
     }
     
-    function showOutputPreview(data) {
+    function showOutputPreview(data, validationResults = null) {
         if (!data || data.length === 0) {
             outputPreview.innerHTML = '<p>No data to preview</p>';
             return;
@@ -1244,26 +1401,269 @@ document.addEventListener('DOMContentLoaded', function() {
         const headers = Object.keys(previewData[0]);
         
         let tableHTML = '<table class="preview-table"><thead><tr>';
+        
+        // Add validation status indicators to headers if validation results are available
         headers.forEach(header => {
-            tableHTML += `<th>${header}</th>`;
+            let headerClass = '';
+            let headerTitle = '';
+            
+            if (validationResults && validationResults.fieldIssues) {
+                const fieldIssue = validationResults.fieldIssues[header];
+                if (fieldIssue) {
+                    if (!fieldIssue.present) {
+                        headerClass = 'missing-field';
+                        headerTitle = 'This required field was missing in the original data but has been created';
+                    } else if (!fieldIssue.valid) {
+                        headerClass = 'invalid-field';
+                        headerTitle = 'This field contains invalid data';
+                    } else if (!fieldIssue.complete) {
+                        headerClass = 'incomplete-field';
+                        headerTitle = 'This field has missing values';
+                    }
+                }
+            }
+            
+            tableHTML += `<th class="${headerClass}" title="${headerTitle}">
+                ${header}
+                ${headerClass ? `<span class="validation-indicator ${headerClass}"></span>` : ''}
+            </th>`;
         });
+        
         tableHTML += '</tr></thead><tbody>';
         
-        // Add data rows
+        // Add data rows with validation highlighting
         previewData.forEach(row => {
             tableHTML += '<tr>';
             headers.forEach(header => {
-                tableHTML += `<td>${row[header] !== undefined ? row[header] : ''}</td>`;
+                let cellClass = '';
+                let cellTitle = '';
+                const value = row[header] !== undefined ? row[header] : '';
+                
+                // Check for problematic values
+                if (validationResults && validationResults.fieldIssues && validationResults.fieldIssues[header]) {
+                    const fieldIssue = validationResults.fieldIssues[header];
+                    
+                    if (value === '' || value === null || value === undefined) {
+                        cellClass = 'empty-value';
+                        cellTitle = 'Missing value';
+                    } else if (fieldIssue && !fieldIssue.valid) {
+                        // Check specific types of invalid values
+                        if (validationResults.fieldIssues[header].samples && 
+                            validationResults.fieldIssues[header].samples.includes(value)) {
+                            cellClass = 'invalid-value';
+                            cellTitle = 'This value may cause issues';
+                        }
+                    }
+                }
+                
+                tableHTML += `<td class="${cellClass}" title="${cellTitle}">${value}</td>`;
             });
             tableHTML += '</tr>';
         });
         
         tableHTML += '</tbody></table>';
         
+        // Add data quality summary if validation results are available
+        if (validationResults && validationResults.issues.length > 0) {
+            tableHTML += `
+                <div class="validation-summary">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Data Quality Issues</h4>
+                    <ul>
+                        ${validationResults.issues.slice(0, 3).map(issue => `<li>${issue}</li>`).join('')}
+                        ${validationResults.issues.length > 3 ? `<li>...and ${validationResults.issues.length - 3} more issues</li>` : ''}
+                    </ul>
+                </div>
+            `;
+        }
+        
         // Add record count
         tableHTML += `<p class="preview-info">${data.length} total records, ${headers.length} fields</p>`;
         
         outputPreview.innerHTML = tableHTML;
+    }
+    
+    // Add a simple data visualization preview based on the tool type
+    function showDataVisualizationPreview(data, toolId) {
+        if (!data || data.length === 0 || !toolId) return;
+        
+        // Create visualization container if it doesn't exist
+        let vizContainer = document.querySelector('.visualization-preview');
+        if (!vizContainer) {
+            vizContainer = document.createElement('div');
+            vizContainer.className = 'visualization-preview';
+            outputPreview.insertAdjacentElement('afterend', vizContainer);
+        }
+        
+        // Clear previous visualizations
+        vizContainer.innerHTML = `
+            <h3>Data Preview Visualization</h3>
+            <div class="viz-container" id="preview-chart"></div>
+        `;
+        
+        // Create different visualizations based on tool type
+        switch (toolId) {
+            case 'response-time':
+                createResponseTimePreview(data, vizContainer);
+                break;
+            case 'call-density':
+                createCallDensityPreview(data, vizContainer);
+                break;
+            case 'incident-logger':
+                createIncidentTypePreview(data, vizContainer);
+                break;
+            case 'isochrone':
+            case 'isochrone-stations':
+                createStationPreview(data, vizContainer);
+                break;
+            default:
+                // Simple count by date for other tools
+                createGenericDatePreview(data, vizContainer);
+        }
+    }
+    
+    // Create a simple response time visualization
+    function createResponseTimePreview(data, container) {
+        // Extract and count response time ranges
+        const responseTimes = [];
+        
+        data.forEach(item => {
+            // Try to compute response time if dispatch and onscene time are present
+            if (item['Dispatch Time'] && item['On Scene Time']) {
+                try {
+                    const dispatch = new Date(`2000-01-01T${item['Dispatch Time']}`);
+                    const onScene = new Date(`2000-01-01T${item['On Scene Time']}`);
+                    
+                    if (!isNaN(dispatch) && !isNaN(onScene)) {
+                        // Get time difference in minutes
+                        const diffMinutes = (onScene - dispatch) / (1000 * 60);
+                        if (diffMinutes >= 0 && diffMinutes < 60) { // Filter out unreasonable values
+                            responseTimes.push(diffMinutes);
+                        }
+                    }
+                } catch (e) {
+                    // Skip invalid times
+                }
+            }
+        });
+        
+        // Create frequency ranges
+        const ranges = {
+            '0-4 min': 0,
+            '4-8 min': 0,
+            '8-12 min': 0,
+            '12-16 min': 0,
+            '16+ min': 0
+        };
+        
+        responseTimes.forEach(time => {
+            if (time < 4) ranges['0-4 min']++;
+            else if (time < 8) ranges['4-8 min']++;
+            else if (time < 12) ranges['8-12 min']++;
+            else if (time < 16) ranges['12-16 min']++;
+            else ranges['16+ min']++;
+        });
+        
+        // Create a simple HTML bar chart
+        const chartEl = container.querySelector('#preview-chart');
+        
+        if (!chartEl) return;
+        
+        if (responseTimes.length === 0) {
+            chartEl.innerHTML = '<p>No valid response time data available for visualization</p>';
+            return;
+        }
+        
+        let chartHTML = '<div class="simple-chart">';
+        let maxCount = Math.max(...Object.values(ranges));
+        
+        Object.entries(ranges).forEach(([range, count]) => {
+            const percentage = (count / maxCount) * 100;
+            chartHTML += `
+                <div class="chart-row">
+                    <div class="chart-label">${range}</div>
+                    <div class="chart-bar-container">
+                        <div class="chart-bar" style="width: ${percentage}%"></div>
+                        <div class="chart-value">${count}</div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        chartHTML += '</div>';
+        chartHTML += `<p class="chart-note">Response time distribution across ${responseTimes.length} incidents</p>`;
+        
+        chartEl.innerHTML = chartHTML;
+    }
+    
+    // Create a simple incident type visualization
+    function createIncidentTypePreview(data, container) {
+        // Extract and count incident types
+        const incidentTypes = {};
+        
+        data.forEach(item => {
+            const type = item['Incident Type'] || 'Unknown';
+            incidentTypes[type] = (incidentTypes[type] || 0) + 1;
+        });
+        
+        // Sort by count and limit to top 5
+        const sortedTypes = Object.entries(incidentTypes)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5);
+        
+        // Create a simple HTML bar chart
+        const chartEl = container.querySelector('#preview-chart');
+        
+        if (!chartEl) return;
+        
+        if (sortedTypes.length === 0) {
+            chartEl.innerHTML = '<p>No incident type data available for visualization</p>';
+            return;
+        }
+        
+        let chartHTML = '<div class="simple-chart">';
+        let maxCount = Math.max(...sortedTypes.map(item => item[1]));
+        
+        sortedTypes.forEach(([type, count]) => {
+            const percentage = (count / maxCount) * 100;
+            chartHTML += `
+                <div class="chart-row">
+                    <div class="chart-label">${type.length > 15 ? type.substring(0, 15) + '...' : type}</div>
+                    <div class="chart-bar-container">
+                        <div class="chart-bar" style="width: ${percentage}%"></div>
+                        <div class="chart-value">${count}</div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        chartHTML += '</div>';
+        chartHTML += `<p class="chart-note">Top 5 incident types across ${data.length} incidents</p>`;
+        
+        chartEl.innerHTML = chartHTML;
+    }
+    
+    // Simplified function for other visualizations
+    function createGenericDatePreview(data, container) {
+        const chartEl = container.querySelector('#preview-chart');
+        if (!chartEl) return;
+        
+        chartEl.innerHTML = `
+            <div class="placeholder-viz">
+                <i class="fas fa-chart-bar"></i>
+                <p>Data ready for visualization in ${getToolName(selectedTool)}</p>
+                <p class="small">This preview shows a simplified version of how your data will appear</p>
+            </div>
+        `;
+    }
+    
+    // Simplified call density preview
+    function createCallDensityPreview(data, container) {
+        createGenericDatePreview(data, container);
+    }
+    
+    // Simplified station preview
+    function createStationPreview(data, container) {
+        createGenericDatePreview(data, container);
     }
     
     function appendLog(message, type = 'info') {
