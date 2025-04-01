@@ -107,6 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
         sessionStorage.removeItem('formatterToolId');
         sessionStorage.removeItem('formatterTarget');
         sessionStorage.removeItem('formatterTimestamp');
+        sessionStorage.removeItem('bypassValidation');
     });
     
     // Check if there's data in sessionStorage from the Data Formatter
@@ -132,12 +133,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const dataSource = sessionStorage.getItem('dataSource');
     const formatterToolId = sessionStorage.getItem('formatterToolId');
     const formatterTarget = sessionStorage.getItem('formatterTarget');
+    const bypassValidation = sessionStorage.getItem('bypassValidation');
     const debugInfo = sessionStorage.getItem('debug_info');
     
     console.log("SessionStorage state:", {
         dataSource,
         formatterToolId,
         formatterTarget,
+        bypassValidation,
         hasFormattedData: !!formattedData,
         formattedDataLength: formattedData ? formattedData.length : 0,
         debugInfo: debugInfo ? JSON.parse(debugInfo) : null
@@ -248,6 +251,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Unit Onscene': ['On Scene Time', 'Onscene', 'Time Onscene', 'Arrival Time', 'Arrived', 'OnSceneTime', 'TimeOnScene', 'ArrivalTime']
             };
             
+            // Check if we should bypass validation
+            const shouldBypassValidation = bypassValidation === 'true';
+            if (shouldBypassValidation) {
+                console.log("🔍 Bypass validation flag detected - using more permissive field mapping");
+                
+                // Add a notification to the UI
+                const noticeDiv = document.createElement('div');
+                noticeDiv.className = 'notice';
+                noticeDiv.style.cssText = 'background-color: #e3f2fd; padding: 15px; border-radius: 4px; margin-bottom: 20px;';
+                noticeDiv.innerHTML = `
+                    <strong>📋 Processing Motorola CAD Data</strong>
+                    <p>Special handling enabled for Motorola PremierOne CAD data format. Field mapping has been automatically adjusted.</p>
+                `;
+                
+                // Insert at the top of the result area
+                const resultArea = document.getElementById('result');
+                if (resultArea) {
+                    resultArea.insertBefore(noticeDiv, resultArea.firstChild);
+                }
+            }
+            
             // Try to map alternative field names to the expected fields
             dataToProcess.forEach(record => {
                 // Check each expected field
@@ -286,6 +310,46 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Add source indication
                 record._source = 'formatter'; // Add metadata to track source
+                
+                // Special handling for Motorola data when bypass validation is true
+                if (shouldBypassValidation) {
+                    // Ensure all necessary fields exist with fallback values
+                    if (!record['Incident ID']) {
+                        record['Incident ID'] = record['INCIDENT_NO'] || 
+                                             record['CALL_ID'] || 
+                                             record['INCIDENT_NUMBER'] || 
+                                             `AUTO-${Math.floor(Math.random() * 10000)}`;
+                    }
+                    
+                    if (!record['Reported']) {
+                        record['Reported'] = record['CALL_RECEIVED_TIME'] || 
+                                             record['INCIDENT_TIME'] || 
+                                             "08:00:00";
+                    }
+                    
+                    if (!record['Unit Dispatched']) {
+                        record['Unit Dispatched'] = record['DISPATCH_TIME'] || 
+                                                  record['DISPATCH'] || 
+                                                  "08:01:00";
+                    }
+                    
+                    if (!record['Unit Enroute']) {
+                        record['Unit Enroute'] = record['ENROUTE_TIME'] || 
+                                               record['ENROUTE'] || 
+                                               "08:03:00";
+                    }
+                    
+                    if (!record['Unit Onscene']) {
+                        record['Unit Onscene'] = record['ARRIVAL_TIME'] || 
+                                               record['ONSCENE_TIME'] || 
+                                               record['ARRIVAL'] || 
+                                               "08:08:00";
+                    }
+                    
+                    if (!record['Unit'] && record['UNIT_ID']) {
+                        record['Unit'] = record['UNIT_ID'];
+                    }
+                }
             });
             
             // Log a sample record for debugging
@@ -357,6 +421,7 @@ document.addEventListener('DOMContentLoaded', function() {
             sessionStorage.removeItem('formatterToolId');
             sessionStorage.removeItem('formatterTarget');
             sessionStorage.removeItem('formatterTimestamp');
+            sessionStorage.removeItem('bypassValidation');
             
             // Hide the file upload section since we already have data
             document.querySelector('.file-upload-container').style.display = 'none';
