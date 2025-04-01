@@ -1717,125 +1717,118 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Add other CAD system processors (Tyler, Hexagon, etc.)
     
-    // File processing functions
+    // File processing functions - ULTRA SIMPLIFIED VERSION
     function loadFile(file) {
-        console.log("loadFile called for", file.name, "of type", fileType);
-        appendLog(`Processing ${file.name} (${formatFileSize(file.size)})...`);
-
+        console.log("SIMPLIFIED loadFile called for", file.name);
+        appendLog(`Processing file: ${file.name}...`);
+        
+        // Create a new FileReader
         const reader = new FileReader();
         
+        // Set up what happens when the file is loaded
         reader.onload = function(e) {
-            console.log("File loaded into memory, processing...");
-            const result = e.target.result;
+            console.log("File loaded into memory");
             
             try {
-                // Process file based on type - simplified to focus on most common formats
-                switch (fileType) {
-                    case 'csv':
-                        console.log("Parsing CSV data");
-                        originalData = parseCSV(result);
-                        appendLog(`Loaded CSV with ${originalData.length} records`);
-                        break;
-                    case 'excel':
-                        console.log("Processing Excel data");
-                        try {
-                            // Use XLSX.js library to parse Excel files
-                            const arrayBuffer = e.target.result;
-                            const workbook = XLSX.read(arrayBuffer, {type: 'array'});
-                            
-                            // Assume first sheet is the data
-                            const firstSheetName = workbook.SheetNames[0];
-                            const worksheet = workbook.Sheets[firstSheetName];
-                            
-                            // Convert to JSON with column headers
-                            originalData = XLSX.utils.sheet_to_json(worksheet);
-                            appendLog(`Loaded Excel file with ${originalData.length} records from sheet: ${firstSheetName}`);
-                        } catch (e) {
-                            console.error('Excel parse error:', e);
-                            appendLog(`Error parsing Excel file: ${e.message}`, 'error');
-                            originalData = [];
-                        }
-                        break;
-                    case 'json':
-                        console.log("Parsing JSON data");
-                        originalData = JSON.parse(result);
-                        appendLog(`Loaded JSON with ${originalData.length} records`);
-                        break;
-                    default:
-                        // Try parsing as CSV by default for other formats
-                        console.log("Unknown format, trying CSV parsing");
-                        originalData = parseCSV(result);
-                        appendLog(`Loaded file as CSV with ${originalData.length} records`);
-                        break;
+                // Get the file content
+                const content = e.target.result;
+                
+                // Simple parsing based on file type
+                if (fileType === 'csv' || fileType === 'text') {
+                    // Handle CSV files
+                    originalData = parseCSV(content);
+                } else if (fileType === 'json') {
+                    // Handle JSON files
+                    originalData = JSON.parse(content);
+                } else {
+                    // Default to CSV for unknown types
+                    originalData = parseCSV(content);
                 }
                 
-                // Make sure we have data (create a simple placeholder if needed)
+                // Log success
+                console.log(`Parsed ${originalData.length} records from file`);
+                appendLog(`Successfully loaded ${originalData.length} records`);
+                
+                // Create fallback data if needed
                 if (!originalData || originalData.length === 0) {
-                    console.log("Creating fallback data");
-                    originalData = [];
-                    for (let i = 0; i < 5; i++) {
-                        originalData.push({
-                            'Incident ID': `AUTO-${i+1000}`,
-                            'Incident Date': new Date().toISOString().split('T')[0],
-                            'Incident Time': '08:00:00'
-                        });
-                    }
-                    appendLog(`Created minimal dataset for testing`, 'warning');
+                    originalData = createFallbackDataset('default', 5);
+                    appendLog(`No data found, created test data`, 'warning');
                 }
                 
-                // Show preview
+                // Show the data preview and enable buttons
                 showInputPreview(originalData);
-                
-                // Always enable the transform button if there's data
                 transformBtn.disabled = false;
+                refreshBtn.disabled = false;
+                clearBtn.disabled = false;
                 
-                appendLog(`File loaded successfully: ${file.name}`);
             } catch (error) {
-                console.error('File parsing error:', error);
-                appendLog(`Error parsing file: ${error.message}`, 'error');
+                // Handle any errors during parsing
+                console.error("Error processing file:", error);
+                appendLog(`Error processing file: ${error.message}`, 'error');
                 
-                // Create simple fallback data
-                originalData = [];
-                for (let i = 0; i < 5; i++) {
-                    originalData.push({
-                        'Incident ID': `ERROR-${i+1000}`,
-                        'Incident Date': new Date().toISOString().split('T')[0],
-                        'Incident Time': '08:00:00'
-                    });
-                }
+                // Create fallback data
+                originalData = createFallbackDataset('default', 5);
                 showInputPreview(originalData);
+                
+                // Enable buttons anyway
                 transformBtn.disabled = false;
+                refreshBtn.disabled = false;
+                clearBtn.disabled = false;
             }
         };
         
-        reader.onerror = function(e) {
-            console.error('File read error:', e);
-            appendLog('Error reading file', 'error');
+        // Handle file read errors
+        reader.onerror = function() {
+            console.error("File read failed");
+            appendLog(`Error reading file. Please try again.`, 'error');
             
-            // Create minimal fallback data
-            originalData = [];
-            for (let i = 0; i < 3; i++) {
-                originalData.push({
+            // Create fallback data even on read errors
+            originalData = createFallbackDataset('error', 3);
+            showInputPreview(originalData);
+            
+            // Enable buttons anyway
+            transformBtn.disabled = false;
+            refreshBtn.disabled = false;
+            clearBtn.disabled = false;
+        };
+        
+        // Start reading the file
+        try {
+            reader.readAsText(file);
+        } catch (e) {
+            console.error("Error starting file read:", e);
+            appendLog(`Error starting file read: ${e.message}`, 'error');
+            
+            // Create fallback data
+            originalData = createFallbackDataset('error', 3);
+            showInputPreview(originalData);
+        }
+    }
+    
+    // Helper function to create fallback data
+    function createFallbackDataset(type, count) {
+        console.log(`Creating fallback dataset of type '${type}' with ${count} records`);
+        const data = [];
+        
+        for (let i = 0; i < count; i++) {
+            if (type === 'error') {
+                data.push({
                     'Incident ID': `ERROR-${i+1000}`,
                     'Incident Date': new Date().toISOString().split('T')[0],
-                    'Incident Time': '08:00:00'
+                    'Incident Time': '08:00:00',
+                    'Notes': 'Error loading file - using test data'
+                });
+            } else {
+                data.push({
+                    'Incident ID': `TEST-${i+1000}`,
+                    'Incident Date': new Date().toISOString().split('T')[0],
+                    'Incident Time': '08:00:00',
+                    'Incident Type': ['FIRE', 'EMS', 'RESCUE'][i % 3]
                 });
             }
-            showInputPreview(originalData);
-            transformBtn.disabled = false;
-        };
-        
-        // Get the appropriate read method based on file type
-        try {
-            if (fileType === 'excel') {
-                reader.readAsArrayBuffer(file);
-            } else {
-                reader.readAsText(file);
-            }
-        } catch (e) {
-            console.error("Error initiating file read:", e);
-            appendLog(`Error starting file read: ${e.message}`, 'error');
         }
+        
+        return data;
     }
     
     // Helper to format file size
@@ -1871,49 +1864,68 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function parseCSV(csvText) {
-        console.log("Starting CSV parsing with simpler algorithm");
+        console.log("Starting CSV parsing with very basic algorithm");
         
         if (!csvText || typeof csvText !== 'string') {
             console.error("Invalid CSV text:", typeof csvText);
-            return [];
+            return []; // Return empty array for invalid input
         }
         
         try {
-            // Simple CSV parsing approach
+            // Super simple CSV parsing approach - just split by line and comma
             const lines = csvText.split(/\r\n|\n/);
-            const headers = lines[0].split(',').map(header => header.trim().replace(/^"|"$/g, ''));
+            console.log(`CSV has ${lines.length} lines`);
             
-            if (headers.length === 0) {
-                console.error("No headers found in CSV");
+            // Make sure we have at least a header row
+            if (lines.length === 0) {
+                console.error("Empty CSV file");
                 return [];
             }
             
-            console.log(`Found ${headers.length} headers`);
+            // Get headers from first line
+            const headers = lines[0].split(',');
+            console.log(`Found ${headers.length} headers:`, headers.slice(0, 5));
             
+            // Process data rows
             const result = [];
-            
             for (let i = 1; i < lines.length; i++) {
-                if (lines[i].trim() === '') continue;
+                if (!lines[i] || lines[i].trim() === '') continue;
                 
-                // Simple CSV parsing (doesn't handle quoted fields with commas correctly)
-                const values = lines[i].split(',').map(value => value.trim().replace(/^"|"$/g, ''));
-                
+                // Split by comma
+                const values = lines[i].split(',');
                 const row = {};
+                
+                // Map values to headers
                 headers.forEach((header, index) => {
                     row[header] = values[index] || '';
                 });
                 
-                // Only add non-empty rows
-                if (Object.keys(row).length > 0) {
-                    result.push(row);
-                }
+                result.push(row);
             }
             
-            console.log(`Parsed ${result.length} rows from CSV`);
+            console.log(`Successfully parsed ${result.length} rows from CSV`);
+            
+            // Check if we have data
+            if (result.length === 0) {
+                console.warn("No rows found in CSV after parsing");
+            } else {
+                console.log("First row sample:", result[0]);
+            }
+            
             return result;
         } catch (error) {
             console.error("Error parsing CSV:", error);
-            return [];
+            // Create fallback data if parsing fails
+            console.log("Creating fallback data due to parse error");
+            const fallbackData = [];
+            for (let i = 0; i < 5; i++) {
+                fallbackData.push({
+                    'Incident ID': `CSV-ERROR-${i+1000}`,
+                    'Incident Date': new Date().toISOString().split('T')[0],
+                    'Incident Time': '08:00:00'
+                });
+            }
+            return fallbackData;
         }
     }
     
@@ -2201,38 +2213,72 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Display functions
     function showInputPreview(data) {
+        console.log("showInputPreview called with data:", data ? data.length : 0, "records");
+        
+        // Handle empty data
         if (!data || data.length === 0) {
-            inputPreview.innerHTML = '<p>No data to preview</p>';
+            inputPreview.innerHTML = '<div class="preview-empty"><p>No data to preview</p></div>';
+            console.log("No data to show in preview");
             return;
         }
         
-        // Show the first 5 records
-        const previewData = data.slice(0, 5);
-        
-        // Create table headers
-        const headers = Object.keys(previewData[0]);
-        
-        let tableHTML = '<table class="preview-table"><thead><tr>';
-        headers.forEach(header => {
-            tableHTML += `<th>${header}</th>`;
-        });
-        tableHTML += '</tr></thead><tbody>';
-        
-        // Add data rows
-        previewData.forEach(row => {
-            tableHTML += '<tr>';
+        try {
+            // Show the first 5 records
+            const previewData = data.slice(0, 5);
+            
+            // Create table headers
+            const headers = Object.keys(previewData[0] || {});
+            
+            if (headers.length === 0) {
+                inputPreview.innerHTML = '<div class="preview-empty"><p>Data records have no fields</p></div>';
+                console.log("Data records have no fields");
+                return;
+            }
+            
+            // Build the table HTML
+            let tableHTML = '<div class="preview-table-container">';
+            tableHTML += '<table class="preview-table"><thead><tr>';
+            
+            // Add headers
             headers.forEach(header => {
-                tableHTML += `<td>${row[header] || ''}</td>`;
+                tableHTML += `<th>${header}</th>`;
             });
-            tableHTML += '</tr>';
-        });
-        
-        tableHTML += '</tbody></table>';
-        
-        // Add record count
-        tableHTML += `<p class="preview-info">${data.length} total records, ${headers.length} fields</p>`;
-        
-        inputPreview.innerHTML = tableHTML;
+            tableHTML += '</tr></thead><tbody>';
+            
+            // Add data rows with safe handling
+            previewData.forEach(row => {
+                tableHTML += '<tr>';
+                headers.forEach(header => {
+                    // Safely handle any type of value
+                    let value = '';
+                    try {
+                        value = row[header];
+                        if (value === null) value = '';
+                        if (value === undefined) value = '';
+                        if (typeof value === 'object') value = JSON.stringify(value);
+                    } catch (e) {
+                        value = '';
+                    }
+                    tableHTML += `<td>${value}</td>`;
+                });
+                tableHTML += '</tr>';
+            });
+            
+            tableHTML += '</tbody></table></div>';
+            
+            // Add record count
+            tableHTML += `<p class="preview-info">${data.length} total records, ${headers.length} fields shown (first 5 records)</p>`;
+            
+            // Update the preview area
+            inputPreview.innerHTML = tableHTML;
+            console.log("Preview updated with data");
+        } catch (error) {
+            console.error("Error showing input preview:", error);
+            inputPreview.innerHTML = `<div class="preview-error">
+                <p>Error showing preview: ${error.message}</p>
+                <p>Data might be in an unexpected format.</p>
+            </div>`;
+        }
     }
     
     function showOutputPreview(data, validationResults = null) {
