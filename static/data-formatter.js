@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputFormat = document.getElementById('input-format');
     const targetTool = document.getElementById('target-tool');
     const transformBtn = document.getElementById('transform-btn');
+    const refreshBtn = document.getElementById('refresh-btn');
     const clearBtn = document.getElementById('clear-btn');
     const downloadBtn = document.getElementById('download-btn');
     const sendToToolBtn = document.getElementById('send-to-tool-btn');
@@ -181,6 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Enable buttons once file is loaded
                     transformBtn.disabled = false;
+                    refreshBtn.disabled = false;
                     clearBtn.disabled = false;
                 } catch (error) {
                     appendLog(`Error reading Excel file: ${error.message}`, 'error');
@@ -199,6 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Enable buttons once file is loaded
             transformBtn.disabled = false;
+            refreshBtn.disabled = false;
             clearBtn.disabled = false;
         }
     });
@@ -445,6 +448,70 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Refresh button - reload the current file
+    refreshBtn.addEventListener('click', function() {
+        if (!fileInput.files || !fileInput.files[0]) {
+            appendLog('No file loaded to refresh', 'warning');
+            return;
+        }
+        
+        const currentFile = fileInput.files[0];
+        appendLog(`Refreshing file: ${currentFile.name}`);
+        
+        // Reset transformed data
+        transformedData = null;
+        
+        // Disable download and send buttons until transformation completes
+        downloadBtn.disabled = true;
+        sendToToolBtn.disabled = true;
+        
+        // For Excel files
+        if (fileType === 'excel') {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const arrayBuffer = e.target.result;
+                    // Re-parse Excel file
+                    excelWorkbook = XLSX.read(arrayBuffer, {type: 'array'});
+                    
+                    // Reload the current sheet
+                    const currentSheet = excelSheet.value || excelWorkbook.SheetNames[0];
+                    loadExcelSheet(currentSheet);
+                    
+                    appendLog(`Excel file refreshed, loaded sheet: ${currentSheet}`);
+                    refreshBtn.disabled = false;
+                    
+                    // Update the refresh button to indicate success
+                    refreshBtn.innerHTML = '<i class="fas fa-check"></i> Refreshed';
+                    setTimeout(() => {
+                        refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+                    }, 2000);
+                    
+                } catch (error) {
+                    appendLog(`Error refreshing Excel file: ${error.message}`, 'error');
+                    console.error('Excel refresh error:', error);
+                }
+            };
+            
+            reader.onerror = function() {
+                appendLog('Error refreshing file', 'error');
+            };
+            
+            reader.readAsArrayBuffer(currentFile);
+        } else {
+            // For non-Excel files, use the regular load function
+            loadFile(currentFile);
+            appendLog(`File refreshed: ${currentFile.name}`);
+            
+            // Update the refresh button to indicate success
+            refreshBtn.innerHTML = '<i class="fas fa-check"></i> Refreshed';
+            setTimeout(() => {
+                refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+            }, 2000);
+        }
+    });
+    
     // Clear button
     clearBtn.addEventListener('click', function() {
         // Reset file input
@@ -475,6 +542,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Disable buttons
         transformBtn.disabled = true;
+        refreshBtn.disabled = true;
         clearBtn.disabled = true;
         downloadBtn.disabled = true;
         sendToToolBtn.disabled = true;
