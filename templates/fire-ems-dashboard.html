@@ -99,10 +99,10 @@
     </div>
   </div>
   
-  <!-- Troubleshooting Modal -->
-  <div id="data-transfer-help" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 1000;">
-    <div style="position: relative; width: 80%; max-width: 600px; margin: 100px auto; background-color: white; padding: 20px; border-radius: 5px;">
-      <button id="close-help-modal" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 20px; cursor: pointer;">×</button>
+  <!-- Troubleshooting Modal - Mobile-friendly with scrolling -->
+  <div id="data-transfer-help" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 1000; overflow: auto;">
+    <div style="position: relative; width: 90%; max-width: 600px; margin: 20px auto; background-color: white; padding: 20px; border-radius: 5px; max-height: 90vh; overflow-y: auto;">
+      <button id="close-help-modal" style="position: sticky; top: 0; float: right; background: #cc0000; color: white; border: none; font-size: 18px; width: 30px; height: 30px; border-radius: 15px; cursor: pointer; z-index: 2;">×</button>
       <h2>Data Transfer Troubleshooting</h2>
       <p>If you're seeing this message, there may be an issue with data transfer between the Data Formatter and Response Time Analyzer.</p>
       
@@ -124,7 +124,7 @@
       
       <p>For technical users: Check the browser console for specific error messages that might help identify the issue.</p>
       
-      <button id="check-storage-btn" style="background-color: #0066cc; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin-top: 10px;">Check Storage Status</button>
+      <button id="check-storage-btn" style="background-color: #0066cc; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin-top: 10px; width: 100%;">Check Storage Status</button>
     </div>
   </div>
 
