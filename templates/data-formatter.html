@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="/static/data-formatter.css">
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- XLSX.js for Excel file processing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <!-- Favicon -->
   <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
 </head>
@@ -150,6 +152,14 @@
               <option value="json">JSON</option>
               <option value="xml">XML</option>
               <option value="kml">KML/KMZ</option>
+            </select>
+          </div>
+          
+          <!-- Excel Sheet Selection (Hidden by default) -->
+          <div id="excel-options" style="display: none; margin-top: 10px;">
+            <label for="excel-sheet">Excel Sheet:</label>
+            <select id="excel-sheet" style="min-width: 150px;">
+              <option value="">Loading sheets...</option>
             </select>
           </div>
         </div>

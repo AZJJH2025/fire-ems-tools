@@ -606,6 +606,37 @@ input[type="file"] {
   margin-right: 10px;
 }
 
+/* Excel Sheet Options */
+#excel-options {
+  background-color: #f0f7ff;
+  padding: 10px 15px;
+  border-radius: 4px;
+  border: 1px solid #d0e6ff;
+  margin-top: 15px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+#excel-options label {
+  font-weight: 500;
+  color: #1976d2;
+  margin-right: 10px;
+}
+
+#excel-options select {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #bbd7fe;
+  background-color: #ffffff;
+  color: #333;
+  font-size: 0.95rem;
+  min-width: 180px;
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
 }

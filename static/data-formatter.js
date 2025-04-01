@@ -26,6 +26,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const customDateFormat = document.getElementById('custom-date-format');
     const handleMissing = document.getElementById('handle-missing');
     const missingValuesOptions = document.querySelector('.missing-values-options');
+    const excelOptions = document.getElementById('excel-options');
+    const excelSheet = document.getElementById('excel-sheet');
     
     // Toggle elements
     const advancedToggle = document.getElementById('advanced-toggle');
@@ -131,6 +133,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
     
+    // Global workbook reference for Excel files
+    let excelWorkbook = null;
+    
     // File event handlers
     fileInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
@@ -146,11 +151,63 @@ document.addEventListener('DOMContentLoaded', function() {
             inputFormat.value = fileType;
         }
         
-        loadFile(file);
+        // Hide Excel options by default
+        excelOptions.style.display = 'none';
         
-        // Enable buttons once file is loaded
-        transformBtn.disabled = false;
-        clearBtn.disabled = false;
+        // If it's an Excel file, we need special handling to load sheets
+        if (fileType === 'excel') {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const arrayBuffer = e.target.result;
+                    // Parse Excel file to get workbook
+                    excelWorkbook = XLSX.read(arrayBuffer, {type: 'array'});
+                    
+                    // Populate sheet select dropdown
+                    excelSheet.innerHTML = '';
+                    excelWorkbook.SheetNames.forEach(sheet => {
+                        const option = document.createElement('option');
+                        option.value = sheet;
+                        option.textContent = sheet;
+                        excelSheet.appendChild(option);
+                    });
+                    
+                    // Show Excel sheet selector
+                    excelOptions.style.display = 'block';
+                    
+                    // Load the first sheet by default
+                    loadExcelSheet(excelWorkbook.SheetNames[0]);
+                    
+                    // Enable buttons once file is loaded
+                    transformBtn.disabled = false;
+                    clearBtn.disabled = false;
+                } catch (error) {
+                    appendLog(`Error reading Excel file: ${error.message}`, 'error');
+                    console.error('Excel read error:', error);
+                }
+            };
+            
+            reader.onerror = function() {
+                appendLog('Error reading file', 'error');
+            };
+            
+            reader.readAsArrayBuffer(file);
+        } else {
+            // For non-Excel files, use the regular load function
+            loadFile(file);
+            
+            // Enable buttons once file is loaded
+            transformBtn.disabled = false;
+            clearBtn.disabled = false;
+        }
+    });
+    
+    // Handle Excel sheet selection
+    excelSheet.addEventListener('change', function() {
+        if (excelWorkbook && this.value) {
+            loadExcelSheet(this.value);
+        }
     });
     
     // Tool selection
@@ -222,31 +279,50 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!transformedData) return;
         
         const outputFormatValue = document.getElementById('output-format').value;
-        let outputData, fileName, mimeType;
+        let outputData, fileName, mimeType, blob;
         
         switch (outputFormatValue) {
             case 'csv':
                 outputData = convertToCSV(transformedData);
                 fileName = 'transformed_data.csv';
                 mimeType = 'text/csv';
+                blob = new Blob([outputData], { type: mimeType });
                 break;
             case 'excel':
-                // Since we can't actually create Excel files in browser, we'll use CSV
-                outputData = convertToCSV(transformedData);
-                fileName = 'transformed_data.xlsx';
-                mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+                try {
+                    // Create Excel file using XLSX.js
+                    // Convert our data array to a worksheet
+                    const worksheet = XLSX.utils.json_to_sheet(transformedData);
+                    // Create a workbook with one worksheet
+                    const workbook = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(workbook, worksheet, "Transformed Data");
+                    // Generate Excel file as array buffer
+                    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+                    // Convert to Blob
+                    blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                    fileName = 'transformed_data.xlsx';
+                    appendLog(`Created Excel file with ${transformedData.length} records`);
+                } catch (e) {
+                    // Fallback to CSV if Excel generation fails
+                    console.error('Excel generation error:', e);
+                    appendLog(`Error creating Excel file: ${e.message}. Falling back to CSV.`, 'warning');
+                    outputData = convertToCSV(transformedData);
+                    fileName = 'transformed_data.csv';
+                    mimeType = 'text/csv';
+                    blob = new Blob([outputData], { type: mimeType });
+                }
                 break;
             case 'json':
             default:
                 outputData = JSON.stringify(transformedData, null, 2);
                 fileName = 'transformed_data.json';
                 mimeType = 'application/json';
+                blob = new Blob([outputData], { type: mimeType });
                 break;
         }
         
-        const blob = new Blob([outputData], { type: mimeType });
+        // Create download link
         const url = URL.createObjectURL(blob);
-        
         const a = document.createElement('a');
         a.href = url;
         a.download = fileName;
@@ -317,11 +393,67 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Function to load an Excel sheet
+    function loadExcelSheet(sheetName) {
+        if (!excelWorkbook) return;
+        
+        try {
+            const worksheet = excelWorkbook.Sheets[sheetName];
+            
+            // Convert to JSON (headers: true means use first row as headers)
+            const rawData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+            
+            // Transform to match our expected format (array of objects with column headers as keys)
+            if (rawData.length > 1) {
+                const headers = rawData[0];
+                originalData = rawData.slice(1).map(row => {
+                    const obj = {};
+                    headers.forEach((header, i) => {
+                        if (header) { // Skip empty headers
+                            obj[header] = row[i] !== undefined ? row[i] : '';
+                        }
+                    });
+                    return obj;
+                });
+                
+                // Filter out entirely empty rows
+                originalData = originalData.filter(row => Object.values(row).some(val => val !== ''));
+                
+                appendLog(`Loaded Excel sheet "${sheetName}" with ${originalData.length} records and ${headers.length} fields`);
+                
+                // Show preview
+                showInputPreview(originalData);
+            } else {
+                // Empty or only headers
+                appendLog(`Excel sheet "${sheetName}" has no data rows`, 'warning');
+                originalData = [];
+                
+                // Show empty preview
+                inputPreview.innerHTML = `
+                    <div class="placeholder-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>No data found in selected sheet</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            appendLog(`Error parsing Excel sheet: ${error.message}`, 'error');
+            console.error('Excel sheet parse error:', error);
+            
+            // Reset data
+            originalData = null;
+        }
+    }
+    
     // Clear button
     clearBtn.addEventListener('click', function() {
         // Reset file input
         fileInput.value = '';
         fileName.textContent = 'No file selected';
+        
+        // Hide Excel options
+        excelOptions.style.display = 'none';
+        excelWorkbook = null;
         
         // Clear previews
         inputPreview.innerHTML = `
@@ -735,8 +867,44 @@ document.addEventListener('DOMContentLoaded', function() {
                         appendLog(`Loaded CSV with ${originalData.length} records and ${Object.keys(originalData[0]).length} fields`);
                         break;
                     case 'excel':
-                        // In a real implementation, this would use a library like SheetJS
-                        appendLog('Excel import not implemented in this demo. Please use CSV format.', 'warning');
+                        try {
+                            // Use XLSX.js library to parse Excel files
+                            const arrayBuffer = e.target.result;
+                            const workbook = XLSX.read(arrayBuffer, {type: 'array'});
+                            
+                            // Assume first sheet is the data
+                            const firstSheetName = workbook.SheetNames[0];
+                            const worksheet = workbook.Sheets[firstSheetName];
+                            
+                            // Convert to JSON (headers: true means use first row as headers)
+                            originalData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+                            
+                            // Transform to match our expected format (array of objects with column headers as keys)
+                            if (originalData.length > 1) {
+                                const headers = originalData[0];
+                                originalData = originalData.slice(1).map(row => {
+                                    const obj = {};
+                                    headers.forEach((header, i) => {
+                                        if (header) { // Skip empty headers
+                                            obj[header] = row[i] !== undefined ? row[i] : '';
+                                        }
+                                    });
+                                    return obj;
+                                });
+                                
+                                // Filter out entirely empty rows
+                                originalData = originalData.filter(row => Object.values(row).some(val => val !== ''));
+                                
+                                appendLog(`Loaded Excel file with ${originalData.length} records and ${headers.length} fields from sheet: ${firstSheetName}`);
+                            } else {
+                                // Empty or only headers
+                                appendLog('Excel file has no data rows', 'warning');
+                                originalData = [];
+                            }
+                        } catch (e) {
+                            console.error('Excel parse error:', e);
+                            appendLog(`Error parsing Excel file: ${e.message}`, 'error');
+                        }
                         break;
                     case 'json':
                         originalData = JSON.parse(result);
