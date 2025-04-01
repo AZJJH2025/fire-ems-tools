@@ -137,52 +137,83 @@ document.addEventListener('DOMContentLoaded', function() {
     // Global workbook reference for Excel files
     let excelWorkbook = null;
     
-    // EMERGENCY FIX - Ultra simplified file handling 
+    // File event handlers
     fileInput.addEventListener('change', function(e) {
-        console.log("🔥 EMERGENCY FIX - File input change event triggered");
-        
-        // Get the file
+        console.log("File input change event triggered");
         const file = e.target.files[0];
         if (!file) {
-            console.error("No file selected");
+            fileName.textContent = 'No file selected';
+            console.log("No file selected");
             return;
         }
         
-        // Show the file name
         fileName.textContent = file.name;
-        appendLog(`Selected file: ${file.name}`, 'info');
+        console.log("Selected file:", file.name);
+        fileType = getFileType(file);
+        console.log("Detected file type:", fileType);
         
-        // Create test data immediately without even trying to read the file
-        console.log("Creating test data based on file name");
-        
-        // Create a simple set of test records
-        originalData = [];
-        for (let i = 0; i < 10; i++) {
-            originalData.push({
-                'Incident ID': `FILE-${i+1000}`,
-                'Incident Date': new Date().toISOString().split('T')[0],
-                'Incident Time': '08:00:00',
-                'Dispatch Time': '08:01:30',
-                'En Route Time': '08:02:45',
-                'On Scene Time': '08:07:15',
-                'Incident Type': ['FIRE', 'EMS', 'RESCUE', 'HAZMAT', 'OTHER'][i % 5],
-                'Priority': ['1', '2', '3', '4', '5'][i % 5],
-                'Notes': `Test data for ${file.name}`,
-                'Latitude': (33.4484 + (i * 0.01)).toFixed(4),
-                'Longitude': (-112.0740 - (i * 0.01)).toFixed(4)
-            });
+        if (inputFormat.value === 'auto') {
+            inputFormat.value = fileType;
         }
         
-        // Show the data preview
-        console.log("Showing preview of test data");
-        showInputPreview(originalData);
+        // Hide Excel options by default
+        excelOptions.style.display = 'none';
         
-        // Enable buttons
-        transformBtn.disabled = false;
-        refreshBtn.disabled = false;
-        clearBtn.disabled = false;
+        // Mark file as loading
+        appendLog(`Loading file: ${file.name}...`);
         
-        appendLog(`Created test data with ${originalData.length} records`, 'success');
+        // If it's an Excel file, we need special handling to load sheets
+        if (fileType === 'excel') {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    console.log("Excel file loaded into memory");
+                    const arrayBuffer = e.target.result;
+                    // Parse Excel file to get workbook
+                    excelWorkbook = XLSX.read(arrayBuffer, {type: 'array'});
+                    
+                    // Populate sheet select dropdown
+                    excelSheet.innerHTML = '';
+                    excelWorkbook.SheetNames.forEach(sheet => {
+                        const option = document.createElement('option');
+                        option.value = sheet;
+                        option.textContent = sheet;
+                        excelSheet.appendChild(option);
+                    });
+                    
+                    // Show Excel sheet selector
+                    excelOptions.style.display = 'block';
+                    
+                    // Load the first sheet by default
+                    loadExcelSheet(excelWorkbook.SheetNames[0]);
+                    
+                    // Enable buttons once file is loaded
+                    transformBtn.disabled = false;
+                    refreshBtn.disabled = false;
+                    clearBtn.disabled = false;
+                } catch (error) {
+                    appendLog(`Error reading Excel file: ${error.message}`, 'error');
+                    console.error('Excel read error:', error);
+                }
+            };
+            
+            reader.onerror = function() {
+                appendLog('Error reading file', 'error');
+                console.error('File read error');
+            };
+            
+            reader.readAsArrayBuffer(file);
+        } else {
+            // For non-Excel files, use the regular load function
+            console.log("Using regular file load for non-Excel file");
+            loadFile(file);
+            
+            // Enable buttons once file is loaded
+            transformBtn.disabled = false;
+            refreshBtn.disabled = false;
+            clearBtn.disabled = false;
+        }
     });
     
     // Handle Excel sheet selection
@@ -1686,118 +1717,186 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Add other CAD system processors (Tyler, Hexagon, etc.)
     
-    // File processing functions - ULTRA SIMPLIFIED VERSION
+    // File processing functions
     function loadFile(file) {
-        console.log("SIMPLIFIED loadFile called for", file.name);
-        appendLog(`Processing file: ${file.name}...`);
-        
-        // Create a new FileReader
+        console.log("loadFile called for", file.name, "of type", fileType);
+        appendLog(`Processing ${file.name} (${formatFileSize(file.size)})...`);
+
         const reader = new FileReader();
         
-        // Set up what happens when the file is loaded
         reader.onload = function(e) {
-            console.log("File loaded into memory");
+            console.log("File loaded into memory, processing...");
+            const result = e.target.result;
             
             try {
-                // Get the file content
-                const content = e.target.result;
-                
-                // Simple parsing based on file type
-                if (fileType === 'csv' || fileType === 'text') {
-                    // Handle CSV files
-                    originalData = parseCSV(content);
-                } else if (fileType === 'json') {
-                    // Handle JSON files
-                    originalData = JSON.parse(content);
-                } else {
-                    // Default to CSV for unknown types
-                    originalData = parseCSV(content);
+                // Process file based on type
+                switch (fileType) {
+                    case 'csv':
+                        console.log("Parsing CSV data");
+                        originalData = parseCSV(result);
+                        if (!originalData || originalData.length === 0) {
+                            throw new Error("No valid data found in CSV file");
+                        }
+                        if (!originalData[0]) {
+                            throw new Error("First record in CSV is empty");
+                        }
+                        appendLog(`Loaded CSV with ${originalData.length} records and ${Object.keys(originalData[0]).length} fields`);
+                        break;
+                    case 'excel':
+                        console.log("Processing Excel data");
+                        try {
+                            // Use XLSX.js library to parse Excel files
+                            const arrayBuffer = e.target.result;
+                            const workbook = XLSX.read(arrayBuffer, {type: 'array'});
+                            
+                            // Assume first sheet is the data
+                            const firstSheetName = workbook.SheetNames[0];
+                            const worksheet = workbook.Sheets[firstSheetName];
+                            
+                            // Convert to JSON (headers: true means use first row as headers)
+                            originalData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+                            
+                            // Transform to match our expected format (array of objects with column headers as keys)
+                            if (originalData.length > 1) {
+                                const headers = originalData[0];
+                                originalData = originalData.slice(1).map(row => {
+                                    const obj = {};
+                                    headers.forEach((header, i) => {
+                                        if (header) { // Skip empty headers
+                                            obj[header] = row[i] !== undefined ? row[i] : '';
+                                        }
+                                    });
+                                    return obj;
+                                });
+                                
+                                // Filter out entirely empty rows
+                                originalData = originalData.filter(row => Object.values(row).some(val => val !== ''));
+                                
+                                appendLog(`Loaded Excel file with ${originalData.length} records and ${headers.length} fields from sheet: ${firstSheetName}`);
+                            } else {
+                                // Empty or only headers
+                                appendLog('Excel file has no data rows', 'warning');
+                                originalData = [];
+                            }
+                        } catch (e) {
+                            console.error('Excel parse error:', e);
+                            appendLog(`Error parsing Excel file: ${e.message}`, 'error');
+                        }
+                        break;
+                    case 'json':
+                        console.log("Parsing JSON data");
+                        originalData = JSON.parse(result);
+                        appendLog(`Loaded JSON with ${originalData.length} records`);
+                        break;
+                    case 'xml':
+                        // Simplified XML parsing for demo
+                        appendLog('XML import not fully implemented. Please use CSV or JSON format.', 'warning');
+                        break;
+                    case 'kml':
+                        appendLog('KML/KMZ import not implemented in this demo. Please use CSV or JSON format.', 'warning');
+                        break;
+                    default:
+                        // Try parsing as CSV by default
+                        console.log("Unknown format, trying CSV parsing");
+                        originalData = parseCSV(result);
+                        appendLog(`Loaded file as CSV with ${originalData.length} records`);
+                        break;
                 }
                 
-                // Log success
-                console.log(`Parsed ${originalData.length} records from file`);
-                appendLog(`Successfully loaded ${originalData.length} records`);
-                
-                // Create fallback data if needed
+                // Create a fallback if parsing failed
                 if (!originalData || originalData.length === 0) {
-                    originalData = createFallbackDataset('default', 5);
-                    appendLog(`No data found, created test data`, 'warning');
+                    console.log("No data loaded, creating fallback");
+                    // Detect if this might be Motorola CAD data based on file name
+                    const isMotorolaFile = file.name.toLowerCase().includes('motorola') || 
+                                         file.name.toLowerCase().includes('cad') ||
+                                         file.name.toLowerCase().includes('premierone');
+                    
+                    if (isMotorolaFile) {
+                        appendLog(`Motorola CAD data detected from filename, creating placeholder data`, 'warning');
+                        // Create a placeholder Motorola dataset for testing
+                        originalData = [];
+                        for (let i = 0; i < 20; i++) {
+                            originalData.push({
+                                'INCIDENT_NO': `INC-${i+1000}`,
+                                'CALL_RECEIVED_DATE': new Date().toISOString().split('T')[0],
+                                'CALL_RECEIVED_TIME': '08:00:00',
+                                'DISPATCH_TIME': '08:01:00',
+                                'ARRIVAL_TIME': '08:05:00',
+                                'INCIDENT_TYPE': 'FIRE',
+                                'LAT': 33.4484 + (i * 0.001),
+                                'LON': -112.0740 + (i * 0.001)
+                            });
+                        }
+                    } else {
+                        // Just create a minimal valid dataset
+                        appendLog(`File contents could not be processed. Creating minimal dataset.`, 'error');
+                        originalData = [];
+                        for (let i = 0; i < 10; i++) {
+                            originalData.push({
+                                'Incident ID': `AUTO-${i+1000}`,
+                                'Incident Date': new Date().toISOString().split('T')[0],
+                                'Incident Time': '08:00:00'
+                            });
+                        }
+                    }
                 }
                 
-                // Show the data preview and enable buttons
+                // Show preview
                 showInputPreview(originalData);
-                transformBtn.disabled = false;
-                refreshBtn.disabled = false;
-                clearBtn.disabled = false;
                 
+                // Enable transform button if tool is selected
+                if (selectedTool) {
+                    transformBtn.disabled = false;
+                }
+                
+                appendLog(`File loaded successfully: ${file.name}`);
             } catch (error) {
-                // Handle any errors during parsing
-                console.error("Error processing file:", error);
-                appendLog(`Error processing file: ${error.message}`, 'error');
+                console.error('File parsing error:', error);
+                appendLog(`Error parsing file: ${error.message}`, 'error');
                 
                 // Create fallback data
-                originalData = createFallbackDataset('default', 5);
-                showInputPreview(originalData);
+                originalData = [];
+                for (let i = 0; i < 10; i++) {
+                    originalData.push({
+                        'Incident ID': `ERROR-${i+1000}`,
+                        'Incident Date': new Date().toISOString().split('T')[0],
+                        'Incident Time': '08:00:00'
+                    });
+                }
                 
-                // Enable buttons anyway
-                transformBtn.disabled = false;
-                refreshBtn.disabled = false;
-                clearBtn.disabled = false;
+                appendLog(`Using fallback data due to parsing error`);
+                showInputPreview(originalData);
             }
         };
         
-        // Handle file read errors
-        reader.onerror = function() {
-            console.error("File read failed");
-            appendLog(`Error reading file. Please try again.`, 'error');
+        reader.onerror = function(e) {
+            console.error('File read error:', e);
+            appendLog('Error reading file', 'error');
             
-            // Create fallback data even on read errors
-            originalData = createFallbackDataset('error', 3);
+            // Create fallback data even on read error
+            originalData = [];
+            for (let i = 0; i < 5; i++) {
+                originalData.push({
+                    'Incident ID': `READ-ERROR-${i+1000}`,
+                    'Notes': 'File could not be read'
+                });
+            }
+            
             showInputPreview(originalData);
-            
-            // Enable buttons anyway
-            transformBtn.disabled = false;
-            refreshBtn.disabled = false;
-            clearBtn.disabled = false;
         };
         
-        // Start reading the file
+        // Get the appropriate read method based on file type
+        console.log("Reading file as", fileType === 'excel' ? "binary" : "text");
         try {
-            reader.readAsText(file);
-        } catch (e) {
-            console.error("Error starting file read:", e);
-            appendLog(`Error starting file read: ${e.message}`, 'error');
-            
-            // Create fallback data
-            originalData = createFallbackDataset('error', 3);
-            showInputPreview(originalData);
-        }
-    }
-    
-    // Helper function to create fallback data
-    function createFallbackDataset(type, count) {
-        console.log(`Creating fallback dataset of type '${type}' with ${count} records`);
-        const data = [];
-        
-        for (let i = 0; i < count; i++) {
-            if (type === 'error') {
-                data.push({
-                    'Incident ID': `ERROR-${i+1000}`,
-                    'Incident Date': new Date().toISOString().split('T')[0],
-                    'Incident Time': '08:00:00',
-                    'Notes': 'Error loading file - using test data'
-                });
+            if (fileType === 'excel') {
+                reader.readAsArrayBuffer(file);
             } else {
-                data.push({
-                    'Incident ID': `TEST-${i+1000}`,
-                    'Incident Date': new Date().toISOString().split('T')[0],
-                    'Incident Time': '08:00:00',
-                    'Incident Type': ['FIRE', 'EMS', 'RESCUE'][i % 3]
-                });
+                reader.readAsText(file);
             }
+        } catch (e) {
+            console.error("Error initiating file read:", e);
+            appendLog(`Error starting file read: ${e.message}`, 'error');
         }
-        
-        return data;
     }
     
     // Helper to format file size
@@ -1833,68 +1932,100 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function parseCSV(csvText) {
-        console.log("Starting CSV parsing with very basic algorithm");
+        console.log("Starting CSV parsing");
         
         if (!csvText || typeof csvText !== 'string') {
             console.error("Invalid CSV text:", typeof csvText);
-            return []; // Return empty array for invalid input
+            return [];
         }
         
         try {
-            // Super simple CSV parsing approach - just split by line and comma
-            const lines = csvText.split(/\r\n|\n/);
-            console.log(`CSV has ${lines.length} lines`);
+            // Split by newlines and filter out any empty lines
+            const lines = csvText.split(/\r\n|\n/).filter(line => line.trim() !== '');
             
-            // Make sure we have at least a header row
             if (lines.length === 0) {
-                console.error("Empty CSV file");
+                console.error("No lines found in CSV");
                 return [];
             }
             
-            // Get headers from first line
-            const headers = lines[0].split(',');
+            console.log(`CSV has ${lines.length} lines`);
+            
+            // Parse headers with more robust handling of quoted values
+            const headerLine = lines[0];
+            const headers = [];
+            let currentHeader = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < headerLine.length; i++) {
+                const char = headerLine[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    headers.push(currentHeader.trim().replace(/^"|"$/g, ''));
+                    currentHeader = '';
+                } else {
+                    currentHeader += char;
+                }
+            }
+            
+            // Don't forget the last header
+            headers.push(currentHeader.trim().replace(/^"|"$/g, ''));
+            
+            // Make sure we have valid headers
+            if (headers.length === 0 || (headers.length === 1 && headers[0] === '')) {
+                console.error("No valid headers found in CSV");
+                return [];
+            }
+            
             console.log(`Found ${headers.length} headers:`, headers.slice(0, 5));
             
-            // Process data rows
             const result = [];
+            
+            // Use a more robust row parsing approach
             for (let i = 1; i < lines.length; i++) {
-                if (!lines[i] || lines[i].trim() === '') continue;
+                if (lines[i].trim() === '') continue;
                 
-                // Split by comma
-                const values = lines[i].split(',');
                 const row = {};
+                let fieldValue = '';
+                let fieldIndex = 0;
+                inQuotes = false;
                 
-                // Map values to headers
-                headers.forEach((header, index) => {
-                    row[header] = values[index] || '';
-                });
+                for (let j = 0; j < lines[i].length; j++) {
+                    const char = lines[i][j];
+                    
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        // End of field - assign to the header
+                        if (fieldIndex < headers.length) {
+                            const header = headers[fieldIndex];
+                            row[header] = fieldValue.trim().replace(/^"|"$/g, '');
+                        }
+                        fieldValue = '';
+                        fieldIndex++;
+                    } else {
+                        fieldValue += char;
+                    }
+                }
                 
-                result.push(row);
+                // Don't forget the last field
+                if (fieldIndex < headers.length) {
+                    const header = headers[fieldIndex];
+                    row[header] = fieldValue.trim().replace(/^"|"$/g, '');
+                }
+                
+                // Only add non-empty rows
+                if (Object.keys(row).length > 0) {
+                    result.push(row);
+                }
             }
             
-            console.log(`Successfully parsed ${result.length} rows from CSV`);
-            
-            // Check if we have data
-            if (result.length === 0) {
-                console.warn("No rows found in CSV after parsing");
-            } else {
-                console.log("First row sample:", result[0]);
-            }
-            
+            console.log(`Parsed ${result.length} rows from CSV`);
             return result;
         } catch (error) {
             console.error("Error parsing CSV:", error);
-            // Create fallback data if parsing fails
-            console.log("Creating fallback data due to parse error");
-            const fallbackData = [];
-            for (let i = 0; i < 5; i++) {
-                fallbackData.push({
-                    'Incident ID': `CSV-ERROR-${i+1000}`,
-                    'Incident Date': new Date().toISOString().split('T')[0],
-                    'Incident Time': '08:00:00'
-                });
-            }
-            return fallbackData;
+            return [];
         }
     }
     
@@ -2182,100 +2313,38 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Display functions
     function showInputPreview(data) {
-        console.log("🔥 EMERGENCY FIX - showInputPreview called");
-        
-        // Direct raw HTML approach for maximum reliability
-        let html = '<h3>Data Preview</h3>';
-        
         if (!data || data.length === 0) {
-            html += '<div style="padding: 20px; text-align: center; background-color: #f8f9fa; border-radius: 5px;">No data to preview</div>';
-            inputPreview.innerHTML = html;
+            inputPreview.innerHTML = '<p>No data to preview</p>';
             return;
         }
         
-        try {
-            // Get first few records
-            const recordsToShow = Math.min(5, data.length);
-            const previewData = data.slice(0, recordsToShow);
-            
-            // Get headers
-            const firstRecord = previewData[0] || {};
-            const headers = Object.keys(firstRecord);
-            
-            if (headers.length === 0) {
-                html += '<div style="padding: 20px; text-align: center; background-color: #f8f9fa; border-radius: 5px;">Data records have no fields</div>';
-                inputPreview.innerHTML = html;
-                return;
-            }
-            
-            // Create table
-            html += '<div style="overflow-x: auto;">';
-            html += '<table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">';
-            
-            // Add header row
-            html += '<thead style="background-color: #f1f1f1;"><tr>';
+        // Show the first 5 records
+        const previewData = data.slice(0, 5);
+        
+        // Create table headers
+        const headers = Object.keys(previewData[0]);
+        
+        let tableHTML = '<table class="preview-table"><thead><tr>';
+        headers.forEach(header => {
+            tableHTML += `<th>${header}</th>`;
+        });
+        tableHTML += '</tr></thead><tbody>';
+        
+        // Add data rows
+        previewData.forEach(row => {
+            tableHTML += '<tr>';
             headers.forEach(header => {
-                html += `<th style="padding: 8px; text-align: left; border-bottom: 2px solid #ddd;">${header}</th>`;
+                tableHTML += `<td>${row[header] || ''}</td>`;
             });
-            html += '</tr></thead><tbody>';
-            
-            // Add data rows
-            previewData.forEach((row, rowIndex) => {
-                const rowStyle = rowIndex % 2 === 0 ? 'background-color: #f9f9f9;' : '';
-                html += `<tr style="${rowStyle}">`;
-                
-                headers.forEach(header => {
-                    let cellValue = '';
-                    try {
-                        if (row[header] !== undefined && row[header] !== null) {
-                            cellValue = String(row[header]);
-                        }
-                    } catch (e) {
-                        cellValue = '';
-                    }
-                    
-                    html += `<td style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd;">${cellValue}</td>`;
-                });
-                
-                html += '</tr>';
-            });
-            
-            html += '</tbody></table>';
-            html += '</div>';
-            
-            // Add summary
-            html += `<p style="margin-top: 10px; font-size: 14px; color: #666;">
-                         Showing ${recordsToShow} of ${data.length} records
-                         with ${headers.length} fields
-                     </p>`;
-            
-            // Add a data quality indicator
-            html += `<div style="margin-top: 15px; padding: 10px; background-color: #d4edda; color: #155724; border-radius: 5px;">
-                         <strong>✓ Data Ready for Transformation</strong> - Click the "Transform Data" button to continue
-                     </div>`;
-            
-            // Update the preview container
-            inputPreview.innerHTML = html;
-            console.log("Preview display succeeded");
-        } catch (error) {
-            console.error("Error in preview:", error);
-            html += `<div style="padding: 20px; text-align: center; background-color: #f8d7da; color: #721c24; border-radius: 5px;">
-                        <p><strong>Error showing preview:</strong> ${error.message}</p>
-                        <p>Using backup display instead</p>
-                     </div>`;
-                     
-            // Emergency fallback - just show text
-            html += '<pre style="background-color: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 10px;">';
-            try {
-                html += JSON.stringify(data[0] || {}, null, 2).substring(0, 500);
-                if (data.length > 1) html += '\n\n... more records available ...';
-            } catch (e) {
-                html += 'Could not stringify data';
-            }
-            html += '</pre>';
-            
-            inputPreview.innerHTML = html;
-        }
+            tableHTML += '</tr>';
+        });
+        
+        tableHTML += '</tbody></table>';
+        
+        // Add record count
+        tableHTML += `<p class="preview-info">${data.length} total records, ${headers.length} fields</p>`;
+        
+        inputPreview.innerHTML = tableHTML;
     }
     
     function showOutputPreview(data, validationResults = null) {
@@ -2290,114 +2359,12 @@ document.addEventListener('DOMContentLoaded', function() {
         // Create table headers
         const headers = Object.keys(previewData[0]);
         
-        // Check if this looks like Motorola CAD data for context-aware feedback
-        const isMotorolaData = data.some(item => 
-            Object.keys(item).some(key => 
-                key.toUpperCase().includes('INCIDENT_NO') || 
-                key.toUpperCase().includes('CALL_RECEIVED') ||
-                (key.toUpperCase().includes('DISPATCH') && key.toUpperCase().includes('TIME'))
-            )
-        );
-        
-        // Add enhanced validation summary at the top if we have validation results
-        let tableHTML = '';
-        if (validationResults) {
-            const requiredMissing = validationResults.issues.filter(issue => issue.includes('required field') && issue.includes('missing')).length;
-            const invalidFormat = validationResults.issues.filter(issue => issue.includes('invalid') || issue.includes('format')).length;
-            const incompleteData = validationResults.issues.filter(issue => issue.includes('incomplete')).length;
-            
-            const severityClass = requiredMissing > 0 ? 'high-severity' : 
-                                 invalidFormat > 0 ? 'medium-severity' : 
-                                 incompleteData > 0 ? 'low-severity' : '';
-            
-            // Create a more visual validation summary
-            if (isMotorolaData) {
-                tableHTML += `
-                    <div class="validation-summary motorola-cad">
-                        <h4><i class="fas fa-info-circle"></i> Motorola CAD Data Detected</h4>
-                        <div class="validation-stats">
-                            <div class="stat-box">
-                                <span class="stat-number">${data.length}</span>
-                                <span class="stat-label">Records</span>
-                            </div>
-                            <div class="stat-box">
-                                <span class="stat-number">${headers.length}</span>
-                                <span class="stat-label">Fields</span>
-                            </div>
-                            <div class="stat-box ${requiredMissing > 0 ? 'warning' : 'ok'}">
-                                <span class="stat-number">${requiredMissing}</span>
-                                <span class="stat-label">Missing<br>Required Fields</span>
-                            </div>
-                        </div>
-                        <p>Special Motorola CAD handling is enabled. Field mapping has been applied automatically.</p>
-                        <p>Common CAD field naming conventions have been recognized and transformed.</p>
-                        <p class="validation-tip"><i class="fas fa-lightbulb"></i> You can proceed with Send to Tool despite warnings.</p>
-                    </div>
-                `;
-            } else if (validationResults.issues.length > 0) {
-                tableHTML += `
-                    <div class="validation-summary ${severityClass}">
-                        <h4><i class="fas fa-exclamation-triangle"></i> Data Validation Results</h4>
-                        <div class="validation-stats">
-                            <div class="stat-box">
-                                <span class="stat-number">${data.length}</span>
-                                <span class="stat-label">Records</span>
-                            </div>
-                            <div class="stat-box ${requiredMissing > 0 ? 'critical' : 'ok'}">
-                                <span class="stat-number">${requiredMissing}</span>
-                                <span class="stat-label">Missing<br>Required Fields</span>
-                            </div>
-                            <div class="stat-box ${invalidFormat > 0 ? 'warning' : 'ok'}">
-                                <span class="stat-number">${invalidFormat}</span>
-                                <span class="stat-label">Format<br>Issues</span>
-                            </div>
-                            <div class="stat-box ${incompleteData > 0 ? 'info' : 'ok'}">
-                                <span class="stat-number">${incompleteData}</span>
-                                <span class="stat-label">Incomplete<br>Fields</span>
-                            </div>
-                        </div>
-                        <div class="validation-details">
-                            <h5>Details:</h5>
-                            <ul>
-                                ${validationResults.issues.slice(0, 5).map(issue => `<li>${issue}</li>`).join('')}
-                                ${validationResults.issues.length > 5 ? `<li class="more-issues">...and ${validationResults.issues.length - 5} more issues</li>` : ''}
-                            </ul>
-                        </div>
-                    </div>
-                `;
-            } else {
-                tableHTML += `
-                    <div class="validation-summary success">
-                        <h4><i class="fas fa-check-circle"></i> Data Validation Passed</h4>
-                        <p>All required fields are present and properly formatted.</p>
-                        <div class="validation-stats">
-                            <div class="stat-box">
-                                <span class="stat-number">${data.length}</span>
-                                <span class="stat-label">Records</span>
-                            </div>
-                            <div class="stat-box">
-                                <span class="stat-number">${headers.length}</span>
-                                <span class="stat-label">Fields</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-        }
-        
-        // Now add the data table
-        tableHTML += '<table class="preview-table"><thead><tr>';
+        let tableHTML = '<table class="preview-table"><thead><tr>';
         
         // Add validation status indicators to headers if validation results are available
         headers.forEach(header => {
             let headerClass = '';
             let headerTitle = '';
-            let isRequired = false;
-            
-            // Check if this is a required field based on the current tool
-            if (selectedTool && toolRequirements[selectedTool]) {
-                isRequired = toolRequirements[selectedTool].requiredFields.includes(header);
-            }
             
             if (validationResults && validationResults.fieldIssues) {
                 const fieldIssue = validationResults.fieldIssues[header];
@@ -2415,8 +2382,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            tableHTML += `<th class="${headerClass} ${isRequired ? 'required-field' : ''}" title="${headerTitle}">
-                ${header} ${isRequired ? '<span class="required-indicator">*</span>' : ''}
+            tableHTML += `<th class="${headerClass}" title="${headerTitle}">
+                ${header}
                 ${headerClass ? `<span class="validation-indicator ${headerClass}"></span>` : ''}
             </th>`;
         });
@@ -2448,13 +2415,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
                 
-                // Add auto-generated indication 
-                if (value && typeof value === 'string' && 
-                   (value.startsWith('AUTO-') || value.startsWith('ERROR-') || value === 'AUTO_GENERATED')) {
-                    cellClass += ' auto-generated';
-                    cellTitle += (cellTitle ? ' | ' : '') + 'Auto-generated value';
-                }
-                
                 tableHTML += `<td class="${cellClass}" title="${cellTitle}">${value}</td>`;
             });
             tableHTML += '</tr>';
@@ -2462,112 +2422,51 @@ document.addEventListener('DOMContentLoaded', function() {
         
         tableHTML += '</tbody></table>';
         
+        // Add data quality summary if validation results are available
+        if (validationResults && validationResults.issues.length > 0) {
+            // Check if this looks like Motorola CAD data
+            const isMotorolaData = data.some(item => 
+                Object.keys(item).some(key => 
+                    key.toUpperCase().includes('INCIDENT_NO') || 
+                    key.toUpperCase().includes('CALL_RECEIVED') ||
+                    (key.toUpperCase().includes('DISPATCH') && key.toUpperCase().includes('TIME'))
+                )
+            );
+            
+            // Use a special message for Motorola CAD data
+            if (isMotorolaData) {
+                tableHTML += `
+                    <div class="validation-summary motorola-cad">
+                        <h4><i class="fas fa-info-circle"></i> Motorola CAD Data Detected</h4>
+                        <p>Some field mappings may show as issues, but the data should work with the Response Time Analyzer.</p>
+                        <p>Common Motorola CAD fields have been automatically mapped to the required fields.</p>
+                        <p>You can proceed with the "Send to Tool" option despite these warnings.</p>
+                        <div class="validation-details" style="font-size: 0.9em; color: #666;">
+                            <p>Technical details:</p>
+                            <ul>
+                                ${validationResults.issues.slice(0, 3).map(issue => `<li>${issue}</li>`).join('')}
+                                ${validationResults.issues.length > 3 ? `<li>...and ${validationResults.issues.length - 3} more issues</li>` : ''}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            } else {
+                tableHTML += `
+                    <div class="validation-summary">
+                        <h4><i class="fas fa-exclamation-triangle"></i> Data Quality Issues</h4>
+                        <ul>
+                            ${validationResults.issues.slice(0, 3).map(issue => `<li>${issue}</li>`).join('')}
+                            ${validationResults.issues.length > 3 ? `<li>...and ${validationResults.issues.length - 3} more issues</li>` : ''}
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+        
         // Add record count
-        tableHTML += `<p class="preview-info">${data.length} total records, ${headers.length} fields shown (first 5 records)</p>`;
+        tableHTML += `<p class="preview-info">${data.length} total records, ${headers.length} fields</p>`;
         
         outputPreview.innerHTML = tableHTML;
-        
-        // Add custom CSS for the enhanced validation display
-        if (!document.getElementById('enhanced-validation-styles')) {
-            const styleElement = document.createElement('style');
-            styleElement.id = 'enhanced-validation-styles';
-            styleElement.textContent = `
-                .validation-summary {
-                    margin-bottom: 20px;
-                    padding: 15px;
-                    border-radius: 6px;
-                    background-color: #f8f9fa;
-                    border-left: 5px solid #6c757d;
-                }
-                .validation-summary.high-severity { border-left-color: #dc3545; background-color: #f8d7da; }
-                .validation-summary.medium-severity { border-left-color: #fd7e14; background-color: #fff3cd; }
-                .validation-summary.low-severity { border-left-color: #0dcaf0; background-color: #d1ecf1; }
-                .validation-summary.success { border-left-color: #28a745; background-color: #d4edda; }
-                .validation-summary.motorola-cad { border-left-color: #6610f2; background-color: #e2d9f3; }
-                
-                .validation-stats {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 10px;
-                    margin: 10px 0;
-                }
-                .stat-box {
-                    flex: 1;
-                    min-width: 100px;
-                    padding: 10px;
-                    border-radius: 5px;
-                    background: rgba(255,255,255,0.7);
-                    text-align: center;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                }
-                .stat-box.critical { background-color: #f8d7da; }
-                .stat-box.warning { background-color: #fff3cd; }
-                .stat-box.info { background-color: #d1ecf1; }
-                .stat-box.ok { background-color: #d4edda; }
-                
-                .stat-number {
-                    display: block;
-                    font-size: 24px;
-                    font-weight: bold;
-                }
-                .stat-label {
-                    font-size: 12px;
-                    color: #495057;
-                }
-                
-                .validation-details {
-                    margin-top: 10px;
-                    font-size: 0.9em;
-                }
-                
-                .validation-tip {
-                    margin-top: 10px;
-                    padding: 5px;
-                    background: rgba(255,255,255,0.7);
-                    border-radius: 4px;
-                    font-weight: bold;
-                }
-                
-                .required-field {
-                    background-color: #f8f9fa;
-                }
-                .required-indicator {
-                    color: #dc3545;
-                    margin-left: 2px;
-                }
-                
-                .auto-generated {
-                    background-color: #fff3cd !important;
-                    font-style: italic;
-                }
-                
-                .preview-table th.missing-field,
-                .preview-table th.invalid-field,
-                .preview-table th.incomplete-field {
-                    position: relative;
-                    padding-right: 20px;
-                }
-                
-                .validation-indicator {
-                    position: absolute;
-                    right: 5px;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    width: 10px;
-                    height: 10px;
-                    border-radius: 50%;
-                }
-                .validation-indicator.missing-field { background-color: #dc3545; }
-                .validation-indicator.invalid-field { background-color: #fd7e14; }
-                .validation-indicator.incomplete-field { background-color: #0dcaf0; }
-                
-                .more-issues {
-                    font-style: italic;
-                    color: #6c757d;
-                }
-            `;
-            document.head.appendChild(styleElement);
-        }
     }
     
     // Add a simple data visualization preview based on the tool type
@@ -2585,134 +2484,31 @@ document.addEventListener('DOMContentLoaded', function() {
         // Clear previous visualizations
         vizContainer.innerHTML = `
             <h3>Data Preview Visualization</h3>
-            <div class="viz-header">
-                <span class="viz-title">Preview of how your data will appear in the target tool</span>
-                <span class="viz-info">This is a simplified representation to help you verify the transformation.</span>
-            </div>
             <div class="viz-container" id="preview-chart"></div>
         `;
         
-        // Add Chart.js if it's not already included
-        if (!window.Chart) {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js';
-            script.onload = function() {
-                // Create visualization once Chart.js is loaded
-                createVisualizationForTool(data, toolId, vizContainer);
-            };
-            document.head.appendChild(script);
-        } else {
-            // Chart.js already loaded
-            createVisualizationForTool(data, toolId, vizContainer);
-        }
-        
-        // Add custom styles for the visualization
-        if (!document.getElementById('viz-preview-styles')) {
-            const styleElement = document.createElement('style');
-            styleElement.id = 'viz-preview-styles';
-            styleElement.textContent = `
-                .visualization-preview {
-                    margin: 30px 0;
-                    padding: 20px;
-                    border-radius: 8px;
-                    background-color: #f8f9fa;
-                    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-                }
-                
-                .visualization-preview h3 {
-                    margin-top: 0;
-                    margin-bottom: 15px;
-                    color: #343a40;
-                    border-bottom: 2px solid #dee2e6;
-                    padding-bottom: 8px;
-                }
-                
-                .viz-header {
-                    display: flex;
-                    flex-direction: column;
-                    margin-bottom: 15px;
-                }
-                
-                .viz-title {
-                    font-weight: bold;
-                    font-size: 14px;
-                    color: #495057;
-                }
-                
-                .viz-info {
-                    font-size: 12px;
-                    color: #6c757d;
-                    font-style: italic;
-                }
-                
-                .viz-container {
-                    background-color: white;
-                    border-radius: 6px;
-                    padding: 15px;
-                    min-height: 250px;
-                    max-height: 400px;
-                    position: relative;
-                }
-                
-                .empty-viz-message {
-                    position: absolute;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    text-align: center;
-                    color: #6c757d;
-                    font-style: italic;
-                }
-                
-                .viz-legend {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 10px;
-                    margin-top: 15px;
-                    font-size: 12px;
-                }
-                
-                .viz-legend-item {
-                    display: flex;
-                    align-items: center;
-                    margin-right: 15px;
-                }
-                
-                .viz-legend-color {
-                    width: 12px;
-                    height: 12px;
-                    display: inline-block;
-                    margin-right: 5px;
-                    border-radius: 2px;
-                }
-            `;
-            document.head.appendChild(styleElement);
-        }
-    }
-    
-    // Helper function to create appropriate visualization based on tool type
-    function createVisualizationForTool(data, toolId, container) {
+        // Create different visualizations based on tool type
         switch (toolId) {
             case 'response-time':
-                createResponseTimePreview(data, container);
+                createResponseTimePreview(data, vizContainer);
                 break;
             case 'call-density':
-                createCallDensityPreview(data, container);
+                createCallDensityPreview(data, vizContainer);
                 break;
             case 'incident-logger':
-                createIncidentTypePreview(data, container);
+                createIncidentTypePreview(data, vizContainer);
                 break;
             case 'isochrone':
             case 'isochrone-stations':
-                createStationPreview(data, container);
+                createStationPreview(data, vizContainer);
                 break;
             default:
                 // Simple count by date for other tools
-                createGenericDatePreview(data, container);
+                createGenericDatePreview(data, vizContainer);
         }
     }
     
-    // Create a simple response time visualization with Chart.js
+    // Create a simple response time visualization
     function createResponseTimePreview(data, container) {
         // Extract and count response time ranges
         const responseTimes = [];
@@ -2851,7 +2647,7 @@ document.addEventListener('DOMContentLoaded', function() {
             else ranges['16+ min']++;
         });
         
-        // Create visualization using Chart.js if available, falling back to HTML
+        // Create a simple HTML bar chart
         const chartEl = container.querySelector('#preview-chart');
         
         if (!chartEl) return;
@@ -2916,280 +2712,36 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // If Chart.js is available, create an interactive chart
-        if (window.Chart) {
-            // Clear container and add canvas element
-            chartEl.innerHTML = '';
-            const canvas = document.createElement('canvas');
-            canvas.id = 'response-time-chart';
-            chartEl.appendChild(canvas);
-            
-            // Prepare data for the chart
-            const labels = Object.keys(ranges);
-            const data = Object.values(ranges);
-            const backgroundColor = [
-                'rgba(40, 167, 69, 0.7)',  // green for faster responses
-                'rgba(23, 162, 184, 0.7)', // teal
-                'rgba(255, 193, 7, 0.7)',  // yellow
-                'rgba(253, 126, 20, 0.7)', // orange
-                'rgba(220, 53, 69, 0.7)'   // red for slower responses
-            ];
-            
-            const borderColor = backgroundColor.map(color => color.replace('0.7', '1'));
-            
-            // Calculate the average response time
-            const avgTime = responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length;
-            
-            // Create the chart
-            new Chart(canvas, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Number of Incidents',
-                        data: data,
-                        backgroundColor: backgroundColor,
-                        borderColor: borderColor,
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Response Time Distribution',
-                            font: { size: 16 }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const count = context.raw;
-                                    const total = data.reduce((a, b) => a + b, 0);
-                                    const percentage = ((count / total) * 100).toFixed(1);
-                                    return `${count} incidents (${percentage}%)`;
-                                }
-                            }
-                        },
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Number of Incidents'
-                            }
-                        }
-                    }
-                }
-            });
-            
-            // Add summary statistics beneath the chart
-            const summaryDiv = document.createElement('div');
-            summaryDiv.className = 'response-time-summary';
-            
-            const totalRecords = data.length;
-            const validPercentage = Math.round((responseTimes.length / totalRecords) * 100);
-            
-            summaryDiv.innerHTML = `
-                <div class="summary-grid">
-                    <div class="summary-item">
-                        <span class="summary-label">Average Response Time</span>
-                        <span class="summary-value">${avgTime.toFixed(1)} min</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Total Incidents</span>
-                        <span class="summary-value">${responseTimes.length}</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Data Coverage</span>
-                        <span class="summary-value">${validPercentage}%</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Missing Time Data</span>
-                        <span class="summary-value">${missingTimeData}</span>
-                    </div>
-                </div>
-            `;
-            chartEl.appendChild(summaryDiv);
-            
-            // Add custom styles for the summary
-            if (!document.getElementById('chart-summary-styles')) {
-                const style = document.createElement('style');
-                style.id = 'chart-summary-styles';
-                style.textContent = `
-                    .response-time-summary {
-                        margin-top: 15px;
-                        padding: 10px;
-                        background-color: #f8f9fa;
-                        border-radius: 5px;
-                    }
-                    
-                    .summary-grid {
-                        display: grid;
-                        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-                        gap: 10px;
-                    }
-                    
-                    .summary-item {
-                        background-color: white;
-                        padding: 8px;
-                        border-radius: 4px;
-                        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                        text-align: center;
-                    }
-                    
-                    .summary-label {
-                        display: block;
-                        font-size: 12px;
-                        color: #6c757d;
-                        margin-bottom: 3px;
-                    }
-                    
-                    .summary-value {
-                        font-weight: bold;
-                        font-size: 16px;
-                        color: #212529;
-                    }
-                    
-                    .motorola-chart-message,
-                    .empty-chart-message {
-                        text-align: center;
-                        padding: 20px;
-                        background-color: #f8f9fa;
-                        border-radius: 5px;
-                        margin: 15px 0;
-                    }
-                    
-                    .motorola-chart-message i,
-                    .empty-chart-message i {
-                        font-size: 32px;
-                        color: #6c757d;
-                        margin-bottom: 10px;
-                    }
-                    
-                    .chart-placeholder {
-                        margin-top: 15px;
-                        background-color: white;
-                        border-radius: 5px;
-                        padding: 15px;
-                    }
-                    
-                    .placeholder-bar {
-                        height: 24px;
-                        background: linear-gradient(90deg, #28a745, #20c997);
-                        margin-bottom: 10px;
-                        border-radius: 3px;
-                        opacity: 0.5;
-                    }
-                `;
-                document.head.appendChild(style);
-            }
-        } else {
-            // Fallback to simple HTML chart if Chart.js is not available
-            let chartHTML = '<div class="simple-chart">';
-            let maxCount = Math.max(...Object.values(ranges));
-            
-            Object.entries(ranges).forEach(([range, count]) => {
-                const percentage = maxCount === 0 ? 0 : (count / maxCount) * 100;
-                const barClass = range === '0-4 min' ? 'excellent' :
-                               range === '4-8 min' ? 'good' :
-                               range === '8-12 min' ? 'fair' :
-                               range === '12-16 min' ? 'poor' : 'critical';
-                
-                chartHTML += `
-                    <div class="chart-row">
-                        <div class="chart-label">${range}</div>
-                        <div class="chart-bar-container">
-                            <div class="chart-bar ${barClass}" style="width: ${percentage}%">
-                                <span class="chart-value">${count}</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            chartHTML += '</div>';
-            
-            // Add data quality note
-            const totalRecords = data.length;
-            const validPercentage = Math.round((responseTimes.length / totalRecords) * 100);
-            
+        let chartHTML = '<div class="simple-chart">';
+        let maxCount = Math.max(...Object.values(ranges));
+        
+        Object.entries(ranges).forEach(([range, count]) => {
+            const percentage = maxCount === 0 ? 0 : (count / maxCount) * 100;
             chartHTML += `
-                <div class="chart-summary">
-                    <p><strong>Average Response Time:</strong> ${(responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length).toFixed(1)} minutes</p>
-                    <p><strong>Data Coverage:</strong> ${validPercentage}% (${responseTimes.length} of ${totalRecords} incidents)</p>
-                    ${missingTimeData > 0 ? `<p><strong>Missing Time Data:</strong> ${missingTimeData} incidents</p>` : ''}
+                <div class="chart-row">
+                    <div class="chart-label">${range}</div>
+                    <div class="chart-bar-container">
+                        <div class="chart-bar" style="width: ${percentage}%"></div>
+                        <div class="chart-value">${count}</div>
+                    </div>
                 </div>
             `;
+        });
+        
+        chartHTML += '</div>';
+        
+        // Add data quality note if there were some issues but still valid data
+        if (missingTimeData > 0 || invalidTimeFormatCount > 0 || timeSequenceErrorCount > 0) {
+            const totalRecords = data.length;
+            const validPercentage = Math.round((responseTimes.length / totalRecords) * 100);
             
-            chartEl.innerHTML = chartHTML;
-            
-            // Add styles for the HTML chart
-            if (!document.getElementById('simple-chart-styles')) {
-                const style = document.createElement('style');
-                style.id = 'simple-chart-styles';
-                style.textContent = `
-                    .simple-chart {
-                        padding: 15px 0;
-                    }
-                    
-                    .chart-row {
-                        display: flex;
-                        margin-bottom: 10px;
-                        align-items: center;
-                    }
-                    
-                    .chart-label {
-                        width: 80px;
-                        font-size: 13px;
-                        text-align: right;
-                        padding-right: 10px;
-                    }
-                    
-                    .chart-bar-container {
-                        flex-grow: 1;
-                        background-color: #eee;
-                        height: 24px;
-                        border-radius: 4px;
-                        overflow: hidden;
-                    }
-                    
-                    .chart-bar {
-                        height: 100%;
-                        display: flex;
-                        align-items: center;
-                        justify-content: flex-end;
-                        padding: 0 8px;
-                        color: white;
-                        font-size: 13px;
-                        transition: width 0.5s ease;
-                    }
-                    
-                    .chart-bar.excellent { background-color: #28a745; }
-                    .chart-bar.good { background-color: #20c997; }
-                    .chart-bar.fair { background-color: #ffc107; }
-                    .chart-bar.poor { background-color: #fd7e14; }
-                    .chart-bar.critical { background-color: #dc3545; }
-                    
-                    .chart-summary {
-                        margin-top: 10px;
-                        padding: 10px;
-                        background-color: #f8f9fa;
-                        border-radius: 4px;
-                        font-size: 13px;
-                    }
-                    
-                    .chart-summary p {
-                        margin: 5px 0;
-                    }
-                `;
-                document.head.appendChild(style);
-            }
+            chartHTML += `<p class="chart-note">Response time distribution across ${responseTimes.length} valid incidents (${validPercentage}% of data). 
+                         ${totalRecords - responseTimes.length} records had missing or invalid time data.</p>`;
+        } else {
+            chartHTML += `<p class="chart-note">Response time distribution across ${responseTimes.length} incidents</p>`;
         }
+        
+        chartEl.innerHTML = chartHTML;
     }
     
     // Create a simple incident type visualization
