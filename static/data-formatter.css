@@ -103,6 +103,73 @@
   min-height: 150px;
 }
 
+.empty-chart-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #999;
+  text-align: center;
+  padding: 20px;
+}
+
+.motorola-chart-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #333;
+  text-align: center;
+  padding: 20px;
+  background-color: #e3f2fd;
+  border-radius: 6px;
+}
+
+.motorola-chart-message i {
+  color: #1976d2;
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.motorola-chart-message h4 {
+  color: #1976d2;
+  margin-bottom: 10px;
+}
+
+.chart-placeholder {
+  width: 90%;
+  margin-top: 20px;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 6px;
+}
+
+.placeholder-bar {
+  height: 20px;
+  background-color: #1976d2;
+  margin-bottom: 10px;
+  border-radius: 3px;
+  opacity: 0.5;
+}
+
+.validation-summary.motorola-cad {
+  background-color: #e3f2fd;
+  border-left: 4px solid #1976d2;
+  padding: 10px 15px;
+  margin: 15px 0;
+}
+
+.validation-summary.motorola-cad h4 {
+  color: #1976d2;
+  margin-top: 0;
+}
+
+.validation-summary.motorola-cad i {
+  color: #1976d2;
+}
+
 .simple-chart {
   display: flex;
   flex-direction: column;

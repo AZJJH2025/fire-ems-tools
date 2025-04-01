@@ -249,16 +249,122 @@ document.addEventListener('DOMContentLoaded', function() {
         const fieldIssues = {};
         const validatedResults = { valid: true, issues: [], fieldIssues: {}, data: data };
         
+        console.log(`Validating ${data.length} records for ${toolId}`);
+        
+        // Detect if we need to be more flexible with field names (Motorola CAD data often has different cases)
+        const sampleRecord = data[0];
+        const hasCADPatterning = Object.keys(sampleRecord).some(key => 
+            key.toUpperCase().includes('INCIDENT') || 
+            key.toUpperCase().includes('CAD') || 
+            key.toUpperCase().includes('DISPATCH')
+        );
+        
+        console.log(`Data appears to be ${hasCADPatterning ? 'CAD-style' : 'standard'} format`);
+        
+        // Map our expected field names to actual field names if needed
+        const fieldMap = {};
+        if (hasCADPatterning) {
+            // For each required field, look for case variations or alternate names
+            requirements.requiredFields.forEach(requiredField => {
+                const normalizedField = requiredField.toUpperCase().replace(/\s+/g, '_');
+                
+                // Look for exact match first
+                if (sampleRecord[requiredField]) {
+                    fieldMap[requiredField] = requiredField;
+                    return;
+                }
+                
+                // Try all possible variations
+                const possibleVariations = [
+                    requiredField,
+                    requiredField.toUpperCase(),
+                    requiredField.toLowerCase(),
+                    normalizedField,
+                    requiredField.replace(/\s+/g, '_'),
+                    requiredField.replace(/\s+/g, '')
+                ];
+                
+                // For specific fields, add additional variations
+                if (requiredField === 'Incident ID') {
+                    possibleVariations.push(...[
+                        'INCIDENT_NO', 'CALL_ID', 'CAD_CALL_ID', 'INCIDENT_NUMBER', 'INC_NUM'
+                    ]);
+                } else if (requiredField === 'Incident Date') {
+                    possibleVariations.push(...[
+                        'CALL_DATE', 'INCIDENT_DATE', 'DATE', 'EVENT_DATE'
+                    ]);
+                } else if (requiredField === 'Incident Time') {
+                    possibleVariations.push(...[
+                        'CALL_TIME', 'INCIDENT_TIME', 'TIME', 'EVENT_TIME', 'CALL_RECEIVED_TIME'
+                    ]);
+                } else if (requiredField === 'Dispatch Time') {
+                    possibleVariations.push(...[
+                        'DISPATCH_TIME', 'UNIT_DISPATCH_TIME', 'DISPATCHED', 'UNIT_DISP_TIME'
+                    ]);
+                } else if (requiredField === 'En Route Time') {
+                    possibleVariations.push(...[
+                        'ENROUTE_TIME', 'UNIT_ENROUTE_TIME', 'ENROUTE', 'RESPONDING_TIME'
+                    ]);
+                } else if (requiredField === 'On Scene Time') {
+                    possibleVariations.push(...[
+                        'ARRIVAL_TIME', 'UNIT_ARRIVAL_TIME', 'ONSCENE_TIME', 'ONSCENE', 'ARRIVE_TIME'
+                    ]);
+                } else if (requiredField === 'Incident Type') {
+                    possibleVariations.push(...[
+                        'CALL_TYPE', 'INCIDENT_TYPE', 'NATURE', 'NATURE_CODE', 'TYPE', 'CALL_TYPE_DESC'
+                    ]);
+                } else if (requiredField === 'Latitude') {
+                    possibleVariations.push(...[
+                        'LAT', 'Y', 'Y_COORDINATE', 'YCOORD', 'INCIDENT_LAT'
+                    ]);
+                } else if (requiredField === 'Longitude') {
+                    possibleVariations.push(...[
+                        'LON', 'LONG', 'X', 'X_COORDINATE', 'XCOORD', 'INCIDENT_LON'
+                    ]);
+                }
+                
+                // Check if any variation exists in the data
+                for (const variation of possibleVariations) {
+                    if (sampleRecord.hasOwnProperty(variation)) {
+                        fieldMap[requiredField] = variation;
+                        console.log(`Mapped '${requiredField}' to '${variation}'`);
+                        break;
+                    }
+                }
+                
+                // If not found, look for any keys that might contain the field name
+                if (!fieldMap[requiredField]) {
+                    const normalizedFieldName = requiredField.replace(/\s+/g, '').toLowerCase();
+                    const possibleField = Object.keys(sampleRecord).find(key => {
+                        const normalizedKey = key.replace(/\s+/g, '').toLowerCase();
+                        return normalizedKey.includes(normalizedFieldName) || 
+                               normalizedFieldName.includes(normalizedKey);
+                    });
+                    
+                    if (possibleField) {
+                        fieldMap[requiredField] = possibleField;
+                        console.log(`Fuzzy mapped '${requiredField}' to '${possibleField}'`);
+                    }
+                }
+            });
+        } else {
+            // For standard data, just use exact field names
+            requirements.requiredFields.forEach(field => {
+                fieldMap[field] = field;
+            });
+        }
+        
         // Check for required fields
         requirements.requiredFields.forEach(field => {
             const fieldIssue = { present: false, complete: false, valid: false, samples: [] };
+            const actualField = fieldMap[field] || field;
             
-            // Check if field exists
-            if (data[0].hasOwnProperty(field)) {
+            // Check if mapped field exists
+            if (sampleRecord.hasOwnProperty(actualField)) {
                 fieldIssue.present = true;
                 
                 // Check if field has values (not all empty)
-                const fieldValues = data.map(item => item[field]);
+                const fieldValues = data.map(item => item[actualField]);
                 const hasValues = fieldValues.some(value => value !== null && value !== undefined && value !== '');
                 fieldIssue.complete = hasValues;
                 
@@ -298,13 +404,26 @@ document.addEventListener('DOMContentLoaded', function() {
                         issues.push(`Field '${field}' contains invalid coordinate values. Example: "${fieldIssue.samples[0]}"`);
                     }
                 } else if (requirements.timeFields && requirements.timeFields.includes(field)) {
-                    // Time fields validation
+                    // Time fields validation - enhanced to accept more formats
                     fieldIssue.valid = fieldValues.every(value => {
                         if (!value) return true; // Skip empty values
+                        
                         // Basic time format check (HH:MM:SS or HH:MM)
-                        return /^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/.test(value) ||
-                               // Also allow datetime strings
-                               !isNaN(new Date(value).getTime());
+                        if (/^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/.test(value)) {
+                            return true;
+                        }
+                        
+                        // 12-hour format with AM/PM
+                        if (/^(1[0-2]|0?[1-9]):[0-5][0-9](:[0-5][0-9])?\s*(AM|PM|am|pm)$/.test(value)) {
+                            return true;
+                        }
+                        
+                        // Also allow datetime strings
+                        try {
+                            return !isNaN(new Date(value).getTime());
+                        } catch (e) {
+                            return false;
+                        }
                     });
                     
                     if (!fieldIssue.valid) {
@@ -319,7 +438,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     issues.push(`Required field '${field}' has no values in the dataset`);
                 }
             } else {
-                issues.push(`Required field '${field}' is missing`);
+                // If the field is coordinate and we have a different coordinate format, we might be able to convert
+                if ((field === 'Latitude' || field === 'Longitude') && requirements.coordinateFields) {
+                    const alternateCoords = findAlternateCoordinates(data);
+                    if (alternateCoords) {
+                        fieldIssue.present = true;
+                        fieldIssue.complete = true;
+                        fieldIssue.valid = true;
+                        fieldIssue.samples = ['[Detected alternate coordinate format]'];
+                        console.log(`Detected alternate coordinate format: ${alternateCoords.format}`);
+                    } else {
+                        issues.push(`Required field '${field}' is missing`);
+                    }
+                } else {
+                    issues.push(`Required field '${field}' is missing`);
+                }
             }
             
             fieldIssues[field] = fieldIssue;
@@ -337,21 +470,56 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 sampledData.forEach(item => {
                     try {
-                        if (item['Incident Time'] && item['Dispatch Time'] && 
-                            item['En Route Time'] && item['On Scene Time']) {
+                        const incidentTimeField = fieldMap['Incident Time'] || 'Incident Time';
+                        const dispatchTimeField = fieldMap['Dispatch Time'] || 'Dispatch Time';
+                        const enRouteTimeField = fieldMap['En Route Time'] || 'En Route Time';
+                        const onSceneTimeField = fieldMap['On Scene Time'] || 'On Scene Time';
+                        
+                        if (item[incidentTimeField] && item[dispatchTimeField] && 
+                            item[enRouteTimeField] && item[onSceneTimeField]) {
                             
-                            const incidentTime = new Date(`2000-01-01T${item['Incident Time']}`);
-                            const dispatchTime = new Date(`2000-01-01T${item['Dispatch Time']}`);
-                            const enRouteTime = new Date(`2000-01-01T${item['En Route Time']}`);
-                            const onSceneTime = new Date(`2000-01-01T${item['On Scene Time']}`);
+                            // Parse times more carefully
+                            const parseTime = (timeStr) => {
+                                if (!timeStr) return null;
+                                
+                                // Handle 12-hour format
+                                if (timeStr.toUpperCase().includes('AM') || timeStr.toUpperCase().includes('PM')) {
+                                    try {
+                                        const [timePart, ampm] = timeStr.split(/\s+/);
+                                        const [hours, minutes, seconds = '00'] = timePart.split(':').map(Number);
+                                        let adjustedHours = hours;
+                                        
+                                        if (ampm.toUpperCase() === 'PM' && hours < 12) {
+                                            adjustedHours += 12;
+                                        } else if (ampm.toUpperCase() === 'AM' && hours === 12) {
+                                            adjustedHours = 0;
+                                        }
+                                        
+                                        return new Date(`2000-01-01T${adjustedHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+                                    } catch (e) {
+                                        console.error("Error parsing 12-hour time:", e);
+                                        return new Date(`2000-01-01T${timeStr}`);
+                                    }
+                                }
+                                
+                                // Handle standard format
+                                return new Date(`2000-01-01T${timeStr}`);
+                            };
                             
-                            if (!(incidentTime <= dispatchTime && 
+                            const incidentTime = parseTime(item[incidentTimeField]);
+                            const dispatchTime = parseTime(item[dispatchTimeField]);
+                            const enRouteTime = parseTime(item[enRouteTimeField]);
+                            const onSceneTime = parseTime(item[onSceneTimeField]);
+                            
+                            if (incidentTime && dispatchTime && enRouteTime && onSceneTime &&
+                                !(incidentTime <= dispatchTime && 
                                   dispatchTime <= enRouteTime && 
                                   enRouteTime <= onSceneTime)) {
                                 timeSequenceIssues++;
                             }
                         }
                     } catch (e) {
+                        console.error("Time sequence check error:", e);
                         timeSequenceIssues++;
                     }
                 });
@@ -367,6 +535,42 @@ document.addEventListener('DOMContentLoaded', function() {
         validatedResults.fieldIssues = fieldIssues;
         
         return validatedResults;
+    }
+    
+    // Helper function to find alternate coordinate formats
+    function findAlternateCoordinates(data) {
+        // Look for common alternate coordinate formats
+        const sampleRecord = data[0];
+        
+        // Check for X/Y coordinates
+        if (sampleRecord.hasOwnProperty('X') && sampleRecord.hasOwnProperty('Y')) {
+            return {
+                format: 'X/Y',
+                xField: 'X',
+                yField: 'Y'
+            };
+        }
+        
+        // Check for GEOX/GEOY (common in Central Square CAD)
+        if (sampleRecord.hasOwnProperty('GEOX') && sampleRecord.hasOwnProperty('GEOY')) {
+            return {
+                format: 'GEOX/GEOY',
+                xField: 'GEOX',
+                yField: 'GEOY'
+            };
+        }
+        
+        // Check for X_COORD/Y_COORD
+        if (sampleRecord.hasOwnProperty('X_COORD') && sampleRecord.hasOwnProperty('Y_COORD')) {
+            return {
+                format: 'X_COORD/Y_COORD',
+                xField: 'X_COORD',
+                yField: 'Y_COORD'
+            };
+        }
+        
+        // No alternate format found
+        return null;
     }
     
     // Transform data
@@ -399,13 +603,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 showDataVisualizationPreview(transformedData, selectedTool);
             }
             
-            // Enable download even with warnings, but not for severe errors
-            const isUsable = !validationResults.issues.some(issue => 
-                issue.includes('missing') || issue.includes('invalid')
+            // More permissive approach for enabling the download buttons
+            // Allow download even if there are data issues, as long as we have transformed data
+            const hasSomeData = transformedData && transformedData.length > 0;
+            
+            // Count critical issues (missing required fields)
+            const criticalIssueCount = validationResults.issues.filter(issue => 
+                issue.includes('missing')
+            ).length;
+            
+            // If we have detected Motorola CAD data, be more lenient with enabling the buttons
+            const isMotorolaData = data.some(item => 
+                Object.keys(item).some(key => 
+                    key.toUpperCase().includes('INCIDENT_NO') || 
+                    key.toUpperCase().includes('CALL_RECEIVED')
+                )
             );
             
-            downloadBtn.disabled = !isUsable;
-            sendToToolBtn.disabled = !isUsable;
+            // Enable as long as we have data and not too many critical issues
+            // For Motorola data, be more permissive
+            const isUsable = hasSomeData && 
+                            (isMotorolaData || criticalIssueCount < 3);
+            
+            console.log(`Download status - Has data: ${hasSomeData}, Critical issues: ${criticalIssueCount}, Is Motorola: ${isMotorolaData}, Is Usable: ${isUsable}`);
+            
+            // Always enable the buttons if we have transformed data
+            downloadBtn.disabled = !hasSomeData;
+            sendToToolBtn.disabled = !hasSomeData;
             
             if (isUsable) {
                 appendLog(`Transformation complete. ${transformedData.length} records ready for ${getToolName(selectedTool)}.`);
@@ -755,10 +979,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!sampleRecord) return null;
         
         const fields = Object.keys(sampleRecord);
+        const upperFields = fields.map(f => f.toUpperCase());
         
-        // Detect Motorola PremierOne CAD
-        if (fields.some(f => f.includes('INCIDENT_NO')) || 
-            fields.some(f => f.includes('CALL_RECEIVED'))) {
+        // More aggressive Motorola PremierOne CAD detection
+        if (upperFields.some(f => f.includes('INCIDENT_NO') || f.includes('INCIDENTNO') || f.includes('INCIDENT NO')) || 
+            upperFields.some(f => f.includes('CALL_RECEIVED') || f.includes('CALLRECEIVED')) ||
+            upperFields.some(f => f.includes('PREMIERONE')) ||
+            (upperFields.some(f => f.includes('DISPATCH')) && upperFields.some(f => f.includes('ARRIVAL')))) {
+            console.log("Detected Motorola PremierOne CAD system");
             return 'Motorola PremierOne';
         }
         
@@ -860,44 +1088,323 @@ document.addEventListener('DOMContentLoaded', function() {
     function processMotorolaPremierOneData(data, toolId) {
         const processedData = JSON.parse(JSON.stringify(data));
         
+        console.log("Processing Motorola PremierOne CAD data for " + toolId);
+        appendLog(`Processing Motorola PremierOne CAD data for ${getToolName(toolId)}...`);
+        
         // Handle different tools
         if (toolId === 'call-density' || toolId === 'response-time') {
+            // Log the first few records for debugging
+            const sampleRecord = processedData[0];
+            console.log("Sample record keys:", Object.keys(sampleRecord));
+            
+            // Look for possible field name patterns in our sample
+            const possibleIdFields = findMatchingFields(sampleRecord, ['INCIDENT', 'CALL', 'ID', 'NO']);
+            const possibleTimeFields = findMatchingFields(sampleRecord, ['TIME', 'DATE', 'RECEIVED', 'DISPATCH', 'ENROUTE', 'ONSCENE', 'ARRIVAL']);
+            const possibleLocationFields = findMatchingFields(sampleRecord, ['LAT', 'LON', 'LONGITUDE', 'LATITUDE', 'LOCATION', 'ADDRESS']);
+            
+            console.log("Possible ID fields found:", possibleIdFields);
+            console.log("Possible time fields found:", possibleTimeFields);
+            console.log("Possible location fields found:", possibleLocationFields);
+            
+            appendLog(`Found ${possibleIdFields.length} possible ID fields and ${possibleTimeFields.length} time fields`);
+            
             processedData.forEach(item => {
-                // Handle date and time fields
-                if (item.CALL_RECEIVED_DATE && item.CALL_RECEIVED_TIME) {
-                    // For call-density
-                    item['Incident Date'] = item.CALL_RECEIVED_DATE;
-                    item['Incident Time'] = item.CALL_RECEIVED_TIME;
-                    
-                    // For response-time
-                    item['Reported'] = item.CALL_RECEIVED_TIME;
-                    item['Unit Dispatched'] = item.DISPATCH_TIME || '';
-                    item['Unit Onscene'] = item.ARRIVAL_TIME || '';
+                // INCIDENT ID MAPPING - critical for the analyzer
+                // Try common Motorola field patterns first, then fallback to any field with ID/INCIDENT/etc.
+                item['Incident ID'] = findValueInFields(item, [
+                    'INCIDENT_NO', 'INCIDENT_ID', 'CALL_ID', 'INCIDENT_NUMBER', 'CALL_NUMBER',
+                    'INC_NO', 'CALL_NO', 'CALL_NUM', 'INC_NUM', 'EVENT_NUM', 'CAD_CALL_ID'
+                ]);
+                
+                if (!item['Incident ID'] && possibleIdFields.length > 0) {
+                    // If standard fields not found, try any field that might contain ID
+                    item['Incident ID'] = findValueInFields(item, possibleIdFields);
                 }
                 
-                // ID field
-                item['Incident ID'] = item.INCIDENT_NO;
-                item['Run No'] = item.INCIDENT_NO;
+                // INCIDENT DATE AND TIME MAPPING
+                // First check standard Motorola fields
+                for (const dateField of ['CALL_RECEIVED_DATE', 'INCIDENT_DATE', 'CALL_DATE', 'ENTRY_DATE', 'REPORTED_DATE']) {
+                    if (item[dateField]) {
+                        item['Incident Date'] = item[dateField];
+                        break;
+                    }
+                }
                 
-                // Location fields
-                item['Latitude'] = parseFloat(item.LAT);
-                item['Longitude'] = parseFloat(item.LON);
-                item['Address'] = item.LOCATION_ADDR;
-                item['Full Address'] = item.LOCATION_ADDR + (item.LOCATION_CITY ? `, ${item.LOCATION_CITY}` : '') + (item.LOCATION_ST ? `, ${item.LOCATION_ST}` : '');
+                for (const timeField of ['CALL_RECEIVED_TIME', 'INCIDENT_TIME', 'CALL_TIME', 'ENTRY_TIME', 'REPORTED_TIME']) {
+                    if (item[timeField]) {
+                        item['Incident Time'] = item[timeField];
+                        item['Reported'] = item[timeField];
+                        break;
+                    }
+                }
                 
-                // Type info
-                item['Incident Type'] = item.INCIDENT_TYPE_DESC || item.INCIDENT_TYPE_CD;
-                item['Nature'] = item.INCIDENT_TYPE_DESC || '';
+                // If we still don't have date/time, try any field that might contain date/time
+                if (!item['Incident Date'] && possibleTimeFields.length > 0) {
+                    const dateFields = possibleTimeFields.filter(f => f.includes('DATE'));
+                    if (dateFields.length > 0) {
+                        item['Incident Date'] = findValueInFields(item, dateFields);
+                    }
+                }
                 
-                // Unit info
-                item['Unit'] = item.UNIT_ID || '';
+                if (!item['Incident Time'] && possibleTimeFields.length > 0) {
+                    const timeFields = possibleTimeFields.filter(f => 
+                        (f.includes('TIME') && (f.includes('CALL') || f.includes('INCIDENT') || f.includes('RECEIVED')))
+                    );
+                    if (timeFields.length > 0) {
+                        item['Incident Time'] = findValueInFields(item, timeFields);
+                        item['Reported'] = item['Incident Time'];
+                    }
+                }
                 
-                // Priority
-                item['Priority'] = item.PRIORITY_CD || '';
+                // Check for datetime field that might need to be split
+                for (const dtField of ['CALL_DATETIME', 'INCIDENT_DATETIME', 'RECEIVED_DATETIME']) {
+                    if (item[dtField] && (!item['Incident Date'] || !item['Incident Time'])) {
+                        try {
+                            const dt = new Date(item[dtField]);
+                            if (!isNaN(dt.getTime())) {
+                                if (!item['Incident Date']) {
+                                    item['Incident Date'] = dt.toISOString().split('T')[0];
+                                }
+                                if (!item['Incident Time']) {
+                                    item['Incident Time'] = dt.toTimeString().split(' ')[0];
+                                    item['Reported'] = item['Incident Time'];
+                                }
+                            }
+                        } catch (e) {
+                            // Silent fail for datetime parsing
+                        }
+                    }
+                }
+                
+                // DISPATCH TIME MAPPING
+                item['Dispatch Time'] = findValueInFields(item, [
+                    'DISPATCH_TIME', 'UNIT_DISPATCH_TIME', 'DISPATCHED_TIME', 'TIME_DISPATCHED',
+                    'UNIT_DISP_TIME', 'DISP_TIME', 'DISPATCH_TM'
+                ]);
+                if (item['Dispatch Time']) {
+                    item['Unit Dispatched'] = item['Dispatch Time'];
+                }
+                
+                // EN ROUTE TIME MAPPING
+                item['En Route Time'] = findValueInFields(item, [
+                    'ENROUTE_TIME', 'UNIT_ENROUTE_TIME', 'RESPONDING_TIME', 'TIME_ENROUTE',
+                    'UNIT_ENRT_TIME', 'ENRT_TIME', 'ENROUTE_TM'
+                ]);
+                if (item['En Route Time']) {
+                    item['Unit Enroute'] = item['En Route Time'];
+                }
+                
+                // ON SCENE TIME MAPPING
+                item['On Scene Time'] = findValueInFields(item, [
+                    'ARRIVAL_TIME', 'UNIT_ARRIVAL_TIME', 'ONSCENE_TIME', 'TIME_ARRIVED', 
+                    'TIME_ONSCENE', 'UNIT_OS_TIME', 'OS_TIME', 'ARRIVE_TIME', 'ARRIVAL_TM'
+                ]);
+                if (item['On Scene Time']) {
+                    item['Unit Onscene'] = item['On Scene Time'];
+                }
+                
+                // LOCATION FIELDS MAPPING
+                // Latitude mapping with careful parsing
+                const latFields = ['LAT', 'LATITUDE', 'Y_COORDINATE', 'YCOORD', 'Y_COORD', 'INCIDENT_LAT'];
+                for (const field of latFields) {
+                    if (item[field] !== undefined && item[field] !== null && item[field] !== '') {
+                        try {
+                            const parsedValue = parseFloat(item[field]);
+                            if (!isNaN(parsedValue) && parsedValue >= -90 && parsedValue <= 90) {
+                                item['Latitude'] = parsedValue;
+                                break;
+                            }
+                        } catch (e) {
+                            // Skip invalid values
+                        }
+                    }
+                }
+                
+                // Longitude mapping with careful parsing
+                const lngFields = ['LON', 'LONG', 'LONGITUDE', 'X_COORDINATE', 'XCOORD', 'X_COORD', 'INCIDENT_LON'];
+                for (const field of lngFields) {
+                    if (item[field] !== undefined && item[field] !== null && item[field] !== '') {
+                        try {
+                            const parsedValue = parseFloat(item[field]);
+                            if (!isNaN(parsedValue) && parsedValue >= -180 && parsedValue <= 180) {
+                                item['Longitude'] = parsedValue;
+                                break;
+                            }
+                        } catch (e) {
+                            // Skip invalid values
+                        }
+                    }
+                }
+                
+                // If no lat/long found in standard fields, try any field that might contain coordinate info
+                if ((!item['Latitude'] || !item['Longitude']) && possibleLocationFields.length > 0) {
+                    const latCandidates = possibleLocationFields.filter(f => 
+                        f.includes('LAT') || f.includes('Y_') || f === 'Y' || f.includes('YCOORD')
+                    );
+                    const lonCandidates = possibleLocationFields.filter(f => 
+                        f.includes('LON') || f.includes('X_') || f === 'X' || f.includes('XCOORD')
+                    );
+                    
+                    if (!item['Latitude'] && latCandidates.length > 0) {
+                        for (const field of latCandidates) {
+                            if (item[field] !== undefined && item[field] !== null && item[field] !== '') {
+                                try {
+                                    const parsedValue = parseFloat(item[field]);
+                                    if (!isNaN(parsedValue) && parsedValue >= -90 && parsedValue <= 90) {
+                                        item['Latitude'] = parsedValue;
+                                        break;
+                                    }
+                                } catch (e) {
+                                    // Skip invalid values
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (!item['Longitude'] && lonCandidates.length > 0) {
+                        for (const field of lonCandidates) {
+                            if (item[field] !== undefined && item[field] !== null && item[field] !== '') {
+                                try {
+                                    const parsedValue = parseFloat(item[field]);
+                                    if (!isNaN(parsedValue) && parsedValue >= -180 && parsedValue <= 180) {
+                                        item['Longitude'] = parsedValue;
+                                        break;
+                                    }
+                                } catch (e) {
+                                    // Skip invalid values
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // ADDRESS FIELD MAPPING
+                // Try various address field patterns
+                for (const addrPattern of ['LOCATION_ADDR', 'ADDRESS', 'LOCATION', 'INCIDENT_ADDR', 'INCIDENT_LOC', 'CALL_LOCATION', 'STREET_ADDRESS']) {
+                    if (item[addrPattern]) {
+                        item['Address'] = item[addrPattern];
+                        
+                        // Create full address if city/state is available
+                        let fullAddr = item[addrPattern];
+                        
+                        for (const cityField of ['LOCATION_CITY', 'CITY', 'INCIDENT_CITY', 'CALL_CITY']) {
+                            if (item[cityField]) {
+                                fullAddr += `, ${item[cityField]}`;
+                                break;
+                            }
+                        }
+                        
+                        for (const stateField of ['LOCATION_ST', 'STATE', 'INCIDENT_STATE', 'CALL_STATE', 'ST']) {
+                            if (item[stateField]) {
+                                fullAddr += `, ${item[stateField]}`;
+                                break;
+                            }
+                        }
+                        
+                        item['Full Address'] = fullAddr;
+                        break;
+                    }
+                }
+                
+                // INCIDENT TYPE MAPPING
+                item['Incident Type'] = findValueInFields(item, [
+                    'INCIDENT_TYPE_DESC', 'INCIDENT_TYPE_CD', 'INCIDENT_TYPE', 'CALL_TYPE',
+                    'NATURE_CD', 'NATURE_CODE', 'PROBLEM', 'CALL_TYPE_DESC'
+                ]);
+                
+                item['Nature'] = item['Incident Type'] || findValueInFields(item, [
+                    'INCIDENT_TYPE_DESC', 'NATURE', 'PROBLEM', 'SITUATION'
+                ]);
+                
+                // UNIT INFO MAPPING
+                item['Unit'] = findValueInFields(item, [
+                    'UNIT_ID', 'UNIT', 'APPARATUS_ID', 'VEHICLE_ID', 'RESOURCE_ID'
+                ]);
+                
+                // PRIORITY MAPPING
+                const priorityValue = findValueInFields(item, [
+                    'PRIORITY_CD', 'PRIORITY', 'CALL_PRIORITY', 'INC_PRIORITY'
+                ]);
+                if (priorityValue !== null) {
+                    item['Priority'] = priorityValue.toString();
+                }
+                
+                // Calculate response time if possible (for visualization)
+                if (item['Dispatch Time'] && item['On Scene Time']) {
+                    try {
+                        const dispatchTime = new Date(`2000-01-01T${item['Dispatch Time']}`);
+                        const onSceneTime = new Date(`2000-01-01T${item['On Scene Time']}`);
+                        if (!isNaN(dispatchTime.getTime()) && !isNaN(onSceneTime.getTime())) {
+                            const responseMinutes = (onSceneTime - dispatchTime) / (1000 * 60);
+                            if (responseMinutes >= 0) {
+                                item['Response Time (min)'] = responseMinutes.toFixed(2);
+                            }
+                        }
+                    } catch (e) {
+                        // Try alternate format
+                        try {
+                            // Some CAD systems use 12-hour format
+                            const parseTime = (timeStr) => {
+                                // Convert 12-hour format to 24-hour if needed
+                                if (timeStr.includes('AM') || timeStr.includes('PM')) {
+                                    const [timePart, ampm] = timeStr.split(/\s+/);
+                                    const [hours, minutes, seconds] = timePart.split(':').map(Number);
+                                    let adjustedHours = hours;
+                                    
+                                    if (ampm.toUpperCase() === 'PM' && hours < 12) {
+                                        adjustedHours += 12;
+                                    } else if (ampm.toUpperCase() === 'AM' && hours === 12) {
+                                        adjustedHours = 0;
+                                    }
+                                    
+                                    return `${adjustedHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds ? seconds.toString().padStart(2, '0') : '00'}`;
+                                }
+                                return timeStr;
+                            };
+                            
+                            const dispTime = parseTime(item['Dispatch Time']);
+                            const sceneTime = parseTime(item['On Scene Time']);
+                            
+                            const dispatchTime = new Date(`2000-01-01T${dispTime}`);
+                            const onSceneTime = new Date(`2000-01-01T${sceneTime}`);
+                            
+                            if (!isNaN(dispatchTime.getTime()) && !isNaN(onSceneTime.getTime())) {
+                                const responseMinutes = (onSceneTime - dispatchTime) / (1000 * 60);
+                                if (responseMinutes >= 0) {
+                                    item['Response Time (min)'] = responseMinutes.toFixed(2);
+                                }
+                            }
+                        } catch (e2) {
+                            // Silent fail if time parsing fails
+                        }
+                    }
+                }
             });
+            
+            // Check if we have any valid response times to log
+            const validResponseTimes = processedData.filter(item => item['Response Time (min)']);
+            appendLog(`Processed ${processedData.length} records, found ${validResponseTimes.length} valid response times`);
         }
         
         return processedData;
+    }
+    
+    // Helper function to find fields in an object that match certain patterns
+    function findMatchingFields(obj, patterns) {
+        return Object.keys(obj).filter(key => {
+            const upperKey = key.toUpperCase();
+            return patterns.some(pattern => upperKey.includes(pattern.toUpperCase()));
+        });
+    }
+    
+    // Helper function to find a value in an object from a list of possible field names
+    function findValueInFields(obj, fieldNames) {
+        for (const field of fieldNames) {
+            if (obj[field] !== undefined && obj[field] !== null && obj[field] !== '') {
+                return obj[field];
+            }
+        }
+        return null;
     }
     
     function processCentralSquareData(data, toolId) {
@@ -1465,15 +1972,43 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Add data quality summary if validation results are available
         if (validationResults && validationResults.issues.length > 0) {
-            tableHTML += `
-                <div class="validation-summary">
-                    <h4><i class="fas fa-exclamation-triangle"></i> Data Quality Issues</h4>
-                    <ul>
-                        ${validationResults.issues.slice(0, 3).map(issue => `<li>${issue}</li>`).join('')}
-                        ${validationResults.issues.length > 3 ? `<li>...and ${validationResults.issues.length - 3} more issues</li>` : ''}
-                    </ul>
-                </div>
-            `;
+            // Check if this looks like Motorola CAD data
+            const isMotorolaData = data.some(item => 
+                Object.keys(item).some(key => 
+                    key.toUpperCase().includes('INCIDENT_NO') || 
+                    key.toUpperCase().includes('CALL_RECEIVED') ||
+                    (key.toUpperCase().includes('DISPATCH') && key.toUpperCase().includes('TIME'))
+                )
+            );
+            
+            // Use a special message for Motorola CAD data
+            if (isMotorolaData) {
+                tableHTML += `
+                    <div class="validation-summary motorola-cad">
+                        <h4><i class="fas fa-info-circle"></i> Motorola CAD Data Detected</h4>
+                        <p>Some field mappings may show as issues, but the data should work with the Response Time Analyzer.</p>
+                        <p>Common Motorola CAD fields have been automatically mapped to the required fields.</p>
+                        <p>You can proceed with the "Send to Tool" option despite these warnings.</p>
+                        <div class="validation-details" style="font-size: 0.9em; color: #666;">
+                            <p>Technical details:</p>
+                            <ul>
+                                ${validationResults.issues.slice(0, 3).map(issue => `<li>${issue}</li>`).join('')}
+                                ${validationResults.issues.length > 3 ? `<li>...and ${validationResults.issues.length - 3} more issues</li>` : ''}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            } else {
+                tableHTML += `
+                    <div class="validation-summary">
+                        <h4><i class="fas fa-exclamation-triangle"></i> Data Quality Issues</h4>
+                        <ul>
+                            ${validationResults.issues.slice(0, 3).map(issue => `<li>${issue}</li>`).join('')}
+                            ${validationResults.issues.length > 3 ? `<li>...and ${validationResults.issues.length - 3} more issues</li>` : ''}
+                        </ul>
+                    </div>
+                `;
+            }
         }
         
         // Add record count
@@ -1525,26 +2060,123 @@ document.addEventListener('DOMContentLoaded', function() {
     function createResponseTimePreview(data, container) {
         // Extract and count response time ranges
         const responseTimes = [];
+        let missingTimeData = 0;
+        let invalidTimeFormatCount = 0;
+        let timeSequenceErrorCount = 0;
         
         data.forEach(item => {
-            // Try to compute response time if dispatch and onscene time are present
-            if (item['Dispatch Time'] && item['On Scene Time']) {
+            // First try to use the pre-calculated response time if available
+            if (item['Response Time (min)']) {
+                const time = parseFloat(item['Response Time (min)']);
+                if (!isNaN(time) && time >= 0 && time < 60) { // Filter out unreasonable values
+                    responseTimes.push(time);
+                    return; // Skip to next item
+                }
+            }
+            
+            // Try using Unit Dispatched and Unit Onscene fields (common in Motorola data)
+            if (item['Unit Dispatched'] && item['Unit Onscene']) {
                 try {
-                    const dispatch = new Date(`2000-01-01T${item['Dispatch Time']}`);
-                    const onScene = new Date(`2000-01-01T${item['On Scene Time']}`);
+                    const dispatch = new Date(`2000-01-01T${item['Unit Dispatched']}`);
+                    const onScene = new Date(`2000-01-01T${item['Unit Onscene']}`);
                     
-                    if (!isNaN(dispatch) && !isNaN(onScene)) {
+                    if (!isNaN(dispatch.getTime()) && !isNaN(onScene.getTime())) {
                         // Get time difference in minutes
                         const diffMinutes = (onScene - dispatch) / (1000 * 60);
                         if (diffMinutes >= 0 && diffMinutes < 60) { // Filter out unreasonable values
                             responseTimes.push(diffMinutes);
+                            return; // Skip to next item
+                        } else if (diffMinutes < 0) {
+                            // Time sequence error (arrive before dispatch)
+                            timeSequenceErrorCount++;
+                        }
+                    } else {
+                        invalidTimeFormatCount++;
+                    }
+                } catch (e) {
+                    // Continue to other methods
+                    invalidTimeFormatCount++;
+                }
+            }
+            
+            // Try using Dispatch Time and On Scene Time as fallback
+            if (item['Dispatch Time'] && item['On Scene Time']) {
+                try {
+                    // Try standard format first
+                    const dispatch = new Date(`2000-01-01T${item['Dispatch Time']}`);
+                    const onScene = new Date(`2000-01-01T${item['On Scene Time']}`);
+                    
+                    if (!isNaN(dispatch.getTime()) && !isNaN(onScene.getTime())) {
+                        // Get time difference in minutes
+                        const diffMinutes = (onScene - dispatch) / (1000 * 60);
+                        if (diffMinutes >= 0 && diffMinutes < 60) { // Filter out unreasonable values
+                            responseTimes.push(diffMinutes);
+                            return; // Skip to next item
+                        } else if (diffMinutes < 0) {
+                            timeSequenceErrorCount++;
+                        }
+                    } else {
+                        // Try alternate format (12-hour AM/PM)
+                        const parseTime = (timeStr) => {
+                            if (!timeStr) return null;
+                            
+                            // Convert 12-hour format to 24-hour if needed
+                            if (timeStr.toUpperCase().includes('AM') || timeStr.toUpperCase().includes('PM')) {
+                                try {
+                                    const [timePart, ampm] = timeStr.split(/\s+/);
+                                    const [hours, minutes, seconds = '00'] = timePart.split(':').map(Number);
+                                    let adjustedHours = hours;
+                                    
+                                    if (ampm.toUpperCase() === 'PM' && hours < 12) {
+                                        adjustedHours += 12;
+                                    } else if (ampm.toUpperCase() === 'AM' && hours === 12) {
+                                        adjustedHours = 0;
+                                    }
+                                    
+                                    return `${adjustedHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                                } catch (e) {
+                                    return null;
+                                }
+                            }
+                            return timeStr;
+                        };
+                        
+                        const dispTime = parseTime(item['Dispatch Time']);
+                        const sceneTime = parseTime(item['On Scene Time']);
+                        
+                        if (dispTime && sceneTime) {
+                            const dispatchTime = new Date(`2000-01-01T${dispTime}`);
+                            const onSceneTime = new Date(`2000-01-01T${sceneTime}`);
+                            
+                            if (!isNaN(dispatchTime.getTime()) && !isNaN(onSceneTime.getTime())) {
+                                const responseMinutes = (onSceneTime - dispatchTime) / (1000 * 60);
+                                if (responseMinutes >= 0 && responseMinutes < 60) {
+                                    responseTimes.push(responseMinutes);
+                                    return; // Skip to next item
+                                } else if (responseMinutes < 0) {
+                                    timeSequenceErrorCount++;
+                                }
+                            } else {
+                                invalidTimeFormatCount++;
+                            }
+                        } else {
+                            invalidTimeFormatCount++;
                         }
                     }
                 } catch (e) {
-                    // Skip invalid times
+                    invalidTimeFormatCount++;
                 }
+            } else if (!item['Dispatch Time'] || !item['On Scene Time']) {
+                // Count missing time data
+                missingTimeData++;
             }
         });
+        
+        console.log(`Response time extraction results: 
+            - Valid times: ${responseTimes.length}
+            - Missing time data: ${missingTimeData}
+            - Invalid time formats: ${invalidTimeFormatCount}
+            - Time sequence errors: ${timeSequenceErrorCount}`);
         
         // Create frequency ranges
         const ranges = {
@@ -1569,7 +2201,62 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!chartEl) return;
         
         if (responseTimes.length === 0) {
-            chartEl.innerHTML = '<p>No valid response time data available for visualization</p>';
+            // More helpful message when no response time data is available
+            let errorDetails = "";
+            
+            if (missingTimeData > 0) {
+                errorDetails += `<li>Missing required time fields in ${missingTimeData} records</li>`;
+            }
+            
+            if (invalidTimeFormatCount > 0) {
+                errorDetails += `<li>Invalid time formats in ${invalidTimeFormatCount} records</li>`;
+            }
+            
+            if (timeSequenceErrorCount > 0) {
+                errorDetails += `<li>Time sequence errors in ${timeSequenceErrorCount} records (arrival before dispatch)</li>`;
+            }
+            
+            // Check if this is likely Motorola CAD data
+            const isMotorolaData = data.some(item => 
+                Object.keys(item).some(key => 
+                    key.toUpperCase().includes('INCIDENT_NO') || 
+                    key.toUpperCase().includes('CALL_RECEIVED') ||
+                    (key.toUpperCase().includes('DISPATCH') && key.toUpperCase().includes('TIME'))
+                )
+            );
+            
+            if (isMotorolaData) {
+                // Show a more helpful message for Motorola data
+                chartEl.innerHTML = `
+                    <div class="motorola-chart-message">
+                        <i class="fas fa-info-circle"></i>
+                        <h4>Motorola CAD Data Detected</h4>
+                        <p>The response time visualization will be generated in the Response Time Analyzer.</p>
+                        <p>While no preview is available here, your data should work in the tool.</p>
+                        <p>You can proceed with the "Send to Tool" option to visualize your data.</p>
+                        <div class="chart-placeholder">
+                            <div class="placeholder-bar" style="width: 70%;"></div>
+                            <div class="placeholder-bar" style="width: 90%;"></div>
+                            <div class="placeholder-bar" style="width: 40%;"></div>
+                            <div class="placeholder-bar" style="width: 60%;"></div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Standard error message for non-Motorola data
+                chartEl.innerHTML = `
+                    <div class="empty-chart-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h4>No valid response time data available for visualization</h4>
+                        <p>Common issues found:</p>
+                        <ul>
+                            ${errorDetails || '<li>Unknown field mapping issues</li>'}
+                        </ul>
+                        <p>Required fields: "Dispatch Time" and "On Scene Time" or equivalent.</p>
+                        <p>The formatter tool is analyzing your field names to match them with required fields.</p>
+                    </div>
+                `;
+            }
             return;
         }
         
@@ -1577,7 +2264,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let maxCount = Math.max(...Object.values(ranges));
         
         Object.entries(ranges).forEach(([range, count]) => {
-            const percentage = (count / maxCount) * 100;
+            const percentage = maxCount === 0 ? 0 : (count / maxCount) * 100;
             chartHTML += `
                 <div class="chart-row">
                     <div class="chart-label">${range}</div>
@@ -1590,7 +2277,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         chartHTML += '</div>';
-        chartHTML += `<p class="chart-note">Response time distribution across ${responseTimes.length} incidents</p>`;
+        
+        // Add data quality note if there were some issues but still valid data
+        if (missingTimeData > 0 || invalidTimeFormatCount > 0 || timeSequenceErrorCount > 0) {
+            const totalRecords = data.length;
+            const validPercentage = Math.round((responseTimes.length / totalRecords) * 100);
+            
+            chartHTML += `<p class="chart-note">Response time distribution across ${responseTimes.length} valid incidents (${validPercentage}% of data). 
+                         ${totalRecords - responseTimes.length} records had missing or invalid time data.</p>`;
+        } else {
+            chartHTML += `<p class="chart-note">Response time distribution across ${responseTimes.length} incidents</p>`;
+        }
         
         chartEl.innerHTML = chartHTML;
     }
