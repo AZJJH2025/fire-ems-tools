@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test File Upload</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .container {
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    
+    .file-section {
+      margin-bottom: 20px;
+      padding: 15px;
+      border: 1px solid #eee;
+      border-radius: 4px;
+    }
+    
+    h2 {
+      margin-top: 0;
+      color: #333;
+    }
+    
+    .file-input {
+      margin-bottom: 10px;
+    }
+    
+    .log-section {
+      background-color: #f5f5f5;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 14px;
+      max-height: 200px;
+      overflow: auto;
+      margin-bottom: 15px;
+    }
+    
+    .log-entry {
+      margin: 5px 0;
+      padding: 3px 0;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .log-entry.error {
+      color: #d32f2f;
+    }
+    
+    .log-entry.info {
+      color: #1976d2;
+    }
+    
+    .log-entry.success {
+      color: #2e7d32;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>File Input Test</h1>
+    <p>This page tests the file input functionality in isolation to verify it's working correctly.</p>
+    
+    <div class="file-section">
+      <h2>Test 1: Basic File Reading</h2>
+      <p>Select a CSV file to test basic file reading functionality:</p>
+      
+      <div class="file-input">
+        <input type="file" id="test1-file" accept=".csv">
+      </div>
+      
+      <div id="test1-log" class="log-section"></div>
+    </div>
+    
+    <div class="file-section">
+      <h2>Test 2: CSV Parsing</h2>
+      <p>Select a CSV file to test parsing functionality:</p>
+      
+      <div class="file-input">
+        <input type="file" id="test2-file" accept=".csv">
+      </div>
+      
+      <div id="test2-log" class="log-section"></div>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Test 1: Basic File Reading
+      const test1File = document.getElementById('test1-file');
+      const test1Log = document.getElementById('test1-log');
+      
+      test1File.addEventListener('change', function(e) {
+        addLogEntry(test1Log, 'File selected: ' + (e.target.files[0] ? e.target.files[0].name : 'None'), 'info');
+        
+        if (!e.target.files.length) {
+          addLogEntry(test1Log, 'No file selected', 'error');
+          return;
+        }
+        
+        const file = e.target.files[0];
+        addLogEntry(test1Log, `File: ${file.name}, Size: ${formatFileSize(file.size)}, Type: ${file.type}`, 'info');
+        
+        // Test basic file reading
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          const content = e.target.result;
+          addLogEntry(test1Log, `File read successfully. Content length: ${content.length} characters`, 'success');
+          
+          // Show first 100 characters
+          const preview = content.substring(0, 100) + (content.length > 100 ? '...' : '');
+          addLogEntry(test1Log, `Content preview: ${preview}`, 'info');
+        };
+        
+        reader.onerror = function(e) {
+          addLogEntry(test1Log, `Error reading file: ${reader.error}`, 'error');
+        };
+        
+        try {
+          reader.readAsText(file);
+          addLogEntry(test1Log, 'File reading started...', 'info');
+        } catch (error) {
+          addLogEntry(test1Log, `Error initiating file read: ${error.message}`, 'error');
+        }
+      });
+      
+      // Test 2: CSV Parsing
+      const test2File = document.getElementById('test2-file');
+      const test2Log = document.getElementById('test2-log');
+      
+      test2File.addEventListener('change', function(e) {
+        addLogEntry(test2Log, 'File selected: ' + (e.target.files[0] ? e.target.files[0].name : 'None'), 'info');
+        
+        if (!e.target.files.length) {
+          addLogEntry(test2Log, 'No file selected', 'error');
+          return;
+        }
+        
+        const file = e.target.files[0];
+        addLogEntry(test2Log, `File: ${file.name}, Size: ${formatFileSize(file.size)}`, 'info');
+        
+        // Test CSV parsing
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          try {
+            const content = e.target.result;
+            addLogEntry(test2Log, 'File loaded into memory', 'success');
+            
+            const parsedData = parseCSV(content);
+            
+            if (parsedData && parsedData.length > 0) {
+              addLogEntry(test2Log, `CSV parsed successfully: ${parsedData.length} records found`, 'success');
+              
+              if (parsedData[0]) {
+                const fields = Object.keys(parsedData[0]);
+                addLogEntry(test2Log, `Fields detected: ${fields.join(', ')}`, 'info');
+                
+                // Show first record
+                if (parsedData.length > 0) {
+                  addLogEntry(test2Log, 'First record: ' + JSON.stringify(parsedData[0]), 'info');
+                }
+              }
+            } else {
+              addLogEntry(test2Log, 'CSV parsed but no records found', 'error');
+            }
+          } catch (error) {
+            addLogEntry(test2Log, `Error parsing CSV: ${error.message}`, 'error');
+          }
+        };
+        
+        reader.onerror = function() {
+          addLogEntry(test2Log, `Error reading file: ${reader.error}`, 'error');
+        };
+        
+        try {
+          reader.readAsText(file);
+          addLogEntry(test2Log, 'File reading started...', 'info');
+        } catch (error) {
+          addLogEntry(test2Log, `Error initiating file read: ${error.message}`, 'error');
+        }
+      });
+      
+      // Helper function to add log entries
+      function addLogEntry(logElement, message, type = 'info') {
+        const entry = document.createElement('div');
+        entry.className = `log-entry ${type}`;
+        entry.textContent = message;
+        logElement.appendChild(entry);
+        logElement.scrollTop = logElement.scrollHeight;
+      }
+      
+      // Helper function to format file size
+      function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' bytes';
+        else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        else return (bytes / 1048576).toFixed(1) + ' MB';
+      }
+      
+      // CSV parsing function (simple version)
+      function parseCSV(text) {
+        const lines = text.split('\n');
+        const headers = lines[0].split(',').map(h => h.trim());
+        
+        const results = [];
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue; // Skip empty lines
+          
+          const values = line.split(',');
+          const row = {};
+          
+          headers.forEach((header, index) => {
+            row[header] = values[index] ? values[index].trim() : '';
+          });
+          
+          results.push(row);
+        }
+        
+        return results;
+      }
+    });
+  </script>
+</body>
+</html>
