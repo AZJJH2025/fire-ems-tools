@@ -958,111 +958,23 @@ function createMotorolaTestData(count) {
     return data;
 }
 
-// Install patched functions
-window.addEventListener('DOMContentLoaded', function() {
-    // Patch problematic functions
-    // Wait a brief moment to ensure the original script has loaded
-    setTimeout(function() {
-        console.log("🔧 Installing data formatter patches...");
-        
-        try {
-            // Override file input event handler to use our fixed loadFile function
-            const fileInput = document.getElementById('data-file');
-            if (fileInput) {
-                // Remove any existing event listeners
-                const newFileInput = fileInput.cloneNode(true);
-                fileInput.parentNode.replaceChild(newFileInput, fileInput);
-                
-                // Add our fixed event listener
-                newFileInput.addEventListener('change', function(e) {
-                    const file = e.target.files[0];
-                    if (!file) {
-                        fileName.textContent = 'No file selected';
-                        return;
-                    }
-                    
-                    fileName.textContent = file.name;
-                    fileType = getFileType(file);
-                    
-                    if (inputFormat.value === 'auto') {
-                        inputFormat.value = fileType;
-                    }
-                    
-                    // Hide Excel options by default
-                    excelOptions.style.display = 'none';
-                    
-                    // If it's an Excel file, we need special handling to load sheets
-                    if (fileType === 'excel') {
-                        const reader = new FileReader();
-                        
-                        reader.onload = function(e) {
-                            try {
-                                const arrayBuffer = e.target.result;
-                                // Parse Excel file to get workbook
-                                excelWorkbook = XLSX.read(arrayBuffer, {type: 'array'});
-                                
-                                // Populate sheet select dropdown
-                                excelSheet.innerHTML = '';
-                                excelWorkbook.SheetNames.forEach(sheet => {
-                                    const option = document.createElement('option');
-                                    option.value = sheet;
-                                    option.textContent = sheet;
-                                    excelSheet.appendChild(option);
-                                });
-                                
-                                // Show Excel sheet selector
-                                excelOptions.style.display = 'block';
-                                
-                                // Load the first sheet by default
-                                loadExcelSheet(excelWorkbook.SheetNames[0]);
-                                
-                                // Enable buttons once file is loaded
-                                transformBtn.disabled = false;
-                                clearBtn.disabled = false;
-                            } catch (error) {
-                                appendLog(`Error reading Excel file: ${error.message}`, 'error');
-                                console.error('Excel read error:', error);
-                            }
-                        };
-                        
-                        reader.onerror = function() {
-                            appendLog('Error reading file', 'error');
-                        };
-                        
-                        reader.readAsArrayBuffer(file);
-                    } else {
-                        // For non-Excel files, use the fixed load function
-                        loadFileFixed(file);
-                    }
-                });
-                
-                console.log("✅ File input handler patched successfully");
-            }
-            
-            // Override the Send to Tool button click handler
-            const sendToToolBtn = document.getElementById('send-to-tool-btn');
-            if (sendToToolBtn) {
-                // Remove existing event listeners
-                const newSendToToolBtn = sendToToolBtn.cloneNode(true);
-                sendToToolBtn.parentNode.replaceChild(newSendToToolBtn, sendToToolBtn);
-                
-                // Add our fixed event listener
-                newSendToToolBtn.addEventListener('click', sendToToolFixed);
-                
-                console.log("✅ Send to Tool button handler patched successfully");
-            }
-            
-            // Add global reference to the original prepareDataForTool function if it exists
-            if (typeof prepareDataForTool === 'undefined') {
-                window.prepareDataForTool = prepareDataForTool;
-                console.log("✅ Added prepareDataForTool function");
-            }
-            
-            console.log("🎉 Data formatter patch installation complete!");
-            console.log("Fixed: File loading, CSV parsing, and sessionStorage quota handling");
-            
-        } catch (error) {
-            console.error("❌ Error installing data formatter patches:", error);
-        }
-    }, 500);
-});
+// Add key functions to the global scope for the main script to access
+window.loadFileFixed = loadFileFixed;
+window.parseCSV = parseCSV;
+window.parseCSVRow = parseCSVRow; 
+window.sendToToolFixed = sendToToolFixed;
+window.prepareDataForTool = prepareDataForTool;
+window.detectCADSystem = detectCADSystem;
+window.processTimestamps = processTimestamps;
+window.createBasicTestData = createBasicTestData;
+window.createMotorolaTestData = createMotorolaTestData;
+
+// Install patched functions - this is a simpler approach without replacing DOM elements
+console.log("🔧 Installing data formatter patches...");
+
+// Override the original loadFile function with our fixed version
+window.loadFile = loadFileFixed;
+
+// Log successful installation
+console.log("✅ Function patches installed successfully");
+console.log("Fixed: CSV parsing, file loading, and sessionStorage quota handling");
