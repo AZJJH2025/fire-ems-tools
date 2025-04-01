@@ -52,7 +52,7 @@
         });
       }
       
-      // Check storage button
+      // Check storage button - Fixed implementation
       const checkStorageBtn = document.getElementById('check-storage-btn');
       if (checkStorageBtn) {
         checkStorageBtn.addEventListener('click', function() {
@@ -60,13 +60,18 @@
             // Load the debug script dynamically
             const script = document.createElement('script');
             script.src = '/static/debug-session-storage.js';
-            document.head.appendChild(script);
-            
-            // Hide the modal
-            const storageHelp = document.getElementById('data-transfer-help');
-            if (storageHelp) {
-              storageHelp.style.display = 'none';
-            }
+            script.onload = function() {
+              console.log('Storage debugger loaded successfully');
+              // Hide the modal after script is loaded
+              const storageHelp = document.getElementById('data-transfer-help');
+              if (storageHelp) {
+                storageHelp.style.display = 'none';
+              }
+            };
+            script.onerror = function() {
+              alert('Error: Could not load the storage debugger script.');
+            };
+            document.body.appendChild(script);
           } catch (e) {
             alert('Error loading debug script: ' + e.message);
           }
