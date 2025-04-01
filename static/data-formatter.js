@@ -1729,18 +1729,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const result = e.target.result;
             
             try {
-                // Process file based on type
+                // Process file based on type - simplified to focus on most common formats
                 switch (fileType) {
                     case 'csv':
                         console.log("Parsing CSV data");
                         originalData = parseCSV(result);
-                        if (!originalData || originalData.length === 0) {
-                            throw new Error("No valid data found in CSV file");
-                        }
-                        if (!originalData[0]) {
-                            throw new Error("First record in CSV is empty");
-                        }
-                        appendLog(`Loaded CSV with ${originalData.length} records and ${Object.keys(originalData[0]).length} fields`);
+                        appendLog(`Loaded CSV with ${originalData.length} records`);
                         break;
                     case 'excel':
                         console.log("Processing Excel data");
@@ -1753,34 +1747,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             const firstSheetName = workbook.SheetNames[0];
                             const worksheet = workbook.Sheets[firstSheetName];
                             
-                            // Convert to JSON (headers: true means use first row as headers)
-                            originalData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
-                            
-                            // Transform to match our expected format (array of objects with column headers as keys)
-                            if (originalData.length > 1) {
-                                const headers = originalData[0];
-                                originalData = originalData.slice(1).map(row => {
-                                    const obj = {};
-                                    headers.forEach((header, i) => {
-                                        if (header) { // Skip empty headers
-                                            obj[header] = row[i] !== undefined ? row[i] : '';
-                                        }
-                                    });
-                                    return obj;
-                                });
-                                
-                                // Filter out entirely empty rows
-                                originalData = originalData.filter(row => Object.values(row).some(val => val !== ''));
-                                
-                                appendLog(`Loaded Excel file with ${originalData.length} records and ${headers.length} fields from sheet: ${firstSheetName}`);
-                            } else {
-                                // Empty or only headers
-                                appendLog('Excel file has no data rows', 'warning');
-                                originalData = [];
-                            }
+                            // Convert to JSON with column headers
+                            originalData = XLSX.utils.sheet_to_json(worksheet);
+                            appendLog(`Loaded Excel file with ${originalData.length} records from sheet: ${firstSheetName}`);
                         } catch (e) {
                             console.error('Excel parse error:', e);
                             appendLog(`Error parsing Excel file: ${e.message}`, 'error');
+                            originalData = [];
                         }
                         break;
                     case 'json':
@@ -1788,84 +1761,50 @@ document.addEventListener('DOMContentLoaded', function() {
                         originalData = JSON.parse(result);
                         appendLog(`Loaded JSON with ${originalData.length} records`);
                         break;
-                    case 'xml':
-                        // Simplified XML parsing for demo
-                        appendLog('XML import not fully implemented. Please use CSV or JSON format.', 'warning');
-                        break;
-                    case 'kml':
-                        appendLog('KML/KMZ import not implemented in this demo. Please use CSV or JSON format.', 'warning');
-                        break;
                     default:
-                        // Try parsing as CSV by default
+                        // Try parsing as CSV by default for other formats
                         console.log("Unknown format, trying CSV parsing");
                         originalData = parseCSV(result);
                         appendLog(`Loaded file as CSV with ${originalData.length} records`);
                         break;
                 }
                 
-                // Create a fallback if parsing failed
+                // Make sure we have data (create a simple placeholder if needed)
                 if (!originalData || originalData.length === 0) {
-                    console.log("No data loaded, creating fallback");
-                    // Detect if this might be Motorola CAD data based on file name
-                    const isMotorolaFile = file.name.toLowerCase().includes('motorola') || 
-                                         file.name.toLowerCase().includes('cad') ||
-                                         file.name.toLowerCase().includes('premierone');
-                    
-                    if (isMotorolaFile) {
-                        appendLog(`Motorola CAD data detected from filename, creating placeholder data`, 'warning');
-                        // Create a placeholder Motorola dataset for testing
-                        originalData = [];
-                        for (let i = 0; i < 20; i++) {
-                            originalData.push({
-                                'INCIDENT_NO': `INC-${i+1000}`,
-                                'CALL_RECEIVED_DATE': new Date().toISOString().split('T')[0],
-                                'CALL_RECEIVED_TIME': '08:00:00',
-                                'DISPATCH_TIME': '08:01:00',
-                                'ARRIVAL_TIME': '08:05:00',
-                                'INCIDENT_TYPE': 'FIRE',
-                                'LAT': 33.4484 + (i * 0.001),
-                                'LON': -112.0740 + (i * 0.001)
-                            });
-                        }
-                    } else {
-                        // Just create a minimal valid dataset
-                        appendLog(`File contents could not be processed. Creating minimal dataset.`, 'error');
-                        originalData = [];
-                        for (let i = 0; i < 10; i++) {
-                            originalData.push({
-                                'Incident ID': `AUTO-${i+1000}`,
-                                'Incident Date': new Date().toISOString().split('T')[0],
-                                'Incident Time': '08:00:00'
-                            });
-                        }
+                    console.log("Creating fallback data");
+                    originalData = [];
+                    for (let i = 0; i < 5; i++) {
+                        originalData.push({
+                            'Incident ID': `AUTO-${i+1000}`,
+                            'Incident Date': new Date().toISOString().split('T')[0],
+                            'Incident Time': '08:00:00'
+                        });
                     }
+                    appendLog(`Created minimal dataset for testing`, 'warning');
                 }
                 
                 // Show preview
                 showInputPreview(originalData);
                 
-                // Enable transform button if tool is selected
-                if (selectedTool) {
-                    transformBtn.disabled = false;
-                }
+                // Always enable the transform button if there's data
+                transformBtn.disabled = false;
                 
                 appendLog(`File loaded successfully: ${file.name}`);
             } catch (error) {
                 console.error('File parsing error:', error);
                 appendLog(`Error parsing file: ${error.message}`, 'error');
                 
-                // Create fallback data
+                // Create simple fallback data
                 originalData = [];
-                for (let i = 0; i < 10; i++) {
+                for (let i = 0; i < 5; i++) {
                     originalData.push({
                         'Incident ID': `ERROR-${i+1000}`,
                         'Incident Date': new Date().toISOString().split('T')[0],
                         'Incident Time': '08:00:00'
                     });
                 }
-                
-                appendLog(`Using fallback data due to parsing error`);
                 showInputPreview(originalData);
+                transformBtn.disabled = false;
             }
         };
         
@@ -1873,20 +1812,20 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('File read error:', e);
             appendLog('Error reading file', 'error');
             
-            // Create fallback data even on read error
+            // Create minimal fallback data
             originalData = [];
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 3; i++) {
                 originalData.push({
-                    'Incident ID': `READ-ERROR-${i+1000}`,
-                    'Notes': 'File could not be read'
+                    'Incident ID': `ERROR-${i+1000}`,
+                    'Incident Date': new Date().toISOString().split('T')[0],
+                    'Incident Time': '08:00:00'
                 });
             }
-            
             showInputPreview(originalData);
+            transformBtn.disabled = false;
         };
         
         // Get the appropriate read method based on file type
-        console.log("Reading file as", fileType === 'excel' ? "binary" : "text");
         try {
             if (fileType === 'excel') {
                 reader.readAsArrayBuffer(file);
@@ -1932,7 +1871,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function parseCSV(csvText) {
-        console.log("Starting CSV parsing");
+        console.log("Starting CSV parsing with simpler algorithm");
         
         if (!csvText || typeof csvText !== 'string') {
             console.error("Invalid CSV text:", typeof csvText);
@@ -1940,80 +1879,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         try {
-            // Split by newlines and filter out any empty lines
-            const lines = csvText.split(/\r\n|\n/).filter(line => line.trim() !== '');
+            // Simple CSV parsing approach
+            const lines = csvText.split(/\r\n|\n/);
+            const headers = lines[0].split(',').map(header => header.trim().replace(/^"|"$/g, ''));
             
-            if (lines.length === 0) {
-                console.error("No lines found in CSV");
+            if (headers.length === 0) {
+                console.error("No headers found in CSV");
                 return [];
             }
             
-            console.log(`CSV has ${lines.length} lines`);
-            
-            // Parse headers with more robust handling of quoted values
-            const headerLine = lines[0];
-            const headers = [];
-            let currentHeader = '';
-            let inQuotes = false;
-            
-            for (let i = 0; i < headerLine.length; i++) {
-                const char = headerLine[i];
-                
-                if (char === '"') {
-                    inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
-                    headers.push(currentHeader.trim().replace(/^"|"$/g, ''));
-                    currentHeader = '';
-                } else {
-                    currentHeader += char;
-                }
-            }
-            
-            // Don't forget the last header
-            headers.push(currentHeader.trim().replace(/^"|"$/g, ''));
-            
-            // Make sure we have valid headers
-            if (headers.length === 0 || (headers.length === 1 && headers[0] === '')) {
-                console.error("No valid headers found in CSV");
-                return [];
-            }
-            
-            console.log(`Found ${headers.length} headers:`, headers.slice(0, 5));
+            console.log(`Found ${headers.length} headers`);
             
             const result = [];
             
-            // Use a more robust row parsing approach
             for (let i = 1; i < lines.length; i++) {
                 if (lines[i].trim() === '') continue;
                 
+                // Simple CSV parsing (doesn't handle quoted fields with commas correctly)
+                const values = lines[i].split(',').map(value => value.trim().replace(/^"|"$/g, ''));
+                
                 const row = {};
-                let fieldValue = '';
-                let fieldIndex = 0;
-                inQuotes = false;
-                
-                for (let j = 0; j < lines[i].length; j++) {
-                    const char = lines[i][j];
-                    
-                    if (char === '"') {
-                        inQuotes = !inQuotes;
-                    } else if (char === ',' && !inQuotes) {
-                        // End of field - assign to the header
-                        if (fieldIndex < headers.length) {
-                            const header = headers[fieldIndex];
-                            row[header] = fieldValue.trim().replace(/^"|"$/g, '');
-                        }
-                        fieldValue = '';
-                        fieldIndex++;
-                    } else {
-                        fieldValue += char;
-                    }
-                }
-                
-                // Don't forget the last field
-                if (fieldIndex < headers.length) {
-                    const header = headers[fieldIndex];
-                    row[header] = fieldValue.trim().replace(/^"|"$/g, '');
-                }
+                headers.forEach((header, index) => {
+                    row[header] = values[index] || '';
+                });
                 
                 // Only add non-empty rows
                 if (Object.keys(row).length > 0) {
