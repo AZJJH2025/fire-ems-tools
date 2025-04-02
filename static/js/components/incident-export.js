@@ -4,6 +4,10 @@
  * This component handles exporting incident data in various formats.
  */
 
+// Import NFIRS export functions
+import { convertToNFIRSXML, convertToNFIRSCSV, convertToNFIRSJSON } from '../nfirs/nfirs-export.js';
+import { isNFIRSReadyForExport, getMissingNFIRSFields } from '../nfirs/nfirs-validator.js';
+
 /**
  * Generate an export based on user selections
  */
@@ -34,6 +38,9 @@ function generateExport() {
     
     // Get HIPAA compliance option
     const hipaaCompliant = document.getElementById("export-hipaa-compliant").checked;
+    
+    // Get NFIRS compliance option
+    const nfirsCompliant = document.getElementById("export-nfirs-compliant")?.checked || false;
     
     // Filter incidents based on selection
     let incidents = [];
@@ -85,7 +92,60 @@ function generateExport() {
         incidents = incidents.map(incident => deidentifyIncident(incident));
     }
     
-    // Generate export based on format
+    // If NFIRS format is requested, use those specialized export functions
+    if (nfirsCompliant) {
+        // Check NFIRS compliance for each incident
+        const nfirsCompliantIncidents = [];
+        const nonCompliantIncidents = [];
+        
+        incidents.forEach(incident => {
+            if (isNFIRSReadyForExport(incident)) {
+                nfirsCompliantIncidents.push(incident);
+            } else {
+                nonCompliantIncidents.push({
+                    id: incident.id,
+                    missingFields: getMissingNFIRSFields(incident)
+                });
+            }
+        });
+        
+        // If any incidents don't meet NFIRS requirements, show a warning
+        if (nonCompliantIncidents.length > 0) {
+            // Create warning message
+            let warningMessage = "The following incidents do not meet NFIRS requirements:";
+            nonCompliantIncidents.forEach(item => {
+                warningMessage += `\n- ${item.id}: Missing ${item.missingFields.join(', ')}`;
+            });
+            warningMessage += "\n\nOnly NFIRS-compliant incidents will be exported.";
+            
+            // Only proceed with export if there are compliant incidents
+            if (nfirsCompliantIncidents.length === 0) {
+                showModal("NFIRS Export Error", 
+                    `<p>None of the selected incidents meet NFIRS requirements. Please complete the required fields before exporting.</p>`, 
+                    null, null);
+                return;
+            }
+            
+            // Show warning but continue with export of compliant incidents
+            showModal("NFIRS Export Warning", 
+                `<p>${warningMessage}</p>
+                <p>Would you like to continue with exporting only the ${nfirsCompliantIncidents.length} NFIRS-compliant incidents?</p>`, 
+                null, 
+                () => {
+                    // Continue with export of compliant incidents
+                    exportNFIRSData(nfirsCompliantIncidents, format);
+                    closeModal();
+                });
+            
+            return;
+        }
+        
+        // If all incidents are compliant, proceed with export
+        exportNFIRSData(incidents, format);
+        return;
+    }
+    
+    // Generate standard export based on format
     switch (format) {
         case "csv":
             exportCSV(incidents, hipaaCompliant);
@@ -96,8 +156,104 @@ function generateExport() {
         case "json":
             exportJSON(incidents, hipaaCompliant);
             break;
+        case "nfirs-xml":
+        case "nfirs-csv":
+        case "nfirs-json":
+            // Show error if NFIRS compliant wasn't checked but NFIRS format was selected
+            showToast("Please check 'NFIRS Compliant' checkbox for NFIRS exports", "error");
+            break;
         default:
             showToast("Unsupported export format", "error");
+    }
+}
+
+/**
+ * Export incidents in NFIRS format
+ * @param {Array} incidents - The incidents to export
+ * @param {string} format - The export format (nfirs-xml, nfirs-csv, nfirs-json)
+ */
+function exportNFIRSData(incidents, format) {
+    try {
+        switch (format) {
+            case "nfirs-xml":
+                // For XML, we need to create a single XML document with all incidents
+                let combinedXml = '<?xml version="1.0" encoding="UTF-8"?>\n<NFIRSIncidents>\n';
+                
+                incidents.forEach(incident => {
+                    // Strip the XML declaration from individual incident exports
+                    const incidentXml = convertToNFIRSXML(incident).replace('<?xml version="1.0" encoding="UTF-8"?>', '');
+                    combinedXml += incidentXml + '\n';
+                });
+                
+                combinedXml += '</NFIRSIncidents>';
+                
+                // Download the combined XML
+                downloadFile(combinedXml, "nfirs-incidents.xml", "application/xml");
+                showToast(`Exported ${incidents.length} incidents in NFIRS XML format`, "success");
+                break;
+                
+            case "nfirs-csv":
+                // For CSV, we can combine all incident CSVs into one file with a header
+                let combinedCsv = "";
+                let headerRow = "";
+                
+                incidents.forEach((incident, index) => {
+                    const incidentCsv = convertToNFIRSCSV(incident);
+                    
+                    // Get header from first incident and use for all
+                    if (index === 0) {
+                        const rows = incidentCsv.split('\n');
+                        headerRow = rows[0];
+                        combinedCsv += headerRow + '\n';
+                        combinedCsv += rows[1] + '\n';
+                    } else {
+                        // For subsequent incidents, just add the data row
+                        const rows = incidentCsv.split('\n');
+                        if (rows.length > 1) {
+                            combinedCsv += rows[1] + '\n';
+                        }
+                    }
+                });
+                
+                // Download the combined CSV
+                downloadFile(combinedCsv, "nfirs-incidents.csv", "text/csv");
+                showToast(`Exported ${incidents.length} incidents in NFIRS CSV format`, "success");
+                break;
+                
+            case "nfirs-json":
+                // For JSON, create an array of all incident JSON objects
+                const nfirsData = {
+                    meta: {
+                        exportDate: new Date().toISOString(),
+                        totalIncidents: incidents.length,
+                        format: "NFIRS"
+                    },
+                    incidents: incidents.map(incident => convertToNFIRSJSON(incident))
+                };
+                
+                // Format and download the JSON
+                const jsonContent = JSON.stringify(nfirsData, null, 2);
+                downloadFile(jsonContent, "nfirs-incidents.json", "application/json");
+                showToast(`Exported ${incidents.length} incidents in NFIRS JSON format`, "success");
+                break;
+                
+            default:
+                // For standard formats, just export as normal
+                switch (format) {
+                    case "csv":
+                        exportCSV(incidents, false);
+                        break;
+                    case "pdf":
+                        exportPDF(incidents, false);
+                        break;
+                    case "json":
+                        exportJSON(incidents, false);
+                        break;
+                }
+        }
+    } catch (error) {
+        console.error("Error during NFIRS export:", error);
+        showToast(`Error during NFIRS export: ${error.message}`, "error");
     }
 }
 

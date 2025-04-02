@@ -4,6 +4,9 @@
  * This component handles data validation for the Incident Logger.
  */
 
+// Import NFIRS validation functions
+import { validateNFIRSCompliance } from '../nfirs/nfirs-validator.js';
+
 /**
  * Validation rules for incident data
  */
@@ -32,6 +35,10 @@ const validationRules = {
         primary: {
             required: true,
             message: "Primary incident type is required"
+        },
+        property_use: {
+            required: true,
+            message: "NFIRS Property Use code is required"
         }
     },
     
@@ -40,6 +47,19 @@ const validationRules = {
         address: {
             required: true,
             message: "Incident address is required"
+        },
+        city: {
+            required: true,
+            message: "City is required"
+        },
+        state: {
+            required: true,
+            message: "State is required"
+        },
+        zip: {
+            required: true,
+            pattern: /^\d{5}(-\d{4})?$/,
+            message: "ZIP code must be in format 12345 or 12345-6789"
         },
         latitude: {
             pattern: /^-?\d{1,2}(\.\d{1,6})?$/,
@@ -118,16 +138,30 @@ const validationRules = {
     created_by: {
         required: true,
         message: "Report preparer name is required"
+    },
+    
+    // NFIRS-specific validation
+    aid_given_received: {
+        required: true,
+        message: "Aid Given or Received is required for NFIRS compliance"
+    },
+    
+    // Actions taken validation (required for NFIRS)
+    actions: {
+        required: true,
+        message: "At least one Action Taken is required for NFIRS compliance"
     }
 };
 
 /**
  * Validate an entire incident
  * @param {Object} incident - The incident data to validate
- * @returns {Object} - Object with isValid flag and array of errors
+ * @param {boolean} checkNFIRS - Whether to perform NFIRS validation
+ * @returns {Object} - Object with isValid flag and arrays of errors and warnings
  */
-function validateIncident(incident) {
+function validateIncident(incident, checkNFIRS = false) {
     const errors = [];
+    const warnings = [];
     
     // Validate basic incident properties
     validateObject(incident, validationRules.incident, errors, "");
@@ -180,9 +214,57 @@ function validateIncident(incident) {
         });
     }
     
+    // If NFIRS validation is requested and basic validation passed
+    if (checkNFIRS) {
+        // Validate aid given/received
+        validateObject(incident, validationRules.aid_given_received, errors, "");
+        
+        // Validate actions taken
+        if (!incident.actions || !incident.actions.length) {
+            errors.push({
+                field: "actions",
+                message: validationRules.actions.message
+            });
+        }
+        
+        // Run comprehensive NFIRS validation
+        try {
+            const nfirsValidation = validateNFIRSCompliance(incident);
+            
+            // Add NFIRS-specific errors
+            nfirsValidation.errors.forEach(nfirsError => {
+                // Check if this error is already in our list (to avoid duplicates)
+                const exists = errors.some(error => error.field === nfirsError.field);
+                if (!exists) {
+                    errors.push({
+                        field: nfirsError.field,
+                        message: nfirsError.message,
+                        nfirs: true // Mark as NFIRS-specific error
+                    });
+                }
+            });
+            
+            // Add NFIRS-specific warnings
+            nfirsValidation.warnings.forEach(nfirsWarning => {
+                warnings.push({
+                    field: nfirsWarning.field,
+                    message: nfirsWarning.message,
+                    nfirs: true // Mark as NFIRS-specific warning
+                });
+            });
+        } catch (error) {
+            console.error("Error during NFIRS validation:", error);
+            warnings.push({
+                field: "nfirs_validation",
+                message: "NFIRS validation could not be completed. Please check NFIRS requirements."
+            });
+        }
+    }
+    
     return {
         isValid: errors.length === 0,
-        errors: errors
+        errors: errors,
+        warnings: warnings
     };
 }
 
@@ -360,20 +442,21 @@ function validateTimeSequence(dispatch) {
 /**
  * Apply validation error styling to form elements
  * @param {Array} errors - Array of validation error objects
+ * @param {Array} warnings - Array of validation warning objects
  */
-function applyValidationErrors(errors) {
-    // Clear existing errors first
+function applyValidationErrors(errors, warnings = []) {
+    // Clear existing errors and warnings first
     clearValidationErrors();
     
-    errors.forEach(error => {
-        // Try to find the input element
-        const fieldParts = error.field.split('.');
+    // Helper function to find element by field name
+    const findElementByField = (field) => {
+        const fieldParts = field.split('.');
         const fieldName = fieldParts[fieldParts.length - 1];
         
         let element = document.getElementById(fieldName) || 
-                      document.getElementById(error.field) ||
+                      document.getElementById(field) ||
                       document.querySelector(`[name="${fieldName}"]`) ||
-                      document.querySelector(`[name="${error.field}"]`);
+                      document.querySelector(`[name="${field}"]`);
         
         // For nested fields, try constructing the ID
         if (!element && fieldParts.length > 1) {
@@ -399,15 +482,30 @@ function applyValidationErrors(errors) {
             }
         }
         
+        return element;
+    };
+    
+    // Process errors
+    errors.forEach(error => {
+        const element = findElementByField(error.field);
+        
         if (element) {
             // Mark element as having an error
             element.classList.add('error');
+            
+            // Add NFIRS specific class for styling if needed
+            if (error.nfirs) {
+                element.classList.add('nfirs-error');
+            }
             
             // Add error message
             const errorMsgId = `${element.id || element.name}-error`;
             if (!document.getElementById(errorMsgId)) {
                 const errorMsg = document.createElement('div');
                 errorMsg.className = 'error-message';
+                if (error.nfirs) {
+                    errorMsg.className += ' nfirs-error-message';
+                }
                 errorMsg.id = errorMsgId;
                 errorMsg.textContent = error.message;
                 
@@ -416,6 +514,64 @@ function applyValidationErrors(errors) {
             }
         } else {
             console.warn(`Could not find element for field ${error.field}`);
+            
+            // For NFIRS-specific errors that don't have a direct field mapping,
+            // show them in a global NFIRS error section if it exists
+            if (error.nfirs) {
+                const nfirsErrorsContainer = document.getElementById('nfirs-errors-container');
+                if (nfirsErrorsContainer) {
+                    const errorItem = document.createElement('div');
+                    errorItem.className = 'nfirs-error-item';
+                    errorItem.textContent = `${error.field}: ${error.message}`;
+                    nfirsErrorsContainer.appendChild(errorItem);
+                    nfirsErrorsContainer.style.display = 'block';
+                }
+            }
+        }
+    });
+    
+    // Process warnings
+    warnings.forEach(warning => {
+        const element = findElementByField(warning.field);
+        
+        if (element) {
+            // Mark element as having a warning
+            element.classList.add('warning');
+            
+            // Add NFIRS specific class for styling if needed
+            if (warning.nfirs) {
+                element.classList.add('nfirs-warning');
+            }
+            
+            // Add warning message
+            const warningMsgId = `${element.id || element.name}-warning`;
+            if (!document.getElementById(warningMsgId)) {
+                const warningMsg = document.createElement('div');
+                warningMsg.className = 'warning-message';
+                if (warning.nfirs) {
+                    warningMsg.className += ' nfirs-warning-message';
+                }
+                warningMsg.id = warningMsgId;
+                warningMsg.textContent = warning.message;
+                
+                // Insert after the element
+                element.parentNode.insertBefore(warningMsg, element.nextSibling);
+            }
+        } else {
+            console.warn(`Could not find element for field ${warning.field}`);
+            
+            // For NFIRS-specific warnings that don't have a direct field mapping,
+            // show them in a global NFIRS warnings section if it exists
+            if (warning.nfirs) {
+                const nfirsWarningsContainer = document.getElementById('nfirs-warnings-container');
+                if (nfirsWarningsContainer) {
+                    const warningItem = document.createElement('div');
+                    warningItem.className = 'nfirs-warning-item';
+                    warningItem.textContent = `${warning.field}: ${warning.message}`;
+                    nfirsWarningsContainer.appendChild(warningItem);
+                    nfirsWarningsContainer.style.display = 'block';
+                }
+            }
         }
     });
 }
@@ -424,13 +580,26 @@ function applyValidationErrors(errors) {
  * Clear all validation error styling
  */
 function clearValidationErrors() {
-    // Remove error class from all elements
-    document.querySelectorAll('.error').forEach(element => {
-        element.classList.remove('error');
+    // Remove error classes from all elements
+    document.querySelectorAll('.error, .nfirs-error, .warning, .nfirs-warning').forEach(element => {
+        element.classList.remove('error', 'nfirs-error', 'warning', 'nfirs-warning');
     });
     
-    // Remove all error messages
-    document.querySelectorAll('.error-message').forEach(element => {
+    // Remove all error and warning messages
+    document.querySelectorAll('.error-message, .warning-message, .nfirs-error-message, .nfirs-warning-message').forEach(element => {
         element.remove();
     });
+    
+    // Clear any NFIRS error/warning containers
+    const nfirsErrorsContainer = document.getElementById('nfirs-errors-container');
+    if (nfirsErrorsContainer) {
+        nfirsErrorsContainer.innerHTML = '';
+        nfirsErrorsContainer.style.display = 'none';
+    }
+    
+    const nfirsWarningsContainer = document.getElementById('nfirs-warnings-container');
+    if (nfirsWarningsContainer) {
+        nfirsWarningsContainer.innerHTML = '';
+        nfirsWarningsContainer.style.display = 'none';
+    }
 }

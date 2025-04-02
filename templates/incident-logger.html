@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="/static/mobile-responsive.css">
     <title>Incident Logger - FireEMS.ai</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
@@ -228,6 +229,51 @@
                                     <option value="">Select Specific Type</option>
                                     <!-- Dynamically populated based on secondary type -->
                                 </select>
+                            </div>
+                            
+                            <div class="nfirs-section">
+                                <h5>NFIRS Classification <span class="nfirs-badge">NFIRS</span></h5>
+                                <div class="form-group">
+                                    <label for="nfirs-incident-type">NFIRS Incident Type Code</label>
+                                    <div class="code-select-container">
+                                        <select id="nfirs-incident-type" name="nfirs-incident-type" required>
+                                            <option value="">Select NFIRS Code</option>
+                                            <!-- Dynamically populated with NFIRS codes -->
+                                        </select>
+                                        <button type="button" id="nfirs-code-search-btn" class="secondary-btn small-btn">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
+                                    <small class="field-description">Standard NFIRS incident type code (e.g. 111 = Building fire)</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="nfirs-property-use">NFIRS Property Use Code</label>
+                                    <div class="code-select-container">
+                                        <select id="nfirs-property-use" name="nfirs-property-use" required>
+                                            <option value="">Select Property Use</option>
+                                            <!-- Dynamically populated with NFIRS property use codes -->
+                                        </select>
+                                        <button type="button" id="nfirs-property-search-btn" class="secondary-btn small-btn">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
+                                    <small class="field-description">Standard NFIRS property use code (e.g. 419 = One- or two-family dwelling)</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="nfirs-aid">Aid Given or Received</label>
+                                    <select id="nfirs-aid" name="nfirs-aid" required>
+                                        <option value="">Select Aid Type</option>
+                                        <option value="N">None</option>
+                                        <option value="1">Mutual aid received</option>
+                                        <option value="2">Automatic aid received</option>
+                                        <option value="3">Mutual aid given</option>
+                                        <option value="4">Automatic aid given</option>
+                                        <option value="5">Other aid given</option>
+                                    </select>
+                                    <small class="field-description">Required for NFIRS reporting</small>
+                                </div>
                             </div>
                         </div>
                         
@@ -737,6 +783,116 @@
                             </div>
                         </div>
                         
+                        <div class="form-section nfirs-section">
+                            <h4>NFIRS Data <span class="nfirs-badge">NFIRS</span></h4>
+                            
+                            <div class="form-group">
+                                <label>Actions Taken <small>(Required for NFIRS)</small></label>
+                                <div id="actions-container">
+                                    <div class="action-entry">
+                                        <div class="code-select-container">
+                                            <select id="action-code-1" name="action-code-1" class="action-code" required>
+                                                <option value="">Select Action Taken</option>
+                                                <!-- Dynamically populated with NFIRS action codes -->
+                                            </select>
+                                            <button type="button" class="action-search-btn secondary-btn small-btn">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                            <button type="button" class="remove-action-btn secondary-btn small-btn">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" id="add-action-btn" class="secondary-btn small-btn">
+                                    <i class="fas fa-plus"></i> Add Action
+                                </button>
+                            </div>
+                            
+                            <div id="fire-module-container" style="display:none;">
+                                <h5>Fire Module <small>(Required for fire incidents)</small></h5>
+                                
+                                <div class="form-group">
+                                    <label for="fire-area-origin">Area of Fire Origin</label>
+                                    <div class="code-select-container">
+                                        <select id="fire-area-origin" name="fire-area-origin">
+                                            <option value="">Select Area of Origin</option>
+                                            <!-- Dynamically populated with NFIRS fire origin codes -->
+                                        </select>
+                                        <button type="button" id="origin-search-btn" class="secondary-btn small-btn">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="fire-heat-source">Heat Source</label>
+                                    <div class="code-select-container">
+                                        <select id="fire-heat-source" name="fire-heat-source">
+                                            <option value="">Select Heat Source</option>
+                                            <!-- Dynamically populated with NFIRS heat source codes -->
+                                        </select>
+                                        <button type="button" id="heat-search-btn" class="secondary-btn small-btn">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="fire-item-ignited">Item First Ignited</label>
+                                    <div class="code-select-container">
+                                        <select id="fire-item-ignited" name="fire-item-ignited">
+                                            <option value="">Select Item</option>
+                                            <!-- Dynamically populated with NFIRS item ignited codes -->
+                                        </select>
+                                        <button type="button" id="item-search-btn" class="secondary-btn small-btn">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="fire-spread">Fire Spread</label>
+                                    <select id="fire-spread" name="fire-spread">
+                                        <option value="">Select Fire Spread</option>
+                                        <option value="1">Confined to object of origin</option>
+                                        <option value="2">Confined to room of origin</option>
+                                        <option value="3">Confined to floor of origin</option>
+                                        <option value="4">Confined to building of origin</option>
+                                        <option value="5">Beyond building of origin</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="detector-presence">Detector Presence</label>
+                                    <select id="detector-presence" name="detector-presence">
+                                        <option value="">Select Detector Status</option>
+                                        <option value="1">Present and operated</option>
+                                        <option value="2">Present but did not operate</option>
+                                        <option value="3">Present but operation undetermined</option>
+                                        <option value="4">None present</option>
+                                        <option value="5">Undetermined</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <div id="nfirs-errors-container" class="nfirs-errors-container" style="display:none;">
+                                    <h5>NFIRS Validation Errors</h5>
+                                    <!-- Dynamically filled with NFIRS validation errors -->
+                                </div>
+                                
+                                <div id="nfirs-warnings-container" class="nfirs-warnings-container" style="display:none;">
+                                    <h5>NFIRS Validation Warnings</h5>
+                                    <!-- Dynamically filled with NFIRS validation warnings -->
+                                </div>
+                                
+                                <button type="button" id="validate-nfirs-btn" class="secondary-btn">
+                                    <i class="fas fa-check-circle"></i> Validate NFIRS Compliance
+                                </button>
+                            </div>
+                        </div>
+                        
                         <div class="form-navigation">
                             <button type="button" class="prev-btn"><i class="fas fa-arrow-left"></i> Previous</button>
                             <div class="save-buttons">
@@ -839,6 +995,21 @@
                                 <label for="format-json">JSON</label>
                             </div>
                         </div>
+                        <div class="format-options nfirs-formats">
+                            <h5>NFIRS Formats</h5>
+                            <div class="form-group">
+                                <input type="radio" id="format-nfirs-xml" name="export-format" value="nfirs-xml">
+                                <label for="format-nfirs-xml">NFIRS XML</label>
+                            </div>
+                            <div class="form-group">
+                                <input type="radio" id="format-nfirs-csv" name="export-format" value="nfirs-csv">
+                                <label for="format-nfirs-csv">NFIRS CSV</label>
+                            </div>
+                            <div class="form-group">
+                                <input type="radio" id="format-nfirs-json" name="export-format" value="nfirs-json">
+                                <label for="format-nfirs-json">NFIRS JSON</label>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="export-section">
@@ -880,6 +1051,19 @@
                                 <i class="fas fa-info-circle"></i> 
                                 De-identified data will have Protected Health Information (PHI) removed according to 
                                 HIPAA's Safe Harbor Method, which requires removal of 18 types of identifiers.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="export-section nfirs-section">
+                        <h4>NFIRS Compliance</h4>
+                        <div class="form-group">
+                            <input type="checkbox" id="export-nfirs-compliant" name="export-nfirs-compliant">
+                            <label for="export-nfirs-compliant">Format as NFIRS submission</label>
+                            <p class="nfirs-info">
+                                <i class="fas fa-info-circle"></i> 
+                                Creates an NFIRS-compliant export format suitable for submission to the National Fire Incident 
+                                Reporting System. Only incidents with all required NFIRS fields will be included.
                             </p>
                         </div>
                     </div>
@@ -1205,6 +1389,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.11.9/dayjs.min.js"></script>
+    
+    <!-- NFIRS module scripts -->
+    <script src="/static/js/nfirs/nfirs-codes.js"></script>
+    <script src="/static/js/nfirs/nfirs-validator.js"></script>
+    <script src="/static/js/nfirs/nfirs-export.js"></script>
+    <script src="/static/js/nfirs/nfirs-ui.js"></script>
     
     <!-- Component scripts - changed from type="module" to normal scripts -->
     <script src="/static/js/components/incident-form.js"></script>
