@@ -720,15 +720,62 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Transform data if needed to match the expected format
                 originalData = dataToProcess.map(item => {
-                    // Debug the raw data format for first item
+                    // Debug the raw data format for first few items
                     if (dataToProcess.indexOf(item) === 0) {
                         debugLog(`Raw data sample: ${JSON.stringify(item)}`);
+                        
+                        // List all available fields in the data for debugging
+                        const keys = Object.keys(item);
+                        debugLog(`Available fields: ${keys.join(', ')}`);
+                        
+                        // Check if any keys look like they might contain coordinate data
+                        const possibleLatKeys = keys.filter(key => 
+                            key.toLowerCase().includes('lat') || 
+                            key.toLowerCase() === 'y' || 
+                            key.toLowerCase().includes('latitude'));
+                            
+                        const possibleLngKeys = keys.filter(key => 
+                            key.toLowerCase().includes('lon') || 
+                            key.toLowerCase().includes('lng') || 
+                            key.toLowerCase() === 'x' || 
+                            key.toLowerCase().includes('long'));
+                            
+                        if (possibleLatKeys.length > 0) {
+                            debugLog(`Possible latitude fields: ${possibleLatKeys.join(', ')}`);
+                            possibleLatKeys.forEach(key => {
+                                debugLog(`${key} value: ${item[key]} (${typeof item[key]})`);
+                            });
+                        }
+                        
+                        if (possibleLngKeys.length > 0) {
+                            debugLog(`Possible longitude fields: ${possibleLngKeys.join(', ')}`);
+                            possibleLngKeys.forEach(key => {
+                                debugLog(`${key} value: ${item[key]} (${typeof item[key]})`);
+                            });
+                        }
                     }
                     
                     // Try to extract latitude from different possible properties
                     let lat = null;
-                    if (item.latitude !== undefined) {
+                    
+                    // Check for case-insensitive property names and normalize them
+                    const itemKeys = Object.keys(item);
+                    const latitudeKey = itemKeys.find(key => 
+                        key.toLowerCase() === 'latitude' || 
+                        key.toLowerCase() === 'lat' ||
+                        key.toLowerCase() === 'y' ||
+                        key.toLowerCase() === 'latitude_wgs84'
+                    );
+                    
+                    if (latitudeKey) {
+                        lat = typeof item[latitudeKey] === 'string' ? parseFloat(item[latitudeKey]) : item[latitudeKey];
+                        debugLog(`Found latitude in field: ${latitudeKey} = ${lat}`);
+                    } else if (item.Latitude !== undefined) {
+                        lat = typeof item.Latitude === 'string' ? parseFloat(item.Latitude) : item.Latitude;
+                    } else if (item.latitude !== undefined) {
                         lat = typeof item.latitude === 'string' ? parseFloat(item.latitude) : item.latitude;
+                    } else if (item.LAT !== undefined) {
+                        lat = typeof item.LAT === 'string' ? parseFloat(item.LAT) : item.LAT;
                     } else if (item.lat !== undefined) {
                         lat = typeof item.lat === 'string' ? parseFloat(item.lat) : item.lat;
                     } else if (item.y !== undefined) {
@@ -740,10 +787,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Try to extract longitude from different possible properties
                     let lng = null;
-                    if (item.longitude !== undefined) {
+                    
+                    // Check for case-insensitive property names and normalize them
+                    const lngKey = itemKeys.find(key => 
+                        key.toLowerCase() === 'longitude' || 
+                        key.toLowerCase() === 'lng' || 
+                        key.toLowerCase() === 'lon' || 
+                        key.toLowerCase() === 'long' || 
+                        key.toLowerCase() === 'x' ||
+                        key.toLowerCase() === 'longitude_wgs84'
+                    );
+                    
+                    if (lngKey) {
+                        lng = typeof item[lngKey] === 'string' ? parseFloat(item[lngKey]) : item[lngKey];
+                        debugLog(`Found longitude in field: ${lngKey} = ${lng}`);
+                    } else if (item.Longitude !== undefined) {
+                        lng = typeof item.Longitude === 'string' ? parseFloat(item.Longitude) : item.Longitude;
+                    } else if (item.longitude !== undefined) {
                         lng = typeof item.longitude === 'string' ? parseFloat(item.longitude) : item.longitude;
-                    } else if (item.lng !== undefined) {
-                        lng = typeof item.lng === 'string' ? parseFloat(item.lng) : item.lng;
+                    } else if (item.LON !== undefined || item.LONG !== undefined) {
+                        lng = typeof (item.LON || item.LONG) === 'string' ? parseFloat(item.LON || item.LONG) : (item.LON || item.LONG);
+                    } else if (item.lng !== undefined || item.lon !== undefined || item.long !== undefined) {
+                        lng = typeof (item.lng || item.lon || item.long) === 'string' ? parseFloat(item.lng || item.lon || item.long) : (item.lng || item.lon || item.long);
                     } else if (item.x !== undefined) {
                         lng = typeof item.x === 'string' ? parseFloat(item.x) : item.x;
                     } else if (item.location && item.location.coordinates && item.location.coordinates[0] !== undefined) {
@@ -765,6 +830,40 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                         } catch (e) {
                             console.error("Error parsing date:", e);
+                        }
+                    }
+                    
+                    // Check for special case: separate address fields that need geocoding
+                    // (We can't actually geocode here, but we can check if this might be the issue)
+                    if ((lat === null || isNaN(lat) || !isFinite(lat)) || 
+                        (lng === null || isNaN(lng) || !isFinite(lng))) {
+                        
+                        // Check if we have address fields but no coordinates
+                        const hasAddressFields = item.address || item.Address || 
+                                              item.LOCATION_ADDR || item.location_address ||
+                                              (item.street && (item.city || item.state || item.zip));
+                                              
+                        if (hasAddressFields && dataToProcess.indexOf(item) < 3) {
+                            debugLog(`Item has address fields but no valid coordinates. This data might need geocoding: ${JSON.stringify(item)}`);
+                        }
+                    }
+                    
+                    // Special case for Phoenix Fire Department format
+                    if ((lat === null || isNaN(lat) || !isFinite(lat)) && 
+                        (lng === null || isNaN(lng) || !isFinite(lng))) {
+                        
+                        // Check for Phoenix FD specific formats where coords are in a single field
+                        if (item.coordinates || item.Coordinates || item.COORDINATES) {
+                            const coordStr = item.coordinates || item.Coordinates || item.COORDINATES;
+                            if (typeof coordStr === 'string') {
+                                // Try parsing common formats like "33.4484,-112.0740" or "33.4484 -112.0740"
+                                const coordParts = coordStr.split(/[,\s]+/);
+                                if (coordParts.length === 2) {
+                                    lat = parseFloat(coordParts[0]);
+                                    lng = parseFloat(coordParts[1]);
+                                    debugLog(`Parsed coordinates from combined field: ${lat}, ${lng}`);
+                                }
+                            }
                         }
                     }
                     
