@@ -24,13 +24,41 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize the map with animations disabled to prevent rendering issues
     const map = L.map('map', {
-        fadeAnimation: false // Disable animations which can cause issues
+        fadeAnimation: false, // Disable animations which can cause issues
+        preferCanvas: false   // Use SVG renderer for better export compatibility
     }).setView([39.8283, -98.5795], 4); // Default center of US
 
     // Make sure map is ready
     map.whenReady(() => {
         debugLog("Leaflet map is ready");
     });
+    
+    // Helper function to ensure map is in good state for exporting
+    function prepareMapForExport() {
+        // Force redraw all layers
+        map.eachLayer(layer => {
+            if (layer instanceof L.TileLayer) {
+                layer.redraw();
+            }
+        });
+        
+        // Invalidate size to ensure map is properly sized
+        map.invalidateSize();
+        
+        // Make sure all tiles are loaded
+        const container = map.getContainer();
+        const tiles = container.querySelectorAll('.leaflet-tile');
+        let allTilesLoaded = true;
+        
+        tiles.forEach(tile => {
+            // Check if any tiles are still loading
+            if (!tile.complete) {
+                allTilesLoaded = false;
+            }
+        });
+        
+        return allTilesLoaded;
+    }
 
     // Add the base tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -943,21 +971,142 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show a loading message
         showUploadStatus('Generating PNG image...', 'info');
         
-        // Use html2canvas to capture the map
-        html2canvas(document.getElementById('map-container')).then(canvas => {
-            try {
-                // Create download link
-                const link = document.createElement('a');
-                link.download = 'call-density-map.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
+        // Prepare the map for export
+        debugLog("Preparing map for export");
+        prepareMapForExport();
+        
+        // Create a function to handle the actual export
+        const captureMap = () => {
+            // Add a temporary loading indicator overlay
+            const loadingOverlay = document.createElement('div');
+            loadingOverlay.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;z-index:1001;';
+            loadingOverlay.innerHTML = '<div style="background:white;padding:10px;border-radius:5px;box-shadow:0 0 10px rgba(0,0,0,0.2);">Capturing map...</div>';
+            document.getElementById('map-container').appendChild(loadingOverlay);
+            
+            // Trigger full tile reload
+            map.eachLayer(layer => {
+                if (layer instanceof L.TileLayer) {
+                    // Force reload of tiles
+                    layer._removeTile = function() {}; // Temporarily disable tile removal
+                    layer.redraw();
+                    setTimeout(() => {
+                        // Restore original function after timeout
+                        delete layer._removeTile;
+                    }, 1000);
+                }
+            });
+            
+            // Wait for next animation frame to ensure DOM is updated
+            requestAnimationFrame(() => {
+                // Use leaflet-image library if available, otherwise fall back to html2canvas
+                if (window.leafletImage) {
+                    leafletImage(map, function(err, canvas) {
+                        if (err) {
+                            console.error("Error with leaflet-image:", err);
+                            fallbackToHtml2Canvas();
+                            return;
+                        }
+                        
+                        try {
+                            // Create download link
+                            const link = document.createElement('a');
+                            link.download = 'call-density-map.png';
+                            link.href = canvas.toDataURL('image/png');
+                            link.click();
+                            
+                            showUploadStatus('PNG image downloaded', 'success');
+                            
+                            // Remove the loading overlay
+                            document.getElementById('map-container').removeChild(loadingOverlay);
+                        } catch (error) {
+                            console.error("Error exporting PNG:", error);
+                            showUploadStatus('Error generating PNG, trying alternate method...', 'error');
+                            fallbackToHtml2Canvas();
+                        }
+                    });
+                } else {
+                    fallbackToHtml2Canvas();
+                }
                 
-                showUploadStatus('PNG image downloaded', 'success');
-            } catch (error) {
-                console.error("Error exporting PNG:", error);
-                showUploadStatus('Error generating PNG', 'error');
-            }
-        });
+                // Fallback to html2canvas if leaflet-image fails or is not available
+                function fallbackToHtml2Canvas() {
+                    debugLog("Using html2canvas for export");
+                    
+                    // Use html2canvas with proper settings for map capture
+                    html2canvas(document.getElementById('map-container'), {
+                        useCORS: true,              // Allow loading of cross-origin images
+                        allowTaint: true,           // Allow images that might taint canvas
+                        foreignObjectRendering: false, // Disable FO rendering which can cause issues
+                        logging: true,              // Enable logging for debugging
+                        scale: 2,                   // Higher scale for better quality
+                        backgroundColor: '#FFFFFF', // White background
+                        onclone: function(clonedDoc) {
+                            // This runs on the cloned document before rendering
+                            const mapElem = clonedDoc.getElementById('map');
+                            if (mapElem) {
+                                // Make map container visible during capture
+                                mapElem.style.visibility = 'visible';
+                                
+                                // Ensure the map container has correct dimensions
+                                const mapContainer = clonedDoc.getElementById('map-container');
+                                if (mapContainer) {
+                                    mapContainer.style.overflow = 'visible';
+                                }
+                                
+                                // Make sure all Leaflet tiles are visible
+                                const tiles = clonedDoc.querySelectorAll('.leaflet-tile');
+                                tiles.forEach(tile => {
+                                    tile.style.visibility = 'visible';
+                                    tile.style.opacity = '1';
+                                });
+                                
+                                // Make sure all markers are visible
+                                const markers = clonedDoc.querySelectorAll('.leaflet-marker-icon');
+                                markers.forEach(marker => {
+                                    marker.style.visibility = 'visible';
+                                    marker.style.opacity = '1';
+                                });
+                                
+                                // Make sure controls are hidden (they often cause issues)
+                                const controls = clonedDoc.querySelectorAll('.leaflet-control-container');
+                                controls.forEach(control => {
+                                    control.style.display = 'none';
+                                });
+                            }
+                        }
+                    }).then(canvas => {
+                        try {
+                            // Create download link
+                            const link = document.createElement('a');
+                            link.download = 'call-density-map.png';
+                            link.href = canvas.toDataURL('image/png');
+                            link.click();
+                            
+                            showUploadStatus('PNG image downloaded', 'success');
+                        } catch (error) {
+                            console.error("Error exporting PNG:", error);
+                            showUploadStatus('Error generating PNG', 'error');
+                        } finally {
+                            // Remove the loading overlay
+                            if (loadingOverlay.parentNode) {
+                                loadingOverlay.parentNode.removeChild(loadingOverlay);
+                            }
+                        }
+                    }).catch(error => {
+                        console.error("Error capturing map:", error);
+                        showUploadStatus('Error capturing map image', 'error');
+                        
+                        // Remove the loading overlay
+                        if (loadingOverlay.parentNode) {
+                            loadingOverlay.parentNode.removeChild(loadingOverlay);
+                        }
+                    });
+                }
+            });
+        };
+        
+        // Force a small delay to ensure map is fully loaded before capture
+        setTimeout(captureMap, 500);
     }
     
     // Function to export the map as a PDF
@@ -965,37 +1114,179 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show a loading message
         showUploadStatus('Generating PDF...', 'info');
         
-        // Use html2canvas to capture the map
-        html2canvas(document.getElementById('map-container')).then(canvas => {
+        // Prepare the map for export
+        debugLog("Preparing map for PDF export");
+        prepareMapForExport();
+        
+        // Ensure the legend is visible and properly positioned
+        const legendElem = document.getElementById('legend');
+        if (legendElem) {
+            legendElem.style.display = 'block';
+        }
+        
+        // Create a function to handle the actual export
+        const generatePDF = (imageDataUrl) => {
             try {
                 // Convert to PDF using jsPDF
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('landscape', 'mm', 'a4');
                 
-                // Calculate aspect ratio
-                const imgData = canvas.toDataURL('image/png');
-                const pageWidth = pdf.internal.pageSize.getWidth();
-                const pageHeight = pdf.internal.pageSize.getHeight();
-                const imgWidth = canvas.width;
-                const imgHeight = canvas.height;
-                const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
-                
-                // Add image to PDF
-                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth * ratio, imgHeight * ratio);
-                
-                // Add title and legend
-                pdf.setFont('helvetica', 'bold');
-                pdf.setFontSize(16);
-                pdf.text('Call Density Map', 10, imgHeight * ratio + 10);
-                
-                // Save the PDF
-                pdf.save('call-density-map.pdf');
-                
-                showUploadStatus('PDF downloaded', 'success');
+                // Create an image element to get dimensions
+                const img = new Image();
+                img.onload = function() {
+                    // Calculate aspect ratio to fit on page
+                    const pageWidth = pdf.internal.pageSize.getWidth() - 20; // 10mm margin on each side
+                    const pageHeight = pdf.internal.pageSize.getHeight() - 30; // 10mm top margin + 20mm bottom for text
+                    const imgWidth = this.width;
+                    const imgHeight = this.height;
+                    const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+                    
+                    // Add image to PDF
+                    pdf.addImage(this, 'PNG', 10, 10, imgWidth * ratio, imgHeight * ratio);
+                    
+                    // Get information for the PDF
+                    let pdfTitle = 'Call Density Heatmap';
+                    let totalCalls = 'N/A';
+                    let dateRange = 'N/A';
+                    
+                    // Try to get call count from the dashboard
+                    const hotspotResults = document.getElementById('hotspot-results');
+                    if (hotspotResults) {
+                        const countElement = hotspotResults.querySelector('.hotspot-stat strong');
+                        if (countElement) {
+                            totalCalls = countElement.textContent;
+                        }
+                    }
+                    
+                    // Add title and metadata section
+                    const titleY = imgHeight * ratio + 15;
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setFontSize(16);
+                    pdf.text(pdfTitle, 10, titleY);
+                    
+                    // Add call information
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.setFontSize(10);
+                    pdf.text(`Total Incidents: ${totalCalls}`, 10, titleY + 7);
+                    
+                    // Add date and time
+                    const currentDate = new Date().toLocaleString();
+                    pdf.text(`Generated: ${currentDate}`, pageWidth - 50, titleY + 7);
+                    
+                    // Add a footer with attribution
+                    pdf.setFont('helvetica', 'italic');
+                    pdf.setFontSize(8);
+                    pdf.text('Map data © OpenStreetMap contributors | Generated by FireEMS.ai', 10, pdf.internal.pageSize.getHeight() - 5);
+                    
+                    // Save the PDF
+                    pdf.save('call-density-map.pdf');
+                    
+                    showUploadStatus('PDF downloaded', 'success');
+                };
+                img.src = imageDataUrl;
             } catch (error) {
-                console.error("Error exporting PDF:", error);
+                console.error("Error creating PDF:", error);
                 showUploadStatus('Error generating PDF', 'error');
             }
-        });
+        };
+        
+        // Function to handle the capture process
+        const captureForPDF = () => {
+            // Add a temporary loading indicator overlay
+            const loadingOverlay = document.createElement('div');
+            loadingOverlay.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;z-index:1001;';
+            loadingOverlay.innerHTML = '<div style="background:white;padding:10px;border-radius:5px;box-shadow:0 0 10px rgba(0,0,0,0.2);">Generating PDF...</div>';
+            document.getElementById('map-container').appendChild(loadingOverlay);
+            
+            // Try two capture methods, preferring domtoimage for better quality if available
+            const tryDomToImage = typeof domtoimage !== 'undefined';
+            
+            if (tryDomToImage) {
+                // Use dom-to-image for better quality if available
+                debugLog("Using dom-to-image for PDF export");
+                domtoimage.toPng(document.getElementById('map-container'), {
+                    quality: 1,
+                    bgcolor: '#fff',
+                    scale: 2,
+                    style: {
+                        'transform': 'scale(1)',
+                        'transform-origin': 'top left'
+                    }
+                })
+                .then(function(dataUrl) {
+                    generatePDF(dataUrl);
+                    if (loadingOverlay.parentNode) {
+                        loadingOverlay.parentNode.removeChild(loadingOverlay);
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error with dom-to-image, falling back to html2canvas:', error);
+                    useHtml2Canvas();
+                });
+            } else {
+                useHtml2Canvas();
+            }
+            
+            // Fallback to html2canvas
+            function useHtml2Canvas() {
+                debugLog("Using html2canvas for PDF export");
+                html2canvas(document.getElementById('map-container'), {
+                    useCORS: true,
+                    allowTaint: true,
+                    foreignObjectRendering: false,
+                    logging: true,
+                    scale: 2,
+                    backgroundColor: '#FFFFFF',
+                    onclone: function(clonedDoc) {
+                        const mapElem = clonedDoc.getElementById('map');
+                        if (mapElem) {
+                            // Ensure high visibility for all map elements
+                            mapElem.style.visibility = 'visible';
+                            
+                            // Ensure the map container has correct dimensions
+                            const mapContainer = clonedDoc.getElementById('map-container');
+                            if (mapContainer) {
+                                mapContainer.style.overflow = 'visible';
+                            }
+                            
+                            // Make sure all Leaflet tiles are visible
+                            const tiles = clonedDoc.querySelectorAll('.leaflet-tile');
+                            tiles.forEach(tile => {
+                                tile.style.visibility = 'visible';
+                                tile.style.opacity = '1';
+                            });
+                            
+                            // Make sure all markers are visible
+                            const markers = clonedDoc.querySelectorAll('.leaflet-marker-icon, .leaflet-marker-shadow, .call-density-marker');
+                            markers.forEach(marker => {
+                                marker.style.visibility = 'visible';
+                                marker.style.opacity = '1';
+                            });
+                            
+                            // Make sure legend is visible
+                            const legend = clonedDoc.querySelector('.legend');
+                            if (legend) {
+                                legend.style.visibility = 'visible';
+                                legend.style.opacity = '1';
+                            }
+                        }
+                    }
+                }).then(function(canvas) {
+                    generatePDF(canvas.toDataURL('image/png'));
+                    if (loadingOverlay.parentNode) {
+                        loadingOverlay.parentNode.removeChild(loadingOverlay);
+                    }
+                }).catch(function(error) {
+                    console.error("Error capturing map:", error);
+                    showUploadStatus('Error capturing map for PDF', 'error');
+                    if (loadingOverlay.parentNode) {
+                        loadingOverlay.parentNode.removeChild(loadingOverlay);
+                    }
+                });
+            }
+        };
+        
+        // Ensure map is fully loaded and rendered before capturing
+        setTimeout(captureForPDF, 800);
     }
 });
