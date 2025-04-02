@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let originalData = [];
     let filteredData = [];
     let callTypes = [];
+    let markerClusterGroup = null;
     
     // Check for data from Data Formatter
     checkForFormatterData();
@@ -212,14 +213,17 @@ document.addEventListener('DOMContentLoaded', function() {
         updateHotspotAnalysis(filteredData);
     }
 
-    // Function to update the heatmap
+    // Function to update the heatmap with marker clustering
     function updateHeatmap(data) {
-        // Remove existing heat layer if it exists
+        // Remove existing layer groups if they exist
         if (heatLayer) {
             map.removeLayer(heatLayer);
         }
         
-        // Remove any existing marker groups
+        if (markerClusterGroup) {
+            map.removeLayer(markerClusterGroup);
+        }
+        
         if (window.markerGroup) {
             map.removeLayer(window.markerGroup);
         }
@@ -232,8 +236,121 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Create new marker group
-        window.markerGroup = L.layerGroup().addTo(map);
+        // Create new marker cluster group with custom settings
+        markerClusterGroup = L.markerClusterGroup({
+            showCoverageOnHover: false,
+            zoomToBoundsOnClick: true,
+            spiderfyOnMaxZoom: true,
+            removeOutsideVisibleBounds: true,
+            disableClusteringAtZoom: 18,
+            maxClusterRadius: 80,
+            // Custom icon creator for clusters
+            iconCreateFunction: function(cluster) {
+                const count = cluster.getChildCount();
+                
+                // Determine size and color based on count
+                let size, colorClass;
+                
+                if (count < 10) {
+                    size = 'small';
+                    colorClass = 'cluster-low';
+                } else if (count < 50) {
+                    size = 'medium';
+                    colorClass = 'cluster-medium';
+                } else if (count < 200) {
+                    size = 'large';
+                    colorClass = 'cluster-high';
+                } else {
+                    size = 'xlarge';
+                    colorClass = 'cluster-critical';
+                }
+                
+                // Create cluster icon with the count and appropriate styling
+                return L.divIcon({
+                    html: `<div><span>${count}</span></div>`,
+                    className: `marker-cluster marker-cluster-${size} ${colorClass}`,
+                    iconSize: L.point(40, 40)
+                });
+            }
+        }).addTo(map);
+        
+        // Add custom CSS for the cluster markers
+        if (!document.getElementById('cluster-styles')) {
+            const styleElement = document.createElement('style');
+            styleElement.id = 'cluster-styles';
+            styleElement.textContent = `
+                .marker-cluster {
+                    background-clip: padding-box;
+                    border-radius: 50%;
+                    text-align: center;
+                    font-weight: bold;
+                    font-family: Arial, sans-serif;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .marker-cluster div {
+                    width: 100%;
+                    height: 100%;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .marker-cluster span {
+                    color: white;
+                    text-shadow: 0px 0px 2px rgba(0,0,0,0.7);
+                }
+                .marker-cluster-small {
+                    width: 30px !important;
+                    height: 30px !important;
+                    font-size: 11px;
+                }
+                .marker-cluster-medium {
+                    width: 40px !important;
+                    height: 40px !important;
+                    font-size: 13px;
+                }
+                .marker-cluster-large {
+                    width: 50px !important;
+                    height: 50px !important;
+                    font-size: 15px;
+                }
+                .marker-cluster-xlarge {
+                    width: 60px !important;
+                    height: 60px !important;
+                    font-size: 17px;
+                }
+                .cluster-low {
+                    background-color: rgba(166, 206, 227, 0.9);
+                }
+                .cluster-medium {
+                    background-color: rgba(100, 149, 237, 0.9);
+                }
+                .cluster-high {
+                    background-color: rgba(31, 78, 176, 0.9);
+                }
+                .cluster-critical {
+                    background-color: rgba(215, 48, 39, 0.9);
+                }
+                /* Animation for zoom levels */
+                .marker-cluster-animating {
+                    transform-origin: center;
+                    animation: cluster-animation 0.3s ease-out;
+                }
+                @keyframes cluster-animation {
+                    0% {
+                        opacity: 0.3;
+                        transform: scale(0.5);
+                    }
+                    100% {
+                        opacity: 1;
+                        transform: scale(1);
+                    }
+                }
+            `;
+            document.head.appendChild(styleElement);
+        }
         
         // Count the occurrences of each location to determine hotspots
         const locationCounts = {};
@@ -326,7 +443,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 weight: 2,
                 opacity: 1,
                 fillOpacity: 0.8
-            }).addTo(window.markerGroup);
+            });
             
             // Determine most common call type
             let mostCommonType = 'Unknown';
@@ -397,9 +514,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     </table>
                 </div>
             `);
+            
+            // Add marker to the cluster group instead of directly to the map
+            markerClusterGroup.addLayer(marker);
         });
         
-        console.log(`Added ${locations.length} heat markers to the map`);
+        console.log(`Added ${locations.length} clustered markers to the map`);
         
         // Ensure the map view includes all the markers
         if (locations.length > 0) {
@@ -413,6 +533,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error("Error fitting map to markers:", error);
             }
         }
+        
+        // Add zoom animation event handler
+        map.on('zoomend', function() {
+            // Find all cluster groups and add animation class
+            document.querySelectorAll('.marker-cluster').forEach(el => {
+                el.classList.add('marker-cluster-animating');
+                
+                // Remove the class after animation completes
+                setTimeout(() => {
+                    el.classList.remove('marker-cluster-animating');
+                }, 300);
+            });
+        });
     }
 
     // Function to update hotspot analysis section
@@ -493,356 +626,220 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Determine if there's a clear hotspot area
-        if (heatLayer) {
+        resultsHTML += `
+            <div class="hotspot-stat">
+                <span>Hotspot Analysis:</span>
+                <strong>Zoom in/out to see detailed clusters</strong>
+            </div>
+        `;
+        
+        if (sortedTypes.length > 1) {
+            // Display a table of call types
             resultsHTML += `
-                <div class="hotspot-stat">
-                    <span>Hotspot Analysis:</span>
-                    <strong>Significant clustering detected</strong>
+                <div class="hotspot-table">
+                    <h4>Call Type Breakdown</h4>
+                    <table class="heatmap-table">
+                        <thead>
+                            <tr>
+                                <th>Call Type</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            sortedTypes.forEach(([type, count]) => {
+                const percentage = ((count / totalCalls) * 100).toFixed(1);
+                resultsHTML += `
+                    <tr>
+                        <td>${type}</td>
+                        <td>${count.toLocaleString()}</td>
+                        <td>${percentage}%</td>
+                    </tr>
+                `;
+            });
+            
+            resultsHTML += `
+                        </tbody>
+                    </table>
                 </div>
             `;
         }
         
         document.getElementById('hotspot-results').innerHTML = resultsHTML;
     }
-
-    // Function to fit the map to data points
-    function fitMapToData(data) {
-        if (!data || data.length === 0) {
-            console.log("No data to fit map to");
-            return;
-        }
+    
+    // Function to check if data is available from the Data Formatter tool
+    function checkForFormatterData() {
+        const formattedData = sessionStorage.getItem('formattedData');
+        const dataSource = sessionStorage.getItem('dataSource');
+        const formatterToolId = sessionStorage.getItem('formatterToolId');
         
-        try {
-            // Filter out any invalid coordinates
-            const validPoints = data.filter(point => {
+        console.log("Checking formatter data:", {
+            hasData: !!formattedData,
+            dataSource,
+            formatterToolId
+        });
+        
+        if (formattedData && dataSource === 'formatter' && formatterToolId === 'call-density') {
+            console.log("Found data from Data Formatter tool");
+            
+            try {
+                // Parse the data
+                const parsedData = JSON.parse(formattedData);
+                
+                let dataToProcess;
+                if (Array.isArray(parsedData)) {
+                    dataToProcess = parsedData;
+                } else if (parsedData.data && Array.isArray(parsedData.data)) {
+                    dataToProcess = parsedData.data;
+                } else {
+                    throw new Error("Invalid data format");
+                }
+                
+                // Process the data
+                console.log(`Processing ${dataToProcess.length} records from Data Formatter`);
+                
+                // Transform data if needed to match the expected format
+                originalData = dataToProcess.map(item => {
+                    // Try to convert string coordinates to numbers if needed
+                    const lat = typeof item.latitude === 'string' ? parseFloat(item.latitude) : item.latitude;
+                    const lng = typeof item.longitude === 'string' ? parseFloat(item.longitude) : item.longitude;
+                    
+                    // Handle hour, day of week, etc. if available
+                    let hour, dayOfWeek, month;
+                    
+                    if (item.datetime || item.timestamp || item.date || item.time) {
+                        const dateString = item.datetime || item.timestamp || item.date || item.time;
+                        try {
+                            const date = new Date(dateString);
+                            if (!isNaN(date.getTime())) {
+                                hour = date.getHours();
+                                dayOfWeek = date.getDay(); // 0 = Sunday, 6 = Saturday
+                                month = date.getMonth() + 1; // 1 = January, 12 = December
+                            }
+                        } catch (e) {
+                            console.error("Error parsing date:", e);
+                        }
+                    }
+                    
+                    return {
+                        ...item,
+                        latitude: lat,
+                        longitude: lng,
+                        hour: item.hour || hour,
+                        dayOfWeek: item.dayOfWeek || dayOfWeek,
+                        month: item.month || month
+                    };
+                });
+                
+                // Extract call types and update filter
+                callTypes = [...new Set(originalData.map(point => point.type))];
+                populateCallTypeFilter(callTypes);
+                
+                // Apply initial filtering and display on map
+                showUploadStatus('Data loaded from Data Formatter', 'success');
+                applyFilters();
+                
+                // Fit map to the data
+                fitMapToData(originalData);
+            } catch (error) {
+                console.error("Error processing data from Data Formatter:", error);
+                showUploadStatus(`Error processing data: ${error.message}`, 'error');
+            }
+        }
+    }
+    
+    // Fit map view to include all data points
+    function fitMapToData(data) {
+        if (!data || data.length === 0) return;
+        
+        // Extract valid coordinates
+        const validCoords = data
+            .filter(point => {
                 const lat = parseFloat(point.latitude);
                 const lng = parseFloat(point.longitude);
                 return !isNaN(lat) && !isNaN(lng) && isFinite(lat) && isFinite(lng);
-            });
-            
-            if (validPoints.length === 0) {
-                console.log("No valid coordinates to fit map to");
-                return;
-            }
-            
-            // Create bounds from valid points
-            const validLatLngs = validPoints.map(point => [
-                parseFloat(point.latitude), 
-                parseFloat(point.longitude)
-            ]);
-            
-            // Create bounds
-            const bounds = L.latLngBounds(validLatLngs);
-            
-            // Check if bounds are valid
-            if (!bounds.isValid()) {
-                console.log("Generated bounds are invalid");
-                return;
-            }
-            
-            // Fit the map to these bounds
+            })
+            .map(point => [parseFloat(point.latitude), parseFloat(point.longitude)]);
+        
+        if (validCoords.length === 0) return;
+        
+        // Create bounds and fit map
+        try {
+            const bounds = L.latLngBounds(validCoords);
             map.fitBounds(bounds, {
                 padding: [50, 50],
                 maxZoom: 13
             });
-            
-            // Ensure we're not zoomed out too far or in too close
-            if (map.getZoom() > 12) {
-                map.setZoom(12); // Limit max zoom to prevent over-zooming
-            } else if (map.getZoom() < 7) {
-                map.setZoom(7); // Ensure we're zoomed in enough to see points
-            }
-            
-            console.log("Map zoomed to fit data points at zoom level:", map.getZoom());
         } catch (error) {
             console.error("Error fitting map to data:", error);
-            // Fall back to default view
-            map.setView([39.8283, -98.5795], 4);
         }
     }
-
-    // Export as PNG button
-    document.getElementById('export-png').addEventListener('click', function() {
-        if (originalData.length === 0) {
-            alert('Please upload and process data before exporting');
-            return;
-        }
+    
+    // Export image handlers
+    document.getElementById('export-png').addEventListener('click', exportMapImage);
+    document.getElementById('export-pdf').addEventListener('click', exportMapPDF);
+    
+    // Function to export the map as an image
+    function exportMapImage() {
+        // Show a loading message
+        showUploadStatus('Generating PNG image...', 'info');
         
+        // Use html2canvas to capture the map
         html2canvas(document.getElementById('map-container')).then(canvas => {
-            const dataUrl = canvas.toDataURL('image/png');
-            const link = document.createElement('a');
-            link.href = dataUrl;
-            link.download = `FireEMS_HeatMap_${new Date().toISOString().slice(0, 10)}.png`;
-            link.click();
-        });
-    });
-
-    // Export as PDF button
-    document.getElementById('export-pdf').addEventListener('click', function() {
-        if (originalData.length === 0) {
-            alert('Please upload and process data before exporting');
-            return;
-        }
-        
-        const { jsPDF } = window.jspdf;
-        
-        // Create PDF
-        const pdf = new jsPDF('landscape', 'mm', 'a4');
-        
-        // Add title
-        pdf.setFontSize(18);
-        pdf.text('FireEMS.ai Call Density Heatmap', 15, 15);
-        
-        // Add timestamp
-        pdf.setFontSize(10);
-        pdf.text(`Generated on ${new Date().toLocaleString()}`, 15, 22);
-        
-        // Add filter information
-        pdf.setFontSize(12);
-        pdf.text('Filter Settings:', 15, 30);
-        
-        const timeFilter = document.getElementById('time-filter').value;
-        const callTypeFilter = document.getElementById('call-type-filter').value;
-        
-        pdf.setFontSize(10);
-        pdf.text(`Time Filter: ${timeFilter === 'all' ? 'All Time' : timeFilter}`, 15, 36);
-        pdf.text(`Call Type: ${callTypeFilter === 'all' ? 'All Types' : callTypeFilter}`, 15, 42);
-        
-        // Add statistics
-        pdf.setFontSize(12);
-        pdf.text('Statistics:', 15, 52);
-        
-        if (filteredData.length > 0) {
-            pdf.setFontSize(10);
-            pdf.text(`Total Incidents: ${filteredData.length.toLocaleString()}`, 15, 58);
-        }
-        
-        // Add map image
-        html2canvas(document.getElementById('map-container')).then(canvas => {
-            const imgData = canvas.toDataURL('image/png');
-            
-            // Calculate dimensions to fit in PDF and preserve aspect ratio
-            const imgWidth = 270; // A4 landscape width (minus margins)
-            const imgHeight = canvas.height * imgWidth / canvas.width;
-            
-            // Add the image (centered)
-            pdf.addImage(imgData, 'PNG', 15, 65, imgWidth, imgHeight);
-            
-            // Add footer
-            pdf.setFontSize(8);
-            pdf.text('Generated by FireEMS.ai - Analytics for Fire and Emergency Services', 15, 200);
-            
-            // Save the PDF
-            pdf.save(`FireEMS_HeatMap_${new Date().toISOString().slice(0, 10)}.pdf`);
-        });
-    });
-
-    // Function to check for and process data from the Data Formatter
-    function checkForFormatterData() {
-        // Check if we have data from the Data Formatter tool
-        console.log("Checking for formatter data, tool ID:", sessionStorage.getItem('formatterToolId'));
-        if (sessionStorage.getItem('dataSource') === 'formatter' && 
-            (sessionStorage.getItem('formatterToolId') === 'call-density' || 
-             sessionStorage.getItem('formatterTarget') === 'call-density')) {
             try {
-                console.log("Detected data from Data Formatter");
+                // Create download link
+                const link = document.createElement('a');
+                link.download = 'call-density-map.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
                 
-                // Show status message
-                showUploadStatus('Detected data from Data Formatter. Processing...', 'info');
-                
-                // Get the data from sessionStorage
-                const formatterData = JSON.parse(sessionStorage.getItem('formattedData'));
-                
-                if (formatterData && formatterData.data && formatterData.data.length > 0) {
-                    // Process the data
-                    const callData = formatterData.data.map(item => {
-                        // Create point objects in the format expected by the heatmap
-                        const point = {
-                            latitude: parseFloat(item.Latitude),
-                            longitude: parseFloat(item.Longitude)
-                        };
-                        
-                        // Map other common fields
-                        if (item['Incident Type']) {
-                            point.type = item['Incident Type'];
-                        }
-                        
-                        // If hour, dayOfWeek, and month are already in the data
-                        if (item.hour !== undefined) point.hour = item.hour;
-                        if (item.dayOfWeek !== undefined) point.dayOfWeek = item.dayOfWeek;
-                        if (item.month !== undefined) point.month = item.month;
-                        
-                        // If the data includes a timestamp, extract time components
-                        if (item['Incident Date'] && item['Incident Time']) {
-                            try {
-                                const dateTimeStr = `${item['Incident Date']}T${item['Incident Time']}`;
-                                const dateTime = new Date(dateTimeStr);
-                                
-                                if (!isNaN(dateTime.getTime())) {
-                                    if (point.hour === undefined) point.hour = dateTime.getHours();
-                                    if (point.dayOfWeek === undefined) point.dayOfWeek = dateTime.getDay();
-                                    if (point.month === undefined) point.month = dateTime.getMonth() + 1;
-                                }
-                            } catch (e) {
-                                console.warn("Error parsing incident date/time:", e);
-                            }
-                        }
-                        
-                        return point;
-                    });
-                    
-                    // Filter out any points with invalid coordinates
-                    const validPoints = callData.filter(point => {
-                        return !isNaN(point.latitude) && !isNaN(point.longitude) && 
-                               isFinite(point.latitude) && isFinite(point.longitude);
-                    });
-                    
-                    if (validPoints.length > 0) {
-                        // Store the data
-                        originalData = validPoints;
-                        
-                        // Extract unique call types for filtering
-                        callTypes = [...new Set(originalData.map(point => point.type).filter(Boolean))];
-                        populateCallTypeFilter(callTypes);
-                        
-                        // Apply initial filtering and display heat map
-                        applyFilters();
-                        
-                        // Update map view to fit data points
-                        fitMapToData(originalData);
-                        
-                        // Show success message
-                        showUploadStatus(
-                            `Successfully loaded ${validPoints.length} points from Data Formatter`, 
-                            'success'
-                        );
-                        
-                        // Add a visual indicator to show data came from formatter
-                        addFormatterIndicator(validPoints.length);
-                        
-                        // Clear the session storage to avoid reloading on refresh
-                        sessionStorage.removeItem('formattedData');
-                        sessionStorage.removeItem('dataSource');
-                    } else {
-                        showUploadStatus('No valid coordinate data found in the formatted data', 'error');
-                    }
-                } else {
-                    showUploadStatus('No valid data found from Data Formatter', 'error');
-                }
+                showUploadStatus('PNG image downloaded', 'success');
             } catch (error) {
-                console.error('Error processing data from formatter:', error);
-                showUploadStatus('Error processing data from formatter: ' + error.message, 'error');
+                console.error("Error exporting PNG:", error);
+                showUploadStatus('Error generating PNG', 'error');
             }
-        }
-    }
-    
-    // Mock data for development and testing (when no file is uploaded)
-    document.getElementById('apply-filters').addEventListener('dblclick', function() {
-        // Only use mock data if no real data is uploaded
-        if (originalData.length === 0) {
-            loadMockData();
-        }
-    });
-
-    function loadMockData() {
-        // Generate mock data points (simulating a call data file)
-        const mockPoints = [];
-        
-        // Create cluster around a major city (e.g., Chicago)
-        const chicagoLat = 41.8781;
-        const chicagoLng = -87.6298;
-        
-        // Generate 200 random points around Chicago
-        for (let i = 0; i < 200; i++) {
-            // Random offset (higher density closer to center)
-            const latOffset = (Math.random() - 0.5) * 0.5; // +/- 0.25 degrees
-            const lngOffset = (Math.random() - 0.5) * 0.5;
-            
-            // Random hour of day (with higher probability during daytime)
-            const hour = Math.floor(Math.random() * 24);
-            const intensity = 0.5 + Math.random() * 1.5; // Random intensity between 0.5 and 2
-            
-            // Random day of week (0-6, Sunday-Saturday)
-            const dayOfWeek = Math.floor(Math.random() * 7);
-            
-            // Random month (1-12)
-            const month = Math.floor(Math.random() * 12) + 1;
-            
-            // Random call type
-            const callTypes = ['Fire', 'EMS', 'Hazmat', 'Rescue', 'Service'];
-            const type = callTypes[Math.floor(Math.random() * callTypes.length)];
-            
-            mockPoints.push({
-                latitude: chicagoLat + latOffset,
-                longitude: chicagoLng + lngOffset,
-                hour: hour,
-                dayOfWeek: dayOfWeek,
-                month: month,
-                type: type,
-                intensity: intensity
-            });
-        }
-        
-        // Store the mock data
-        originalData = mockPoints;
-        
-        // Extract unique call types
-        callTypes = [...new Set(originalData.map(point => point.type))];
-        populateCallTypeFilter(callTypes);
-        
-        // Apply initial filtering and display heat map
-        applyFilters();
-        
-        // Update map view to fit data points
-        fitMapToData(originalData);
-        
-        // Show success message
-        showUploadStatus('Mock data loaded successfully!', 'success');
-    }
-    
-    // Function to add a visual indicator when data comes from the formatter
-    function addFormatterIndicator(pointCount) {
-        // Create indicator element if it doesn't exist
-        let indicator = document.getElementById('formatter-indicator');
-        if (!indicator) {
-            indicator = document.createElement('div');
-            indicator.id = 'formatter-indicator';
-            indicator.className = 'formatter-badge';
-            indicator.style.position = 'absolute';
-            indicator.style.top = '10px';
-            indicator.style.right = '10px';
-            indicator.style.backgroundColor = '#4caf50';
-            indicator.style.color = 'white';
-            indicator.style.padding = '5px 10px';
-            indicator.style.borderRadius = '4px';
-            indicator.style.fontSize = '0.8rem';
-            indicator.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
-            indicator.style.zIndex = '1000';
-            indicator.style.display = 'flex';
-            indicator.style.alignItems = 'center';
-            indicator.style.gap = '5px';
-            
-            // Add to map container
-            document.getElementById('map-container').appendChild(indicator);
-        }
-        
-        // Update indicator content
-        indicator.innerHTML = `
-            <i class="fas fa-exchange-alt" style="font-size: 0.9rem;"></i>
-            <span>Data from Formatter (${pointCount} points)</span>
-        `;
-        
-        // Make it dismissible with a close button
-        const closeBtn = document.createElement('i');
-        closeBtn.className = 'fas fa-times';
-        closeBtn.style.marginLeft = '5px';
-        closeBtn.style.cursor = 'pointer';
-        closeBtn.style.opacity = '0.7';
-        closeBtn.title = 'Dismiss';
-        closeBtn.addEventListener('click', function() {
-            indicator.style.display = 'none';
         });
+    }
+    
+    // Function to export the map as a PDF
+    function exportMapPDF() {
+        // Show a loading message
+        showUploadStatus('Generating PDF...', 'info');
         
-        indicator.appendChild(closeBtn);
+        // Use html2canvas to capture the map
+        html2canvas(document.getElementById('map-container')).then(canvas => {
+            try {
+                // Convert to PDF using jsPDF
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('landscape', 'mm', 'a4');
+                
+                // Calculate aspect ratio
+                const imgData = canvas.toDataURL('image/png');
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+                const imgWidth = canvas.width;
+                const imgHeight = canvas.height;
+                const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+                
+                // Add image to PDF
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth * ratio, imgHeight * ratio);
+                
+                // Add title and legend
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(16);
+                pdf.text('Call Density Heatmap', 10, imgHeight * ratio + 10);
+                
+                // Save the PDF
+                pdf.save('call-density-map.pdf');
+                
+                showUploadStatus('PDF downloaded', 'success');
+            } catch (error) {
+                console.error("Error exporting PDF:", error);
+                showUploadStatus('Error generating PDF', 'error');
+            }
+        });
     }
 });
