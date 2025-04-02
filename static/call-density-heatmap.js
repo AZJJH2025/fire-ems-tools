@@ -979,8 +979,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const captureMap = () => {
             // Add a temporary loading indicator overlay
             const loadingOverlay = document.createElement('div');
+            loadingOverlay.id = 'export-loading-overlay';
             loadingOverlay.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;z-index:1001;';
             loadingOverlay.innerHTML = '<div style="background:white;padding:10px;border-radius:5px;box-shadow:0 0 10px rgba(0,0,0,0.2);">Capturing map...</div>';
+            
+            // Remove any existing loading overlays first
+            const existingOverlay = document.getElementById('export-loading-overlay');
+            if (existingOverlay && existingOverlay.parentNode) {
+                existingOverlay.parentNode.removeChild(existingOverlay);
+            }
+            
             document.getElementById('map-container').appendChild(loadingOverlay);
             
             // Trigger full tile reload
@@ -1072,6 +1080,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                 controls.forEach(control => {
                                     control.style.display = 'none';
                                 });
+                                
+                                // Remove any loading overlays so they don't appear in the exported image
+                                const loadingOverlay = clonedDoc.getElementById('export-loading-overlay');
+                                if (loadingOverlay && loadingOverlay.parentNode) {
+                                    loadingOverlay.parentNode.removeChild(loadingOverlay);
+                                }
                             }
                         }
                     }).then(canvas => {
@@ -1088,8 +1102,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             showUploadStatus('Error generating PNG', 'error');
                         } finally {
                             // Remove the loading overlay
-                            if (loadingOverlay.parentNode) {
-                                loadingOverlay.parentNode.removeChild(loadingOverlay);
+                            const overlay = document.getElementById('export-loading-overlay');
+                            if (overlay && overlay.parentNode) {
+                                overlay.parentNode.removeChild(overlay);
                             }
                         }
                     }).catch(error => {
@@ -1097,8 +1112,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         showUploadStatus('Error capturing map image', 'error');
                         
                         // Remove the loading overlay
-                        if (loadingOverlay.parentNode) {
-                            loadingOverlay.parentNode.removeChild(loadingOverlay);
+                        const overlay = document.getElementById('export-loading-overlay');
+                        if (overlay && overlay.parentNode) {
+                            overlay.parentNode.removeChild(overlay);
                         }
                     });
                 }
@@ -1194,8 +1210,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const captureForPDF = () => {
             // Add a temporary loading indicator overlay
             const loadingOverlay = document.createElement('div');
+            loadingOverlay.id = 'export-loading-overlay';
             loadingOverlay.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;z-index:1001;';
             loadingOverlay.innerHTML = '<div style="background:white;padding:10px;border-radius:5px;box-shadow:0 0 10px rgba(0,0,0,0.2);">Generating PDF...</div>';
+            
+            // Remove any existing loading overlays first
+            const existingOverlay = document.getElementById('export-loading-overlay');
+            if (existingOverlay && existingOverlay.parentNode) {
+                existingOverlay.parentNode.removeChild(existingOverlay);
+            }
+            
             document.getElementById('map-container').appendChild(loadingOverlay);
             
             // Try two capture methods, preferring domtoimage for better quality if available
@@ -1269,18 +1293,28 @@ document.addEventListener('DOMContentLoaded', function() {
                                 legend.style.visibility = 'visible';
                                 legend.style.opacity = '1';
                             }
+                            
+                            // Remove any loading overlays so they don't appear in the exported image
+                            const loadingOverlay = clonedDoc.getElementById('export-loading-overlay');
+                            if (loadingOverlay && loadingOverlay.parentNode) {
+                                loadingOverlay.parentNode.removeChild(loadingOverlay);
+                            }
                         }
                     }
                 }).then(function(canvas) {
                     generatePDF(canvas.toDataURL('image/png'));
-                    if (loadingOverlay.parentNode) {
-                        loadingOverlay.parentNode.removeChild(loadingOverlay);
+                    // Remove loading overlay
+                    const overlay = document.getElementById('export-loading-overlay');
+                    if (overlay && overlay.parentNode) {
+                        overlay.parentNode.removeChild(overlay);
                     }
                 }).catch(function(error) {
                     console.error("Error capturing map:", error);
                     showUploadStatus('Error capturing map for PDF', 'error');
-                    if (loadingOverlay.parentNode) {
-                        loadingOverlay.parentNode.removeChild(loadingOverlay);
+                    // Remove loading overlay
+                    const overlay = document.getElementById('export-loading-overlay');
+                    if (overlay && overlay.parentNode) {
+                        overlay.parentNode.removeChild(overlay);
                     }
                 });
             }
