@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
         sessionStorage.removeItem('formatterTarget');
         sessionStorage.removeItem('formatterTimestamp');
     });
+    
     // Make sure the map container has a proper height
     const mapContainer = document.getElementById('map');
     if (mapContainer) {
@@ -35,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let originalData = [];
     let filteredData = [];
     let callTypes = [];
-    let markerClusterGroup = null;
+    let markers = null;
     
     // Check for data from Data Formatter
     checkForFormatterData();
@@ -85,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 callTypes = [...new Set(originalData.map(point => point.type))];
                 populateCallTypeFilter(callTypes);
                 
-                // Apply initial filtering and display heat map
+                // Apply initial filtering and display density map
                 applyFilters();
                 
                 // Update map view to fit data points
@@ -206,29 +207,21 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update the filtered data
         filteredData = filtered;
         
-        // Update the heatmap
-        updateHeatmap(filteredData);
+        // Update the map display
+        updateMapDisplay(filteredData);
         
         // Update the hotspot analysis
         updateHotspotAnalysis(filteredData);
     }
 
-    // Function to update the heatmap with marker clustering
-    function updateHeatmap(data) {
-        // Remove existing layer groups if they exist
-        if (heatLayer) {
-            map.removeLayer(heatLayer);
-        }
+    // Function to update the map display with clustered markers
+    function updateMapDisplay(data) {
+        console.log(`Updating map with ${data.length} data points`);
         
-        if (markerClusterGroup) {
-            map.removeLayer(markerClusterGroup);
+        // Remove existing layers
+        if (markers) {
+            map.removeLayer(markers);
         }
-        
-        if (window.markerGroup) {
-            map.removeLayer(window.markerGroup);
-        }
-        
-        console.log(`Total data points received: ${data.length}`);
         
         if (data.length === 0) {
             document.getElementById('hotspot-results').innerHTML = 
@@ -236,150 +229,114 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Create new marker cluster group with custom settings
-        markerClusterGroup = L.markerClusterGroup({
+        // Process and aggregate data
+        const locationCounts = processLocationData(data);
+        
+        // Convert the location counts to an array for display
+        const locations = Object.values(locationCounts);
+        console.log(`Aggregated to ${locations.length} unique locations`);
+        
+        // Find the maximum count to scale sizes and colors
+        const maxCount = Math.max(...locations.map(loc => loc.count));
+        console.log(`Maximum count at any location: ${maxCount}`);
+        
+        // Create a new marker cluster group
+        markers = L.markerClusterGroup({
+            maxClusterRadius: 80,
+            spiderfyOnMaxZoom: true,
             showCoverageOnHover: false,
             zoomToBoundsOnClick: true,
-            spiderfyOnMaxZoom: true,
-            removeOutsideVisibleBounds: true,
-            disableClusteringAtZoom: 18,
-            maxClusterRadius: 80,
-            // Custom icon creator for clusters
             iconCreateFunction: function(cluster) {
-                const count = cluster.getChildCount();
+                const childCount = cluster.getChildCount();
                 
-                // Determine size and color based on count
-                let size, colorClass;
-                
-                if (count < 10) {
-                    size = 'small';
-                    colorClass = 'cluster-low';
-                } else if (count < 50) {
-                    size = 'medium';
-                    colorClass = 'cluster-medium';
-                } else if (count < 200) {
-                    size = 'large';
-                    colorClass = 'cluster-high';
+                // Determine the class based on the count
+                let className;
+                if (childCount < 10) {
+                    className = 'cluster-small';
+                } else if (childCount < 50) {
+                    className = 'cluster-medium';
+                } else if (childCount < 200) {
+                    className = 'cluster-large';
                 } else {
-                    size = 'xlarge';
-                    colorClass = 'cluster-critical';
+                    className = 'cluster-xlarge';
                 }
                 
-                // Set the icon size based on the size category
-                let iconSize;
-                switch(size) {
-                    case 'small': iconSize = 40; break;
-                    case 'medium': iconSize = 50; break;
-                    case 'large': iconSize = 60; break;
-                    case 'xlarge': iconSize = 70; break;
-                    default: iconSize = 40;
-                }
-                
-                // Create cluster icon with the count and appropriate styling
-                return L.divIcon({
-                    html: `<div><span>${count}</span></div>`,
-                    className: `marker-cluster marker-cluster-${size} ${colorClass}`,
-                    iconSize: L.point(iconSize, iconSize)
+                // Create marker with count
+                return new L.DivIcon({
+                    html: '<div><span>' + childCount + '</span></div>',
+                    className: 'marker-cluster custom-cluster ' + className,
+                    iconSize: new L.Point(40, 40)
                 });
             }
-        }).addTo(map);
+        });
         
-        // Add custom CSS for the cluster markers
-        if (!document.getElementById('cluster-styles')) {
-            const styleElement = document.createElement('style');
-            styleElement.id = 'cluster-styles';
-            styleElement.textContent = `
-                .marker-cluster {
-                    background-clip: padding-box;
-                    border-radius: 50%;
-                    text-align: center;
-                    font-weight: bold;
-                    font-family: Arial, sans-serif;
-                }
-                .marker-cluster div {
-                    width: 100%;
-                    height: 100%;
-                    margin: 0;
-                    padding: 0;
-                    text-align: center;
-                    border-radius: 50%;
-                    line-height: normal;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-                .marker-cluster span {
-                    color: white;
-                    text-shadow: 0px 0px 2px rgba(0,0,0,0.7);
-                    display: block;
-                    width: 100%;
-                    text-align: center;
-                }
-                
-                /* Overrides to ensure visibility */
-                .marker-cluster-small {
-                    width: 40px !important;
-                    height: 40px !important;
-                    line-height: 40px !important;
-                    font-size: 12px !important;
-                }
-                .marker-cluster-medium {
-                    width: 50px !important;
-                    height: 50px !important;
-                    line-height: 50px !important;
-                    font-size: 14px !important;
-                }
-                .marker-cluster-large {
-                    width: 60px !important;
-                    height: 60px !important;
-                    line-height: 60px !important;
-                    font-size: 16px !important;
-                }
-                .marker-cluster-xlarge {
-                    width: 70px !important;
-                    height: 70px !important;
-                    line-height: 70px !important;
-                    font-size: 18px !important;
-                }
-                
-                /* Custom colors with higher opacity */
-                .cluster-low {
-                    background-color: rgba(166, 206, 227, 1) !important;
-                    box-shadow: 0 0 0 5px rgba(166, 206, 227, 0.3);
-                }
-                .cluster-medium {
-                    background-color: rgba(100, 149, 237, 1) !important;
-                    box-shadow: 0 0 0 5px rgba(100, 149, 237, 0.3);
-                }
-                .cluster-high {
-                    background-color: rgba(31, 78, 176, 1) !important;
-                    box-shadow: 0 0 0 5px rgba(31, 78, 176, 0.3);
-                }
-                .cluster-critical {
-                    background-color: rgba(215, 48, 39, 1) !important;
-                    box-shadow: 0 0 0 5px rgba(215, 48, 39, 0.3);
-                }
-                
-                /* Better animation for zoom levels */
-                .marker-cluster-animating {
-                    transform-origin: center;
-                    animation: cluster-animation 0.3s ease-out;
-                }
-                @keyframes cluster-animation {
-                    0% {
-                        opacity: 0.3;
-                        transform: scale(0.5);
-                    }
-                    100% {
-                        opacity: 1;
-                        transform: scale(1);
-                    }
-                }
-            `;
-            document.head.appendChild(styleElement);
+        // Add markers for each aggregated location
+        locations.forEach(location => {
+            // Calculate the size and color based on count relative to max
+            const sizeFactor = Math.max(0.3, location.count / maxCount);
+            const radius = 5 + (sizeFactor * 25); // Scale radius between 5 and 30
+            
+            // Calculate color intensity
+            const intensity = location.count / maxCount;
+            let color;
+            
+            // Match the colors to the legend
+            if (intensity < 0.25) {
+                color = '#a6cee3'; // Light blue for Low
+            } else if (intensity < 0.5) {
+                color = '#6495ed'; // Medium blue for Medium
+            } else if (intensity < 0.8) {
+                color = '#1f4eb0'; // Dark blue for High
+            } else {
+                color = '#d73027'; // Red for Critical
+            }
+            
+            // Determine call density category for display
+            let densityCategory = "Low";
+            if (intensity >= 0.8) {
+                densityCategory = "Critical";
+            } else if (intensity >= 0.5) {
+                densityCategory = "High";
+            } else if (intensity >= 0.25) {
+                densityCategory = "Medium";
+            }
+            
+            // Create marker
+            const marker = L.circleMarker([location.lat, location.lng], {
+                radius: radius,
+                fillColor: color,
+                color: '#fff',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            });
+            
+            // Add popup with detailed information
+            marker.bindPopup(createPopupContent(location, densityCategory));
+            
+            // Add to cluster group
+            markers.addLayer(marker);
+        });
+        
+        // Add the markers to the map
+        map.addLayer(markers);
+        
+        // Fit map to show all markers
+        if (locations.length > 0) {
+            try {
+                const bounds = L.latLngBounds(locations.map(loc => [loc.lat, loc.lng]));
+                map.fitBounds(bounds, {
+                    padding: [50, 50],
+                    maxZoom: 13
+                });
+            } catch (error) {
+                console.error("Error fitting map to markers:", error);
+            }
         }
-        
-        // Count the occurrences of each location to determine hotspots
+    }
+    
+    // Process and aggregate location data
+    function processLocationData(data) {
         const locationCounts = {};
         
         for (const point of data) {
@@ -434,145 +391,70 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Convert the location counts to an array
-        const locations = Object.values(locationCounts);
+        return locationCounts;
+    }
+    
+    // Create popup content for a location
+    function createPopupContent(location, densityCategory) {
+        // Determine most common call type
+        let mostCommonType = 'Unknown';
+        let maxTypeCount = 0;
         
-        // Find the maximum count to scale sizes and colors
-        const maxCount = Math.max(...locations.map(loc => loc.count));
-        console.log(`Maximum count at any location: ${maxCount}`);
-        
-        // Add markers with size and color based on count
-        locations.forEach(location => {
-            // Calculate the size based on count relative to max
-            const sizeFactor = Math.max(0.3, location.count / maxCount);
-            const radius = 5 + (sizeFactor * 25); // Scale radius between 5 and 30
-            
-            // Calculate color intensity based on count
-            const intensity = location.count / maxCount;
-            let color;
-            
-            // Match the colors to the legend
-            if (intensity < 0.25) {
-                color = '#a6cee3'; // Light blue for Low
-            } else if (intensity < 0.5) {
-                color = '#6495ed'; // Medium blue for Medium
-            } else if (intensity < 0.8) {
-                color = '#1f4eb0'; // Dark blue for High
-            } else {
-                color = '#d73027'; // Red for Critical
-            }
-            
-            // Create a circle marker with size and color based on count
-            const marker = L.circleMarker([location.lat, location.lng], {
-                radius: radius,
-                fillColor: color,
-                color: '#fff',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.8
-            });
-            
-            // Determine most common call type
-            let mostCommonType = 'Unknown';
-            let maxTypeCount = 0;
-            
-            for (const [type, count] of Object.entries(location.types)) {
-                if (count > maxTypeCount) {
-                    maxTypeCount = count;
-                    mostCommonType = type;
-                }
-            }
-            
-            // Determine busiest hour
-            let busiestHour = null;
-            let maxHourCount = 0;
-            
-            for (const [hour, count] of Object.entries(location.hours)) {
-                if (count > maxHourCount) {
-                    maxHourCount = count;
-                    busiestHour = parseInt(hour);
-                }
-            }
-            
-            // Format busiest hour for display (if available)
-            let busiestHourText = 'Unknown';
-            if (busiestHour !== null) {
-                const hourFormatted = busiestHour.toString().padStart(2, '0');
-                const nextHour = (busiestHour + 1) % 24;
-                const nextHourFormatted = nextHour.toString().padStart(2, '0');
-                busiestHourText = `${hourFormatted}:00 - ${nextHourFormatted}:00`;
-            }
-            
-            // Determine call density category for display
-            let densityCategory = "Low";
-            if (intensity >= 0.8) {
-                densityCategory = "Critical";
-            } else if (intensity >= 0.5) {
-                densityCategory = "High";
-            } else if (intensity >= 0.25) {
-                densityCategory = "Medium";
-            }
-            
-            // Add popup with detailed info
-            marker.bindPopup(`
-                <div style="min-width: 200px;">
-                    <h4 style="margin: 0 0 8px 0;">Call Density Information</h4>
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <tr>
-                            <td style="padding: 3px 0; font-weight: bold;">Location:</td>
-                            <td style="padding: 3px 0;">${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 3px 0; font-weight: bold;">Call Count:</td>
-                            <td style="padding: 3px 0;">${location.count}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 3px 0; font-weight: bold;">Density Level:</td>
-                            <td style="padding: 3px 0;">${densityCategory}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 3px 0; font-weight: bold;">Most Common Type:</td>
-                            <td style="padding: 3px 0;">${mostCommonType}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 3px 0; font-weight: bold;">Busiest Time:</td>
-                            <td style="padding: 3px 0;">${busiestHourText}</td>
-                        </tr>
-                    </table>
-                </div>
-            `);
-            
-            // Add marker to the cluster group instead of directly to the map
-            markerClusterGroup.addLayer(marker);
-        });
-        
-        console.log(`Added ${locations.length} clustered markers to the map`);
-        
-        // Ensure the map view includes all the markers
-        if (locations.length > 0) {
-            try {
-                const bounds = L.latLngBounds(locations.map(loc => [loc.lat, loc.lng]));
-                map.fitBounds(bounds, {
-                    padding: [50, 50],
-                    maxZoom: 13
-                });
-            } catch (error) {
-                console.error("Error fitting map to markers:", error);
+        for (const [type, count] of Object.entries(location.types)) {
+            if (count > maxTypeCount) {
+                maxTypeCount = count;
+                mostCommonType = type;
             }
         }
         
-        // Add zoom animation event handler
-        map.on('zoomend', function() {
-            // Find all cluster groups and add animation class
-            document.querySelectorAll('.marker-cluster').forEach(el => {
-                el.classList.add('marker-cluster-animating');
-                
-                // Remove the class after animation completes
-                setTimeout(() => {
-                    el.classList.remove('marker-cluster-animating');
-                }, 300);
-            });
-        });
+        // Determine busiest hour
+        let busiestHour = null;
+        let maxHourCount = 0;
+        
+        for (const [hour, count] of Object.entries(location.hours)) {
+            if (count > maxHourCount) {
+                maxHourCount = count;
+                busiestHour = parseInt(hour);
+            }
+        }
+        
+        // Format busiest hour for display (if available)
+        let busiestHourText = 'Unknown';
+        if (busiestHour !== null) {
+            const hourFormatted = busiestHour.toString().padStart(2, '0');
+            const nextHour = (busiestHour + 1) % 24;
+            const nextHourFormatted = nextHour.toString().padStart(2, '0');
+            busiestHourText = `${hourFormatted}:00 - ${nextHourFormatted}:00`;
+        }
+        
+        // Create popup HTML
+        return `
+            <div style="min-width: 200px;">
+                <h4 style="margin: 0 0 8px 0;">Call Density Information</h4>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td style="padding: 3px 0; font-weight: bold;">Location:</td>
+                        <td style="padding: 3px 0;">${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 3px 0; font-weight: bold;">Call Count:</td>
+                        <td style="padding: 3px 0;">${location.count}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 3px 0; font-weight: bold;">Density Level:</td>
+                        <td style="padding: 3px 0;">${densityCategory}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 3px 0; font-weight: bold;">Most Common Type:</td>
+                        <td style="padding: 3px 0;">${mostCommonType}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 3px 0; font-weight: bold;">Busiest Time:</td>
+                        <td style="padding: 3px 0;">${busiestHourText}</td>
+                    </tr>
+                </table>
+            </div>
+        `;
     }
 
     // Function to update hotspot analysis section
@@ -652,11 +534,15 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
         }
         
-        // Determine if there's a clear hotspot area
+        // Add instructions for interacting with the map
         resultsHTML += `
             <div class="hotspot-stat">
-                <span>Hotspot Analysis:</span>
+                <span>Interactive Map:</span>
                 <strong>Zoom in/out to see detailed clusters</strong>
+            </div>
+            <div style="font-size: 0.9em; margin-top: 8px;">
+                <p>• Click on clusters to zoom in and see individual points</p>
+                <p>• Click on points to see detailed call information</p>
             </div>
         `;
         
@@ -869,4 +755,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    // Add debug message
+    console.log("Call Density Heatmap initialized with cluster support");
 });

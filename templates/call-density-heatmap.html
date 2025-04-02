@@ -3,14 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <link rel="stylesheet" href="/static/mobile-responsive.css">
     <title>Call Density Heatmap | FireEMS.ai</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- MarkerCluster CSS must come BEFORE other stylesheets to avoid being overridden -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='call-density-heatmap.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='fix-ready-status.css') }}">
+    <link rel="stylesheet" href="/static/mobile-responsive.css">
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
+    <style>
+        /* Custom marker cluster styles */
+        .custom-cluster {
+            background: #1f4eb0;
+            border-radius: 50%;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            border: 2px solid white;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+        .cluster-small {
+            background-color: #a6cee3 !important;
+            width: 40px !important;
+            height: 40px !important;
+            line-height: 40px !important;
+            font-size: 14px !important;
+        }
+        .cluster-medium {
+            background-color: #6495ed !important;
+            width: 50px !important;
+            height: 50px !important;
+            line-height: 50px !important;
+            font-size: 16px !important;
+        }
+        .cluster-large {
+            background-color: #1f4eb0 !important;
+            width: 60px !important;
+            height: 60px !important;
+            line-height: 60px !important;
+            font-size: 18px !important;
+        }
+        .cluster-xlarge {
+            background-color: #d73027 !important;
+            width: 70px !important;
+            height: 70px !important;
+            line-height: 70px !important;
+            font-size: 20px !important;
+        }
+    </style>
 </head>
 <body>
     <div class="navbar">
@@ -197,10 +241,7 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-    <!-- Leaflet MarkerCluster for dynamic clustering -->
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="{{ url_for('static', filename='call-density-heatmap.js') }}"></script>
