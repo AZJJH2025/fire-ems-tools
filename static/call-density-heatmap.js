@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function debugLog(message) {
         console.log(`🔍 DEBUG: ${message}`);
     }
+    
     // Clean up session storage when navigating away from the page
     window.addEventListener('beforeunload', function() {
         // Only clear formatter-related storage items
@@ -28,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Make sure map is ready
     map.whenReady(() => {
-        console.log("Map is ready");
+        debugLog("Leaflet map is ready");
     });
 
     // Add the base tile layer
@@ -38,11 +39,49 @@ document.addEventListener('DOMContentLoaded', function() {
     }).addTo(map);
 
     // Initialize variables
-    let heatLayer = null;
+    let markers = null;
     let originalData = [];
     let filteredData = [];
     let callTypes = [];
-    let markers = null;
+    
+    // Create a marker cluster group with custom styling
+    markers = L.markerClusterGroup({
+        maxClusterRadius: 50,
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: false,
+        zoomToBoundsOnClick: true,
+        disableClusteringAtZoom: 18,
+        chunkedLoading: true,
+        iconCreateFunction: function(cluster) {
+            const count = cluster.getChildCount();
+            let className = 'custom-cluster ';
+            
+            // Define class based on cluster size
+            if (count < 10) {
+                className += 'cluster-small';
+            } else if (count < 30) {
+                className += 'cluster-medium';
+            } else if (count < 100) {
+                className += 'cluster-large';
+            } else {
+                className += 'cluster-xlarge';
+            }
+            
+            return L.divIcon({ 
+                html: '<div><span>' + count + '</span></div>', 
+                className: className,
+                iconSize: L.point(40, 40)
+            });
+        }
+    }).addTo(map);
+    
+    // Add a test marker to verify map functionality
+    const testMarker = L.marker([39.8283, -98.5795], {
+        title: "TEST MARKER"
+    });
+    testMarker.bindPopup("<b>Test Marker</b><br>This marker will be removed when data is loaded.");
+    markers.addLayer(testMarker);
+    debugLog("Added test marker to the center of the map");
     
     // Check for data from Data Formatter
     checkForFormatterData();
@@ -174,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Apply filters button
     document.getElementById('apply-filters').addEventListener('click', applyFilters);
 
-    // Function to apply filters and update heatmap
+    // Function to apply filters and update the map display
     function applyFilters() {
         if (originalData.length === 0) {
             return;
@@ -214,207 +253,12 @@ document.addEventListener('DOMContentLoaded', function() {
         filteredData = filtered;
         
         // Update the map display
-        updateMapDisplay(filteredData);
+        displayMarkers(filteredData);
         
         // Update the hotspot analysis
         updateHotspotAnalysis(filteredData);
     }
 
-    // Function to update the map display with clustered markers
-    function updateMapDisplay(data) {
-        debugLog(`Updating map with ${data.length} data points`);
-        
-        // SIMPLE TEST: Add a marker at the center of the map
-        // This tests if ANY markers can be shown on the map
-        const testMarker = L.marker([39.8283, -98.5795], {
-            title: "TEST MARKER"
-        }).addTo(map);
-        testMarker.bindPopup("<b>Test Marker</b><br>This is a test marker.").openPopup();
-        debugLog("Added test marker to the map");
-        
-        // If we have no data, show a message and return
-        if (data.length === 0) {
-            document.getElementById('hotspot-results').innerHTML = 
-                '<p>No data points match the current filters</p>';
-            return;
-        }
-        
-        // Clean up any existing markers
-        if (markers) {
-            map.removeLayer(markers);
-            markers = null;
-        }
-        
-        // Process the data to get counts by location
-        const locationCounts = processLocationData(data);
-        const locations = Object.values(locationCounts);
-        debugLog(`Aggregated to ${locations.length} unique locations`);
-        
-        // Find the maximum count for scaling
-        const maxCount = Math.max(...locations.map(loc => loc.count));
-        debugLog(`Maximum count at any location: ${maxCount}`);
-        
-        // Create a regular layer group first instead of cluster group
-        // This is to verify markers work at all before trying clustering
-        debugLog("Creating basic marker layer group");
-        const basicMarkers = L.layerGroup();
-        
-        // Add markers for each location to the basic layer group
-        for (let i = 0; i < locations.length; i++) {
-            const location = locations[i];
-            
-            // Color based on count
-            const intensity = location.count / maxCount;
-            let fillColor;
-            
-            if (intensity < 0.25) {
-                fillColor = '#a6cee3'; // Light blue for Low
-            } else if (intensity < 0.5) {
-                fillColor = '#6495ed'; // Medium blue for Medium
-            } else if (intensity < 0.8) {
-                fillColor = '#1f4eb0'; // Dark blue for High
-            } else {
-                fillColor = '#d73027'; // Red for Critical
-            }
-            
-            // Create a simple circle marker
-            const circle = L.circleMarker([location.lat, location.lng], {
-                radius: 10,
-                fillColor: fillColor,
-                color: "#fff",
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.8
-            });
-            
-            // Add popup content
-            circle.bindPopup(`
-                <div style="min-width: 150px;">
-                    <h4 style="margin-top: 0;">Call Density</h4>
-                    <p><b>Count:</b> ${location.count}</p>
-                </div>
-            `);
-            
-            // Add to layer group
-            basicMarkers.addLayer(circle);
-            
-            // Log for first few markers to make sure they're being created
-            if (i < 5) {
-                debugLog(`Added marker at ${location.lat}, ${location.lng} with count ${location.count}`);
-            }
-        }
-        
-        // Add the basic markers to the map
-        basicMarkers.addTo(map);
-        debugLog(`Added ${locations.length} markers to the map`);
-        
-        // Now try to initialize clustering if the simple markers appear
-        try {
-            debugLog("Initializing marker clustering");
-            
-            // Create a marker cluster group with custom settings
-            markers = L.markerClusterGroup({
-                maxClusterRadius: 80,
-                spiderfyOnMaxZoom: true,
-                showCoverageOnHover: false,
-                zoomToBoundsOnClick: true,
-                iconCreateFunction: function(cluster) {
-                    const childCount = cluster.getChildCount();
-                    
-                    // Determine the class based on the count
-                    let className, size;
-                    if (childCount < 10) {
-                        className = 'cluster-small';
-                        size = 40;
-                    } else if (childCount < 50) {
-                        className = 'cluster-medium';
-                        size = 50;
-                    } else if (childCount < 200) {
-                        className = 'cluster-large';
-                        size = 60;
-                    } else {
-                        className = 'cluster-xlarge';
-                        size = 70;
-                    }
-                    
-                    // Create marker with count
-                    return new L.DivIcon({
-                        html: '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;"><span>' + childCount + '</span></div>',
-                        className: 'marker-cluster custom-cluster ' + className,
-                        iconSize: new L.Point(size, size)
-                    });
-                }
-            });
-            
-            // Add the same markers to the cluster group
-            map.removeLayer(basicMarkers); // Remove basic markers first
-            
-            // Re-create markers for the cluster group
-            locations.forEach(location => {
-                // Color based on count
-                const intensity = location.count / maxCount;
-                let color;
-                
-                if (intensity < 0.25) {
-                    color = '#a6cee3'; // Light blue for Low
-                } else if (intensity < 0.5) {
-                    color = '#6495ed'; // Medium blue for Medium
-                } else if (intensity < 0.8) {
-                    color = '#1f4eb0'; // Dark blue for High
-                } else {
-                    color = '#d73027'; // Red for Critical
-                }
-                
-                // Determine category for display
-                let densityCategory = "Low";
-                if (intensity >= 0.8) {
-                    densityCategory = "Critical";
-                } else if (intensity >= 0.5) {
-                    densityCategory = "High";
-                } else if (intensity >= 0.25) {
-                    densityCategory = "Medium";
-                }
-                
-                // Create the marker
-                const marker = L.circleMarker([location.lat, location.lng], {
-                    radius: 10 + (intensity * 20), // Scale size by intensity
-                    fillColor: color,
-                    color: '#fff',
-                    weight: 2,
-                    opacity: 1,
-                    fillOpacity: 0.8
-                });
-                
-                // Add popup
-                marker.bindPopup(createPopupContent(location, densityCategory));
-                
-                // Add to cluster group
-                markers.addLayer(marker);
-            });
-            
-            // Add the clustered markers to the map
-            map.addLayer(markers);
-            debugLog("Added clustered markers to the map");
-        } catch (error) {
-            console.error("Error creating clusters:", error);
-            // Keep the basic markers if clustering fails
-        }
-        
-        // Fit map to show all markers
-        if (locations.length > 0) {
-            try {
-                const bounds = L.latLngBounds(locations.map(loc => [loc.lat, loc.lng]));
-                map.fitBounds(bounds, {
-                    padding: [50, 50],
-                    maxZoom: 13
-                });
-                debugLog("Fit map bounds to markers");
-            } catch (error) {
-                console.error("Error fitting map to markers:", error);
-            }
-        }
-    }
-    
     // Process and aggregate location data
     function processLocationData(data) {
         const locationCounts = {};
@@ -474,67 +318,157 @@ document.addEventListener('DOMContentLoaded', function() {
         return locationCounts;
     }
     
-    // Create popup content for a location
-    function createPopupContent(location, densityCategory) {
-        // Determine most common call type
-        let mostCommonType = 'Unknown';
-        let maxTypeCount = 0;
+    // Display markers on the map with clustering
+    function displayMarkers(data) {
+        debugLog(`Displaying ${data.length} data points on map`);
         
-        for (const [type, count] of Object.entries(location.types)) {
-            if (count > maxTypeCount) {
-                maxTypeCount = count;
-                mostCommonType = type;
+        // Clear existing markers
+        markers.clearLayers();
+        
+        // If no data, show message and return
+        if (data.length === 0) {
+            document.getElementById('hotspot-results').innerHTML = 
+                '<p>No data points match the current filters</p>';
+            return;
+        }
+        
+        // Process data to aggregate points
+        const locationCounts = processLocationData(data);
+        const locations = Object.values(locationCounts);
+        debugLog(`Aggregated to ${locations.length} unique locations`);
+        
+        // Find maximum count for scaling
+        const maxCount = Math.max(...locations.map(loc => loc.count));
+        debugLog(`Maximum count: ${maxCount}`);
+        
+        // Add markers for each location
+        for (let i = 0; i < locations.length; i++) {
+            const location = locations[i];
+            
+            // Calculate intensity for color selection
+            const intensity = location.count / maxCount;
+            
+            // Determine density category and color
+            let densityCategory = "Low";
+            let color;
+            
+            if (intensity < 0.25) {
+                color = '#a6cee3'; // Light blue for Low
+                densityCategory = "Low";
+            } else if (intensity < 0.5) {
+                color = '#6495ed'; // Medium blue for Medium
+                densityCategory = "Medium";
+            } else if (intensity < 0.8) {
+                color = '#1f4eb0'; // Dark blue for High
+                densityCategory = "High";
+            } else {
+                color = '#d73027'; // Red for Critical
+                densityCategory = "Critical";
+            }
+            
+            // Determine icon size based on count
+            const sizeFactor = Math.max(0.3, location.count / maxCount);
+            const size = Math.min(60, Math.max(30, Math.floor(20 + (sizeFactor * 30)))); // Scale icon size between 30 and 60px
+            
+            // Create a custom icon for better visibility on mobile
+            const icon = L.divIcon({
+                className: `call-density-marker density-${densityCategory.toLowerCase()}`,
+                html: `<div style="background-color:${color}; width:${size}px; height:${size}px; border-radius:50%; display:flex; justify-content:center; align-items:center; color:white; font-weight:bold; border: 2px solid white;">${location.count}</div>`,
+                iconSize: [size, size],
+                iconAnchor: [size/2, size/2]
+            });
+            
+            // Determine most common call type
+            let mostCommonType = 'Unknown';
+            let maxTypeCount = 0;
+            for (const [type, count] of Object.entries(location.types)) {
+                if (count > maxTypeCount) {
+                    maxTypeCount = count;
+                    mostCommonType = type;
+                }
+            }
+            
+            // Determine busiest hour
+            let busiestHour = null;
+            let maxHourCount = 0;
+            for (const [hour, count] of Object.entries(location.hours)) {
+                if (count > maxHourCount) {
+                    maxHourCount = count;
+                    busiestHour = parseInt(hour);
+                }
+            }
+            
+            // Format busiest hour for display
+            let busiestHourText = 'Unknown';
+            if (busiestHour !== null) {
+                const hourFormatted = busiestHour.toString().padStart(2, '0');
+                const nextHour = (busiestHour + 1) % 24;
+                const nextHourFormatted = nextHour.toString().padStart(2, '0');
+                busiestHourText = `${hourFormatted}:00 - ${nextHourFormatted}:00`;
+            }
+            
+            // Create marker with the custom icon
+            const marker = L.marker([location.lat, location.lng], {
+                icon: icon,
+                title: `${location.count} calls at this location`
+            });
+            
+            // Add popup with details - now with improved mobile formatting
+            marker.bindPopup(`
+                <div style="min-width: 200px; max-width: 300px;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                        Call Density Information
+                    </h4>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                        <tr>
+                            <td style="padding: 6px 4px; font-weight: bold; width: 40%;">Location:</td>
+                            <td style="padding: 6px 4px;">${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px 4px; font-weight: bold;">Call Count:</td>
+                            <td style="padding: 6px 4px;"><span style="font-weight: bold; color: ${color};">${location.count}</span></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px 4px; font-weight: bold;">Density Level:</td>
+                            <td style="padding: 6px 4px;">${densityCategory}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px 4px; font-weight: bold;">Most Common Type:</td>
+                            <td style="padding: 6px 4px;">${mostCommonType}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px 4px; font-weight: bold;">Busiest Time:</td>
+                            <td style="padding: 6px 4px;">${busiestHourText}</td>
+                        </tr>
+                    </table>
+                </div>
+            `, {
+                maxWidth: 320,
+                className: 'call-density-popup',
+                closeButton: true,
+                autoPan: true
+            });
+            
+            // Add marker to cluster group
+            markers.addLayer(marker);
+            
+            // Log details for the first 5 markers
+            if (i < 5) {
+                debugLog(`Added marker: ${location.lat}, ${location.lng}, count: ${location.count}, size: ${size}px`);
             }
         }
         
-        // Determine busiest hour
-        let busiestHour = null;
-        let maxHourCount = 0;
+        debugLog(`Added ${locations.length} markers to the map`);
         
-        for (const [hour, count] of Object.entries(location.hours)) {
-            if (count > maxHourCount) {
-                maxHourCount = count;
-                busiestHour = parseInt(hour);
+        // Fit the map to show all markers
+        if (locations.length > 0) {
+            try {
+                const bounds = L.latLngBounds(locations.map(loc => [loc.lat, loc.lng]));
+                map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
+            } catch (error) {
+                console.error("Error fitting map to data:", error);
             }
         }
-        
-        // Format busiest hour for display (if available)
-        let busiestHourText = 'Unknown';
-        if (busiestHour !== null) {
-            const hourFormatted = busiestHour.toString().padStart(2, '0');
-            const nextHour = (busiestHour + 1) % 24;
-            const nextHourFormatted = nextHour.toString().padStart(2, '0');
-            busiestHourText = `${hourFormatted}:00 - ${nextHourFormatted}:00`;
-        }
-        
-        // Create popup HTML
-        return `
-            <div style="min-width: 200px;">
-                <h4 style="margin: 0 0 8px 0;">Call Density Information</h4>
-                <table style="width: 100%; border-collapse: collapse;">
-                    <tr>
-                        <td style="padding: 3px 0; font-weight: bold;">Location:</td>
-                        <td style="padding: 3px 0;">${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 3px 0; font-weight: bold;">Call Count:</td>
-                        <td style="padding: 3px 0;">${location.count}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 3px 0; font-weight: bold;">Density Level:</td>
-                        <td style="padding: 3px 0;">${densityCategory}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 3px 0; font-weight: bold;">Most Common Type:</td>
-                        <td style="padding: 3px 0;">${mostCommonType}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 3px 0; font-weight: bold;">Busiest Time:</td>
-                        <td style="padding: 3px 0;">${busiestHourText}</td>
-                    </tr>
-                </table>
-            </div>
-        `;
     }
 
     // Function to update hotspot analysis section
@@ -614,15 +548,11 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
         }
         
-        // Add instructions for interacting with the map
+        // Add information about map interaction
         resultsHTML += `
             <div class="hotspot-stat">
-                <span>Interactive Map:</span>
-                <strong>Zoom in/out to see detailed clusters</strong>
-            </div>
-            <div style="font-size: 0.9em; margin-top: 8px;">
-                <p>• Click on clusters to zoom in and see individual points</p>
-                <p>• Click on points to see detailed call information</p>
+                <span>Map Instructions:</span>
+                <strong>Click markers for details</strong>
             </div>
         `;
         
@@ -669,14 +599,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const dataSource = sessionStorage.getItem('dataSource');
         const formatterToolId = sessionStorage.getItem('formatterToolId');
         
-        console.log("Checking formatter data:", {
-            hasData: !!formattedData,
-            dataSource,
-            formatterToolId
-        });
+        debugLog("Checking for data from formatter");
         
         if (formattedData && dataSource === 'formatter' && formatterToolId === 'call-density') {
-            console.log("Found data from Data Formatter tool");
+            debugLog("Found data from Data Formatter tool");
             
             try {
                 // Parse the data
@@ -692,7 +618,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 // Process the data
-                console.log(`Processing ${dataToProcess.length} records from Data Formatter`);
+                debugLog(`Processing ${dataToProcess.length} records from Data Formatter`);
                 
                 // Transform data if needed to match the expected format
                 originalData = dataToProcess.map(item => {
@@ -823,7 +749,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Add title and legend
                 pdf.setFont('helvetica', 'bold');
                 pdf.setFontSize(16);
-                pdf.text('Call Density Heatmap', 10, imgHeight * ratio + 10);
+                pdf.text('Call Density Map', 10, imgHeight * ratio + 10);
                 
                 // Save the PDF
                 pdf.save('call-density-map.pdf');
@@ -835,7 +761,4 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
-    // Add debug message
-    console.log("Call Density Heatmap initialized with cluster support");
 });

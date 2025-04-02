@@ -53,6 +53,79 @@
     border-radius: 3px;
 }
 
+/* Custom marker and cluster styles with mobile optimizations */
+.call-density-marker {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    z-index: 500 !important;
+}
+
+.call-density-marker div {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    border-radius: 50% !important;
+    text-align: center !important;
+    color: white !important;
+    font-weight: bold !important;
+    box-shadow: 0 0 5px rgba(0,0,0,0.5) !important;
+    font-size: 14px !important;
+    border: 2px solid white !important;
+}
+
+/* Specific density styling */
+.density-low div {
+    background-color: #a6cee3 !important;
+}
+
+.density-medium div {
+    background-color: #6495ed !important;
+}
+
+.density-high div {
+    background-color: #1f4eb0 !important;
+}
+
+.density-critical div {
+    background-color: #d73027 !important;
+}
+
+/* Custom marker popup styling */
+.call-density-popup .leaflet-popup-content-wrapper {
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-radius: 8px !important;
+}
+
+.call-density-popup .leaflet-popup-content {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+
+/* Marker cluster custom styling */
+.custom-cluster {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    border-radius: 50% !important;
+    text-align: center !important;
+    color: white !important;
+    font-weight: bold !important;
+    border: 2px solid white !important;
+    box-shadow: 0 0 5px rgba(0,0,0,0.5) !important;
+}
+
+.custom-cluster div {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    font-size: inherit !important;
+}
+
 .filter-section {
     margin-bottom: 20px;
 }
