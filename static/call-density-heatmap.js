@@ -262,16 +262,53 @@ document.addEventListener('DOMContentLoaded', function() {
     // Process and aggregate location data
     function processLocationData(data) {
         const locationCounts = {};
+        let validCount = 0;
+        let invalidCount = 0;
+        
+        // Check the first few data points to debug
+        if (data.length > 0) {
+            debugLog(`First data point sample: ${JSON.stringify(data[0])}`);
+            // Check all properties of the first point
+            const firstPoint = data[0];
+            for (const key in firstPoint) {
+                debugLog(`Property ${key}: ${firstPoint[key]} (type: ${typeof firstPoint[key]})`);
+            }
+        }
         
         for (const point of data) {
-            // Validate coordinates
-            const lat = parseFloat(point.latitude);
-            const lng = parseFloat(point.longitude);
+            // Validate coordinates - try different possible property names
+            let lat = null;
+            let lng = null;
+            
+            // Try different property names for latitude
+            if (point.latitude !== undefined) {
+                lat = parseFloat(point.latitude);
+            } else if (point.lat !== undefined) {
+                lat = parseFloat(point.lat);
+            } else if (point.y !== undefined) {
+                lat = parseFloat(point.y);
+            }
+            
+            // Try different property names for longitude
+            if (point.longitude !== undefined) {
+                lng = parseFloat(point.longitude);
+            } else if (point.lng !== undefined) {
+                lng = parseFloat(point.lng);
+            } else if (point.x !== undefined) {
+                lng = parseFloat(point.x);
+            }
             
             // Skip invalid coordinates
             if (isNaN(lat) || isNaN(lng) || !isFinite(lat) || !isFinite(lng)) {
+                invalidCount++;
+                // Log the first few invalid points for debugging
+                if (invalidCount <= 3) {
+                    debugLog(`Invalid coordinates in point: ${JSON.stringify(point)}`);
+                }
                 continue;
             }
+            
+            validCount++;
             
             // Round coordinates to 4 decimal places for grouping nearby points
             const roundedLat = Math.round(lat * 10000) / 10000;
@@ -315,6 +352,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
+        debugLog(`Processed ${data.length} points: ${validCount} valid, ${invalidCount} invalid`);
+        
         return locationCounts;
     }
     
@@ -332,10 +371,69 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        // If no valid locations found, add a fallback marker to show something
+        const hasValidCoordinates = data.some(point => {
+            const lat = parseFloat(point.latitude);
+            const lng = parseFloat(point.longitude);
+            return !isNaN(lat) && !isNaN(lng) && isFinite(lat) && isFinite(lng);
+        });
+        
+        if (!hasValidCoordinates) {
+            debugLog("No valid coordinates found in data, adding sample markers");
+            
+            // Add some sample markers for testing - will help users see if clustering works
+            const sampleLocations = [
+                { lat: 33.4484, lng: -112.0740, count: 15, type: "Sample" }, // Phoenix
+                { lat: 33.4255, lng: -111.9400, count: 10, type: "Sample" }, // Tempe
+                { lat: 33.3062, lng: -111.8413, count: 8, type: "Sample" },  // Chandler
+                { lat: 33.4942, lng: -112.2691, count: 5, type: "Sample" },  // Glendale
+                { lat: 33.3528, lng: -111.7890, count: 7, type: "Sample" }   // Mesa
+            ];
+            
+            // Add sample markers
+            sampleLocations.forEach(location => {
+                const marker = L.marker([location.lat, location.lng], {
+                    title: "Sample Marker"
+                });
+                marker.bindPopup(`<b>Sample Marker</b><br>This is a demonstration marker.<br>Your data appears to be missing valid coordinates.`);
+                markers.addLayer(marker);
+            });
+            
+            // Show clear message to the user
+            showUploadStatus('Warning: Your data appears to be missing valid coordinates. Sample markers are shown for demonstration purposes.', 'error');
+            
+            // Zoom to the sample area
+            map.setView([33.4484, -112.0740], 10);
+            
+            return;
+        }
+        
         // Process data to aggregate points
         const locationCounts = processLocationData(data);
         const locations = Object.values(locationCounts);
         debugLog(`Aggregated to ${locations.length} unique locations`);
+        
+        // If still no locations after processing, show clear error
+        if (locations.length === 0) {
+            debugLog("No valid locations after processing. Adding notice marker.");
+            
+            // Add a marker in the center of the US to show something
+            const errorMarker = L.marker([39.8283, -98.5795], {
+                title: "No Valid Locations"
+            });
+            errorMarker.bindPopup(`<div style="text-align:center; width:200px;"><b>No Valid Location Data</b><br>
+                Your data was loaded but no valid geographic coordinates were found.<br><br>
+                Please check your data format. Coordinates should be in latitude/longitude format.</div>`);
+            markers.addLayer(errorMarker);
+            
+            // Show message to user
+            showUploadStatus('Error: No valid geographic coordinates found in your data.', 'error');
+            
+            // Center map on US
+            map.setView([39.8283, -98.5795], 4);
+            
+            return;
+        }
         
         // Find maximum count for scaling
         const maxCount = Math.max(...locations.map(loc => loc.count));
@@ -622,9 +720,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Transform data if needed to match the expected format
                 originalData = dataToProcess.map(item => {
-                    // Try to convert string coordinates to numbers if needed
-                    const lat = typeof item.latitude === 'string' ? parseFloat(item.latitude) : item.latitude;
-                    const lng = typeof item.longitude === 'string' ? parseFloat(item.longitude) : item.longitude;
+                    // Debug the raw data format for first item
+                    if (dataToProcess.indexOf(item) === 0) {
+                        debugLog(`Raw data sample: ${JSON.stringify(item)}`);
+                    }
+                    
+                    // Try to extract latitude from different possible properties
+                    let lat = null;
+                    if (item.latitude !== undefined) {
+                        lat = typeof item.latitude === 'string' ? parseFloat(item.latitude) : item.latitude;
+                    } else if (item.lat !== undefined) {
+                        lat = typeof item.lat === 'string' ? parseFloat(item.lat) : item.lat;
+                    } else if (item.y !== undefined) {
+                        lat = typeof item.y === 'string' ? parseFloat(item.y) : item.y;
+                    } else if (item.location && item.location.coordinates && item.location.coordinates[1] !== undefined) {
+                        // GeoJSON format: [longitude, latitude]
+                        lat = item.location.coordinates[1];
+                    }
+                    
+                    // Try to extract longitude from different possible properties
+                    let lng = null;
+                    if (item.longitude !== undefined) {
+                        lng = typeof item.longitude === 'string' ? parseFloat(item.longitude) : item.longitude;
+                    } else if (item.lng !== undefined) {
+                        lng = typeof item.lng === 'string' ? parseFloat(item.lng) : item.lng;
+                    } else if (item.x !== undefined) {
+                        lng = typeof item.x === 'string' ? parseFloat(item.x) : item.x;
+                    } else if (item.location && item.location.coordinates && item.location.coordinates[0] !== undefined) {
+                        // GeoJSON format: [longitude, latitude]
+                        lng = item.location.coordinates[0];
+                    }
                     
                     // Handle hour, day of week, etc. if available
                     let hour, dayOfWeek, month;
@@ -643,13 +768,26 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                     
+                    // If there are no valid coordinates, make sure to log it
+                    if ((lat === null || isNaN(lat) || !isFinite(lat)) || 
+                        (lng === null || isNaN(lng) || !isFinite(lng))) {
+                        if (dataToProcess.indexOf(item) < 3) {
+                            debugLog(`Invalid or missing coordinates in item: ${JSON.stringify(item)}`);
+                        }
+                    } else if (dataToProcess.indexOf(item) < 2) {
+                        debugLog(`Valid coordinates found: ${lat}, ${lng}`);
+                    }
+                    
+                    // Transform to a standardized format
                     return {
                         ...item,
                         latitude: lat,
                         longitude: lng,
                         hour: item.hour || hour,
                         dayOfWeek: item.dayOfWeek || dayOfWeek,
-                        month: item.month || month
+                        month: item.month || month,
+                        // Add a default type if none exists
+                        type: item.type || item.callType || item.call_type || item.incident_type || "Unknown"
                     };
                 });
                 
