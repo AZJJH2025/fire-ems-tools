@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', function() {
+    console.log("🚑 Call Density Heatmap initializing...");
+    
+    // Add a debugging function for visibility
+    function debugLog(message) {
+        console.log(`🔍 DEBUG: ${message}`);
+    }
     // Clean up session storage when navigating away from the page
     window.addEventListener('beforeunload', function() {
         // Only clear formatter-related storage items
@@ -216,110 +222,183 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to update the map display with clustered markers
     function updateMapDisplay(data) {
-        console.log(`Updating map with ${data.length} data points`);
+        debugLog(`Updating map with ${data.length} data points`);
         
-        // Remove existing layers
-        if (markers) {
-            map.removeLayer(markers);
-        }
+        // SIMPLE TEST: Add a marker at the center of the map
+        // This tests if ANY markers can be shown on the map
+        const testMarker = L.marker([39.8283, -98.5795], {
+            title: "TEST MARKER"
+        }).addTo(map);
+        testMarker.bindPopup("<b>Test Marker</b><br>This is a test marker.").openPopup();
+        debugLog("Added test marker to the map");
         
+        // If we have no data, show a message and return
         if (data.length === 0) {
             document.getElementById('hotspot-results').innerHTML = 
                 '<p>No data points match the current filters</p>';
             return;
         }
         
-        // Process and aggregate data
+        // Clean up any existing markers
+        if (markers) {
+            map.removeLayer(markers);
+            markers = null;
+        }
+        
+        // Process the data to get counts by location
         const locationCounts = processLocationData(data);
-        
-        // Convert the location counts to an array for display
         const locations = Object.values(locationCounts);
-        console.log(`Aggregated to ${locations.length} unique locations`);
+        debugLog(`Aggregated to ${locations.length} unique locations`);
         
-        // Find the maximum count to scale sizes and colors
+        // Find the maximum count for scaling
         const maxCount = Math.max(...locations.map(loc => loc.count));
-        console.log(`Maximum count at any location: ${maxCount}`);
+        debugLog(`Maximum count at any location: ${maxCount}`);
         
-        // Create a new marker cluster group
-        markers = L.markerClusterGroup({
-            maxClusterRadius: 80,
-            spiderfyOnMaxZoom: true,
-            showCoverageOnHover: false,
-            zoomToBoundsOnClick: true,
-            iconCreateFunction: function(cluster) {
-                const childCount = cluster.getChildCount();
-                
-                // Determine the class based on the count
-                let className;
-                if (childCount < 10) {
-                    className = 'cluster-small';
-                } else if (childCount < 50) {
-                    className = 'cluster-medium';
-                } else if (childCount < 200) {
-                    className = 'cluster-large';
-                } else {
-                    className = 'cluster-xlarge';
-                }
-                
-                // Create marker with count
-                return new L.DivIcon({
-                    html: '<div><span>' + childCount + '</span></div>',
-                    className: 'marker-cluster custom-cluster ' + className,
-                    iconSize: new L.Point(40, 40)
-                });
-            }
-        });
+        // Create a regular layer group first instead of cluster group
+        // This is to verify markers work at all before trying clustering
+        debugLog("Creating basic marker layer group");
+        const basicMarkers = L.layerGroup();
         
-        // Add markers for each aggregated location
-        locations.forEach(location => {
-            // Calculate the size and color based on count relative to max
-            const sizeFactor = Math.max(0.3, location.count / maxCount);
-            const radius = 5 + (sizeFactor * 25); // Scale radius between 5 and 30
+        // Add markers for each location to the basic layer group
+        for (let i = 0; i < locations.length; i++) {
+            const location = locations[i];
             
-            // Calculate color intensity
+            // Color based on count
             const intensity = location.count / maxCount;
-            let color;
+            let fillColor;
             
-            // Match the colors to the legend
             if (intensity < 0.25) {
-                color = '#a6cee3'; // Light blue for Low
+                fillColor = '#a6cee3'; // Light blue for Low
             } else if (intensity < 0.5) {
-                color = '#6495ed'; // Medium blue for Medium
+                fillColor = '#6495ed'; // Medium blue for Medium
             } else if (intensity < 0.8) {
-                color = '#1f4eb0'; // Dark blue for High
+                fillColor = '#1f4eb0'; // Dark blue for High
             } else {
-                color = '#d73027'; // Red for Critical
+                fillColor = '#d73027'; // Red for Critical
             }
             
-            // Determine call density category for display
-            let densityCategory = "Low";
-            if (intensity >= 0.8) {
-                densityCategory = "Critical";
-            } else if (intensity >= 0.5) {
-                densityCategory = "High";
-            } else if (intensity >= 0.25) {
-                densityCategory = "Medium";
-            }
-            
-            // Create marker
-            const marker = L.circleMarker([location.lat, location.lng], {
-                radius: radius,
-                fillColor: color,
-                color: '#fff',
+            // Create a simple circle marker
+            const circle = L.circleMarker([location.lat, location.lng], {
+                radius: 10,
+                fillColor: fillColor,
+                color: "#fff",
                 weight: 2,
                 opacity: 1,
                 fillOpacity: 0.8
             });
             
-            // Add popup with detailed information
-            marker.bindPopup(createPopupContent(location, densityCategory));
+            // Add popup content
+            circle.bindPopup(`
+                <div style="min-width: 150px;">
+                    <h4 style="margin-top: 0;">Call Density</h4>
+                    <p><b>Count:</b> ${location.count}</p>
+                </div>
+            `);
             
-            // Add to cluster group
-            markers.addLayer(marker);
-        });
+            // Add to layer group
+            basicMarkers.addLayer(circle);
+            
+            // Log for first few markers to make sure they're being created
+            if (i < 5) {
+                debugLog(`Added marker at ${location.lat}, ${location.lng} with count ${location.count}`);
+            }
+        }
         
-        // Add the markers to the map
-        map.addLayer(markers);
+        // Add the basic markers to the map
+        basicMarkers.addTo(map);
+        debugLog(`Added ${locations.length} markers to the map`);
+        
+        // Now try to initialize clustering if the simple markers appear
+        try {
+            debugLog("Initializing marker clustering");
+            
+            // Create a marker cluster group with custom settings
+            markers = L.markerClusterGroup({
+                maxClusterRadius: 80,
+                spiderfyOnMaxZoom: true,
+                showCoverageOnHover: false,
+                zoomToBoundsOnClick: true,
+                iconCreateFunction: function(cluster) {
+                    const childCount = cluster.getChildCount();
+                    
+                    // Determine the class based on the count
+                    let className, size;
+                    if (childCount < 10) {
+                        className = 'cluster-small';
+                        size = 40;
+                    } else if (childCount < 50) {
+                        className = 'cluster-medium';
+                        size = 50;
+                    } else if (childCount < 200) {
+                        className = 'cluster-large';
+                        size = 60;
+                    } else {
+                        className = 'cluster-xlarge';
+                        size = 70;
+                    }
+                    
+                    // Create marker with count
+                    return new L.DivIcon({
+                        html: '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;"><span>' + childCount + '</span></div>',
+                        className: 'marker-cluster custom-cluster ' + className,
+                        iconSize: new L.Point(size, size)
+                    });
+                }
+            });
+            
+            // Add the same markers to the cluster group
+            map.removeLayer(basicMarkers); // Remove basic markers first
+            
+            // Re-create markers for the cluster group
+            locations.forEach(location => {
+                // Color based on count
+                const intensity = location.count / maxCount;
+                let color;
+                
+                if (intensity < 0.25) {
+                    color = '#a6cee3'; // Light blue for Low
+                } else if (intensity < 0.5) {
+                    color = '#6495ed'; // Medium blue for Medium
+                } else if (intensity < 0.8) {
+                    color = '#1f4eb0'; // Dark blue for High
+                } else {
+                    color = '#d73027'; // Red for Critical
+                }
+                
+                // Determine category for display
+                let densityCategory = "Low";
+                if (intensity >= 0.8) {
+                    densityCategory = "Critical";
+                } else if (intensity >= 0.5) {
+                    densityCategory = "High";
+                } else if (intensity >= 0.25) {
+                    densityCategory = "Medium";
+                }
+                
+                // Create the marker
+                const marker = L.circleMarker([location.lat, location.lng], {
+                    radius: 10 + (intensity * 20), // Scale size by intensity
+                    fillColor: color,
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                });
+                
+                // Add popup
+                marker.bindPopup(createPopupContent(location, densityCategory));
+                
+                // Add to cluster group
+                markers.addLayer(marker);
+            });
+            
+            // Add the clustered markers to the map
+            map.addLayer(markers);
+            debugLog("Added clustered markers to the map");
+        } catch (error) {
+            console.error("Error creating clusters:", error);
+            // Keep the basic markers if clustering fails
+        }
         
         // Fit map to show all markers
         if (locations.length > 0) {
@@ -329,6 +408,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     padding: [50, 50],
                     maxZoom: 13
                 });
+                debugLog("Fit map bounds to markers");
             } catch (error) {
                 console.error("Error fitting map to markers:", error);
             }
