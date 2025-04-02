@@ -897,22 +897,64 @@ function saveDraft() {
 
 function showIncidentList() {
     console.log("Showing incident list");
-    // Implementation would go here
+    
+    // Hide other containers
+    document.getElementById("incident-form-container").style.display = "none";
+    document.getElementById("export-container").style.display = "none";
+    document.getElementById("settings-container").style.display = "none";
+    document.getElementById("cad-import-container").style.display = "none";
+    
+    // Show incident list container
+    document.getElementById("incident-list-container").style.display = "block";
+    
+    // Refresh the list (placeholder for full implementation)
+    const tbody = document.getElementById("incident-list");
+    tbody.innerHTML = '<tr><td colspan="6">No incidents found. Click "New Incident" to create one.</td></tr>';
 }
 
 function showExportOptions() {
     console.log("Showing export options");
-    // Implementation would go here
+    
+    // Hide other containers
+    document.getElementById("incident-form-container").style.display = "none";
+    document.getElementById("incident-list-container").style.display = "none";
+    document.getElementById("settings-container").style.display = "none";
+    document.getElementById("cad-import-container").style.display = "none";
+    
+    // Show export container
+    document.getElementById("export-container").style.display = "block";
 }
 
 function showSettings() {
     console.log("Showing settings");
-    // Implementation would go here
+    
+    // Hide other containers
+    document.getElementById("incident-form-container").style.display = "none";
+    document.getElementById("incident-list-container").style.display = "none";
+    document.getElementById("export-container").style.display = "none";
+    document.getElementById("cad-import-container").style.display = "none";
+    
+    // Show settings container
+    document.getElementById("settings-container").style.display = "block";
 }
 
 function showNewIncidentForm() {
     console.log("Showing new incident form");
-    // Implementation would go here
+    
+    // Hide other containers
+    document.getElementById("incident-list-container").style.display = "none";
+    document.getElementById("export-container").style.display = "none";
+    document.getElementById("settings-container").style.display = "none";
+    document.getElementById("cad-import-container").style.display = "none";
+    
+    // Show form container
+    document.getElementById("incident-form-container").style.display = "block";
+    
+    // Reset form to initial state
+    resetForm();
+    
+    // Initialize the form with default values
+    initializeForm();
 }
 
 function updateSettings() {
