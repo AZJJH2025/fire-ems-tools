@@ -265,11 +265,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     colorClass = 'cluster-critical';
                 }
                 
+                // Set the icon size based on the size category
+                let iconSize;
+                switch(size) {
+                    case 'small': iconSize = 40; break;
+                    case 'medium': iconSize = 50; break;
+                    case 'large': iconSize = 60; break;
+                    case 'xlarge': iconSize = 70; break;
+                    default: iconSize = 40;
+                }
+                
                 // Create cluster icon with the count and appropriate styling
                 return L.divIcon({
                     html: `<div><span>${count}</span></div>`,
                     className: `marker-cluster marker-cluster-${size} ${colorClass}`,
-                    iconSize: L.point(40, 40)
+                    iconSize: L.point(iconSize, iconSize)
                 });
             }
         }).addTo(map);
@@ -285,14 +295,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     text-align: center;
                     font-weight: bold;
                     font-family: Arial, sans-serif;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
                 }
                 .marker-cluster div {
                     width: 100%;
                     height: 100%;
+                    margin: 0;
+                    padding: 0;
+                    text-align: center;
                     border-radius: 50%;
+                    line-height: normal;
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -300,40 +311,56 @@ document.addEventListener('DOMContentLoaded', function() {
                 .marker-cluster span {
                     color: white;
                     text-shadow: 0px 0px 2px rgba(0,0,0,0.7);
+                    display: block;
+                    width: 100%;
+                    text-align: center;
                 }
+                
+                /* Overrides to ensure visibility */
                 .marker-cluster-small {
-                    width: 30px !important;
-                    height: 30px !important;
-                    font-size: 11px;
-                }
-                .marker-cluster-medium {
                     width: 40px !important;
                     height: 40px !important;
-                    font-size: 13px;
+                    line-height: 40px !important;
+                    font-size: 12px !important;
                 }
-                .marker-cluster-large {
+                .marker-cluster-medium {
                     width: 50px !important;
                     height: 50px !important;
-                    font-size: 15px;
+                    line-height: 50px !important;
+                    font-size: 14px !important;
                 }
-                .marker-cluster-xlarge {
+                .marker-cluster-large {
                     width: 60px !important;
                     height: 60px !important;
-                    font-size: 17px;
+                    line-height: 60px !important;
+                    font-size: 16px !important;
                 }
+                .marker-cluster-xlarge {
+                    width: 70px !important;
+                    height: 70px !important;
+                    line-height: 70px !important;
+                    font-size: 18px !important;
+                }
+                
+                /* Custom colors with higher opacity */
                 .cluster-low {
-                    background-color: rgba(166, 206, 227, 0.9);
+                    background-color: rgba(166, 206, 227, 1) !important;
+                    box-shadow: 0 0 0 5px rgba(166, 206, 227, 0.3);
                 }
                 .cluster-medium {
-                    background-color: rgba(100, 149, 237, 0.9);
+                    background-color: rgba(100, 149, 237, 1) !important;
+                    box-shadow: 0 0 0 5px rgba(100, 149, 237, 0.3);
                 }
                 .cluster-high {
-                    background-color: rgba(31, 78, 176, 0.9);
+                    background-color: rgba(31, 78, 176, 1) !important;
+                    box-shadow: 0 0 0 5px rgba(31, 78, 176, 0.3);
                 }
                 .cluster-critical {
-                    background-color: rgba(215, 48, 39, 0.9);
+                    background-color: rgba(215, 48, 39, 1) !important;
+                    box-shadow: 0 0 0 5px rgba(215, 48, 39, 0.3);
                 }
-                /* Animation for zoom levels */
+                
+                /* Better animation for zoom levels */
                 .marker-cluster-animating {
                     transform-origin: center;
                     animation: cluster-animation 0.3s ease-out;
