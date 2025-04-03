@@ -1459,6 +1459,111 @@
             </div>
             
             <div class="form-section">
+                <h5>Medical History</h5>
+                <div class="medical-history-container">
+                    <div class="form-group">
+                        <label for="medical-history-{{index}}">Past Medical History</label>
+                        <select id="medical-history-{{index}}" name="medical-history-{{index}}" class="medical-history-select" multiple>
+                            <option value="hypertension">Hypertension</option>
+                            <option value="diabetes">Diabetes</option>
+                            <option value="copd">COPD</option>
+                            <option value="asthma">Asthma</option>
+                            <option value="coronary_artery_disease">Coronary Artery Disease</option>
+                            <option value="congestive_heart_failure">Congestive Heart Failure</option>
+                            <option value="myocardial_infarction">Prior MI</option>
+                            <option value="stroke">Stroke/CVA</option>
+                            <option value="seizure">Seizure Disorder</option>
+                            <option value="cancer">Cancer</option>
+                            <option value="renal_disease">Renal Disease</option>
+                            <option value="liver_disease">Liver Disease</option>
+                            <option value="psychiatric">Psychiatric Disorder</option>
+                            <option value="substance_abuse">Substance Abuse</option>
+                            <option value="covid19">COVID-19</option>
+                        </select>
+                        <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="medical-history-other-{{index}}">Other Medical History</label>
+                        <textarea id="medical-history-other-{{index}}" name="medical-history-other-{{index}}" placeholder="Enter additional medical history here"></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h5>Medications</h5>
+                <div class="medications-container">
+                    <div class="form-group">
+                        <label for="medications-{{index}}">Current Medications</label>
+                        <select id="medications-{{index}}" name="medications-{{index}}" class="medications-select" multiple>
+                            <option value="lisinopril">Lisinopril</option>
+                            <option value="metoprolol">Metoprolol</option>
+                            <option value="atorvastatin">Atorvastatin (Lipitor)</option>
+                            <option value="metformin">Metformin</option>
+                            <option value="insulin">Insulin</option>
+                            <option value="aspirin">Aspirin</option>
+                            <option value="warfarin">Warfarin (Coumadin)</option>
+                            <option value="apixaban">Apixaban (Eliquis)</option>
+                            <option value="levothyroxine">Levothyroxine</option>
+                            <option value="albuterol">Albuterol</option>
+                            <option value="furosemide">Furosemide (Lasix)</option>
+                            <option value="prednisone">Prednisone</option>
+                            <option value="omeprazole">Omeprazole</option>
+                            <option value="amlodipine">Amlodipine</option>
+                            <option value="hydrochlorothiazide">Hydrochlorothiazide</option>
+                            <option value="gabapentin">Gabapentin</option>
+                            <option value="acetaminophen">Acetaminophen</option>
+                            <option value="ibuprofen">Ibuprofen</option>
+                        </select>
+                        <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="medications-other-{{index}}">Other Medications</label>
+                        <textarea id="medications-other-{{index}}" name="medications-other-{{index}}" placeholder="Enter additional medications here"></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h5>Allergies</h5>
+                <div class="allergies-container">
+                    <div class="form-group">
+                        <label for="allergies-{{index}}">Known Allergies</label>
+                        <select id="allergies-{{index}}" name="allergies-{{index}}" class="allergies-select" multiple>
+                            <option value="penicillin">Penicillin</option>
+                            <option value="sulfa">Sulfa Drugs</option>
+                            <option value="nsaids">NSAIDs</option>
+                            <option value="aspirin">Aspirin</option>
+                            <option value="morphine">Morphine</option>
+                            <option value="codeine">Codeine</option>
+                            <option value="latex">Latex</option>
+                            <option value="contrast">Contrast Dye</option>
+                            <option value="eggs">Eggs</option>
+                            <option value="nuts">Nuts</option>
+                            <option value="shellfish">Shellfish</option>
+                            <option value="iodine">Iodine</option>
+                            <option value="bee_stings">Bee Stings</option>
+                        </select>
+                        <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="allergies-other-{{index}}">Other Allergies</label>
+                        <textarea id="allergies-other-{{index}}" name="allergies-other-{{index}}" placeholder="Enter additional allergies here"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="nkda-{{index}}">No Known Drug Allergies</label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="nkda-{{index}}" name="nkda-{{index}}">
+                            <label for="nkda-{{index}}" class="switch-label"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-section">
                 <h5>Vitals</h5>
                 <div class="vitals-table">
                     <table>
