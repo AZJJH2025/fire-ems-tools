@@ -3,6 +3,25 @@
 // Debug console message to verify script is loading
 console.log("incident-logger.js is loading...");
 
+// Add version tracking for debugging
+window.INCIDENT_LOGGER_VERSION = '1.1.0';
+console.log(`Incident Logger Version: ${window.INCIDENT_LOGGER_VERSION}`);
+console.log("Features: NFIRS cascade integration, Nominatim geocoding");
+
+// Track loaded components
+window.loadedComponents = {
+    map: false,
+    nfirs: false
+};
+
+// Register when components are loaded
+window.registerComponent = function(componentName) {
+    if (window.loadedComponents.hasOwnProperty(componentName)) {
+        window.loadedComponents[componentName] = true;
+        console.log(`Component registered: ${componentName}`);
+    }
+};
+
 /**
  * Show CAD import interface
  */
@@ -347,8 +366,22 @@ function initializeEventListeners() {
     document.getElementById("save-draft-btn").addEventListener("click", saveDraft);
     
     // Location related functionality
-    document.getElementById("geocode-btn").addEventListener("click", geocodeAddress);
-    document.getElementById("current-location-btn").addEventListener("click", getCurrentLocation);
+    // Use the map component's geocode function if available, otherwise use our local implementation
+    const geocodeBtn = document.getElementById("geocode-btn");
+    if (geocodeBtn) {
+        geocodeBtn.addEventListener("click", function() {
+            if (typeof window.mapGeocode === 'function') {
+                window.mapGeocode();
+            } else {
+                geocodeAddress();
+            }
+        });
+    }
+    
+    const currentLocationBtn = document.getElementById("current-location-btn");
+    if (currentLocationBtn) {
+        currentLocationBtn.addEventListener("click", getCurrentLocation);
+    }
     
     // Dynamic form elements
     document.getElementById("add-unit-btn").addEventListener("click", addUnitEntry);
@@ -821,13 +854,365 @@ function updateNarrativeCharCount() {
 
 function updateSecondaryTypes() {
     console.log("Updating secondary types based on primary type selection");
-    // Implementation would go here
+    
+    const primaryType = document.getElementById("incident-primary-type").value;
+    const secondaryTypeSelect = document.getElementById("incident-secondary-type");
+    
+    // Clear existing options except the placeholder
+    while (secondaryTypeSelect.options.length > 1) {
+        secondaryTypeSelect.remove(1);
+    }
+    
+    // Exit if no primary type selected
+    if (!primaryType) return;
+    
+    // Define secondary types based on primary selection
+    const secondaryTypes = {
+        "FIRE": [
+            { value: "STRUCTURE", text: "Structure Fire" },
+            { value: "VEHICLE", text: "Vehicle Fire" },
+            { value: "WILDLAND", text: "Wildland Fire" },
+            { value: "OTHER_FIRE", text: "Other Fire" }
+        ],
+        "EMS": [
+            { value: "MEDICAL", text: "Medical Emergency" },
+            { value: "TRAUMA", text: "Trauma" },
+            { value: "CARDIAC", text: "Cardiac" },
+            { value: "RESPIRATORY", text: "Respiratory" },
+            { value: "STROKE", text: "Stroke" },
+            { value: "OTHER_EMS", text: "Other EMS" }
+        ],
+        "HAZMAT": [
+            { value: "SPILL", text: "Spill" },
+            { value: "LEAK", text: "Leak" },
+            { value: "GAS", text: "Gas" },
+            { value: "OTHER_HAZMAT", text: "Other HAZMAT" }
+        ],
+        "RESCUE": [
+            { value: "VEHICLE", text: "Vehicle Rescue" },
+            { value: "WATER", text: "Water Rescue" },
+            { value: "CONFINED_SPACE", text: "Confined Space" },
+            { value: "OTHER_RESCUE", text: "Other Rescue" }
+        ],
+        "SERVICE": [
+            { value: "ASSIST", text: "Public Assist" },
+            { value: "LOCKOUT", text: "Lockout" },
+            { value: "WATER_PROBLEM", text: "Water Problem" },
+            { value: "OTHER_SERVICE", text: "Other Service" }
+        ],
+        "OTHER": [
+            { value: "OTHER_INCIDENT", text: "Other Incident Type" }
+        ]
+    };
+    
+    // Add appropriate secondary types
+    if (secondaryTypes[primaryType]) {
+        secondaryTypes[primaryType].forEach(type => {
+            const option = document.createElement("option");
+            option.value = type.value;
+            option.textContent = type.text;
+            secondaryTypeSelect.appendChild(option);
+        });
+    }
+    
+    // Trigger update of specific types
+    updateSpecificTypes();
 }
 
 function updateSpecificTypes() {
     console.log("Updating specific types based on secondary type selection");
-    // Implementation would go here
+    
+    const secondaryType = document.getElementById("incident-secondary-type").value;
+    const specificTypeSelect = document.getElementById("incident-specific-type");
+    
+    // Clear existing options except the placeholder
+    while (specificTypeSelect.options.length > 1) {
+        specificTypeSelect.remove(1);
+    }
+    
+    // Exit if no secondary type selected
+    if (!secondaryType) return;
+    
+    // First check if we have mappings for this secondary type in our specificTypeMappings
+    if (specificTypeMappings[secondaryType]) {
+        console.log(`Using specific type mappings for ${secondaryType} from specificTypeMappings`);
+        
+        // Add options from the mappings
+        specificTypeMappings[secondaryType].forEach(type => {
+            const option = document.createElement("option");
+            option.value = type.value;
+            option.textContent = type.text; 
+            specificTypeSelect.appendChild(option);
+        });
+    } else {
+        // Fall back to the default NFIRS code-based specific types
+        console.log(`No custom mappings found for ${secondaryType}, using default NFIRS codes`);
+        
+        // Define specific types based on secondary selection
+        const specificTypes = {
+            // Fire related specific types
+            "STRUCTURE": [
+                { value: "111", text: "Building fire (111)" },
+                { value: "112", text: "Fires in structures other than building (112)" },
+                { value: "113", text: "Cooking fire, confined to container (113)" },
+                { value: "114", text: "Chimney or flue fire (114)" },
+                { value: "115", text: "Incinerator overload/malfunction (115)" },
+                { value: "116", text: "Fuel burner/boiler malfunction (116)" }
+            ],
+            "VEHICLE": [
+                { value: "130", text: "Mobile property (vehicle) fire (130)" },
+                { value: "131", text: "Passenger vehicle fire (131)" },
+                { value: "132", text: "Road freight/transport vehicle fire (132)" },
+                { value: "133", text: "Rail vehicle fire (133)" },
+                { value: "134", text: "Water vehicle fire (134)" },
+                { value: "135", text: "Aircraft fire (135)" },
+                { value: "136", text: "Self-propelled motor home/RV fire (136)" },
+                { value: "138", text: "Off-road vehicle/equipment fire (138)" }
+            ],
+            "WILDLAND": [
+                { value: "140", text: "Natural vegetation fire (140)" },
+                { value: "141", text: "Forest, woods, or wildland fire (141)" },
+                { value: "142", text: "Brush or brush/grass mixture fire (142)" },
+                { value: "143", text: "Grass fire (143)" }
+            ],
+            "OTHER_FIRE": [
+                { value: "100", text: "Fire, other (100)" },
+                { value: "150", text: "Outside rubbish fire (150)" },
+                { value: "154", text: "Dumpster/trash receptacle fire (154)" },
+                { value: "160", text: "Special outside fire (160)" },
+                { value: "162", text: "Outside equipment fire (162)" },
+                { value: "163", text: "Outside gas/vapor explosion (163)" }
+            ],
+            
+            // EMS related specific types
+            "MEDICAL": [
+                { value: "321", text: "EMS call, excluding vehicle accident with injury (321)" },
+                { value: "300", text: "Rescue, EMS call, other (300)" },
+                { value: "311", text: "Medical assist, assist EMS crew (311)" }
+            ],
+            "TRAUMA": [
+                { value: "322", text: "Vehicle accident with injuries (322)" },
+                { value: "323", text: "Motor vehicle/pedestrian accident (323)" },
+                { value: "351", text: "Extrication of victim(s) from building (351)" },
+                { value: "352", text: "Extrication of victim(s) from vehicle (352)" },
+                { value: "357", text: "Extrication of victim(s) from machinery (357)" }
+            ],
+            "CARDIAC": [
+                { value: "321", text: "EMS call - Cardiac emergency (321)" }
+            ],
+            "RESPIRATORY": [
+                { value: "321", text: "EMS call - Respiratory emergency (321)" }
+            ],
+            "STROKE": [
+                { value: "321", text: "EMS call - Stroke/CVA (321)" }
+            ],
+            "OTHER_EMS": [
+                { value: "320", text: "Emergency medical service incident, other (320)" },
+                { value: "381", text: "Rescue or EMS standby (381)" }
+            ],
+            
+            // HAZMAT related specific types
+            "SPILL": [
+                { value: "411", text: "Gasoline or flammable liquid spill (411)" },
+                { value: "413", text: "Oil or combustible liquid spill (413)" }
+            ],
+            "LEAK": [
+                { value: "412", text: "Gas leak (natural gas or LPG) (412)" },
+                { value: "422", text: "Chemical spill or leak (422)" },
+                { value: "423", text: "Refrigeration leak (423)" }
+            ],
+            "GAS": [
+                { value: "412", text: "Gas leak (natural gas or LPG) (412)" },
+                { value: "424", text: "Carbon monoxide incident (424)" }
+            ],
+            "OTHER_HAZMAT": [
+                { value: "400", text: "Hazardous condition, other (400)" },
+                { value: "410", text: "Combustible/flammable gas/liquid condition (410)" },
+                { value: "420", text: "Toxic condition, other (420)" },
+                { value: "421", text: "Chemical hazard (no spill or leak) (421)" },
+                { value: "451", text: "Biological hazard, confirmed or suspected (451)" }
+            ],
+            
+            // RESCUE related specific types
+            "VEHICLE": [
+                { value: "322", text: "Vehicle accident with injuries (322)" },
+                { value: "352", text: "Extrication of victim(s) from vehicle (352)" }
+            ],
+            "WATER": [
+                { value: "360", text: "Water & ice related rescue, other (360)" },
+                { value: "361", text: "Swimming/recreational water rescue (361)" },
+                { value: "362", text: "Ice rescue (362)" },
+                { value: "363", text: "Swift water rescue (363)" },
+                { value: "364", text: "Surf rescue (364)" },
+                { value: "365", text: "Watercraft rescue (365)" }
+            ],
+            "CONFINED_SPACE": [
+                { value: "355", text: "Confined space rescue (355)" }
+            ],
+            "OTHER_RESCUE": [
+                { value: "350", text: "Extrication, rescue, other (350)" },
+                { value: "353", text: "Removal of victim(s) from stalled elevator (353)" },
+                { value: "354", text: "Trench/below-grade rescue (354)" },
+                { value: "356", text: "High angle rescue (356)" },
+                { value: "370", text: "Electrical rescue (370)" }
+            ],
+            
+            // SERVICE related specific types
+            "ASSIST": [
+                { value: "510", text: "Person in distress, other (510)" },
+                { value: "551", text: "Assist police or other governmental agency (551)" },
+                { value: "553", text: "Public service (553)" },
+                { value: "554", text: "Assist invalid (554)" }
+            ],
+            "LOCKOUT": [
+                { value: "511", text: "Lock-out (511)" }
+            ],
+            "WATER_PROBLEM": [
+                { value: "520", text: "Water problem, other (520)" },
+                { value: "521", text: "Water evacuation (521)" },
+                { value: "522", text: "Water or steam leak (522)" }
+            ],
+            "OTHER_SERVICE": [
+                { value: "500", text: "Service call, other (500)" },
+                { value: "531", text: "Smoke or odor removal (531)" },
+                { value: "542", text: "Animal rescue (542)" },
+                { value: "561", text: "Unauthorized burning (561)" },
+                { value: "571", text: "Cover assignment, standby, moveup (571)" }
+            ],
+            
+            // OTHER catch-all specific types
+            "OTHER_INCIDENT": [
+                { value: "900", text: "Special type of incident, other (900)" },
+                { value: "911", text: "Citizen complaint (911)" }
+            ]
+        };
+        
+        // Add appropriate specific types
+        if (specificTypes[secondaryType]) {
+            specificTypes[secondaryType].forEach(type => {
+                const option = document.createElement("option");
+                option.value = type.value;
+                option.textContent = type.text;
+                specificTypeSelect.appendChild(option);
+            });
+        } else {
+            console.warn(`No specific types defined for secondary type: ${secondaryType}`);
+        }
+    }
+    
+    // If this is the NFIRS-specific field, also update the NFIRS code field
+    updateNFIRSIncidentTypeCode();
 }
+
+/**
+ * Update the NFIRS incident type code field based on selection
+ */
+function updateNFIRSIncidentTypeCode() {
+    console.log("Updating NFIRS incident type code based on specific type selection");
+    
+    const specificType = document.getElementById("incident-specific-type").value;
+    const nfirsCodeSelect = document.getElementById("nfirs-incident-type");
+    
+    if (!specificType || !nfirsCodeSelect) return;
+    
+    // Check if the specific type is a numeric NFIRS code (like 111, 321, etc.)
+    if (/^\d+$/.test(specificType)) {
+        console.log(`Setting NFIRS code to ${specificType} from specific type selection`);
+        nfirsCodeSelect.value = specificType;
+        
+        // Trigger change event to update any dependent fields
+        const event = new Event('change');
+        nfirsCodeSelect.dispatchEvent(event);
+    } else {
+        // Look for a mapping in specificTypes to find an NFIRS code
+        const secondaryType = document.getElementById("incident-secondary-type").value;
+        if (secondaryType && specificTypeMappings[secondaryType]) {
+            const mappings = specificTypeMappings[secondaryType];
+            for (const mapping of mappings) {
+                if (mapping.value === specificType && mapping.nfirsCode) {
+                    console.log(`Found NFIRS code ${mapping.nfirsCode} for specific type ${specificType}`);
+                    nfirsCodeSelect.value = mapping.nfirsCode;
+                    
+                    // Trigger change event
+                    const event = new Event('change');
+                    nfirsCodeSelect.dispatchEvent(event);
+                    break;
+                }
+            }
+        }
+    }
+}
+
+/**
+ * NFIRS code mappings for specific types
+ * This provides a way to map our custom specific types to standard NFIRS codes
+ */
+const specificTypeMappings = {
+    // Structure fire mappings
+    "STRUCTURE": [
+        { value: "Single_Family", text: "Single Family Dwelling", nfirsCode: "111" },
+        { value: "Multi_Family", text: "Multi-Family Dwelling", nfirsCode: "111" },
+        { value: "Commercial", text: "Commercial Building", nfirsCode: "111" },
+        { value: "Industrial", text: "Industrial Building", nfirsCode: "111" },
+        { value: "Storage", text: "Storage Building", nfirsCode: "112" },
+        { value: "Outbuilding", text: "Shed/Outbuilding", nfirsCode: "112" },
+        { value: "Kitchen", text: "Kitchen Fire", nfirsCode: "113" },
+        { value: "Chimney", text: "Chimney Fire", nfirsCode: "114" },
+        { value: "Trash", text: "Trash/Rubbish Fire", nfirsCode: "118" }
+    ],
+    
+    // Vehicle fire mappings
+    "VEHICLE": [
+        { value: "Passenger", text: "Passenger Vehicle", nfirsCode: "131" },
+        { value: "Commercial", text: "Commercial Vehicle", nfirsCode: "132" },
+        { value: "RV", text: "RV/Camper", nfirsCode: "136" },
+        { value: "Aircraft", text: "Aircraft", nfirsCode: "135" },
+        { value: "Boat", text: "Boat/Watercraft", nfirsCode: "134" }
+    ],
+    
+    // Wildland fire mappings
+    "WILDLAND": [
+        { value: "Forest", text: "Forest/Woods", nfirsCode: "141" },
+        { value: "Brush", text: "Brush", nfirsCode: "142" },
+        { value: "Grass", text: "Grass", nfirsCode: "143" }
+    ],
+    
+    // EMS mappings
+    "MEDICAL": [
+        { value: "General", text: "General Medical", nfirsCode: "321" },
+        { value: "Cardiac", text: "Cardiac Emergency", nfirsCode: "321" },
+        { value: "Respiratory", text: "Respiratory Emergency", nfirsCode: "321" },
+        { value: "Diabetic", text: "Diabetic Emergency", nfirsCode: "321" },
+        { value: "Allergic", text: "Allergic Reaction", nfirsCode: "321" },
+        { value: "Seizure", text: "Seizure", nfirsCode: "321" },
+        { value: "Poisoning", text: "Poisoning/Drug Overdose", nfirsCode: "321" }
+    ],
+    
+    "TRAUMA": [
+        { value: "Fall", text: "Fall", nfirsCode: "321" },
+        { value: "Laceration", text: "Laceration/Bleeding", nfirsCode: "321" },
+        { value: "MVA", text: "Motor Vehicle Accident", nfirsCode: "322" },
+        { value: "Assault", text: "Assault", nfirsCode: "321" },
+        { value: "Burns", text: "Burns", nfirsCode: "321" },
+        { value: "Shooting", text: "Shooting", nfirsCode: "321" },
+        { value: "Stabbing", text: "Stabbing", nfirsCode: "321" }
+    ],
+    
+    // HAZMAT mappings
+    "SPILL": [
+        { value: "Gasoline", text: "Gasoline Spill", nfirsCode: "411" },
+        { value: "Diesel", text: "Diesel Spill", nfirsCode: "411" },
+        { value: "Oil", text: "Oil Spill", nfirsCode: "413" },
+        { value: "Chemical", text: "Chemical Spill", nfirsCode: "422" }
+    ],
+    
+    "LEAK": [
+        { value: "Natural_Gas", text: "Natural Gas Leak", nfirsCode: "412" },
+        { value: "Propane", text: "Propane Leak", nfirsCode: "412" },
+        { value: "CO", text: "Carbon Monoxide", nfirsCode: "424" },
+        { value: "Chemical", text: "Chemical Leak", nfirsCode: "422" }
+    ]
+};
 
 function validateTimeSequence() {
     console.log("Validating time sequence");
@@ -875,13 +1260,187 @@ function updatePatientCount(count) {
 }
 
 function geocodeAddress() {
-    console.log("Geocoding address");
-    // Implementation would go here
+    console.log("Main geocodeAddress function called");
+    // We'll use the implementation from incident-map.js
+    if (typeof window.mapGeocode === 'function') {
+        window.mapGeocode();
+        return;
+    } else {
+        console.log("mapGeocode function not found, using fallback implementation");
+        const addressInput = document.getElementById('location-address');
+        const latInput = document.getElementById('location-latitude');
+        const lngInput = document.getElementById('location-longitude');
+        
+        if (!addressInput || !addressInput.value) {
+            showToast("Please enter an address to geocode", "error");
+            return;
+        }
+        
+        // Show loading state
+        const geocodeBtn = document.getElementById('geocode-btn');
+        if (geocodeBtn) {
+            geocodeBtn.disabled = true;
+            geocodeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        }
+        
+        try {
+            // Create a geocoding service
+            const geocoder = new google.maps.Geocoder();
+            
+            // Geocode the address
+            geocoder.geocode({ 'address': addressInput.value }, function(results, status) {
+                // Reset button state
+                if (geocodeBtn) {
+                    geocodeBtn.disabled = false;
+                    geocodeBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i> Geocode';
+                }
+                
+                if (status === google.maps.GeocoderStatus.OK && results[0]) {
+                    // Get the coordinates
+                    const location = results[0].geometry.location;
+                    
+                    // Update the inputs
+                    latInput.value = location.lat();
+                    lngInput.value = location.lng();
+                    
+                    console.log("Geocoding successful. Lat:", location.lat(), "Lng:", location.lng());
+                    
+                    // Update the map if available
+                    if (typeof updateMap === 'function') {
+                        updateMap();
+                    }
+                    
+                    showToast("Address geocoded successfully", "success");
+                } else {
+                    console.error("Geocoding failed:", status);
+                    showToast("Failed to geocode address. Please check and try again.", "error");
+                }
+            });
+        } catch (error) {
+            console.error("Error in geocoding:", error);
+            if (geocodeBtn) {
+                geocodeBtn.disabled = false;
+                geocodeBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i> Geocode';
+            }
+            showToast("Error geocoding address: " + error.message, "error");
+        }
+    }
 }
 
 function getCurrentLocation() {
     console.log("Getting current location");
-    // Implementation would go here
+    const latInput = document.getElementById('location-latitude');
+    const lngInput = document.getElementById('location-longitude');
+    
+    // Show loading state
+    const locationBtn = document.getElementById('current-location-btn');
+    if (locationBtn) {
+        locationBtn.disabled = true;
+        locationBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    }
+    
+    // Check if geolocation is available
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            // Success callback
+            function(position) {
+                // Reset button state
+                if (locationBtn) {
+                    locationBtn.disabled = false;
+                    locationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Current Location';
+                }
+                
+                // Get coordinates
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                
+                // Update inputs
+                latInput.value = lat.toFixed(6);
+                lngInput.value = lng.toFixed(6);
+                
+                // Try to reverse geocode to get address using Nominatim
+                const timestamp = new Date().getTime();
+                const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&_=${timestamp}`;
+                
+                fetch(url, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'User-Agent': 'FireEMS-Tool/1.0' // Nominatim requires a user agent
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.display_name) {
+                        // Update address field
+                        const addressInput = document.getElementById('location-address');
+                        if (addressInput) {
+                            addressInput.value = data.display_name;
+                            console.log("Address field updated with:", data.display_name);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error("Error in reverse geocoding:", error);
+                });
+                
+                // Update the map if available
+                if (typeof updateMap === 'function') {
+                    updateMap();
+                } else if (typeof setLocationFromMap === 'function') {
+                    setLocationFromMap(lat, lng);
+                }
+                
+                showToast("Current location detected", "success");
+            },
+            // Error callback
+            function(error) {
+                // Reset button state
+                if (locationBtn) {
+                    locationBtn.disabled = false;
+                    locationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Current Location';
+                }
+                
+                console.error("Geolocation error:", error);
+                let errorMsg = "Unable to retrieve your location. ";
+                
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMsg += "Please allow location access in your browser settings.";
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMsg += "Location information is unavailable.";
+                        break;
+                    case error.TIMEOUT:
+                        errorMsg += "The request to get your location timed out.";
+                        break;
+                    case error.UNKNOWN_ERROR:
+                        errorMsg += "An unknown error occurred.";
+                        break;
+                }
+                
+                showToast(errorMsg, "error");
+            },
+            // Options
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
+    } else {
+        // Reset button state
+        if (locationBtn) {
+            locationBtn.disabled = false;
+            locationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Current Location';
+        }
+        
+        showToast("Geolocation is not supported by your browser", "error");
+    }
 }
 
 function handleFormSubmit(event) {

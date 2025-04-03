@@ -1389,12 +1389,24 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.11.9/dayjs.min.js"></script>
+    <script>
+        // Flag to track Google Maps loading status
+        window.googleMapsIsLoaded = false;
+        
+        // Callback when Google Maps API is loaded
+        function googleMapsLoaded() {
+            window.googleMapsIsLoaded = true;
+            console.log("Google Maps API loaded successfully");
+        }
+    </script>
+    <!-- Use API key without restrictions (or update to a properly configured key) -->
+    <script src="https://maps.googleapis.com/maps/api/js?libraries=places&callback=googleMapsLoaded"></script>
     
     <!-- NFIRS module scripts -->
-    <script src="/static/js/nfirs/nfirs-codes.js"></script>
+    <script src="/static/js/nfirs/nfirs-codes.js" type="module"></script>
     <script src="/static/js/nfirs/nfirs-validator.js"></script>
     <script src="/static/js/nfirs/nfirs-export.js"></script>
-    <script src="/static/js/nfirs/nfirs-ui.js"></script>
+    <script src="/static/js/nfirs/nfirs-ui.js" type="module"></script>
     
     <!-- Component scripts - changed from type="module" to normal scripts -->
     <script src="/static/js/components/incident-form.js"></script>
@@ -1425,8 +1437,55 @@
                 const el = document.getElementById(id);
                 console.log(`Container #${id}: ${el ? 'Found' : 'NOT FOUND'}`);
             });
+            
+            // Test NFIRS dropdown functionality
+            console.log('Testing NFIRS dropdown functionality');
+            testNFIRSDropdowns();
         }, 1000);
     });
+    
+    // Function to test NFIRS dropdown population and cascading
+    function testNFIRSDropdowns() {
+        // Test primary type dropdown
+        const primaryType = document.getElementById('incident-primary-type');
+        console.log('Primary Type Dropdown:', primaryType ? 'Found' : 'NOT FOUND');
+        
+        if (primaryType) {
+            // Set primary type to FIRE to test cascading
+            console.log('Setting primary type to FIRE');
+            primaryType.value = 'FIRE';
+            
+            // Manually trigger change event
+            const event = new Event('change');
+            primaryType.dispatchEvent(event);
+            
+            // Check secondary type dropdown after a small delay
+            setTimeout(() => {
+                const secondaryType = document.getElementById('incident-secondary-type');
+                console.log('Secondary Type Dropdown:', secondaryType ? 'Found' : 'NOT FOUND');
+                console.log('Secondary Type Options:', secondaryType ? secondaryType.options.length : 'N/A');
+                
+                if (secondaryType && secondaryType.options.length > 1) {
+                    // Set secondary type to STRUCTURE to test cascading
+                    console.log('Setting secondary type to STRUCTURE');
+                    secondaryType.value = 'STRUCTURE';
+                    secondaryType.dispatchEvent(new Event('change'));
+                    
+                    // Check specific type dropdown after a small delay
+                    setTimeout(() => {
+                        const specificType = document.getElementById('incident-specific-type');
+                        console.log('Specific Type Dropdown:', specificType ? 'Found' : 'NOT FOUND');
+                        console.log('Specific Type Options:', specificType ? specificType.options.length : 'N/A');
+                        
+                        // Also check NFIRS type dropdown
+                        const nfirsType = document.getElementById('nfirs-incident-type');
+                        console.log('NFIRS Type Dropdown:', nfirsType ? 'Found' : 'NOT FOUND');
+                        console.log('NFIRS Type Options:', nfirsType ? nfirsType.options.length : 'N/A');
+                    }, 500);
+                }
+            }, 500);
+        }
+    }
     </script>
 </body>
 </html>

@@ -4,13 +4,37 @@
  * This file handles the UI integration of NFIRS functionality with the Incident Logger.
  */
 
-// Initialize NFIRS UI components once the DOM is loaded
-document.addEventListener('DOMContentLoaded', initNFIRSComponents);
+// Initialize NFIRS UI components once the DOM is loaded and NFIRS_CODES is available
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if NFIRS_CODES is available
+    if (typeof NFIRS_CODES === 'undefined') {
+        console.error("NFIRS_CODES is not defined. Loading the NFIRS codes module...");
+        
+        // Dynamically import the NFIRS codes
+        import('./nfirs-codes.js')
+            .then(module => {
+                // Assign the imported codes to a global variable
+                window.NFIRS_CODES = module.default;
+                console.log("NFIRS_CODES loaded successfully");
+                
+                // Now initialize the components
+                initNFIRSComponents();
+            })
+            .catch(error => {
+                console.error("Failed to load NFIRS codes:", error);
+            });
+    } else {
+        // NFIRS_CODES is already available, initialize directly
+        initNFIRSComponents();
+    }
+});
 
 /**
  * Initialize all NFIRS-related UI components
  */
 function initNFIRSComponents() {
+    console.log("Initializing NFIRS UI components");
+    
     // Initialize NFIRS incident type selector
     initNFIRSIncidentTypeSelect();
     
@@ -26,7 +50,12 @@ function initNFIRSComponents() {
     // Add event listeners for NFIRS-related interactions
     addNFIRSEventListeners();
     
-    console.log("NFIRS UI components initialized");
+    // Register this component as loaded
+    if (window.registerComponent) {
+        window.registerComponent('nfirs');
+    }
+    
+    console.log("NFIRS UI components initialized successfully");
 }
 
 /**
@@ -400,6 +429,133 @@ function handleIncidentTypeChange() {
     } else {
         fireModule.style.display = 'none';
     }
+    
+    // Update the type hierarchy dropdowns based on the selected NFIRS code
+    updateTypeHierarchyFromNFIRSCode(selectedCode);
+}
+
+/**
+ * Update the incident type hierarchy dropdowns based on the selected NFIRS code
+ * @param {string} nfirsCode - The selected NFIRS incident type code
+ */
+function updateTypeHierarchyFromNFIRSCode(nfirsCode) {
+    console.log(`Updating type hierarchy from NFIRS code: ${nfirsCode}`);
+    
+    // Only proceed if we have a valid NFIRS code
+    if (!nfirsCode) return;
+    
+    const primaryTypeSelect = document.getElementById('incident-primary-type');
+    const secondaryTypeSelect = document.getElementById('incident-secondary-type');
+    const specificTypeSelect = document.getElementById('incident-specific-type');
+    
+    // Skip if any of the dropdowns don't exist
+    if (!primaryTypeSelect || !secondaryTypeSelect || !specificTypeSelect) {
+        console.warn("Cannot update type hierarchy: one or more dropdown elements not found");
+        return;
+    }
+    
+    // Map NFIRS code to primary, secondary, and specific types
+    let primaryType = "";
+    let secondaryType = "";
+    let specificType = "";
+    
+    // Map fire codes (100-199)
+    if (nfirsCode >= 100 && nfirsCode <= 199) {
+        primaryType = "FIRE";
+        
+        if (nfirsCode >= 111 && nfirsCode <= 123) {
+            secondaryType = "STRUCTURE";
+        } else if (nfirsCode >= 130 && nfirsCode <= 138) {
+            secondaryType = "VEHICLE";
+        } else if (nfirsCode >= 140 && nfirsCode <= 143) {
+            secondaryType = "WILDLAND";
+        } else {
+            secondaryType = "OTHER_FIRE";
+        }
+    }
+    // Map rescue & EMS codes (300-399)
+    else if (nfirsCode >= 300 && nfirsCode <= 399) {
+        primaryType = "EMS";
+        
+        if (nfirsCode === 321) {
+            secondaryType = "MEDICAL";
+        } else if ([322, 323, 324, 351, 352, 357].includes(parseInt(nfirsCode))) {
+            secondaryType = "TRAUMA";
+        } else if (nfirsCode >= 360 && nfirsCode <= 365) {
+            secondaryType = "RESCUE";
+            secondaryType = "WATER";
+        } else {
+            secondaryType = "OTHER_EMS";
+        }
+    }
+    // Map hazmat codes (400-499)
+    else if (nfirsCode >= 400 && nfirsCode <= 499) {
+        primaryType = "HAZMAT";
+        
+        if ([411, 413].includes(parseInt(nfirsCode))) {
+            secondaryType = "SPILL";
+        } else if ([412, 422, 423].includes(parseInt(nfirsCode))) {
+            secondaryType = "LEAK";
+        } else if (nfirsCode === 424) {
+            secondaryType = "GAS";
+        } else {
+            secondaryType = "OTHER_HAZMAT";
+        }
+    }
+    // Map service calls (500-599)
+    else if (nfirsCode >= 500 && nfirsCode <= 599) {
+        primaryType = "SERVICE";
+        
+        if ([510, 551, 553, 554].includes(parseInt(nfirsCode))) {
+            secondaryType = "ASSIST";
+        } else if (nfirsCode === 511) {
+            secondaryType = "LOCKOUT";
+        } else if ([520, 521, 522].includes(parseInt(nfirsCode))) {
+            secondaryType = "WATER_PROBLEM";
+        } else {
+            secondaryType = "OTHER_SERVICE";
+        }
+    }
+    // Default to OTHER for any other codes
+    else {
+        primaryType = "OTHER";
+        secondaryType = "OTHER_INCIDENT";
+    }
+    
+    // Update primary type if we found a match
+    if (primaryType) {
+        console.log(`Setting primary type to ${primaryType}`);
+        primaryTypeSelect.value = primaryType;
+        
+        // Trigger change event to update secondary type options
+        const event = new Event('change');
+        primaryTypeSelect.dispatchEvent(event);
+        
+        // After secondary options are updated, set the secondary type
+        if (secondaryType) {
+            console.log(`Setting secondary type to ${secondaryType}`);
+            secondaryTypeSelect.value = secondaryType;
+            
+            // Trigger change event to update specific type options
+            secondaryTypeSelect.dispatchEvent(new Event('change'));
+            
+            // After specific options are updated, find the one with the matching NFIRS code
+            // Give a slight delay to ensure the options are populated
+            setTimeout(() => {
+                for (let i = 0; i < specificTypeSelect.options.length; i++) {
+                    const option = specificTypeSelect.options[i];
+                    
+                    // Check if this option matches the NFIRS code
+                    if (option.value === nfirsCode || 
+                        option.textContent.includes(`(${nfirsCode})`)) {
+                        console.log(`Setting specific type to ${option.value}`);
+                        specificTypeSelect.value = option.value;
+                        break;
+                    }
+                }
+            }, 100);
+        }
+    }
 }
 
 /**
@@ -649,6 +805,13 @@ function searchNFIRSIncidentTypes(query) {
     // Clear previous results
     resultsContainer.innerHTML = '';
     
+    // Make sure NFIRS_CODES is available
+    if (typeof NFIRS_CODES === 'undefined') {
+        console.error('NFIRS_CODES is not defined when trying to search incident types');
+        resultsContainer.innerHTML = '<div class="no-results">Error: NFIRS codes not loaded</div>';
+        return;
+    }
+    
     // Search the codes
     const results = searchNFIRSCodes(query, 'incidentTypes');
     
@@ -799,3 +962,79 @@ style.textContent = `
 
 // Add the style to the document
 document.head.appendChild(style);
+
+/**
+ * Helper function to search through NFIRS codes
+ * @param {string} query - The search string
+ * @param {string} codeType - The type of code to search ('incidentTypes', 'propertyUse', etc.)
+ * @returns {Array} - Array of matching code objects
+ */
+function searchNFIRSCodes(query, codeType) {
+    // Make sure NFIRS_CODES is defined
+    if (typeof NFIRS_CODES === 'undefined') {
+        console.error(`NFIRS_CODES is undefined when searching for ${codeType}`);
+        return [];
+    }
+    
+    // Make sure the requested code type exists
+    if (!NFIRS_CODES[codeType]) {
+        console.error(`Code type "${codeType}" not found in NFIRS_CODES`);
+        return [];
+    }
+    
+    // Normalize query
+    const normalizedQuery = query.trim().toLowerCase();
+    
+    // If query is empty, return all codes (limited to 100)
+    if (!normalizedQuery) {
+        return Object.entries(NFIRS_CODES[codeType])
+            .slice(0, 100)
+            .map(([code, description]) => ({
+                code,
+                description,
+                display: `${code} - ${description}`
+            }));
+    }
+    
+    // Search for matches
+    const results = [];
+    
+    Object.entries(NFIRS_CODES[codeType]).forEach(([code, description]) => {
+        const codeString = code.toLowerCase();
+        const descString = description.toLowerCase();
+        
+        // Check if the code or description contains the query
+        if (codeString.includes(normalizedQuery) || descString.includes(normalizedQuery)) {
+            results.push({
+                code,
+                description,
+                display: `${code} - ${description}`
+            });
+        }
+    });
+    
+    // Sort results by relevance
+    results.sort((a, b) => {
+        // Exact code match gets highest priority
+        if (a.code.toLowerCase() === normalizedQuery) return -1;
+        if (b.code.toLowerCase() === normalizedQuery) return 1;
+        
+        // Code starts with query gets next priority
+        const aCodeStarts = a.code.toLowerCase().startsWith(normalizedQuery);
+        const bCodeStarts = b.code.toLowerCase().startsWith(normalizedQuery);
+        if (aCodeStarts && !bCodeStarts) return -1;
+        if (!aCodeStarts && bCodeStarts) return 1;
+        
+        // Description starts with query gets next priority
+        const aDescStarts = a.description.toLowerCase().startsWith(normalizedQuery);
+        const bDescStarts = b.description.toLowerCase().startsWith(normalizedQuery);
+        if (aDescStarts && !bDescStarts) return -1;
+        if (!aDescStarts && bDescStarts) return 1;
+        
+        // Finally sort by code numerically
+        return parseInt(a.code) - parseInt(b.code);
+    });
+    
+    // Limit results
+    return results.slice(0, 50);
+}

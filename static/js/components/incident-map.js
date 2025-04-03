@@ -32,6 +32,8 @@ function getDensityColor(value) {
  * @param {string} containerId - The ID of the map container element
  */
 function initializeMap(containerId) {
+    console.log(`Initializing map in container: ${containerId}`);
+    
     // If map already exists, destroy it first
     if (map) {
         map.remove();
@@ -56,6 +58,13 @@ function initializeMap(containerId) {
     setTimeout(() => {
         map.invalidateSize();
     }, 100);
+    
+    // Register this component as loaded
+    if (window.registerComponent) {
+        window.registerComponent('map');
+    }
+    
+    console.log("Map component initialized successfully");
 }
 
 /**
@@ -96,9 +105,19 @@ function updateMap() {
  * @param {number} lng - Longitude
  */
 function setLocationFromMap(lat, lng) {
+    console.log("Setting location from map:", lat, lng);
+    
     // Update form fields
-    document.getElementById("location-latitude").value = lat.toFixed(6);
-    document.getElementById("location-longitude").value = lng.toFixed(6);
+    const latInput = document.getElementById("location-latitude");
+    const lngInput = document.getElementById("location-longitude");
+    
+    if (latInput && lngInput) {
+        latInput.value = lat.toFixed(6);
+        lngInput.value = lng.toFixed(6);
+        console.log("Updated form fields:", latInput.value, lngInput.value);
+    } else {
+        console.error("Latitude or longitude input field not found");
+    }
     
     // Update or create marker
     if (marker) {
@@ -122,9 +141,22 @@ function getCurrentLocation() {
     
     showToast("Getting your current location...", "info");
     
+    // Show loading state
+    const locationBtn = document.getElementById('current-location-btn');
+    if (locationBtn) {
+        locationBtn.disabled = true;
+        locationBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    }
+    
     navigator.geolocation.getCurrentPosition(
         // Success callback
         function(position) {
+            // Reset button state
+            if (locationBtn) {
+                locationBtn.disabled = false;
+                locationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Current Location';
+            }
+            
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
             
@@ -133,6 +165,12 @@ function getCurrentLocation() {
         },
         // Error callback
         function(error) {
+            // Reset button state
+            if (locationBtn) {
+                locationBtn.disabled = false;
+                locationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Current Location';
+            }
+            
             let errorMessage = "Unable to retrieve your location.";
             
             switch(error.code) {
@@ -148,43 +186,122 @@ function getCurrentLocation() {
             }
             
             showToast(errorMessage, "error");
+        },
+        // Options
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
         }
     );
 }
 
 /**
  * Geocode an address to get coordinates
+ * Exposed as global function for coordination between modules
  */
+// Define a local showToast function if it doesn't exist globally
+function localShowToast(message, type) {
+    console.log(`Toast message (${type}): ${message}`);
+    // Check if global showToast exists
+    if (typeof window.showToast === 'function') {
+        window.showToast(message, type);
+    } else {
+        // Fallback alert for critical messages
+        if (type === 'error') {
+            alert(message);
+        }
+    }
+}
+
 function geocodeAddress() {
+    console.log("Map component geocodeAddress function called");
     const address = document.getElementById("location-address").value;
     
     if (!address) {
-        showToast("Please enter an address to geocode.", "error");
+        localShowToast("Please enter an address to geocode.", "error");
         return;
     }
     
-    showToast("Geocoding address...", "info");
+    // Show loading state
+    const geocodeBtn = document.getElementById('geocode-btn');
+    if (geocodeBtn) {
+        geocodeBtn.disabled = true;
+        geocodeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    }
     
-    // Use Nominatim for geocoding (rate limits apply)
-    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data && data.length > 0) {
-                const result = data[0];
-                const lat = parseFloat(result.lat);
-                const lng = parseFloat(result.lon);
-                
-                setLocationFromMap(lat, lng);
-                showToast("Address geocoded successfully.", "success");
+    localShowToast("Geocoding address...", "info");
+    
+    // Use Nominatim (OpenStreetMap) geocoding service instead of Google Maps
+    // Add a random component to avoid caching issues
+    const timestamp = new Date().getTime();
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1&_=${timestamp}`;
+    
+    fetch(url, {
+        headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'FireEMS-Tool/1.0' // Nominatim requires a user agent
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Reset button state
+        if (geocodeBtn) {
+            geocodeBtn.disabled = false;
+            geocodeBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i> Geocode';
+        }
+        
+        console.log("Nominatim geocode results:", data);
+        
+        if (data && data.length > 0) {
+            const result = data[0];
+            const lat = parseFloat(result.lat);
+            const lng = parseFloat(result.lon);
+            
+            console.log("Map component: Geocoding successful. Lat:", lat, "Lng:", lng);
+            
+            // Update form fields directly
+            const latInput = document.getElementById("location-latitude");
+            const lngInput = document.getElementById("location-longitude");
+            
+            if (latInput && lngInput) {
+                latInput.value = lat.toFixed(6);
+                lngInput.value = lng.toFixed(6);
+                console.log("Form fields updated with coordinates:", latInput.value, lngInput.value);
             } else {
-                showToast("No results found for this address.", "warning");
+                console.error("Could not find latitude or longitude input fields");
             }
-        })
-        .catch(error => {
-            console.error("Geocoding error:", error);
-            showToast("Error geocoding address. Please try again.", "error");
-        });
+            
+            // Also use the map update function to add a marker
+            try {
+                setLocationFromMap(lat, lng);
+            } catch (e) {
+                console.error("Error updating map:", e);
+            }
+            
+            localShowToast("Address geocoded successfully.", "success");
+        } else {
+            console.error("Geocoding failed: No results found");
+            localShowToast("Failed to geocode address. No results found for this address.", "error");
+        }
+    })
+    .catch(error => {
+        console.error("Error in map geocoding:", error);
+        if (geocodeBtn) {
+            geocodeBtn.disabled = false;
+            geocodeBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i> Geocode';
+        }
+        localShowToast("Error geocoding address: " + error.message, "error");
+    });
 }
+
+// Expose function globally for coordination
+window.mapGeocode = geocodeAddress;
 
 /**
  * Reverse geocode coordinates to get address
@@ -192,17 +309,47 @@ function geocodeAddress() {
  * @param {number} lng - Longitude
  */
 function reverseGeocode(lat, lng) {
-    // Use Nominatim for reverse geocoding (rate limits apply)
-    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
-        .then(response => response.json())
+    try {
+        console.log("Reverse geocoding coordinates:", lat, lng);
+        
+        // Use Nominatim for reverse geocoding
+        const timestamp = new Date().getTime();
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&_=${timestamp}`;
+        
+        fetch(url, {
+            headers: {
+                'Accept': 'application/json',
+                'User-Agent': 'FireEMS-Tool/1.0' // Nominatim requires a user agent
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
+            console.log("Nominatim reverse geocode result:", data);
+            
             if (data && data.display_name) {
-                document.getElementById("location-address").value = data.display_name;
+                // Update address field
+                const addressInput = document.getElementById("location-address");
+                if (addressInput) {
+                    addressInput.value = data.display_name;
+                    console.log("Address field updated with:", data.display_name);
+                } else {
+                    console.error("Could not find address input field");
+                }
+            } else {
+                console.error("Reverse geocoding failed: No results found");
             }
         })
         .catch(error => {
-            console.error("Reverse geocoding error:", error);
+            console.error("Error in reverse geocoding:", error);
         });
+    } catch (error) {
+        console.error("Error in reverse geocoding:", error);
+    }
 }
 
 /**
