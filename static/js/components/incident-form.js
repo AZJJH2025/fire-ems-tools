@@ -142,16 +142,16 @@ function addVitalSigns(patientIndex) {
             <input type="text" name="vital-bp-${patientIndex}-${vitalCount}" placeholder="120/80">
         </td>
         <td>
-            <input type="number" name="vital-pulse-${patientIndex}-${vitalCount}" min="20" max="250">
+            <input type="number" name="vital-pulse-${patientIndex}-${vitalCount}" min="20" max="250" placeholder="80">
         </td>
         <td>
-            <input type="number" name="vital-resp-${patientIndex}-${vitalCount}" min="4" max="60">
+            <input type="number" name="vital-resp-${patientIndex}-${vitalCount}" min="4" max="60" placeholder="16">
         </td>
         <td>
-            <input type="number" name="vital-spo2-${patientIndex}-${vitalCount}" min="50" max="100">
+            <input type="number" name="vital-spo2-${patientIndex}-${vitalCount}" min="50" max="100" placeholder="99">
         </td>
         <td>
-            <input type="number" name="vital-gcs-${patientIndex}-${vitalCount}" min="3" max="15">
+            <input type="number" name="vital-gcs-${patientIndex}-${vitalCount}" min="3" max="15" placeholder="15">
         </td>
         <td>
             <button type="button" class="remove-vital-btn secondary-btn small-btn">

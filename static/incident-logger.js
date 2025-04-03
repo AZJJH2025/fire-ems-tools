@@ -248,6 +248,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initialize UI event listeners
     initializeEventListeners();
     
+    // Initialize GCS calculators
+    initializeGCSCalculators();
+    
     // Check online status
     checkOnlineStatus();
     
@@ -386,11 +389,22 @@ function initializeEventListeners() {
     // Dynamic form elements
     document.getElementById("add-unit-btn").addEventListener("click", addUnitEntry);
     document.getElementById("add-patient-btn").addEventListener("click", addPatientEntry);
-    document.querySelector(".add-vital-btn").addEventListener("click", function() {
-        addVitalSigns(this.dataset.patient);
-    });
-    document.querySelector(".add-treatment-btn").addEventListener("click", function() {
-        addTreatment(this.dataset.patient);
+    
+    // Use event delegation for vital signs and treatment buttons since they are dynamically created
+    document.addEventListener("click", function(e) {
+        // Check for add vital signs button
+        if (e.target.closest(".add-vital-btn")) {
+            const btn = e.target.closest(".add-vital-btn");
+            const patientIndex = btn.dataset.patient;
+            addVitalSigns(patientIndex);
+        }
+        
+        // Check for add treatment button
+        if (e.target.closest(".add-treatment-btn")) {
+            const btn = e.target.closest(".add-treatment-btn");
+            const patientIndex = btn.dataset.patient;
+            addTreatment(patientIndex);
+        }
     });
     
     // Dynamic remove buttons (using event delegation)
@@ -1231,32 +1245,302 @@ function loadIncidents() {
 
 function addUnitEntry() {
     console.log("Adding unit entry");
-    // Implementation would go here
+    
+    // Get units container and calculate the new unit index
+    const unitsContainer = document.getElementById("units-container");
+    const unitCount = unitsContainer.querySelectorAll(".unit-entry").length + 1;
+    
+    // Create a new unit entry
+    const unitEntry = document.createElement("div");
+    unitEntry.className = "unit-entry";
+    unitEntry.innerHTML = `
+        <div class="form-section">
+            <h4>Unit #${unitCount}</h4>
+            <button type="button" class="remove-unit-btn secondary-btn small-btn">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+        
+        <div class="form-group">
+            <label for="unit-id-${unitCount}">Unit ID</label>
+            <input type="text" id="unit-id-${unitCount}" name="unit-id-${unitCount}" placeholder="E12, M7, etc." required>
+        </div>
+        
+        <div class="form-group">
+            <label for="unit-type-${unitCount}">Unit Type</label>
+            <select id="unit-type-${unitCount}" name="unit-type-${unitCount}" required>
+                <option value="">Select Type</option>
+                <option value="Engine">Engine</option>
+                <option value="Ladder">Ladder</option>
+                <option value="Ambulance">Ambulance</option>
+                <option value="Rescue">Rescue</option>
+                <option value="Battalion">Battalion</option>
+                <option value="Hazmat">Hazmat</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Personnel</label>
+            <div class="personnel-list">
+                <div class="personnel-entry">
+                    <input type="text" name="personnel-${unitCount}-1" placeholder="Name/ID">
+                    <button type="button" class="remove-personnel-btn secondary-btn small-btn">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <button type="button" class="add-personnel-btn secondary-btn small-btn">
+                <i class="fas fa-plus"></i> Add Personnel
+            </button>
+        </div>
+    `;
+    
+    // Add the new unit to the container
+    unitsContainer.appendChild(unitEntry);
+    
+    console.log(`Added new unit #${unitCount}`);
 }
 
 function addPatientEntry() {
     console.log("Adding patient entry");
-    // Implementation would go here
+    
+    // Get current patient count
+    const patientsContainer = document.getElementById("patients-container");
+    const patientCount = patientsContainer.querySelectorAll(".patient-entry").length + 1;
+    
+    // Get the patient template
+    const template = document.getElementById("patient-template");
+    if (!template) {
+        console.error("Patient template not found!");
+        return;
+    }
+    
+    // Clone the template content
+    let patientHTML = template.innerHTML.replace(/{{index}}/g, patientCount);
+    
+    // Create a container for the new patient
+    const newPatientContainer = document.createElement("div");
+    newPatientContainer.className = "patient-entry";
+    newPatientContainer.innerHTML = patientHTML;
+    
+    // Add to patients container
+    patientsContainer.appendChild(newPatientContainer);
+    
+    // Update patient count field
+    document.getElementById("patient-count").value = patientCount;
+    
+    // Initialize GCS calculator for the new patient
+    initializeGCSCalculator(patientCount);
+    
+    // Initialize select elements with searchable functionality if Select2 is available
+    if (typeof $.fn.select2 !== 'undefined') {
+        $(`#medical-history-${patientCount}`).select2({
+            placeholder: 'Select or type to search medical conditions',
+            tags: true,
+            tokenSeparators: [',', ' '],
+            width: '100%'
+        });
+        
+        $(`#medications-${patientCount}`).select2({
+            placeholder: 'Select or type to search medications',
+            tags: true,
+            tokenSeparators: [',', ' '],
+            width: '100%'
+        });
+        
+        $(`#allergies-${patientCount}`).select2({
+            placeholder: 'Select or type to search allergies',
+            tags: true,
+            tokenSeparators: [',', ' '],
+            width: '100%'
+        });
+    }
+    
+    // Add NKDA toggle functionality
+    const nkdaCheckbox = document.getElementById(`nkda-${patientCount}`);
+    if (nkdaCheckbox) {
+        nkdaCheckbox.addEventListener('change', function() {
+            const allergiesSelect = document.getElementById(`allergies-${patientCount}`);
+            if (this.checked && allergiesSelect) {
+                // Clear allergies when NKDA is checked
+                if (typeof $.fn.select2 !== 'undefined') {
+                    $(allergiesSelect).val(null).trigger('change');
+                } else {
+                    for (let i = 0; i < allergiesSelect.options.length; i++) {
+                        allergiesSelect.options[i].selected = false;
+                    }
+                }
+                allergiesSelect.disabled = true;
+            } else if (allergiesSelect) {
+                allergiesSelect.disabled = false;
+            }
+        });
+    }
+    
+    console.log("Added new patient #" + patientCount);
 }
 
 function addVitalSigns(patientIndex) {
     console.log("Adding vital signs for patient", patientIndex);
-    // Implementation would go here
+    
+    // Get the vital signs container for this patient
+    const vitalsContainer = document.getElementById(`vitals-rows-${patientIndex}`);
+    if (!vitalsContainer) {
+        console.error(`Vitals container for patient ${patientIndex} not found!`);
+        return;
+    }
+    
+    // Get the number of existing vital entries
+    const vitalCount = vitalsContainer.querySelectorAll(".vitals-row").length + 1;
+    
+    // Create a new row for vitals
+    const newRow = document.createElement("tr");
+    newRow.className = "vitals-row";
+    newRow.innerHTML = `
+        <td>
+            <input type="datetime-local" name="vital-time-${patientIndex}-${vitalCount}">
+        </td>
+        <td>
+            <input type="text" name="vital-bp-${patientIndex}-${vitalCount}" placeholder="120/80">
+        </td>
+        <td>
+            <input type="number" name="vital-pulse-${patientIndex}-${vitalCount}" min="20" max="250" placeholder="80">
+        </td>
+        <td>
+            <input type="number" name="vital-resp-${patientIndex}-${vitalCount}" min="4" max="60" placeholder="16">
+        </td>
+        <td>
+            <input type="number" name="vital-spo2-${patientIndex}-${vitalCount}" min="50" max="100" placeholder="99">
+        </td>
+        <td>
+            <input type="number" name="vital-gcs-${patientIndex}-${vitalCount}" min="3" max="15" placeholder="15">
+        </td>
+        <td>
+            <button type="button" class="remove-vital-btn secondary-btn small-btn">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+    
+    // Set the current time
+    const timeInput = newRow.querySelector(`input[name="vital-time-${patientIndex}-${vitalCount}"]`);
+    if (timeInput) {
+        const now = new Date();
+        timeInput.value = now.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:MM
+    }
+    
+    // Add the row to the container
+    vitalsContainer.appendChild(newRow);
+    
+    console.log(`Added new vitals entry #${vitalCount} for patient ${patientIndex}`);
 }
 
 function addTreatment(patientIndex) {
     console.log("Adding treatment for patient", patientIndex);
-    // Implementation would go here
+    
+    // Get the treatments container for this patient
+    const treatmentsContainer = document.getElementById(`treatments-container-${patientIndex}`);
+    if (!treatmentsContainer) {
+        console.error(`Treatments container for patient ${patientIndex} not found!`);
+        return;
+    }
+    
+    // Get the number of existing treatment entries
+    const treatmentCount = treatmentsContainer.querySelectorAll(".treatment-entry").length + 1;
+    
+    // Create a new treatment entry
+    const newTreatment = document.createElement("div");
+    newTreatment.className = "treatment-entry";
+    newTreatment.innerHTML = `
+        <div class="form-group">
+            <label for="treatment-time-${patientIndex}-${treatmentCount}">Time</label>
+            <input type="datetime-local" id="treatment-time-${patientIndex}-${treatmentCount}" name="treatment-time-${patientIndex}-${treatmentCount}">
+        </div>
+        <div class="form-group">
+            <label for="treatment-procedure-${patientIndex}-${treatmentCount}">Procedure</label>
+            <input type="text" id="treatment-procedure-${patientIndex}-${treatmentCount}" name="treatment-procedure-${patientIndex}-${treatmentCount}">
+        </div>
+        <div class="form-group">
+            <label for="treatment-notes-${patientIndex}-${treatmentCount}">Notes</label>
+            <textarea id="treatment-notes-${patientIndex}-${treatmentCount}" name="treatment-notes-${patientIndex}-${treatmentCount}"></textarea>
+        </div>
+        <button type="button" class="remove-treatment-btn secondary-btn small-btn">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+    
+    // Set the current time
+    const timeInput = newTreatment.querySelector(`input[id="treatment-time-${patientIndex}-${treatmentCount}"]`);
+    if (timeInput) {
+        const now = new Date();
+        timeInput.value = now.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:MM
+    }
+    
+    // Add the treatment to the container
+    treatmentsContainer.appendChild(newTreatment);
+    
+    console.log(`Added new treatment entry #${treatmentCount} for patient ${patientIndex}`);
 }
 
 function addPersonnel(unitIndex) {
     console.log("Adding personnel for unit", unitIndex);
-    // Implementation would go here
+    
+    // Find the unit entry based on index
+    const unitEntries = document.querySelectorAll(".unit-entry");
+    if (unitIndex > unitEntries.length) {
+        console.error(`Unit index ${unitIndex} is out of range`);
+        return;
+    }
+    
+    const unitEntry = unitEntries[unitIndex - 1];
+    const personnelList = unitEntry.querySelector(".personnel-list");
+    const personnelCount = personnelList.querySelectorAll(".personnel-entry").length + 1;
+    
+    // Create new personnel entry
+    const personnelEntry = document.createElement("div");
+    personnelEntry.className = "personnel-entry";
+    personnelEntry.innerHTML = `
+        <input type="text" name="personnel-${unitIndex}-${personnelCount}" placeholder="Name/ID">
+        <button type="button" class="remove-personnel-btn secondary-btn small-btn">
+            <i class="fas fa-minus"></i>
+        </button>
+    `;
+    
+    // Add to personnel list
+    personnelList.appendChild(personnelEntry);
+    
+    console.log(`Added personnel #${personnelCount} to unit #${unitIndex}`);
 }
 
 function updatePatientCount(count) {
     console.log("Updating patient count to", count);
-    // Implementation would go here
+    
+    // Ensure count is a number and greater than or equal to 0
+    count = parseInt(count) || 0;
+    if (count < 0) count = 0;
+    
+    // Get the patients container
+    const patientsContainer = document.getElementById("patients-container");
+    const currentPatientEntries = patientsContainer.querySelectorAll(".patient-entry");
+    const currentCount = currentPatientEntries.length;
+    
+    if (count > currentCount) {
+        // Need to add more patient entries
+        for (let i = currentCount + 1; i <= count; i++) {
+            addPatientEntry();
+        }
+    } else if (count < currentCount) {
+        // Need to remove excess patient entries
+        for (let i = currentCount - 1; i >= count; i--) {
+            currentPatientEntries[i].remove();
+        }
+    }
+    
+    // Update the patient count field
+    document.getElementById("patient-count").value = count;
+    
+    console.log(`Patient count updated: ${currentCount} → ${count}`);
 }
 
 function geocodeAddress() {
@@ -1583,6 +1867,87 @@ function generateExport() {
 
 function formatDate(date) {
     return date ? date.toLocaleDateString() : '';
+}
+
+/**
+ * Initialize GCS calculator for all patients
+ */
+function initializeGCSCalculators() {
+    console.log("Initializing GCS calculators");
+    const patientCount = document.getElementById("patients-container").querySelectorAll(".patient-entry").length;
+    
+    for (let i = 1; i <= patientCount; i++) {
+        initializeGCSCalculator(i);
+    }
+}
+
+/**
+ * Initialize GCS calculator for a specific patient
+ * @param {number} patientIndex - The patient index
+ */
+function initializeGCSCalculator(patientIndex) {
+    console.log(`Initializing GCS calculator for patient ${patientIndex}`);
+    
+    // Get the GCS component selects for this patient
+    const eyeSelect = document.getElementById(`gcs-eye-${patientIndex}`);
+    const verbalSelect = document.getElementById(`gcs-verbal-${patientIndex}`);
+    const motorSelect = document.getElementById(`gcs-motor-${patientIndex}`);
+    
+    if (!eyeSelect || !verbalSelect || !motorSelect) {
+        console.error(`GCS components for patient ${patientIndex} not found`);
+        return;
+    }
+    
+    // Add event listeners to calculate GCS when values change
+    eyeSelect.addEventListener("change", () => calculateGCSTotal(patientIndex));
+    verbalSelect.addEventListener("change", () => calculateGCSTotal(patientIndex));
+    motorSelect.addEventListener("change", () => calculateGCSTotal(patientIndex));
+    
+    // Initial calculation
+    calculateGCSTotal(patientIndex);
+}
+
+/**
+ * Calculate and update the GCS total for a patient
+ * @param {number} patientIndex - The patient index
+ */
+function calculateGCSTotal(patientIndex) {
+    console.log(`Calculating GCS total for patient ${patientIndex}`);
+    
+    const eyeValue = parseInt(document.getElementById(`gcs-eye-${patientIndex}`).value) || 0;
+    const verbalValue = parseInt(document.getElementById(`gcs-verbal-${patientIndex}`).value) || 0;
+    const motorValue = parseInt(document.getElementById(`gcs-motor-${patientIndex}`).value) || 0;
+    
+    const totalGCS = eyeValue + verbalValue + motorValue;
+    
+    // Update the total display
+    const totalElement = document.getElementById(`gcs-total-${patientIndex}`);
+    if (totalElement) {
+        if (totalGCS > 0) {
+            totalElement.textContent = totalGCS;
+            
+            // Update the GCS field in the vitals table
+            const gcsInputs = document.querySelectorAll(`input[name^="vital-gcs-${patientIndex}"]`);
+            if (gcsInputs.length > 0) {
+                // Update the most recent GCS input (last one added)
+                const latestGCSInput = gcsInputs[gcsInputs.length - 1];
+                latestGCSInput.value = totalGCS;
+            }
+            
+            // Color coding based on severity
+            totalElement.className = "gcs-total-value";
+            if (totalGCS >= 13) {
+                totalElement.classList.add("gcs-mild");
+            } else if (totalGCS >= 9) {
+                totalElement.classList.add("gcs-moderate");
+            } else {
+                totalElement.classList.add("gcs-severe");
+            }
+        } else {
+            totalElement.textContent = "--";
+            totalElement.className = "gcs-total-value";
+        }
+    }
 }
 
 // Log when the IIFE completes
