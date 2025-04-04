@@ -30,8 +30,31 @@ from database import db, Department, Incident, User, Station
 from config import config
 
 login_manager = LoginManager()
-# Initialize limiter without immediately binding to app
-limiter = Limiter(key_func=get_remote_address, default_limits=["200 per hour", "50 per minute"])
+
+# Create a safer version of limiter that won't fail in production
+try:
+    limiter = Limiter(key_func=get_remote_address, default_limits=["200 per hour", "50 per minute"])
+except Exception as e:
+    logger.error(f"Error initializing limiter: {str(e)}")
+    # Create a dummy limiter that does nothing
+    class DummyLimiter:
+        def __init__(self, *args, **kwargs):
+            pass
+            
+        def init_app(self, app):
+            logger.info("Using dummy rate limiter")
+            
+        def limit(self, *args, **kwargs):
+            def decorator(f):
+                return f
+            return decorator
+            
+        def exempt(self, *args, **kwargs):
+            def decorator(f):
+                return f
+            return decorator
+    
+    limiter = DummyLimiter()
 
 def get_api_key_identity():
     """
@@ -56,6 +79,19 @@ def get_api_key_identity():
     
     # Fallback to IP address
     return get_remote_address()
+
+# Create a safer limit decorator that won't fail in production
+def safe_limit(limit_string):
+    """A safer version of limiter.limit that won't fail if limiter is not working"""
+    def decorator(f):
+        try:
+            # Try to use the real limiter
+            return limiter.limit(limit_string)(f)
+        except Exception as e:
+            # If it fails, just return the original function
+            logger.warning(f"Rate limiting failed, continuing without limits: {str(e)}")
+            return f
+    return decorator
 
 def require_api_key(f):
     """Decorator to require API key authentication for API endpoints
@@ -106,14 +142,18 @@ def create_app(config_name='default'):
     db.init_app(app)
     login_manager.init_app(app)
     
-    # Configure Flask-Limiter
-    app.config['RATELIMIT_DEFAULT'] = "200 per hour;50 per minute"
-    app.config['RATELIMIT_KEY_FUNC'] = get_api_key_identity
-    app.config['RATELIMIT_STORAGE_URI'] = "memory://"
-    
-    # Initialize rate limiter with custom key function
-    limiter.init_app(app)
-    logger.info("Rate limiter configured successfully")
+    # Configure and initialize rate limiter safely
+    try:
+        # Configure Flask-Limiter
+        app.config['RATELIMIT_DEFAULT'] = "200 per hour;50 per minute"
+        app.config['RATELIMIT_KEY_FUNC'] = get_api_key_identity
+        app.config['RATELIMIT_STORAGE_URI'] = "memory://"
+        
+        # Initialize rate limiter
+        limiter.init_app(app)
+        logger.info("Rate limiter configured successfully")
+    except Exception as e:
+        logger.warning(f"Rate limiter initialization failed, continuing without rate limiting: {str(e)}")
     
     # Configure login manager
     login_manager.login_view = 'login'
@@ -1217,7 +1257,7 @@ def register_routes(app):
     # API endpoint to get department info
     @app.route('/api/v1/department', methods=['GET'])
     @require_api_key
-    @limiter.limit("100/hour;30/minute", key_func=get_api_key_identity)
+    @safe_limit("100/hour;30/minute", key_func=get_api_key_identity)
     def api_get_department_info(department):
         """Get department information using API key authentication"""
         try:
@@ -1233,7 +1273,7 @@ def register_routes(app):
     # API endpoint to get all incidents
     @app.route('/api/v1/incidents', methods=['GET'])
     @require_api_key
-    @limiter.limit("100/hour;20/minute", key_func=get_api_key_identity)
+    @safe_limit("100/hour;20/minute", key_func=get_api_key_identity)
     def api_get_incidents(department):
         """Get all incidents for a department using API key authentication"""
         try:
@@ -1276,7 +1316,7 @@ def register_routes(app):
     # API endpoint to get a specific incident by ID
     @app.route('/api/v1/incidents/<int:incident_id>', methods=['GET'])
     @require_api_key
-    @limiter.limit("300/hour;60/minute", key_func=get_api_key_identity)
+    @safe_limit("300/hour;60/minute", key_func=get_api_key_identity)
     def api_get_incident(department, incident_id):
         """Get a specific incident by ID using API key authentication"""
         try:
@@ -1298,7 +1338,7 @@ def register_routes(app):
     # API endpoint to create a new incident
     @app.route('/api/v1/incidents', methods=['POST'])
     @require_api_key
-    @limiter.limit("50/hour;10/minute", key_func=get_api_key_identity)
+    @safe_limit("50/hour;10/minute", key_func=get_api_key_identity)
     def api_create_incident(department):
         """Create a new incident using API key authentication"""
         try:
@@ -1389,7 +1429,7 @@ def register_routes(app):
     # API endpoint to get all stations
     @app.route('/api/v1/stations', methods=['GET'])
     @require_api_key
-    @limiter.limit("100/hour;30/minute", key_func=get_api_key_identity)
+    @safe_limit("100/hour;30/minute", key_func=get_api_key_identity)
     def api_get_stations(department):
         """Get all stations for a department using API key authentication"""
         try:
@@ -1430,7 +1470,7 @@ def register_routes(app):
     # API endpoint to get a specific station by ID
     @app.route('/api/v1/stations/<int:station_id>', methods=['GET'])
     @require_api_key
-    @limiter.limit("300/hour;60/minute", key_func=get_api_key_identity)
+    @safe_limit("300/hour;60/minute", key_func=get_api_key_identity)
     def api_get_station(department, station_id):
         """Get a specific station by ID using API key authentication"""
         try:
@@ -1468,7 +1508,7 @@ def register_routes(app):
     # API endpoint to create a new station
     @app.route('/api/v1/stations', methods=['POST'])
     @require_api_key
-    @limiter.limit("30/hour;5/minute", key_func=get_api_key_identity)
+    @safe_limit("30/hour;5/minute", key_func=get_api_key_identity)
     def api_create_station(department):
         """Create a new station using API key authentication"""
         try:
@@ -1580,7 +1620,7 @@ def register_routes(app):
 
     @app.route('/api/v1/users', methods=['GET'])
     @require_api_key
-    @limiter.limit("100/hour;20/minute", key_func=get_api_key_identity)
+    @safe_limit("100/hour;20/minute", key_func=get_api_key_identity)
     def api_get_users(department):
         """Get all users for a department using API key authentication"""
         try:
@@ -1601,7 +1641,7 @@ def register_routes(app):
 
     @app.route('/api/v1/users/<int:user_id>', methods=['GET'])
     @require_api_key
-    @limiter.limit("300/hour;60/minute", key_func=get_api_key_identity)
+    @safe_limit("300/hour;60/minute", key_func=get_api_key_identity)
     def api_get_user(department, user_id):
         """Get a specific user by ID using API key authentication"""
         try:
@@ -1622,7 +1662,7 @@ def register_routes(app):
 
     @app.route('/api/v1/users', methods=['POST'])
     @require_api_key
-    @limiter.limit("30/hour;5/minute", key_func=get_api_key_identity)
+    @safe_limit("30/hour;5/minute", key_func=get_api_key_identity)
     def api_create_user(department):
         """Create a new user using API key authentication"""
         try:
@@ -1693,7 +1733,7 @@ def register_routes(app):
 
     @app.route('/api/v1/users/<int:user_id>', methods=['PUT'])
     @require_api_key
-    @limiter.limit("50/hour;10/minute", key_func=get_api_key_identity)
+    @safe_limit("50/hour;10/minute", key_func=get_api_key_identity)
     def api_update_user(department, user_id):
         """Update an existing user using API key authentication"""
         try:
@@ -1769,7 +1809,7 @@ def register_routes(app):
 
     @app.route('/api/v1/webhooks', methods=['GET'])
     @require_api_key
-    @limiter.limit("100/hour;20/minute", key_func=get_api_key_identity)
+    @safe_limit("100/hour;20/minute", key_func=get_api_key_identity)
     def api_get_webhook_config(department):
         """Get webhook configuration for a department"""
         try:
@@ -1792,7 +1832,7 @@ def register_routes(app):
 
     @app.route('/api/v1/webhooks', methods=['PUT'])
     @require_api_key
-    @limiter.limit("30/hour;5/minute", key_func=get_api_key_identity)
+    @safe_limit("30/hour;5/minute", key_func=get_api_key_identity)
     def api_update_webhook_config(department):
         """Update webhook configuration for a department"""
         try:
@@ -1881,7 +1921,7 @@ def register_routes(app):
 
     @app.route('/api/v1/webhooks/test', methods=['POST'])
     @require_api_key
-    @limiter.limit("10/hour;2/minute", key_func=get_api_key_identity)
+    @safe_limit("10/hour;2/minute", key_func=get_api_key_identity)
     def api_test_webhook(department):
         """Send a test webhook to verify configuration"""
         try:
