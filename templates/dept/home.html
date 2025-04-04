@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ department.name }} Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        .dept-header {
+            background: linear-gradient(135deg, {{ department.primary_color }} 0%, {{ department.secondary_color }} 100%);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .dept-title {
+            font-size: 2.5rem;
+            margin: 0 0 0.5rem 0;
+        }
+        
+        .dept-subtitle {
+            opacity: 0.8;
+            margin: 0;
+            font-size: 1.25rem;
+        }
+        
+        .dept-logo {
+            margin-bottom: 1.5rem;
+        }
+        
+        .dept-logo img {
+            max-height: 120px;
+            max-width: 100%;
+        }
+        
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .tool-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        
+        .tool-header {
+            padding: 1.5rem;
+            background-color: {{ department.primary_color }};
+            color: white;
+            text-align: center;
+        }
+        
+        .tool-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .tool-title {
+            font-size: 1.5rem;
+            margin: 0;
+        }
+        
+        .tool-content {
+            padding: 1.5rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .tool-description {
+            color: #7f8c8d;
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+        }
+        
+        .dept-info {
+            margin-top: 3rem;
+            padding: 2rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .dept-info-section {
+            margin-bottom: 2rem;
+        }
+        
+        .dept-info-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid {{ department.primary_color }};
+            padding-bottom: 0.5rem;
+            display: inline-block;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .info-item {
+            margin-bottom: 1rem;
+        }
+        
+        .info-label {
+            font-weight: 500;
+            color: #7f8c8d;
+            margin-bottom: 0.25rem;
+        }
+        
+        .info-value {
+            font-size: 1.1rem;
+            color: #2c3e50;
+        }
+        
+        .contact-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .contact-icon {
+            width: 30px;
+            color: {{ department.primary_color }};
+            margin-right: 0.5rem;
+        }
+        
+        .admin-panel {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: #eef2f7;
+            border-radius: 8px;
+            border-left: 4px solid {{ department.primary_color }};
+        }
+        
+        .admin-panel-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+        
+        .admin-panel-title i {
+            margin-right: 0.5rem;
+            color: {{ department.primary_color }};
+        }
+        
+        .admin-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .admin-links a {
+            padding: 0.5rem 1rem;
+            background-color: white;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #2c3e50;
+            font-weight: 500;
+            border: 1px solid #ddd;
+            transition: all 0.2s;
+        }
+        
+        .admin-links a:hover {
+            background-color: {{ department.primary_color }};
+            color: white;
+            border-color: {{ department.primary_color }};
+        }
+        
+        .admin-links a i {
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">
+            <a href="/dept/{{ department.code }}">
+                {% if department.logo_url %}
+                    <img src="{{ department.logo_url }}" alt="{{ department.name }} Logo" height="30">
+                {% else %}
+                    <i class="fas fa-fire"></i> {{ department.name }}
+                {% endif %}
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="/dept/{{ department.code }}" class="active">Home</a>
+            
+            {% if department.features_enabled.get('dashboard', True) %}
+                <a href="/dept/{{ department.code }}/dashboard">Dashboard</a>
+            {% endif %}
+            
+            {% if department.features_enabled.get('incident_logger', True) %}
+                <a href="/dept/{{ department.code }}/incident-logger">Incident Logger</a>
+            {% endif %}
+            
+            {% if department.features_enabled.get('call_density', True) %}
+                <a href="/dept/{{ department.code }}/call-density">Call Density</a>
+            {% endif %}
+            
+            {% if department.features_enabled.get('isochrone_map', True) %}
+                <a href="/dept/{{ department.code }}/isochrone-map">Isochrone Map</a>
+            {% endif %}
+            
+            {% if current_user.is_admin() or current_user.is_super_admin() %}
+                <a href="/dept/{{ department.code }}/stations">Stations</a>
+                <a href="/dept/{{ department.code }}/users">Users</a>
+            {% endif %}
+        </div>
+        <div class="user-menu">
+            <div class="user-dropdown">
+                <button class="user-button">
+                    <i class="fas fa-user-circle"></i> {{ current_user.name }}
+                </button>
+                <div class="dropdown-content">
+                    {% if current_user.is_super_admin() %}
+                        <a href="/admin/dashboard"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a>
+                    {% endif %}
+                    <a href="/dept/{{ department.code }}/users/{{ current_user.id }}"><i class="fas fa-user-cog"></i> Profile</a>
+                    <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <header class="dept-header">
+        <div class="container">
+            {% if department.logo_url %}
+                <div class="dept-logo">
+                    <img src="{{ department.logo_url }}" alt="{{ department.name }} Logo">
+                </div>
+            {% endif %}
+            <h1 class="dept-title">{{ department.name }}</h1>
+            <p class="dept-subtitle">
+                {% if department.department_type == 'fire' %}
+                    Fire Department
+                {% elif department.department_type == 'ems' %}
+                    EMS Agency
+                {% else %}
+                    Fire/EMS Department
+                {% endif %}
+            </p>
+        </div>
+    </header>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="container">
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash flash-{{ category }}">
+                        {{ message }}
+                        <span class="flash-dismiss">&times;</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <script>
+            // Flash message dismiss functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                const dismissButtons = document.querySelectorAll('.flash-dismiss');
+                dismissButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        this.parentElement.style.display = 'none';
+                    });
+                });
+            });
+        </script>
+        {% endif %}
+    {% endwith %}
+    
+    <main class="container">
+        <div class="tools-grid">
+            {% if department.features_enabled.get('dashboard', True) %}
+                <a href="/dept/{{ department.code }}/dashboard" class="tool-card">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h2 class="tool-title">Department Dashboard</h2>
+                    </div>
+                    <div class="tool-content">
+                        <div class="tool-description">
+                            View department statistics, recent incidents, and performance metrics.
+                        </div>
+                        <button class="btn btn-primary">Open Dashboard</button>
+                    </div>
+                </a>
+            {% endif %}
+            
+            {% if department.features_enabled.get('incident_logger', True) %}
+                <a href="/dept/{{ department.code }}/incident-logger" class="tool-card">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                        <h2 class="tool-title">Incident Logger</h2>
+                    </div>
+                    <div class="tool-content">
+                        <div class="tool-description">
+                            Record and track incidents with HIPAA-compliant documentation.
+                        </div>
+                        <button class="btn btn-primary">Log Incidents</button>
+                    </div>
+                </a>
+            {% endif %}
+            
+            {% if department.features_enabled.get('call_density', True) %}
+                <a href="/dept/{{ department.code }}/call-density" class="tool-card">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-map-marked-alt"></i>
+                        </div>
+                        <h2 class="tool-title">Call Density Map</h2>
+                    </div>
+                    <div class="tool-content">
+                        <div class="tool-description">
+                            Visualize incident patterns with interactive heatmaps to identify high-activity areas.
+                        </div>
+                        <button class="btn btn-primary">View Heatmap</button>
+                    </div>
+                </a>
+            {% endif %}
+            
+            {% if department.features_enabled.get('isochrone_map', True) %}
+                <a href="/dept/{{ department.code }}/isochrone-map" class="tool-card">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h2 class="tool-title">Isochrone Map</h2>
+                    </div>
+                    <div class="tool-content">
+                        <div class="tool-description">
+                            Analyze response times and service area coverage to optimize station locations.
+                        </div>
+                        <button class="btn btn-primary">Generate Map</button>
+                    </div>
+                </a>
+            {% endif %}
+        </div>
+        
+        {% if current_user.is_admin() or current_user.is_super_admin() %}
+            <div class="admin-panel">
+                <h3 class="admin-panel-title">
+                    <i class="fas fa-user-shield"></i> Administrator Tools
+                </h3>
+                <div class="admin-links">
+                    <a href="/dept/{{ department.code }}/stations">
+                        <i class="fas fa-building"></i> Manage Stations
+                    </a>
+                    <a href="/dept/{{ department.code }}/users">
+                        <i class="fas fa-users"></i> Manage Users
+                    </a>
+                    <a href="/dept/{{ department.code }}/settings">
+                        <i class="fas fa-cog"></i> Department Settings
+                    </a>
+                    <a href="/dept/{{ department.code }}/reports">
+                        <i class="fas fa-file-alt"></i> Reports
+                    </a>
+                    <a href="/dept/{{ department.code }}/api-docs">
+                        <i class="fas fa-plug"></i> API Documentation
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+        
+        <div class="dept-info">
+            <div class="dept-info-section">
+                <h3 class="dept-info-title">About {{ department.name }}</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Type</div>
+                        <div class="info-value">
+                            {% if department.department_type == 'fire' %}
+                                Fire Department
+                            {% elif department.department_type == 'ems' %}
+                                EMS Agency
+                            {% else %}
+                                Combined Fire/EMS Department
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Stations</div>
+                        <div class="info-value">{{ department.num_stations }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Personnel</div>
+                        <div class="info-value">{{ department.num_personnel or 'Not specified' }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Service Area</div>
+                        <div class="info-value">{{ department.service_area or 'Not specified' }} sq miles</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Population Served</div>
+                        <div class="info-value">{{ department.population_served or 'Not specified' }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dept-info-section">
+                <h3 class="dept-info-title">Contact Information</h3>
+                
+                {% if department.address or department.city or department.state or department.zip_code %}
+                    <div class="contact-info">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div>
+                            {% if department.address %}{{ department.address }}, {% endif %}
+                            {% if department.city %}{{ department.city }}, {% endif %}
+                            {% if department.state %}{{ department.state }} {% endif %}
+                            {% if department.zip_code %}{{ department.zip_code }}{% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {% if department.phone %}
+                    <div class="contact-info">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div>{{ department.phone }}</div>
+                    </div>
+                {% endif %}
+                
+                {% if department.email %}
+                    <div class="contact-info">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div>{{ department.email }}</div>
+                    </div>
+                {% endif %}
+                
+                {% if department.website %}
+                    <div class="contact-info">
+                        <div class="contact-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <div>
+                            <a href="{{ department.website }}" target="_blank">{{ department.website }}</a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Any additional JavaScript for the homepage can go here
+        });
+    </script>
+</body>
+</html>

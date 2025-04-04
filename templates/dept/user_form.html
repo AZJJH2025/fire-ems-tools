@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'Edit' if user_to_edit else 'Add' }} User - {{ department.name }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        .dept-header {
+            background: linear-gradient(135deg, {{ department.primary_color }} 0%, {{ department.secondary_color }} 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .dept-title {
+            font-size: 2rem;
+            margin: 0 0 0.5rem 0;
+        }
+        
+        .dept-subtitle {
+            opacity: 0.8;
+            margin: 0;
+        }
+        
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        
+        .form-section {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1rem;
+        }
+        
+        .form-section-title {
+            font-size: 1.25rem;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid {{ department.primary_color }};
+            padding-bottom: 0.5rem;
+            display: inline-block;
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -0.5rem;
+        }
+        
+        .form-group {
+            flex: 1;
+            min-width: 250px;
+            padding: 0 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .required-label::after {
+            content: " *";
+            color: #e74c3c;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: {{ department.primary_color }};
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        .checkbox-group {
+            margin-top: 1rem;
+        }
+        
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 0.5rem;
+        }
+        
+        .help-text {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-top: 0.25rem;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+        
+        .form-actions .btn {
+            min-width: 120px;
+        }
+        
+        .password-group {
+            position: relative;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+        
+        .field-invalid {
+            border-color: #e74c3c;
+            box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">
+            <a href="/dept/{{ department.code }}">
+                {% if department.logo_url %}
+                    <img src="{{ department.logo_url }}" alt="{{ department.name }} Logo" height="30">
+                {% else %}
+                    <i class="fas fa-fire"></i> {{ department.name }}
+                {% endif %}
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="/dept/{{ department.code }}">Home</a>
+            <a href="/dept/{{ department.code }}/dashboard">Dashboard</a>
+            
+            {% if department.features_enabled.get('incident_logger', True) %}
+                <a href="/dept/{{ department.code }}/incident-logger">Incident Logger</a>
+            {% endif %}
+            
+            {% if current_user.is_admin() or current_user.is_super_admin() %}
+                <a href="/dept/{{ department.code }}/stations">Stations</a>
+                <a href="/dept/{{ department.code }}/users" class="active">Users</a>
+                <a href="/dept/{{ department.code }}/settings">Settings</a>
+            {% endif %}
+        </div>
+        <div class="user-menu">
+            <div class="user-dropdown">
+                <button class="user-button">
+                    <i class="fas fa-user-circle"></i> {{ current_user.name }}
+                </button>
+                <div class="dropdown-content">
+                    {% if current_user.is_super_admin() %}
+                        <a href="/admin/dashboard"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a>
+                    {% endif %}
+                    <a href="/dept/{{ department.code }}/users/{{ current_user.id }}"><i class="fas fa-user-cog"></i> Profile</a>
+                    <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <header class="dept-header">
+        <div class="container">
+            <h1 class="dept-title">{{ 'Edit' if user_to_edit else 'Add New' }} User</h1>
+            <p class="dept-subtitle">{% if user_to_edit %}Update user information{% else %}Add a new user to your department{% endif %}</p>
+        </div>
+    </header>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="container">
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash flash-{{ category }}">
+                        {{ message }}
+                        <span class="flash-dismiss">&times;</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <script>
+            // Flash message dismiss functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                const dismissButtons = document.querySelectorAll('.flash-dismiss');
+                dismissButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        this.parentElement.style.display = 'none';
+                    });
+                });
+            });
+        </script>
+        {% endif %}
+    {% endwith %}
+    
+    <main class="container">
+        <div class="form-container">
+            <form action="{{ url_for('dept_edit_user', dept_code=department.code, user_id=user_to_edit.id) if user_to_edit else url_for('dept_add_user', dept_code=department.code) }}" method="POST">
+                <div class="form-section">
+                    <h3 class="form-section-title">User Information</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name" class="required-label">Full Name</label>
+                            <input type="text" id="name" name="name" value="{{ user_to_edit.name if user_to_edit else '' }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email" class="required-label">Email Address</label>
+                            <input type="email" id="email" name="email" value="{{ user_to_edit.email if user_to_edit else '' }}" required>
+                            <p class="help-text">This will be used for login and notifications</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3 class="form-section-title">Authentication</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="password" class="{{ 'required-label' if not user_to_edit else '' }}">Password</label>
+                            <div class="password-group">
+                                <input type="password" id="password" name="password" {{ 'required' if not user_to_edit else '' }}>
+                                <button type="button" class="password-toggle" id="password-toggle">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <p class="help-text">{% if user_to_edit %}Leave blank to keep current password{% else %}Must be at least 8 characters{% endif %}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if current_user.is_admin() or current_user.is_super_admin() %}
+                <div class="form-section">
+                    <h3 class="form-section-title">Permissions</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="role">User Role</label>
+                            <select id="role" name="role">
+                                <option value="user" {{ 'selected' if user_to_edit and user_to_edit.role == 'user' else '' }}>User</option>
+                                <option value="manager" {{ 'selected' if user_to_edit and user_to_edit.role == 'manager' else '' }}>Manager</option>
+                                <option value="admin" {{ 'selected' if user_to_edit and user_to_edit.role == 'admin' else '' }}>Administrator</option>
+                            </select>
+                            <p class="help-text">
+                                User: Can access basic features<br>
+                                Manager: Can manage incidents and view reports<br>
+                                Administrator: Full department access
+                            </p>
+                        </div>
+                    </div>
+                    
+                    {% if user_to_edit %}
+                    <div class="form-row">
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <label>
+                                    <input type="checkbox" name="is_active" value="true" {{ 'checked' if user_to_edit.is_active else '' }}>
+                                    Account is active
+                                </label>
+                                <p class="help-text">Inactive accounts cannot log in</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <div class="form-actions">
+                    <a href="{{ url_for('dept_users', dept_code=department.code) }}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">{{ 'Save Changes' if user_to_edit else 'Add User' }}</button>
+                </div>
+            </form>
+        </div>
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Password visibility toggle
+            const passwordToggle = document.getElementById('password-toggle');
+            const passwordField = document.getElementById('password');
+            
+            passwordToggle.addEventListener('click', function() {
+                const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordField.setAttribute('type', type);
+                
+                // Toggle icon
+                const icon = this.querySelector('i');
+                if (type === 'text') {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+            
+            // Form validation
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function(event) {
+                // Get required fields
+                const name = document.getElementById('name');
+                const email = document.getElementById('email');
+                const password = document.getElementById('password');
+                
+                let isValid = true;
+                
+                // Validate name
+                if (!name.value.trim()) {
+                    name.classList.add('field-invalid');
+                    isValid = false;
+                } else {
+                    name.classList.remove('field-invalid');
+                }
+                
+                // Validate email
+                const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                if (!email.value.trim() || !emailPattern.test(email.value)) {
+                    email.classList.add('field-invalid');
+                    isValid = false;
+                } else {
+                    email.classList.remove('field-invalid');
+                }
+                
+                // Validate password for new users
+                {% if not user_to_edit %}
+                if (!password.value.trim() || password.value.length < 8) {
+                    password.classList.add('field-invalid');
+                    isValid = false;
+                } else {
+                    password.classList.remove('field-invalid');
+                }
+                {% endif %}
+                
+                if (!isValid) {
+                    event.preventDefault();
+                    alert('Please check the form for errors');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

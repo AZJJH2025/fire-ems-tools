@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Department Setup - {{ department.name }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        body {
+            background-color: #f5f8fa;
+        }
+        
+        .navbar {
+            background-color: #2c3e50;
+        }
+        
+        .wizard-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .wizard-header {
+            background: linear-gradient(135deg, {{ department.primary_color }} 0%, {{ department.secondary_color }} 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .wizard-title {
+            font-size: 1.75rem;
+            margin: 0 0 0.5rem 0;
+        }
+        
+        .wizard-subtitle {
+            opacity: 0.8;
+            margin: 0;
+        }
+        
+        .wizard-progress {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem 2rem;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            flex: 1;
+        }
+        
+        .progress-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 1.5rem;
+            width: 100%;
+            height: 2px;
+            background-color: #ddd;
+            z-index: 1;
+        }
+        
+        .progress-step.completed:not(:last-child)::after {
+            background-color: {{ department.primary_color }};
+        }
+        
+        .step-number {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background-color: #ddd;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .progress-step.active .step-number {
+            background-color: {{ department.primary_color }};
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .progress-step.completed .step-number {
+            background-color: {{ department.primary_color }};
+        }
+        
+        .step-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            text-align: center;
+        }
+        
+        .progress-step.active .step-label {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        
+        .wizard-content {
+            padding: 2rem;
+        }
+        
+        .step-content {
+            display: none;
+        }
+        
+        .step-content.active {
+            display: block;
+        }
+        
+        .form-section {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1rem;
+        }
+        
+        .form-section:last-child {
+            border-bottom: none;
+        }
+        
+        .form-section-title {
+            font-size: 1.25rem;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -0.5rem 1rem;
+        }
+        
+        .form-group {
+            flex: 1;
+            min-width: 250px;
+            padding: 0 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .form-group-full {
+            flex: 0 0 100%;
+            padding: 0 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .required-label::after {
+            content: " *";
+            color: #e74c3c;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .help-text {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-top: 0.25rem;
+        }
+        
+        .checkbox-container {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .checkbox-group {
+            margin-bottom: 1rem;
+        }
+        
+        .checkbox-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 0.5rem;
+        }
+        
+        .wizard-footer {
+            display: flex;
+            justify-content: space-between;
+            padding: 1.5rem 2rem;
+            background-color: #f8f9fa;
+            border-top: 1px solid #eee;
+        }
+        
+        .welcome-content {
+            text-align: center;
+            padding: 2rem 0;
+        }
+        
+        .welcome-icon {
+            font-size: 4rem;
+            color: {{ department.primary_color }};
+            margin-bottom: 1.5rem;
+        }
+        
+        .welcome-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+        
+        .welcome-description {
+            color: #7f8c8d;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            line-height: 1.6;
+        }
+        
+        .color-picker-container {
+            display: flex;
+            align-items: center;
+        }
+        
+        .color-picker {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border: none;
+            cursor: pointer;
+            margin-right: 0.5rem;
+        }
+        
+        .color-value {
+            flex: 1;
+        }
+        
+        .color-preview {
+            width: 100%;
+            height: 60px;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        .result-item {
+            margin-bottom: 1.5rem;
+        }
+        
+        .result-label {
+            font-weight: 500;
+            color: #7f8c8d;
+            margin-bottom: 0.25rem;
+        }
+        
+        .result-value {
+            background-color: #f8f9fa;
+            padding: 0.75rem;
+            border-radius: 4px;
+            border: 1px solid #eee;
+        }
+        
+        .feature-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .feature-card {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        .feature-card:hover {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .feature-card.selected {
+            border-color: {{ department.primary_color }};
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+        
+        .feature-icon {
+            font-size: 2rem;
+            color: {{ department.primary_color }};
+            margin-bottom: 0.75rem;
+        }
+        
+        .feature-title {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .feature-description {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+        
+        .hidden-checkbox {
+            position: absolute;
+            opacity: 0;
+        }
+        
+        .completion-icon {
+            font-size: 4rem;
+            color: #2ecc71;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">
+            <a href="/dept/{{ department.code }}">
+                {% if department.logo_url %}
+                    <img src="{{ department.logo_url }}" alt="{{ department.name }} Logo" height="30">
+                {% else %}
+                    <i class="fas fa-fire"></i> {{ department.name }}
+                {% endif %}
+            </a>
+        </div>
+        <div class="user-menu">
+            <div class="user-dropdown">
+                <button class="user-button">
+                    <i class="fas fa-user-circle"></i> {{ current_user.name }}
+                </button>
+                <div class="dropdown-content">
+                    {% if current_user.is_super_admin() %}
+                        <a href="/admin/dashboard"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a>
+                    {% endif %}
+                    <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="container">
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash flash-{{ category }}">
+                        {{ message }}
+                        <span class="flash-dismiss">&times;</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <script>
+            // Flash message dismiss functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                const dismissButtons = document.querySelectorAll('.flash-dismiss');
+                dismissButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        this.parentElement.style.display = 'none';
+                    });
+                });
+            });
+        </script>
+        {% endif %}
+    {% endwith %}
+    
+    <div class="wizard-container">
+        <div class="wizard-header">
+            <h1 class="wizard-title">Department Setup Wizard</h1>
+            <p class="wizard-subtitle">Configure your department portal in a few simple steps</p>
+        </div>
+        
+        <div class="wizard-progress">
+            <div class="progress-step active" data-step="1">
+                <div class="step-number">1</div>
+                <div class="step-label">Welcome</div>
+            </div>
+            <div class="progress-step" data-step="2">
+                <div class="step-number">2</div>
+                <div class="step-label">Department Info</div>
+            </div>
+            <div class="progress-step" data-step="3">
+                <div class="step-number">3</div>
+                <div class="step-label">Branding</div>
+            </div>
+            <div class="progress-step" data-step="4">
+                <div class="step-number">4</div>
+                <div class="step-label">Features</div>
+            </div>
+            <div class="progress-step" data-step="5">
+                <div class="step-number">5</div>
+                <div class="step-label">Confirmation</div>
+            </div>
+        </div>
+        
+        <form id="setup-form" action="{{ url_for('dept_setup_wizard', dept_code=department.code) }}" method="POST">
+            <div class="wizard-content">
+                <!-- Step 1: Welcome -->
+                <div class="step-content active" data-step="1">
+                    <div class="welcome-content">
+                        <div class="welcome-icon">
+                            <i class="fas fa-fire-extinguisher"></i>
+                        </div>
+                        <h2 class="welcome-title">Welcome to FireEMS.ai!</h2>
+                        <p class="welcome-description">
+                            Thank you for choosing our platform. This wizard will guide you through the setup process for your department portal. 
+                            You'll be able to customize your department information, branding, and features.
+                        </p>
+                        <p class="welcome-description">
+                            Let's get started by setting up your department profile!
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Step 2: Department Information -->
+                <div class="step-content" data-step="2">
+                    <h3 class="form-section-title">Department Information</h3>
+                    
+                    <div class="form-group">
+                        <label for="name" class="required-label">Department Name</label>
+                        <input type="text" id="name" name="name" value="{{ department.name }}" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="department_type">Department Type</label>
+                            <select id="department_type" name="department_type">
+                                <option value="fire" {% if department.department_type == 'fire' %}selected{% endif %}>Fire Department</option>
+                                <option value="ems" {% if department.department_type == 'ems' %}selected{% endif %}>EMS Agency</option>
+                                <option value="combined" {% if department.department_type == 'combined' %}selected{% endif %}>Combined Fire/EMS</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <h3 class="form-section-title">Contact Information</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" value="{{ department.email }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" value="{{ department.phone }}">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="website">Website</label>
+                            <input type="url" id="website" name="website" value="{{ department.website }}">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group-full">
+                            <label for="address">Address</label>
+                            <input type="text" id="address" name="address" value="{{ department.address }}" placeholder="Street Address">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="city">City</label>
+                            <input type="text" id="city" name="city" value="{{ department.city }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="state">State</label>
+                            <input type="text" id="state" name="state" value="{{ department.state }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="zip_code">ZIP Code</label>
+                            <input type="text" id="zip_code" name="zip_code" value="{{ department.zip_code }}">
+                        </div>
+                    </div>
+                    
+                    <h3 class="form-section-title">Department Details</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="num_stations">Number of Stations</label>
+                            <input type="number" id="num_stations" name="num_stations" min="1" value="{{ department.num_stations }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="num_personnel">Number of Personnel</label>
+                            <input type="number" id="num_personnel" name="num_personnel" min="0" value="{{ department.num_personnel or 0 }}">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="service_area">Service Area (sq miles)</label>
+                            <input type="number" id="service_area" name="service_area" min="0" step="0.1" value="{{ department.service_area or 0 }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="population_served">Population Served</label>
+                            <input type="number" id="population_served" name="population_served" min="0" value="{{ department.population_served or 0 }}">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 3: Branding -->
+                <div class="step-content" data-step="3">
+                    <h3 class="form-section-title">Branding & Appearance</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="logo_url">Logo URL</label>
+                            <input type="url" id="logo_url" name="logo_url" value="{{ department.logo_url }}">
+                            <p class="help-text">URL to your department logo image (recommended size: 200x100px)</p>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="primary_color">Primary Color</label>
+                            <div class="color-picker-container">
+                                <input type="color" id="primary_color_picker" class="color-picker" value="{{ department.primary_color }}">
+                                <input type="text" id="primary_color" name="primary_color" class="color-value" value="{{ department.primary_color }}">
+                            </div>
+                            <div class="color-preview" id="primary_preview" style="background-color: {{ department.primary_color }}">
+                                Primary Color
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="secondary_color">Secondary Color</label>
+                            <div class="color-picker-container">
+                                <input type="color" id="secondary_color_picker" class="color-picker" value="{{ department.secondary_color }}">
+                                <input type="text" id="secondary_color" name="secondary_color" class="color-value" value="{{ department.secondary_color }}">
+                            </div>
+                            <div class="color-preview" id="secondary_preview" style="background-color: {{ department.secondary_color }}">
+                                Secondary Color
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group-full">
+                            <div style="height: 100px; background: linear-gradient(135deg, {{ department.primary_color }} 0%, {{ department.secondary_color }} 100%); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.5rem; margin-top: 1rem;">
+                                {{ department.name }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 4: Features -->
+                <div class="step-content" data-step="4">
+                    <h3 class="form-section-title">Select Features</h3>
+                    <p class="help-text">Choose which features you want to enable for your department portal.</p>
+                    
+                    <div class="feature-selection">
+                        <div class="feature-card {% if department.features_enabled.get('incident_logger', True) %}selected{% endif %}" id="feature-incident-logger">
+                            <input type="checkbox" name="incident_logger" id="incident_logger" class="hidden-checkbox" {% if department.features_enabled.get('incident_logger', True) %}checked{% endif %}>
+                            <div class="feature-icon">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <div class="feature-title">Incident Logger</div>
+                            <div class="feature-description">Record and track incidents with HIPAA compliance</div>
+                        </div>
+                        
+                        <div class="feature-card {% if department.features_enabled.get('call_density', True) %}selected{% endif %}" id="feature-call-density">
+                            <input type="checkbox" name="call_density" id="call_density" class="hidden-checkbox" {% if department.features_enabled.get('call_density', True) %}checked{% endif %}>
+                            <div class="feature-icon">
+                                <i class="fas fa-map-marked-alt"></i>
+                            </div>
+                            <div class="feature-title">Call Density Heatmap</div>
+                            <div class="feature-description">Visualize incident patterns with heatmaps</div>
+                        </div>
+                        
+                        <div class="feature-card {% if department.features_enabled.get('isochrone_map', True) %}selected{% endif %}" id="feature-isochrone">
+                            <input type="checkbox" name="isochrone_map" id="isochrone_map" class="hidden-checkbox" {% if department.features_enabled.get('isochrone_map', True) %}checked{% endif %}>
+                            <div class="feature-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="feature-title">Isochrone Map</div>
+                            <div class="feature-description">Analyze response times and coverage</div>
+                        </div>
+                        
+                        <div class="feature-card {% if department.features_enabled.get('dashboard', True) %}selected{% endif %}" id="feature-dashboard">
+                            <input type="checkbox" name="dashboard" id="dashboard" class="hidden-checkbox" {% if department.features_enabled.get('dashboard', True) %}checked{% endif %}>
+                            <div class="feature-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="feature-title">Statistics Dashboard</div>
+                            <div class="feature-description">Department analytics and performance metrics</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 5: Confirmation -->
+                <div class="step-content" data-step="5">
+                    <div class="welcome-content">
+                        <div class="completion-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h2 class="welcome-title">Setup Complete!</h2>
+                        <p class="welcome-description">
+                            Your department portal is now configured and ready to use. You can make changes to these settings anytime from the Department Settings page.
+                        </p>
+                        
+                        <div style="text-align: left; max-width: 600px; margin: 2rem auto;">
+                            <div class="result-item">
+                                <div class="result-label">Department Name</div>
+                                <div class="result-value" id="result-name">{{ department.name }}</div>
+                            </div>
+                            
+                            <div class="result-item">
+                                <div class="result-label">Type</div>
+                                <div class="result-value" id="result-type">{{ department.department_type | title }} Department</div>
+                            </div>
+                            
+                            <div class="result-item">
+                                <div class="result-label">Features Enabled</div>
+                                <div class="result-value" id="result-features"></div>
+                            </div>
+                        </div>
+                        
+                        <input type="hidden" name="setup_complete" value="true">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="wizard-footer">
+                <button type="button" id="prev-btn" class="btn btn-secondary" style="display: none;">Previous</button>
+                <button type="button" id="next-btn" class="btn btn-primary">Next</button>
+                <button type="submit" id="finish-btn" class="btn btn-success" style="display: none;">Complete Setup</button>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup wizard functionality
+            const form = document.getElementById('setup-form');
+            const steps = document.querySelectorAll('.step-content');
+            const progressSteps = document.querySelectorAll('.progress-step');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const finishBtn = document.getElementById('finish-btn');
+            
+            let currentStep = 1;
+            const totalSteps = steps.length;
+            
+            // Update buttons based on current step
+            function updateButtons() {
+                prevBtn.style.display = currentStep > 1 ? 'block' : 'none';
+                nextBtn.style.display = currentStep < totalSteps ? 'block' : 'none';
+                finishBtn.style.display = currentStep === totalSteps ? 'block' : 'none';
+            }
+            
+            // Update progress indicators
+            function updateProgress() {
+                progressSteps.forEach(step => {
+                    const stepNum = parseInt(step.dataset.step);
+                    step.classList.remove('active', 'completed');
+                    
+                    if (stepNum === currentStep) {
+                        step.classList.add('active');
+                    } else if (stepNum < currentStep) {
+                        step.classList.add('completed');
+                    }
+                });
+            }
+            
+            // Show current step
+            function showStep(stepNumber) {
+                steps.forEach(step => {
+                    step.classList.remove('active');
+                    if (parseInt(step.dataset.step) === stepNumber) {
+                        step.classList.add('active');
+                    }
+                });
+                
+                currentStep = stepNumber;
+                updateButtons();
+                updateProgress();
+                
+                // Update confirmation page if on last step
+                if (currentStep === totalSteps) {
+                    updateConfirmation();
+                }
+            }
+            
+            // Update confirmation page with selected values
+            function updateConfirmation() {
+                document.getElementById('result-name').textContent = document.getElementById('name').value;
+                
+                const typeSelect = document.getElementById('department_type');
+                const typeText = typeSelect.options[typeSelect.selectedIndex].text;
+                document.getElementById('result-type').textContent = typeText;
+                
+                // Build features list
+                const features = [];
+                if (document.getElementById('incident_logger').checked) features.push('Incident Logger');
+                if (document.getElementById('call_density').checked) features.push('Call Density Heatmap');
+                if (document.getElementById('isochrone_map').checked) features.push('Isochrone Map');
+                if (document.getElementById('dashboard').checked) features.push('Statistics Dashboard');
+                
+                document.getElementById('result-features').textContent = features.join(', ');
+            }
+            
+            // Next button click handler
+            nextBtn.addEventListener('click', function() {
+                if (currentStep < totalSteps) {
+                    // Basic validation for required fields
+                    if (currentStep === 2) {
+                        const nameField = document.getElementById('name');
+                        if (!nameField.value.trim()) {
+                            alert('Department name is required');
+                            nameField.focus();
+                            return;
+                        }
+                    }
+                    
+                    showStep(currentStep + 1);
+                }
+            });
+            
+            // Previous button click handler
+            prevBtn.addEventListener('click', function() {
+                if (currentStep > 1) {
+                    showStep(currentStep - 1);
+                }
+            });
+            
+            // Feature card selection
+            const featureCards = document.querySelectorAll('.feature-card');
+            featureCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const checkbox = this.querySelector('input[type="checkbox"]');
+                    checkbox.checked = !checkbox.checked;
+                    this.classList.toggle('selected', checkbox.checked);
+                });
+            });
+            
+            // Color picker functionality
+            const primaryPicker = document.getElementById('primary_color_picker');
+            const primaryInput = document.getElementById('primary_color');
+            const primaryPreview = document.getElementById('primary_preview');
+            
+            const secondaryPicker = document.getElementById('secondary_color_picker');
+            const secondaryInput = document.getElementById('secondary_color');
+            const secondaryPreview = document.getElementById('secondary_preview');
+            
+            // Update input when color picker changes
+            primaryPicker.addEventListener('input', function() {
+                primaryInput.value = this.value;
+                primaryPreview.style.backgroundColor = this.value;
+            });
+            
+            // Update color picker when input changes
+            primaryInput.addEventListener('input', function() {
+                if (/^#[0-9A-F]{6}$/i.test(this.value)) {
+                    primaryPicker.value = this.value;
+                    primaryPreview.style.backgroundColor = this.value;
+                }
+            });
+            
+            // Secondary color
+            secondaryPicker.addEventListener('input', function() {
+                secondaryInput.value = this.value;
+                secondaryPreview.style.backgroundColor = this.value;
+            });
+            
+            secondaryInput.addEventListener('input', function() {
+                if (/^#[0-9A-F]{6}$/i.test(this.value)) {
+                    secondaryPicker.value = this.value;
+                    secondaryPreview.style.backgroundColor = this.value;
+                }
+            });
+            
+            // Initialize wizard
+            showStep(currentStep);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ department.name }} - FireEMS.ai Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/admin-styles.css">
+    <style>
+        .department-header {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .department-logo-large {
+            width: 120px;
+            height: 120px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #7f8c8d;
+            font-size: 3rem;
+        }
+        
+        .department-info {
+            flex: 1;
+        }
+        
+        .department-name-large {
+            font-size: 2rem;
+            margin: 0;
+            color: #2c3e50;
+        }
+        
+        .department-subtitle {
+            color: #7f8c8d;
+            margin: 0.5rem 0 1rem 0;
+        }
+        
+        .department-meta {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        
+        .meta-item {
+            margin-bottom: 0.5rem;
+        }
+        
+        .meta-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .meta-value {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        
+        .department-tabs {
+            display: flex;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .tab-item {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab-item.active {
+            color: #3498db;
+            border-bottom-color: #3498db;
+        }
+        
+        .tab-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 2rem;
+            min-height: 300px;
+        }
+        
+        .tab-panel {
+            display: none;
+        }
+        
+        .tab-panel.active {
+            display: block;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .info-card {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        
+        .info-card-title {
+            font-size: 1.1rem;
+            color: #2c3e50;
+            margin: 0 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .color-sample {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            vertical-align: middle;
+            margin-right: 0.5rem;
+        }
+        
+        .user-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .user-item {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .user-item:last-child {
+            border-bottom: none;
+        }
+        
+        .user-details {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background-color: #3498db;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+        }
+        
+        .user-name {
+            font-weight: 500;
+        }
+        
+        .user-role {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .station-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .station-item {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .station-item:last-child {
+            border-bottom: none;
+        }
+        
+        .station-name {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        .station-address {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-fire-extinguisher"></i> FireEMS.ai Admin
+                </div>
+                <div class="user-info">
+                    <span class="user-avatar">A</span>
+                    <span class="user-name">Admin</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <nav>
+        <div class="container">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="/admin/dashboard" class="nav-link">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/departments" class="nav-link active">
+                        <i class="fas fa-building"></i> Departments
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/users" class="nav-link">
+                        <i class="fas fa-users"></i> Users
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/settings" class="nav-link">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main class="container">
+        <div class="content-header">
+            <h1 class="content-title">Department Details</h1>
+            <div>
+                <a href="/dept/{{ department.code }}" class="btn btn-secondary" target="_blank">
+                    <i class="fas fa-external-link-alt"></i> View Portal
+                </a>
+                <a href="/admin/departments/{{ department.id }}/edit" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Edit Department
+                </a>
+            </div>
+        </div>
+        
+        <div class="department-header">
+            <div class="department-logo-large">
+                {% if department.logo_url %}
+                <img src="{{ department.logo_url }}" alt="{{ department.name }} logo">
+                {% else %}
+                <i class="fas fa-fire-extinguisher"></i>
+                {% endif %}
+            </div>
+            <div class="department-info">
+                <h1 class="department-name-large">{{ department.name }}</h1>
+                <p class="department-subtitle">{{ department.department_type|capitalize }} Department - Code: <strong>{{ department.code }}</strong></p>
+                
+                <div>
+                    {% if department.is_active %}
+                    <span class="status-badge status-active">Active</span>
+                    {% else %}
+                    <span class="status-badge status-inactive">Inactive</span>
+                    {% endif %}
+                    
+                    {% if not department.setup_complete %}
+                    <span class="status-badge status-pending">Setup Required</span>
+                    {% endif %}
+                </div>
+                
+                <div class="department-meta">
+                    <div>
+                        <div class="meta-item">
+                            <div class="meta-label">Created</div>
+                            <div class="meta-value">{{ department.created_at.strftime('%b %d, %Y') }}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Stations</div>
+                            <div class="meta-value">{{ department.num_stations }}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="meta-item">
+                            <div class="meta-label">Personnel</div>
+                            <div class="meta-value">{{ department.num_personnel or 'Not specified' }}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Service Area</div>
+                            <div class="meta-value">{{ department.service_area }} sq mi</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="department-tabs">
+            <div class="tab-item active" data-tab="overview">Overview</div>
+            <div class="tab-item" data-tab="stations">Stations</div>
+            <div class="tab-item" data-tab="users">Users</div>
+            <div class="tab-item" data-tab="features">Features</div>
+        </div>
+        
+        <div class="tab-content">
+            <div class="tab-panel active" id="overview-tab">
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3 class="info-card-title">Contact Information</h3>
+                        <p><strong>Email:</strong> {{ department.email }}</p>
+                        <p><strong>Phone:</strong> {{ department.phone or 'Not provided' }}</p>
+                        <p><strong>Website:</strong> {% if department.website %}<a href="{{ department.website }}" target="_blank">{{ department.website }}</a>{% else %}Not provided{% endif %}</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3 class="info-card-title">Location</h3>
+                        <p><strong>Address:</strong> {{ department.address or 'Not provided' }}</p>
+                        <p><strong>City:</strong> {{ department.city or 'Not provided' }}</p>
+                        <p><strong>State:</strong> {{ department.state or 'Not provided' }}</p>
+                        <p><strong>ZIP Code:</strong> {{ department.zip_code or 'Not provided' }}</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3 class="info-card-title">Department Details</h3>
+                        <p><strong>Type:</strong> {{ department.department_type|capitalize }}</p>
+                        <p><strong>Personnel:</strong> {{ department.num_personnel or 'Not specified' }}</p>
+                        <p><strong>Service Area:</strong> {{ department.service_area or 'Not specified' }} sq mi</p>
+                        <p><strong>Population Served:</strong> {{ department.population_served or 'Not specified' }}</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3 class="info-card-title">Appearance</h3>
+                        <p>
+                            <strong>Primary Color:</strong> 
+                            <span class="color-sample" style="background-color: {{ department.primary_color }};"></span>
+                            {{ department.primary_color }}
+                        </p>
+                        <p>
+                            <strong>Secondary Color:</strong> 
+                            <span class="color-sample" style="background-color: {{ department.secondary_color }};"></span>
+                            {{ department.secondary_color }}
+                        </p>
+                        <p><strong>Logo URL:</strong> {% if department.logo_url %}<a href="{{ department.logo_url }}" target="_blank">View Logo</a>{% else %}Not provided{% endif %}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-panel" id="stations-tab">
+                {% if department.stations %}
+                <ul class="station-list">
+                    {% for station in department.stations %}
+                    <li class="station-item">
+                        <div class="station-name">Station {{ station.station_number }}: {{ station.name }}</div>
+                        <div class="station-address">{{ station.address }}, {{ station.city }}, {{ station.state }} {{ station.zip_code }}</div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="empty-message">
+                    <p>No stations have been added for this department yet.</p>
+                    <a href="/admin/departments/{{ department.id }}/stations/add" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Station
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="tab-panel" id="users-tab">
+                {% if department.users %}
+                <ul class="user-list">
+                    {% for user in department.users %}
+                    <li class="user-item">
+                        <div class="user-details">
+                            <div class="user-avatar">{{ user.name[0] }}</div>
+                            <div>
+                                <div class="user-name">{{ user.name }}</div>
+                                <div class="user-role">{{ user.role|capitalize }} - {{ user.email }}</div>
+                            </div>
+                        </div>
+                        <div class="user-actions">
+                            <a href="/admin/users/{{ user.id }}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-user"></i> View
+                            </a>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="empty-message">
+                    <p>No users have been added for this department yet.</p>
+                    <a href="/admin/departments/{{ department.id }}/users/add" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add User
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="tab-panel" id="features-tab">
+                <h3>Enabled Features</h3>
+                <ul class="feature-list">
+                    <li class="feature-item">
+                        <div class="feature-name">
+                            <i class="fas {% if department.features_enabled.get('incident_logger', True) %}fa-check-circle text-success{% else %}fa-times-circle text-danger{% endif %}"></i>
+                            Incident Logger
+                        </div>
+                        <div class="feature-description">Comprehensive incident documentation and reporting</div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-name">
+                            <i class="fas {% if department.features_enabled.get('call_density', True) %}fa-check-circle text-success{% else %}fa-times-circle text-danger{% endif %}"></i>
+                            Call Density Heatmap
+                        </div>
+                        <div class="feature-description">Visualize incident hotspots on an interactive map</div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-name">
+                            <i class="fas {% if department.features_enabled.get('isochrone_map', True) %}fa-check-circle text-success{% else %}fa-times-circle text-danger{% endif %}"></i>
+                            Isochrone Map
+                        </div>
+                        <div class="feature-description">Response time visualization and analysis</div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-name">
+                            <i class="fas {% if department.features_enabled.get('dashboard', True) %}fa-check-circle text-success{% else %}fa-times-circle text-danger{% endif %}"></i>
+                            Department Dashboard
+                        </div>
+                        <div class="feature-description">Analytics and reporting dashboard for department metrics</div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabItems = document.querySelectorAll('.tab-item');
+            const tabPanels = document.querySelectorAll('.tab-panel');
+            
+            tabItems.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs and panels
+                    tabItems.forEach(item => item.classList.remove('active'));
+                    tabPanels.forEach(panel => panel.classList.remove('active'));
+                    
+                    // Add active class to current tab
+                    this.classList.add('active');
+                    
+                    // Show corresponding panel
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
