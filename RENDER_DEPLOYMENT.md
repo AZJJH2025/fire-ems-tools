@@ -1,29 +1,38 @@
 # Render.com Deployment Instructions
 
-## RECOMMENDED SOLUTION: Use app_wrapper.py for normal operation
+## PERMANENT SOLUTION: Use normal app with improved error handling
 
-To maintain normal application functionality while fixing template issues:
+The application now has proper template handling and fallbacks built-in:
 
 1. Go to your Render.com dashboard
 2. Select your Fire-EMS Tools service
 3. Click on the "Settings" tab
 4. Scroll down to the "Start Command" section
-5. Update the start command from:
+5. Ensure the start command is set to:
    ```
    gunicorn app:app
    ```
-   To:
-   ```
-   gunicorn app_wrapper:app
-   ```
-6. Click "Save Changes"
+6. Click "Save Changes" if it was changed previously
 7. Manually deploy the latest commit from the "Manual Deploy" section
 
-This approach:
-- Preserves all normal functionality of your application
-- Automatically creates missing template files if needed
-- Maintains your application's look and feel
-- Only falls back to minimal mode if absolutely necessary
+## What's Been Fixed
+
+We've implemented a comprehensive long-term solution to the template issues:
+
+1. **Proper Template Handling**:
+   - Added explicit absolute template paths
+   - Ensured all template directories are created at startup
+   - Implemented TemplateNotFound error handler
+
+2. **Built-in Fallbacks**:
+   - Inline HTML fallbacks for critical routes (login, home, errors)
+   - Graceful degradation for template errors
+   - Maintained functionality even when templates are missing
+
+3. **Better Error Handling**:
+   - Added try/except blocks around template rendering
+   - Enhanced error logging for template issues
+   - Provided user-friendly fallbacks for all error pages
 
 ## Testing After Deployment
 
