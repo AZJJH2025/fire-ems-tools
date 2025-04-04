@@ -30,7 +30,8 @@ from database import db, Department, Incident, User, Station
 from config import config
 
 login_manager = LoginManager()
-limiter = Limiter(key_func=get_remote_address)
+# Initialize limiter without immediately binding to app
+limiter = Limiter(key_func=get_remote_address, default_limits=["200 per hour", "50 per minute"])
 
 def get_api_key_identity():
     """
@@ -105,17 +106,14 @@ def create_app(config_name='default'):
     db.init_app(app)
     login_manager.init_app(app)
     
+    # Configure Flask-Limiter
+    app.config['RATELIMIT_DEFAULT'] = "200 per hour;50 per minute"
+    app.config['RATELIMIT_KEY_FUNC'] = get_api_key_identity
+    app.config['RATELIMIT_STORAGE_URI'] = "memory://"
+    
     # Initialize rate limiter with custom key function
     limiter.init_app(app)
-    # Set default limits per API key identity (using a safer approach)
-    try:
-        # This is the problematic line, so we'll wrap it in a try-except
-        limiter.limit("200/hour;50/minute")(app)
-    except AttributeError:
-        # Alternative way to set default limits
-        app.config['RATELIMIT_DEFAULT'] = "200 per hour;50 per minute"
-        app.config['RATELIMIT_KEY_FUNC'] = get_api_key_identity
-        logger.warning("Used alternative rate limiting configuration")
+    logger.info("Rate limiter configured successfully")
     
     # Configure login manager
     login_manager.login_view = 'login'
