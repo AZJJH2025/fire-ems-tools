@@ -11,6 +11,11 @@
     <link rel="stylesheet" href="/static/incident-logger.css?v=1.2">
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     
+    <!-- jQuery and Select2 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
     <style>
     /* Fallback styles in case the CSS files don't load properly */
     body {
@@ -604,6 +609,89 @@
                                     <div class="form-group">
                                         <label for="patient-address-1" class="phi-label">Address</label>
                                         <input type="text" id="patient-address-1" name="patient-address-1" class="phi-field">
+                                    </div>
+                                </div>
+
+                                <!-- MANUALLY ADDED FOR DEBUGGING -->
+                                <div class="form-section" id="manual-medical-history-section">
+                                    <h5>Medical History (Manual)</h5>
+                                    <div class="medical-history-container">
+                                        <div class="form-group">
+                                            <label for="medical-history-1">Past Medical History</label>
+                                            <select id="medical-history-1" name="medical-history-1" class="medical-history-select" multiple style="display:block !important; height:120px !important; border:2px solid red !important;">
+                                                <option value="hypertension">Hypertension</option>
+                                                <option value="diabetes">Diabetes</option>
+                                                <option value="copd">COPD</option>
+                                                <option value="asthma">Asthma</option>
+                                                <option value="coronary_artery_disease">Coronary Artery Disease</option>
+                                                <option value="congestive_heart_failure">Congestive Heart Failure</option>
+                                                <option value="myocardial_infarction">Prior MI</option>
+                                                <option value="stroke">Stroke/CVA</option>
+                                                <option value="seizure">Seizure Disorder</option>
+                                            </select>
+                                            <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="medical-history-other-1">Other Medical History</label>
+                                            <textarea id="medical-history-other-1" name="medical-history-other-1" placeholder="Enter additional medical history here"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-section" id="manual-medications-section">
+                                    <h5>Medications (Manual)</h5>
+                                    <div class="medications-container">
+                                        <div class="form-group">
+                                            <label for="medications-1">Current Medications</label>
+                                            <select id="medications-1" name="medications-1" class="medications-select" multiple style="display:block !important; height:120px !important; border:2px solid blue !important;">
+                                                <option value="lisinopril">Lisinopril</option>
+                                                <option value="metoprolol">Metoprolol</option>
+                                                <option value="atorvastatin">Atorvastatin (Lipitor)</option>
+                                                <option value="metformin">Metformin</option>
+                                                <option value="insulin">Insulin</option>
+                                                <option value="aspirin">Aspirin</option>
+                                                <option value="warfarin">Warfarin (Coumadin)</option>
+                                            </select>
+                                            <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="medications-other-1">Other Medications</label>
+                                            <textarea id="medications-other-1" name="medications-other-1" placeholder="Enter additional medications here"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-section" id="manual-allergies-section">
+                                    <h5>Allergies (Manual)</h5>
+                                    <div class="allergies-container">
+                                        <div class="form-group">
+                                            <label for="allergies-1">Known Allergies</label>
+                                            <select id="allergies-1" name="allergies-1" class="allergies-select" multiple style="display:block !important; height:120px !important; border:2px solid green !important;">
+                                                <option value="penicillin">Penicillin</option>
+                                                <option value="sulfa">Sulfa Drugs</option>
+                                                <option value="nsaids">NSAIDs</option>
+                                                <option value="aspirin">Aspirin</option>
+                                                <option value="morphine">Morphine</option>
+                                                <option value="codeine">Codeine</option>
+                                                <option value="latex">Latex</option>
+                                            </select>
+                                            <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="allergies-other-1">Other Allergies</label>
+                                            <textarea id="allergies-other-1" name="allergies-other-1" placeholder="Enter additional allergies here"></textarea>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="nkda-1">No Known Drug Allergies</label>
+                                            <div class="toggle-switch">
+                                                <input type="checkbox" id="nkda-1" name="nkda-1">
+                                                <label for="nkda-1" class="switch-label">NKDA</label>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -1780,5 +1868,8 @@
         }
     });
     </script>
+
+    <!-- Fix for Step 5 visibility -->
+    <script src="/static/step-fix.js"></script>
 </body>
 </html>
