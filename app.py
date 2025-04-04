@@ -3586,22 +3586,38 @@ def register_routes(app):
     @app.route('/coverage-gap-finder')
     def coverage_gap_finder():
         """Serve the Coverage Gap Finder tool"""
-        return render_template('coverage-gap-finder.html')
+        try:
+            return render_template('coverage-gap-finder.html')
+        except Exception as e:
+            logger.error(f"Error rendering coverage-gap-finder.html: {str(e)}")
+            return "Coverage Gap Finder - Coming Soon", 200
     
     @app.route('/fire-map-pro')
     def fire_map_pro():
         """Serve the FireMapPro tool"""
-        return render_template('fire-map-pro.html')
+        try:
+            return render_template('fire-map-pro.html')
+        except Exception as e:
+            logger.error(f"Error rendering fire-map-pro.html: {str(e)}")
+            return "FireMapPro - Coming Soon", 200
     
     @app.route('/data-formatter')
     def data_formatter():
         """Serve the Data Formatter tool"""
-        return render_template('data-formatter.html')
+        try:
+            return render_template('data-formatter.html')
+        except Exception as e:
+            logger.error(f"Error rendering data-formatter.html: {str(e)}")
+            return "Data Formatter - Coming Soon", 200
     
     @app.route('/station-overview')
     def station_overview():
         """Serve the Station Overview tool"""
-        return render_template('station-overview.html')
+        try:
+            return render_template('station-overview.html')
+        except Exception as e:
+            logger.error(f"Error rendering station-overview.html: {str(e)}")
+            return "Station Overview - Coming Soon", 200
     
     # Include the rest of your original routes here
 
