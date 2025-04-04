@@ -1,8 +1,8 @@
 # Render.com Deployment Instructions
 
-## Updating Start Command
+## UPDATED SOLUTION: Use direct_wsgi.py
 
-To fix the 502 errors and template not found issues, update your Render.com deployment configuration with the following changes:
+Since we're still experiencing issues with template files, use the direct_wsgi.py approach which completely bypasses Flask's template system:
 
 1. Go to your Render.com dashboard
 2. Select your Fire-EMS Tools service
@@ -14,7 +14,7 @@ To fix the 502 errors and template not found issues, update your Render.com depl
    ```
    To:
    ```
-   gunicorn render_wsgi:app
+   gunicorn direct_wsgi:app
    ```
 6. Click "Save Changes"
 7. Manually deploy the latest commit from the "Manual Deploy" section
