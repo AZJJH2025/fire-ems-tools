@@ -3,6 +3,7 @@ from flask_cors import CORS
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+import jinja2
 import pandas as pd
 import os
 import traceback
@@ -134,7 +135,27 @@ def require_api_key(f):
 
 def create_app(config_name='default'):
     """Application factory function"""
-    app = Flask(__name__, static_folder="static", static_url_path="/static")
+    # Enable better template error handling
+    import os
+    
+    # Ensure template directories exist
+    template_dirs = ['templates', 'templates/auth', 'templates/errors', 'templates/admin', 'templates/dept']
+    for dir_path in template_dirs:
+        os.makedirs(dir_path, exist_ok=True)
+    
+    # Create Flask app with absolute paths
+    template_folder = os.path.join(os.getcwd(), 'templates')
+    static_folder = os.path.join(os.getcwd(), 'static')
+    
+    app = Flask(__name__, 
+                template_folder=template_folder,
+                static_folder=static_folder, 
+                static_url_path="/static")
+    
+    # Set up template auto-reloading in development
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
+    
+    # Apply configuration
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
     
@@ -203,19 +224,38 @@ def create_app(config_name='default'):
             logger.error(f"Error applying deployment fixes: {str(e)}")
             logger.error(traceback.format_exc())
     
-    # Register error handlers
+    # Register error handlers with fallbacks
     @app.errorhandler(403)
     def forbidden_error(error):
-        return render_template('errors/403.html'), 403
+        try:
+            return render_template('errors/403.html'), 403
+        except Exception as e:
+            logger.error(f"Error rendering 403 template: {str(e)}")
+            return "<h1>403 - Forbidden</h1><p>You don't have permission to access this resource.</p>", 403
         
     @app.errorhandler(404)
     def not_found_error(error):
-        return render_template('errors/404.html'), 404
+        try:
+            return render_template('errors/404.html'), 404
+        except Exception as e:
+            logger.error(f"Error rendering 404 template: {str(e)}")
+            return "<h1>404 - Not Found</h1><p>The requested resource could not be found.</p>", 404
         
     @app.errorhandler(500)
     def internal_error(error):
         db.session.rollback()  # Roll back any failed database sessions
-        return render_template('errors/500.html'), 500
+        try:
+            return render_template('errors/500.html'), 500
+        except Exception as e:
+            logger.error(f"Error rendering 500 template: {str(e)}")
+            return "<h1>500 - Server Error</h1><p>An unexpected error occurred.</p>", 500
+            
+    @app.errorhandler(jinja2.exceptions.TemplateNotFound)
+    def template_not_found(error):
+        logger.error(f"Template not found: {error.name}")
+        if 'auth/login' in error.name:
+            return redirect('/')
+        return "<h1>Template Error</h1><p>The requested template could not be found.</p>", 500
     
     # Register routes and other components
     register_routes(app)
@@ -307,7 +347,85 @@ def register_routes(app):
             else:
                 flash('Invalid email or password', 'danger')
         
-        return render_template('auth/login.html')
+        try:
+            return render_template('auth/login.html')
+        except jinja2.exceptions.TemplateNotFound:
+            logger.error("Login template not found, using fallback")
+            # Inline login form as fallback
+            return '''
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Login - Fire-EMS Tools</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        height: 100vh;
+                        margin: 0;
+                        background-color: #f5f8fa;
+                    }
+                    .login-container {
+                        width: 350px;
+                        padding: 20px;
+                        background-color: white;
+                        border-radius: 8px;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    }
+                    h1 {
+                        text-align: center;
+                        color: #2c3e50;
+                    }
+                    input {
+                        width: 100%;
+                        padding: 10px;
+                        margin: 10px 0;
+                        border: 1px solid #ddd;
+                        border-radius: 4px;
+                        box-sizing: border-box;
+                    }
+                    button {
+                        width: 100%;
+                        padding: 10px;
+                        background-color: #3498db;
+                        color: white;
+                        border: none;
+                        border-radius: 4px;
+                        cursor: pointer;
+                    }
+                    button:hover {
+                        background-color: #2980b9;
+                    }
+                    .alert {
+                        padding: 10px;
+                        background-color: #f8d7da;
+                        color: #721c24;
+                        border-radius: 4px;
+                        margin-bottom: 10px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="login-container">
+                    <h1>Fire-EMS Tools Login</h1>
+                    <form method="POST" action="/login">
+                        <input type="email" name="email" placeholder="Email" required>
+                        <input type="password" name="password" placeholder="Password" required>
+                        <div style="margin: 10px 0; display: flex; align-items: center;">
+                            <input type="checkbox" name="remember" style="width: auto; margin-right: 10px;">
+                            <label for="remember">Remember me</label>
+                        </div>
+                        <button type="submit">Login</button>
+                    </form>
+                    <p style="text-align: center; margin-top: 20px;">
+                        <small>Default: admin@fireems.ai / FireEMS2025!</small>
+                    </p>
+                </div>
+            </body>
+            </html>
+            '''
     
     @app.route('/logout')
     @login_required
@@ -321,7 +439,147 @@ def register_routes(app):
     @app.route("/")
     def home():
         """Serve the home page with the tool collection."""
-        return render_template("index.html")
+        try:
+            return render_template("index.html")
+        except jinja2.exceptions.TemplateNotFound:
+            logger.error("Home template not found, using fallback")
+            # Inline home page as fallback
+            return '''
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Fire-EMS Tools</title>
+                <style>
+                    body {
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        line-height: 1.6;
+                        margin: 0;
+                        padding: 0;
+                        color: #333;
+                        background-color: #f5f8fa;
+                    }
+                    .container {
+                        max-width: 1200px;
+                        margin: 0 auto;
+                        padding: 20px;
+                    }
+                    header {
+                        background-color: #3498db;
+                        color: white;
+                        padding: 1rem 0;
+                        text-align: center;
+                    }
+                    h1 {
+                        margin: 0;
+                        padding: 0;
+                    }
+                    .hero {
+                        background-color: #2c3e50;
+                        color: white;
+                        padding: 3rem 0;
+                        text-align: center;
+                        margin-bottom: 2rem;
+                    }
+                    .hero h2 {
+                        font-size: 2.5rem;
+                        margin-bottom: 1rem;
+                    }
+                    .hero p {
+                        font-size: 1.2rem;
+                        max-width: 800px;
+                        margin: 0 auto;
+                    }
+                    .features {
+                        display: flex;
+                        flex-wrap: wrap;
+                        justify-content: space-between;
+                        margin-bottom: 3rem;
+                    }
+                    .feature {
+                        flex: 0 0 calc(33.333% - 20px);
+                        background-color: white;
+                        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                        border-radius: 5px;
+                        padding: 1.5rem;
+                        margin-bottom: 20px;
+                        text-align: center;
+                    }
+                    .feature h3 {
+                        color: #3498db;
+                        margin-top: 0;
+                    }
+                    .btn {
+                        display: inline-block;
+                        background-color: #3498db;
+                        color: white;
+                        padding: 10px 20px;
+                        text-decoration: none;
+                        border-radius: 5px;
+                        font-weight: bold;
+                        margin-top: 10px;
+                    }
+                    .btn:hover {
+                        background-color: #2980b9;
+                    }
+                    footer {
+                        background-color: #2c3e50;
+                        color: white;
+                        text-align: center;
+                        padding: 1rem 0;
+                        margin-top: 2rem;
+                    }
+                    @media (max-width: 768px) {
+                        .feature {
+                            flex: 0 0 100%;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <header>
+                    <div class="container">
+                        <h1>Fire-EMS Tools</h1>
+                    </div>
+                </header>
+                
+                <div class="hero">
+                    <div class="container">
+                        <h2>Tools for Fire-EMS Professionals</h2>
+                        <p>A comprehensive suite of tools designed to help Fire and EMS departments optimize operations and improve response times.</p>
+                        <a href="/login" class="btn">Login</a>
+                    </div>
+                </div>
+                
+                <div class="container">
+                    <div class="features">
+                        <div class="feature">
+                            <h3>Incident Logger</h3>
+                            <p>Record and manage emergency incidents with detailed information.</p>
+                            <a href="/incident-logger" class="btn">Open Tool</a>
+                        </div>
+                        <div class="feature">
+                            <h3>Call Density Heatmap</h3>
+                            <p>Visualize incident hotspots to optimize resource allocation.</p>
+                            <a href="/call-density-heatmap" class="btn">Open Tool</a>
+                        </div>
+                        <div class="feature">
+                            <h3>Isochrone Map</h3>
+                            <p>Analyze response time coverage from your stations.</p>
+                            <a href="/isochrone-map" class="btn">Open Tool</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <footer>
+                    <div class="container">
+                        <p>&copy; 2025 Fire-EMS Tools</p>
+                    </div>
+                </footer>
+            </body>
+            </html>
+            '''
     
     # Admin routes
     @app.route('/admin/dashboard')
