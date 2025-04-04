@@ -1,8 +1,8 @@
 # Render.com Deployment Instructions
 
-## FINAL SOLUTION: Use standalone.py
+## RECOMMENDED SOLUTION: Use app_wrapper.py for normal operation
 
-Since we're still experiencing issues with Render.com deployment, use the completely standalone application approach:
+To maintain normal application functionality while fixing template issues:
 
 1. Go to your Render.com dashboard
 2. Select your Fire-EMS Tools service
@@ -14,10 +14,16 @@ Since we're still experiencing issues with Render.com deployment, use the comple
    ```
    To:
    ```
-   gunicorn standalone:app
+   gunicorn app_wrapper:app
    ```
 6. Click "Save Changes"
 7. Manually deploy the latest commit from the "Manual Deploy" section
+
+This approach:
+- Preserves all normal functionality of your application
+- Automatically creates missing template files if needed
+- Maintains your application's look and feel
+- Only falls back to minimal mode if absolutely necessary
 
 ## Testing After Deployment
 
