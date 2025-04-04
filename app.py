@@ -3582,42 +3582,110 @@ def register_routes(app):
         """Serve the diagnostic tool"""
         return send_from_directory('static', 'diagnostic.html')
     
-    # Missing routes for existing templates
+    # Placeholder routes for navigation links
     @app.route('/coverage-gap-finder')
     def coverage_gap_finder():
-        """Serve the Coverage Gap Finder tool"""
-        try:
-            return render_template('coverage-gap-finder.html')
-        except Exception as e:
-            logger.error(f"Error rendering coverage-gap-finder.html: {str(e)}")
-            return "Coverage Gap Finder - Coming Soon", 200
+        """Serve a minimal placeholder for the Coverage Gap Finder tool"""
+        return """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Coverage Gap Finder</title>
+            <style>
+                body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+                .container { max-width: 800px; margin: 0 auto; }
+                h1 { color: #3498db; }
+                .btn { display: inline-block; background-color: #3498db; color: white; 
+                      padding: 10px 20px; text-decoration: none; border-radius: 5px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Coverage Gap Finder</h1>
+                <p>This tool is currently under development. Please check back soon!</p>
+                <a href="/" class="btn">Return to Home</a>
+            </div>
+        </body>
+        </html>
+        """
     
     @app.route('/fire-map-pro')
     def fire_map_pro():
-        """Serve the FireMapPro tool"""
-        try:
-            return render_template('fire-map-pro.html')
-        except Exception as e:
-            logger.error(f"Error rendering fire-map-pro.html: {str(e)}")
-            return "FireMapPro - Coming Soon", 200
+        """Serve a minimal placeholder for the FireMapPro tool"""
+        return """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>FireMapPro</title>
+            <style>
+                body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+                .container { max-width: 800px; margin: 0 auto; }
+                h1 { color: #3498db; }
+                .btn { display: inline-block; background-color: #3498db; color: white; 
+                      padding: 10px 20px; text-decoration: none; border-radius: 5px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>FireMapPro</h1>
+                <p>This tool is currently under development. Please check back soon!</p>
+                <a href="/" class="btn">Return to Home</a>
+            </div>
+        </body>
+        </html>
+        """
     
     @app.route('/data-formatter')
     def data_formatter():
-        """Serve the Data Formatter tool"""
-        try:
-            return render_template('data-formatter.html')
-        except Exception as e:
-            logger.error(f"Error rendering data-formatter.html: {str(e)}")
-            return "Data Formatter - Coming Soon", 200
+        """Serve a minimal placeholder for the Data Formatter tool"""
+        return """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Data Formatter</title>
+            <style>
+                body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+                .container { max-width: 800px; margin: 0 auto; }
+                h1 { color: #3498db; }
+                .btn { display: inline-block; background-color: #3498db; color: white; 
+                      padding: 10px 20px; text-decoration: none; border-radius: 5px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Data Formatter</h1>
+                <p>This tool is currently under development. Please check back soon!</p>
+                <a href="/" class="btn">Return to Home</a>
+            </div>
+        </body>
+        </html>
+        """
     
     @app.route('/station-overview')
     def station_overview():
-        """Serve the Station Overview tool"""
-        try:
-            return render_template('station-overview.html')
-        except Exception as e:
-            logger.error(f"Error rendering station-overview.html: {str(e)}")
-            return "Station Overview - Coming Soon", 200
+        """Serve a minimal placeholder for the Station Overview tool"""
+        return """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Station Overview</title>
+            <style>
+                body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+                .container { max-width: 800px; margin: 0 auto; }
+                h1 { color: #3498db; }
+                .btn { display: inline-block; background-color: #3498db; color: white; 
+                      padding: 10px 20px; text-decoration: none; border-radius: 5px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Station Overview</h1>
+                <p>This tool is currently under development. Please check back soon!</p>
+                <a href="/" class="btn">Return to Home</a>
+            </div>
+        </body>
+        </html>
+        """
     
     # Include the rest of your original routes here
 
