@@ -81,12 +81,12 @@ def get_api_key_identity():
     return get_remote_address()
 
 # Create a safer limit decorator that won't fail in production
-def safe_limit(limit_string):
+def safe_limit(limit_string, **kwargs):
     """A safer version of limiter.limit that won't fail if limiter is not working"""
     def decorator(f):
         try:
-            # Try to use the real limiter
-            return limiter.limit(limit_string)(f)
+            # Try to use the real limiter with all passed arguments
+            return limiter.limit(limit_string, **kwargs)(f)
         except Exception as e:
             # If it fails, just return the original function
             logger.warning(f"Rate limiting failed, continuing without limits: {str(e)}")
