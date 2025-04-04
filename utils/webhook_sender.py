@@ -164,30 +164,42 @@ def _webhook_delivery_thread(department, payload):
         department: The department model instance
         payload (dict): The webhook payload
     """
-    from database import db
+    # Import here to avoid circular imports
+    import flask
+    from flask import current_app
     
     try:
-        # Deliver the webhook
-        send_webhook(
-            url=department.webhook_url,
-            payload=payload,
-            secret=department.webhook_secret
-        )
-        
-        # Update last success
-        department.update_webhook_success()
-        db.session.commit()
+        # Use application context to work with the database
+        with current_app.app_context():
+            # Import db inside the function to avoid circular imports
+            from database import db
+            
+            # Deliver the webhook
+            send_webhook(
+                url=department.webhook_url,
+                payload=payload,
+                secret=department.webhook_secret
+            )
+            
+            # Update last success
+            department.update_webhook_success()
+            db.session.commit()
         
     except WebhookDeliveryError as e:
         # Update last error
-        department.update_webhook_error(str(e))
-        db.session.commit()
+        with current_app.app_context():
+            from database import db
+            department.update_webhook_error(str(e))
+            db.session.commit()
         
     except Exception as e:
         # Catch any other exceptions to avoid crashing the thread
         logger.error(f"Unexpected error in webhook delivery thread: {str(e)}")
         try:
-            department.update_webhook_error(f"Unexpected error: {str(e)}")
-            db.session.commit()
-        except:
+            with current_app.app_context():
+                from database import db
+                department.update_webhook_error(f"Unexpected error: {str(e)}")
+                db.session.commit()
+        except Exception as inner_e:
+            logger.error(f"Failed to update error status: {str(inner_e)}")
             pass

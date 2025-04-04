@@ -1300,16 +1300,25 @@ def register_routes(app):
             db.session.commit()
             
             # Trigger webhook for incident creation if webhooks are enabled
-            if department.webhooks_enabled:
+            if department.webhooks_enabled and department.webhook_url:
                 try:
+                    # Use import here to avoid potential circular imports
                     from utils.webhook_sender import deliver_webhook_async
-                    deliver_webhook_async(
-                        department=department,
-                        event_type="created",
-                        resource_type="incident",
-                        resource_id=incident.id,
-                        data=incident.to_dict()
-                    )
+                    # Make a copy of the department object to pass to the webhook thread
+                    dept_id = department.id
+                    webhook_url = department.webhook_url
+                    webhook_secret = department.webhook_secret
+                    webhook_events = department.webhook_events.copy() if department.webhook_events else {}
+                    
+                    # Only trigger if this event type is enabled
+                    if webhook_events.get('incident.created', False):
+                        deliver_webhook_async(
+                            department=department,
+                            event_type="created",
+                            resource_type="incident",
+                            resource_id=incident.id,
+                            data=incident.to_dict()
+                        )
                 except Exception as webhook_error:
                     # Log webhook error but don't fail the API request
                     app.logger.error(f"Webhook delivery error: {str(webhook_error)}")
