@@ -582,6 +582,16 @@ def register_routes(app):
             '''
     
     # Admin routes
+    @app.route('/admin')
+    @login_required
+    def admin_index():
+        """Admin index - redirects to dashboard"""
+        # Check if user is a super admin
+        if not current_user.is_super_admin():
+            abort(403)  # Forbidden
+            
+        return redirect(url_for('admin_dashboard'))
+    
     @app.route('/admin/dashboard')
     @login_required
     def admin_dashboard():
@@ -595,10 +605,112 @@ def register_routes(app):
         users_count = User.query.count()
         incidents_count = Incident.query.count()
         
-        return render_template('admin/dashboard.html', 
-                              departments_count=departments_count,
-                              users_count=users_count,
-                              incidents_count=incidents_count)
+        try:
+            return render_template('admin/dashboard.html', 
+                                  departments_count=departments_count,
+                                  users_count=users_count,
+                                  incidents_count=incidents_count)
+        except jinja2.exceptions.TemplateNotFound:
+            app.logger.error("Template not found: admin/dashboard.html")
+            # Fallback to inline HTML with basic functionality
+            return f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Admin Dashboard - FireEMS.ai</title>
+                <link rel="stylesheet" href="/static/styles.css">
+                <link rel="stylesheet" href="/static/admin-styles.css">
+                <style>
+                    .stats-container {{
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 20px;
+                        margin-bottom: 30px;
+                    }}
+                    .stat-card {{
+                        background-color: white;
+                        border-radius: 8px;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                        padding: 20px;
+                        flex: 1;
+                        min-width: 200px;
+                        text-align: center;
+                    }}
+                    .stat-value {{
+                        font-size: 2.5rem;
+                        font-weight: bold;
+                        color: #3498db;
+                        margin: 10px 0;
+                    }}
+                    .stat-label {{
+                        color: #7f8c8d;
+                        font-size: 1rem;
+                    }}
+                </style>
+            </head>
+            <body>
+                <header>
+                    <div class="container">
+                        <div class="header-content">
+                            <div class="logo">
+                                <i class="fas fa-fire-extinguisher"></i> FireEMS.ai Admin
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                
+                <nav>
+                    <div class="container">
+                        <ul class="nav-list">
+                            <li class="nav-item">
+                                <a href="/admin/dashboard" class="nav-link active">Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/admin/departments" class="nav-link">Departments</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/admin/users" class="nav-link">Users</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/admin/settings" class="nav-link">Settings</a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+                
+                <main class="container">
+                    <div class="content-header">
+                        <h1 class="content-title">Admin Dashboard</h1>
+                        <p>Emergency mode: Template not found. Limited functionality available.</p>
+                    </div>
+                    
+                    <div class="stats-container">
+                        <div class="stat-card">
+                            <div class="stat-value">{departments_count}</div>
+                            <div class="stat-label">Departments</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">{users_count}</div>
+                            <div class="stat-label">Users</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">{incidents_count}</div>
+                            <div class="stat-label">Incidents</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background-color: white; padding: 20px; border-radius: 8px;">
+                        <h2>Quick Links</h2>
+                        <ul>
+                            <li><a href="/admin/departments">Manage Departments</a></li>
+                            <li><a href="/admin/users">Manage Users</a></li>
+                            <li><a href="/admin/settings">System Settings</a></li>
+                        </ul>
+                    </div>
+                </main>
+            </body>
+            </html>
+            """
     
     @app.route('/admin/departments')
     @login_required
