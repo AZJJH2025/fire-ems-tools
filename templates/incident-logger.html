@@ -1878,198 +1878,224 @@
         console.log("Adding medical sections directly via script");
         
         setTimeout(function() {
-            // Find the first patient entry
-            var patient1 = document.querySelector('.patient-entry');
-            if (!patient1) {
-                console.error("No patient entry found!");
-                return;
-            }
-            
-            // Find where to insert - after PHI section, before Vitals or GCS section
-            var phiSection = patient1.querySelector('.form-section:has(.phi-label)');
-            var vitalsSection = Array.from(patient1.querySelectorAll('.form-section')).find(section => 
-                section.querySelector('h5') && 
-                (section.querySelector('h5').textContent.includes('Vitals') || 
-                 section.querySelector('h5').textContent.includes('Glasgow Coma Scale'))
-            );
-            
-            if (!phiSection || !vitalsSection) {
-                console.error("Could not find insert location - PHI or Vitals sections missing");
-                // Fallback to just inserting at the beginning of patient entry
-                phiSection = null;
-                vitalsSection = patient1.firstElementChild;
-            }
-            
-            console.log("Found patient entry, PHI section, and Vitals section");
-            
-            // Create the HTML for medical sections with exact template matching
-            var medSectionsHTML = `
-                <!-- Medical History Section -->
-                <div class="form-section">
-                    <h5>Medical History</h5>
-                    <div class="medical-history-container">
-                        <div class="form-group">
-                            <label for="medical-history-1">Past Medical History</label>
-                            <select id="medical-history-1" name="medical-history-1" class="medical-history-select" multiple>
-                                <option value="hypertension">Hypertension</option>
-                                <option value="diabetes">Diabetes</option>
-                                <option value="copd">COPD</option>
-                                <option value="asthma">Asthma</option>
-                                <option value="coronary_artery_disease">Coronary Artery Disease</option>
-                                <option value="congestive_heart_failure">Congestive Heart Failure</option>
-                                <option value="myocardial_infarction">Prior MI</option>
-                                <option value="stroke">Stroke/CVA</option>
-                                <option value="seizure">Seizure Disorder</option>
-                                <option value="cancer">Cancer</option>
-                                <option value="renal_disease">Renal Disease</option>
-                                <option value="liver_disease">Liver Disease</option>
-                                <option value="psychiatric">Psychiatric Disorder</option>
-                                <option value="substance_abuse">Substance Abuse</option>
-                                <option value="covid19">COVID-19</option>
-                            </select>
-                            <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="medical-history-other-1">Other Medical History</label>
-                            <textarea id="medical-history-other-1" name="medical-history-other-1" placeholder="Enter additional medical history here"></textarea>
-                        </div>
-                    </div>
-                </div>
+            try {
+                console.log("Looking for patient sections...");
                 
-                <!-- Medications Section -->
-                <div class="form-section">
-                    <h5>Medications</h5>
-                    <div class="medications-container">
-                        <div class="form-group">
-                            <label for="medications-1">Current Medications</label>
-                            <select id="medications-1" name="medications-1" class="medications-select" multiple>
-                                <option value="lisinopril">Lisinopril</option>
-                                <option value="metoprolol">Metoprolol</option>
-                                <option value="atorvastatin">Atorvastatin (Lipitor)</option>
-                                <option value="metformin">Metformin</option>
-                                <option value="insulin">Insulin</option>
-                                <option value="aspirin">Aspirin</option>
-                                <option value="warfarin">Warfarin (Coumadin)</option>
-                                <option value="apixaban">Apixaban (Eliquis)</option>
-                                <option value="levothyroxine">Levothyroxine</option>
-                                <option value="albuterol">Albuterol</option>
-                                <option value="furosemide">Furosemide (Lasix)</option>
-                                <option value="prednisone">Prednisone</option>
-                                <option value="omeprazole">Omeprazole</option>
-                                <option value="amlodipine">Amlodipine</option>
-                                <option value="hydrochlorothiazide">Hydrochlorothiazide</option>
-                                <option value="gabapentin">Gabapentin</option>
-                                <option value="acetaminophen">Acetaminophen</option>
-                                <option value="ibuprofen">Ibuprofen</option>
-                            </select>
-                            <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="medications-other-1">Other Medications</label>
-                            <textarea id="medications-other-1" name="medications-other-1" placeholder="Enter additional medications here"></textarea>
-                        </div>
-                    </div>
-                </div>
+                // Find the Step 5 (Patient Info) step element
+                var patientInfoStep = document.querySelector('.form-step[data-step="5"]');
+                if (!patientInfoStep) {
+                    console.error("Could not find Step 5 (Patient Info)!");
+                    return;
+                }
                 
-                <!-- Allergies Section -->
-                <div class="form-section">
-                    <h5>Allergies</h5>
-                    <div class="allergies-container">
-                        <div class="form-group">
-                            <label for="allergies-1">Known Allergies</label>
-                            <select id="allergies-1" name="allergies-1" class="allergies-select" multiple>
-                                <option value="penicillin">Penicillin</option>
-                                <option value="sulfa">Sulfa Drugs</option>
-                                <option value="nsaids">NSAIDs</option>
-                                <option value="aspirin">Aspirin</option>
-                                <option value="morphine">Morphine</option>
-                                <option value="codeine">Codeine</option>
-                                <option value="latex">Latex</option>
-                                <option value="contrast">Contrast Dye</option>
-                                <option value="eggs">Eggs</option>
-                                <option value="nuts">Nuts</option>
-                                <option value="shellfish">Shellfish</option>
-                                <option value="iodine">Iodine</option>
-                                <option value="bee_stings">Bee Stings</option>
-                            </select>
-                            <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="allergies-other-1">Other Allergies</label>
-                            <textarea id="allergies-other-1" name="allergies-other-1" placeholder="Enter additional allergies here"></textarea>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="nkda-1">No Known Drug Allergies</label>
-                            <div class="toggle-switch">
-                                <input type="checkbox" id="nkda-1" name="nkda-1">
-                                <label for="nkda-1" class="switch-label"></label>
+                // Find the "Patient #1" section header
+                var patient1Header = Array.from(patientInfoStep.querySelectorAll('h4')).find(h4 => 
+                    h4.textContent.trim() === 'Patient #1'
+                );
+                
+                if (!patient1Header) {
+                    console.error("Could not find 'Patient #1' header!");
+                    return;
+                }
+                
+                console.log("Found 'Patient #1' header!");
+                
+                // Find the Personal Information (PHI) section that follows the Patient #1 header
+                var phiSection = null;
+                var currentElement = patient1Header.parentElement;
+                
+                // Traverse forward to find PHI section
+                while (currentElement && !phiSection) {
+                    // Move to next sibling
+                    currentElement = currentElement.nextElementSibling;
+                    
+                    // Check if this is the PHI section
+                    if (currentElement && 
+                        currentElement.classList.contains('form-section') && 
+                        currentElement.querySelector('h5') && 
+                        currentElement.querySelector('h5').textContent.includes('Personal Information')) {
+                        phiSection = currentElement;
+                        console.log("Found PHI section!");
+                    }
+                }
+                
+                if (!phiSection) {
+                    console.error("Could not find Personal Information (PHI) section!");
+                    return;
+                }
+                
+                // Create the HTML for medical sections with exact template matching
+                var medSectionsHTML = `
+                    <!-- Medical History Section -->
+                    <div class="form-section">
+                        <h5>Medical History</h5>
+                        <div class="medical-history-container">
+                            <div class="form-group">
+                                <label for="medical-history-1">Past Medical History</label>
+                                <select id="medical-history-1" name="medical-history-1" class="medical-history-select" multiple>
+                                    <option value="hypertension">Hypertension</option>
+                                    <option value="diabetes">Diabetes</option>
+                                    <option value="copd">COPD</option>
+                                    <option value="asthma">Asthma</option>
+                                    <option value="coronary_artery_disease">Coronary Artery Disease</option>
+                                    <option value="congestive_heart_failure">Congestive Heart Failure</option>
+                                    <option value="myocardial_infarction">Prior MI</option>
+                                    <option value="stroke">Stroke/CVA</option>
+                                    <option value="seizure">Seizure Disorder</option>
+                                    <option value="cancer">Cancer</option>
+                                    <option value="renal_disease">Renal Disease</option>
+                                    <option value="liver_disease">Liver Disease</option>
+                                    <option value="psychiatric">Psychiatric Disorder</option>
+                                    <option value="substance_abuse">Substance Abuse</option>
+                                    <option value="covid19">COVID-19</option>
+                                </select>
+                                <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="medical-history-other-1">Other Medical History</label>
+                                <textarea id="medical-history-other-1" name="medical-history-other-1" placeholder="Enter additional medical history here"></textarea>
                             </div>
                         </div>
                     </div>
-                </div>`;
-            
-            // Insert the HTML
-            if (phiSection && vitalsSection) {
-                console.log("Inserting medical sections between PHI and Vitals");
-                vitalsSection.insertAdjacentHTML('beforebegin', medSectionsHTML);
-            } else {
-                console.log("Fallback: Inserting medical sections at beginning of patient entry");
-                patient1.insertAdjacentHTML('afterbegin', medSectionsHTML);
+                    
+                    <!-- Medications Section -->
+                    <div class="form-section">
+                        <h5>Medications</h5>
+                        <div class="medications-container">
+                            <div class="form-group">
+                                <label for="medications-1">Current Medications</label>
+                                <select id="medications-1" name="medications-1" class="medications-select" multiple>
+                                    <option value="lisinopril">Lisinopril</option>
+                                    <option value="metoprolol">Metoprolol</option>
+                                    <option value="atorvastatin">Atorvastatin (Lipitor)</option>
+                                    <option value="metformin">Metformin</option>
+                                    <option value="insulin">Insulin</option>
+                                    <option value="aspirin">Aspirin</option>
+                                    <option value="warfarin">Warfarin (Coumadin)</option>
+                                    <option value="apixaban">Apixaban (Eliquis)</option>
+                                    <option value="levothyroxine">Levothyroxine</option>
+                                    <option value="albuterol">Albuterol</option>
+                                    <option value="furosemide">Furosemide (Lasix)</option>
+                                    <option value="prednisone">Prednisone</option>
+                                    <option value="omeprazole">Omeprazole</option>
+                                    <option value="amlodipine">Amlodipine</option>
+                                    <option value="hydrochlorothiazide">Hydrochlorothiazide</option>
+                                    <option value="gabapentin">Gabapentin</option>
+                                    <option value="acetaminophen">Acetaminophen</option>
+                                    <option value="ibuprofen">Ibuprofen</option>
+                                </select>
+                                <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="medications-other-1">Other Medications</label>
+                                <textarea id="medications-other-1" name="medications-other-1" placeholder="Enter additional medications here"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Allergies Section -->
+                    <div class="form-section">
+                        <h5>Allergies</h5>
+                        <div class="allergies-container">
+                            <div class="form-group">
+                                <label for="allergies-1">Known Allergies</label>
+                                <select id="allergies-1" name="allergies-1" class="allergies-select" multiple>
+                                    <option value="penicillin">Penicillin</option>
+                                    <option value="sulfa">Sulfa Drugs</option>
+                                    <option value="nsaids">NSAIDs</option>
+                                    <option value="aspirin">Aspirin</option>
+                                    <option value="morphine">Morphine</option>
+                                    <option value="codeine">Codeine</option>
+                                    <option value="latex">Latex</option>
+                                    <option value="contrast">Contrast Dye</option>
+                                    <option value="eggs">Eggs</option>
+                                    <option value="nuts">Nuts</option>
+                                    <option value="shellfish">Shellfish</option>
+                                    <option value="iodine">Iodine</option>
+                                    <option value="bee_stings">Bee Stings</option>
+                                </select>
+                                <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="allergies-other-1">Other Allergies</label>
+                                <textarea id="allergies-other-1" name="allergies-other-1" placeholder="Enter additional allergies here"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="nkda-1">No Known Drug Allergies</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="nkda-1" name="nkda-1">
+                                    <label for="nkda-1" class="switch-label"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                
+                // Insert the HTML after the PHI section
+                console.log("Inserting medical sections after PHI section");
+                phiSection.insertAdjacentHTML('afterend', medSectionsHTML);
+                
+                console.log("Successfully inserted medical sections in correct order");
+            } catch (error) {
+                console.error("Error inserting medical sections:", error);
             }
-            
-            console.log("Medical sections added successfully");
             
             // Initialize Select2 if available
-            if (typeof $.fn !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
-                try {
-                    $('#medical-history-1').select2({
-                        placeholder: 'Select or type medical conditions',
-                        tags: true
-                    });
-                    
-                    $('#medications-1').select2({
-                        placeholder: 'Select or type medications',
-                        tags: true
-                    });
-                    
-                    $('#allergies-1').select2({
-                        placeholder: 'Select or type allergies',
-                        tags: true
-                    });
-                    
-                    console.log("Select2 initialized for medical dropdowns");
-                } catch (e) {
-                    console.error("Error initializing Select2:", e);
-                }
-            } else {
-                console.warn("Select2 not available - using standard dropdowns");
-            }
-            
-            // Add event listener to NKDA checkbox
-            var nkdaCheckbox = document.getElementById('nkda-1');
-            if (nkdaCheckbox) {
-                nkdaCheckbox.addEventListener('change', function() {
-                    var allergiesSelect = document.getElementById('allergies-1');
-                    if (this.checked && allergiesSelect) {
-                        // Clear allergies when NKDA is checked
-                        if (typeof $.fn !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
-                            $(allergiesSelect).val(null).trigger('change');
-                        } else {
-                            for (let i = 0; i < allergiesSelect.options.length; i++) {
-                                allergiesSelect.options[i].selected = false;
-                            }
-                        }
-                        allergiesSelect.disabled = true;
-                    } else if (allergiesSelect) {
-                        allergiesSelect.disabled = false;
+            setTimeout(function() {
+                console.log("Starting Select2 initialization...");
+                if (typeof $ !== 'undefined' && typeof $.fn !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
+                    try {
+                        $('#medical-history-1').select2({
+                            placeholder: 'Select or type medical conditions',
+                            tags: true,
+                            width: '100%'
+                        });
+                        
+                        $('#medications-1').select2({
+                            placeholder: 'Select or type medications',
+                            tags: true,
+                            width: '100%'
+                        });
+                        
+                        $('#allergies-1').select2({
+                            placeholder: 'Select or type allergies',
+                            tags: true,
+                            width: '100%'
+                        });
+                        
+                        console.log("Select2 initialized for medical dropdowns");
+                    } catch (e) {
+                        console.error("Error initializing Select2:", e);
                     }
-                });
-                console.log("NKDA checkbox event listener added");
-            }
+                } else {
+                    console.warn("Select2 not available ($=" + typeof $ + ", $.fn=" + (typeof $ !== 'undefined' ? typeof $.fn : 'undefined') + ", $.fn.select2=" + (typeof $ !== 'undefined' && typeof $.fn !== 'undefined' ? typeof $.fn.select2 : 'undefined') + ")");
+                }
+                
+                // Add event listener to NKDA checkbox
+                var nkdaCheckbox = document.getElementById('nkda-1');
+                if (nkdaCheckbox) {
+                    nkdaCheckbox.addEventListener('change', function() {
+                        var allergiesSelect = document.getElementById('allergies-1');
+                        if (this.checked && allergiesSelect) {
+                            // Clear allergies when NKDA is checked
+                            if (typeof $ !== 'undefined' && typeof $.fn !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
+                                $(allergiesSelect).val(null).trigger('change');
+                            } else {
+                                for (let i = 0; i < allergiesSelect.options.length; i++) {
+                                    allergiesSelect.options[i].selected = false;
+                                }
+                            }
+                            allergiesSelect.disabled = true;
+                        } else if (allergiesSelect) {
+                            allergiesSelect.disabled = false;
+                        }
+                    });
+                    console.log("NKDA checkbox event listener added");
+                }
+            }, 500); // Additional delay for Select2 initialization
         }, 1500); // Wait 1.5 seconds to ensure everything else is loaded
     });
     </script>
