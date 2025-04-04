@@ -1900,54 +1900,111 @@
             
             console.log("Found patient entry, PHI section, and Vitals section");
             
-            // Create the HTML for medical sections
+            // Create the HTML for medical sections with exact template matching
             var medSectionsHTML = `
-                <div class="form-section" style="background-color: #ffffcc !important; border: 2px solid #ff0000 !important;">
-                    <h5>Medical History (Dynamically Added)</h5>
-                    <div class="medical-history-container" style="display: block !important;">
+                <!-- Medical History Section -->
+                <div class="form-section">
+                    <h5>Medical History</h5>
+                    <div class="medical-history-container">
                         <div class="form-group">
                             <label for="medical-history-1">Past Medical History</label>
-                            <select id="medical-history-1" name="medical-history-1" class="medical-history-select" multiple style="height: 120px">
+                            <select id="medical-history-1" name="medical-history-1" class="medical-history-select" multiple>
                                 <option value="hypertension">Hypertension</option>
                                 <option value="diabetes">Diabetes</option>
                                 <option value="copd">COPD</option>
                                 <option value="asthma">Asthma</option>
-                                <option value="cardiac">Cardiac</option>
+                                <option value="coronary_artery_disease">Coronary Artery Disease</option>
+                                <option value="congestive_heart_failure">Congestive Heart Failure</option>
+                                <option value="myocardial_infarction">Prior MI</option>
+                                <option value="stroke">Stroke/CVA</option>
+                                <option value="seizure">Seizure Disorder</option>
+                                <option value="cancer">Cancer</option>
+                                <option value="renal_disease">Renal Disease</option>
+                                <option value="liver_disease">Liver Disease</option>
+                                <option value="psychiatric">Psychiatric Disorder</option>
+                                <option value="substance_abuse">Substance Abuse</option>
+                                <option value="covid19">COVID-19</option>
                             </select>
+                            <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="medical-history-other-1">Other Medical History</label>
+                            <textarea id="medical-history-other-1" name="medical-history-other-1" placeholder="Enter additional medical history here"></textarea>
                         </div>
                     </div>
                 </div>
                 
-                <div class="form-section" style="background-color: #e6f7ff !important; border: 2px solid #0000ff !important;">
-                    <h5>Medications (Dynamically Added)</h5>
-                    <div class="medications-container" style="display: block !important;">
+                <!-- Medications Section -->
+                <div class="form-section">
+                    <h5>Medications</h5>
+                    <div class="medications-container">
                         <div class="form-group">
                             <label for="medications-1">Current Medications</label>
-                            <select id="medications-1" name="medications-1" class="medications-select" multiple style="height: 120px">
+                            <select id="medications-1" name="medications-1" class="medications-select" multiple>
                                 <option value="lisinopril">Lisinopril</option>
                                 <option value="metoprolol">Metoprolol</option>
+                                <option value="atorvastatin">Atorvastatin (Lipitor)</option>
+                                <option value="metformin">Metformin</option>
+                                <option value="insulin">Insulin</option>
                                 <option value="aspirin">Aspirin</option>
+                                <option value="warfarin">Warfarin (Coumadin)</option>
+                                <option value="apixaban">Apixaban (Eliquis)</option>
+                                <option value="levothyroxine">Levothyroxine</option>
+                                <option value="albuterol">Albuterol</option>
+                                <option value="furosemide">Furosemide (Lasix)</option>
+                                <option value="prednisone">Prednisone</option>
+                                <option value="omeprazole">Omeprazole</option>
+                                <option value="amlodipine">Amlodipine</option>
+                                <option value="hydrochlorothiazide">Hydrochlorothiazide</option>
+                                <option value="gabapentin">Gabapentin</option>
+                                <option value="acetaminophen">Acetaminophen</option>
+                                <option value="ibuprofen">Ibuprofen</option>
                             </select>
+                            <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="medications-other-1">Other Medications</label>
+                            <textarea id="medications-other-1" name="medications-other-1" placeholder="Enter additional medications here"></textarea>
                         </div>
                     </div>
                 </div>
                 
-                <div class="form-section" style="background-color: #f0fff0 !important; border: 2px solid #00ff00 !important;">
-                    <h5>Allergies (Dynamically Added)</h5>
-                    <div class="allergies-container" style="display: block !important;">
+                <!-- Allergies Section -->
+                <div class="form-section">
+                    <h5>Allergies</h5>
+                    <div class="allergies-container">
                         <div class="form-group">
                             <label for="allergies-1">Known Allergies</label>
-                            <select id="allergies-1" name="allergies-1" class="allergies-select" multiple style="height: 120px">
+                            <select id="allergies-1" name="allergies-1" class="allergies-select" multiple>
                                 <option value="penicillin">Penicillin</option>
                                 <option value="sulfa">Sulfa Drugs</option>
                                 <option value="nsaids">NSAIDs</option>
+                                <option value="aspirin">Aspirin</option>
+                                <option value="morphine">Morphine</option>
+                                <option value="codeine">Codeine</option>
+                                <option value="latex">Latex</option>
+                                <option value="contrast">Contrast Dye</option>
+                                <option value="eggs">Eggs</option>
+                                <option value="nuts">Nuts</option>
+                                <option value="shellfish">Shellfish</option>
+                                <option value="iodine">Iodine</option>
+                                <option value="bee_stings">Bee Stings</option>
                             </select>
+                            <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
                         </div>
+                        
+                        <div class="form-group">
+                            <label for="allergies-other-1">Other Allergies</label>
+                            <textarea id="allergies-other-1" name="allergies-other-1" placeholder="Enter additional allergies here"></textarea>
+                        </div>
+                        
                         <div class="form-group">
                             <label for="nkda-1">No Known Drug Allergies</label>
                             <div class="toggle-switch">
                                 <input type="checkbox" id="nkda-1" name="nkda-1">
-                                <label for="nkda-1" class="switch-label">NKDA</label>
+                                <label for="nkda-1" class="switch-label"></label>
                             </div>
                         </div>
                     </div>
