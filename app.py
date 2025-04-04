@@ -187,6 +187,14 @@ def create_app(config_name='default'):
             # Fix database tables
             fix_deployment.fix_database_tables(app, db)
             
+            # Initialize database tables
+            try:
+                import init_tables
+                init_tables.init_tables(app, db)
+            except Exception as e:
+                logger.error(f"Error initializing database tables: {str(e)}")
+                logger.error(traceback.format_exc())
+            
             # Patch API routes with safer versions
             fix_deployment.patch_app_routes(app)
             
