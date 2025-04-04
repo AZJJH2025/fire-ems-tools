@@ -12,6 +12,20 @@ import requests
 import time
 import json
 from functools import wraps
+import logging
+
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Apply deployment fixes before importing models
+import fix_deployment
+fix_deployment.apply_fixes()
+
+# Now import models after fixes have been applied
 from database import db, Department, Incident, User, Station
 from config import config
 
@@ -43,28 +57,43 @@ def get_api_key_identity():
     return get_remote_address()
 
 def require_api_key(f):
-    """Decorator to require API key authentication for API endpoints"""
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        # Get API key from header, query param, or form data
-        api_key = request.headers.get('X-API-Key')
-        if not api_key:
-            api_key = request.args.get('api_key')
-        if not api_key:
-            api_key = request.form.get('api_key')
-            
-        if not api_key:
-            return jsonify({"error": "API key is required"}), 401
-            
-        # Find department with matching API key
-        department = Department.query.filter_by(api_key=api_key, api_enabled=True).first()
-        if not department:
-            return jsonify({"error": "Invalid or disabled API key"}), 401
-            
-        # Add department to kwargs
-        kwargs['department'] = department
-        return f(*args, **kwargs)
-    return decorated_function
+    """Decorator to require API key authentication for API endpoints
+    
+    This uses the safer version from fix_deployment when available,
+    falling back to the original implementation if that fails.
+    """
+    # First try to use the safer version from fix_deployment
+    try:
+        return fix_deployment.require_api_key_safe(f)
+    except Exception as e:
+        logger.warning(f"Could not use safer API key decorator, falling back to original: {str(e)}")
+        
+        # Original implementation as fallback
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            try:
+                # Get API key from header, query param, or form data
+                api_key = request.headers.get('X-API-Key')
+                if not api_key:
+                    api_key = request.args.get('api_key')
+                if not api_key:
+                    api_key = request.form.get('api_key')
+                    
+                if not api_key:
+                    return jsonify({"error": "API key is required"}), 401
+                    
+                # Find department with matching API key
+                department = Department.query.filter_by(api_key=api_key, api_enabled=True).first()
+                if not department:
+                    return jsonify({"error": "Invalid or disabled API key"}), 401
+                    
+                # Add department to kwargs
+                kwargs['department'] = department
+                return f(*args, **kwargs)
+            except Exception as e:
+                logger.error(f"Error in require_api_key: {str(e)}")
+                return jsonify({"error": "Authentication error", "details": str(e)}), 500
+        return decorated_function
 
 def create_app(config_name='default'):
     """Application factory function"""
@@ -89,7 +118,11 @@ def create_app(config_name='default'):
     # User loader function for Flask-Login
     @login_manager.user_loader
     def load_user(user_id):
-        return User.query.get(int(user_id))
+        try:
+            return User.query.get(int(user_id))
+        except Exception as e:
+            logger.error(f"Error loading user: {str(e)}")
+            return None
     
     # Enhanced CORS settings
     CORS(app, resources={r"/*": {"origins": "*", "supports_credentials": True}})
@@ -102,6 +135,20 @@ def create_app(config_name='default'):
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
     app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # Limit uploads to 16MB
+    
+    # Apply database fixes when app is created with context
+    with app.app_context():
+        try:
+            # Fix database tables
+            fix_deployment.fix_database_tables(app, db)
+            
+            # Patch API routes with safer versions
+            fix_deployment.patch_app_routes(app)
+            
+            logger.info("Successfully applied all deployment fixes")
+        except Exception as e:
+            logger.error(f"Error applying deployment fixes: {str(e)}")
+            logger.error(traceback.format_exc())
     
     # Register error handlers
     @app.errorhandler(403)
@@ -1962,7 +2009,42 @@ def register_routes(app):
     # Include the rest of your original routes here
 
 # Create app instance for running directly
-app = create_app(os.getenv('FLASK_ENV', 'development'))
+try:
+    # Ensure fixes are applied
+    logger.info("Creating application with deployment fixes...")
+    app = create_app(os.getenv('FLASK_ENV', 'development'))
+    
+    # Add diagnostic route for deployment verification
+    @app.route('/deployment-status')
+    def deployment_status():
+        """Check deployment status - a quick way to verify fixes are working"""
+        from database import Department, User
+        status = {
+            "status": "ok",
+            "fixes_applied": True,
+            "timestamp": datetime.utcnow().isoformat(),
+            "environment": os.getenv('FLASK_ENV', 'development'),
+            "features": {
+                "user_api": hasattr(User, 'to_dict'),
+                "webhooks": hasattr(Department, 'webhook_events') and hasattr(Department, 'webhooks_enabled')
+            }
+        }
+        return jsonify(status)
+        
+    logger.info("Application created successfully with all fixes applied")
+except Exception as e:
+    logger.critical(f"Failed to create application with fixes: {str(e)}")
+    logger.critical(traceback.format_exc())
+    # Create a basic app without fixes for emergency access
+    app = Flask(__name__)
+    
+    @app.route('/')
+    def emergency_home():
+        return "Emergency mode - application failed to start properly. Check logs."
+        
+    @app.route('/error')
+    def error_details():
+        return f"Error: {str(e)}"
 
 if __name__ == "__main__":
     import sys
