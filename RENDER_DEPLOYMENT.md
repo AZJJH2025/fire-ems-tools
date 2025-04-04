@@ -1,8 +1,8 @@
 # Render.com Deployment Instructions
 
-## UPDATED SOLUTION: Use direct_wsgi.py
+## FINAL SOLUTION: Use standalone.py
 
-Since we're still experiencing issues with template files, use the direct_wsgi.py approach which completely bypasses Flask's template system:
+Since we're still experiencing issues with Render.com deployment, use the completely standalone application approach:
 
 1. Go to your Render.com dashboard
 2. Select your Fire-EMS Tools service
@@ -14,7 +14,7 @@ Since we're still experiencing issues with template files, use the direct_wsgi.p
    ```
    To:
    ```
-   gunicorn direct_wsgi:app
+   gunicorn standalone:app
    ```
 6. Click "Save Changes"
 7. Manually deploy the latest commit from the "Manual Deploy" section
