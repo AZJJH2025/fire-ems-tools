@@ -3582,6 +3582,27 @@ def register_routes(app):
         """Serve the diagnostic tool"""
         return send_from_directory('static', 'diagnostic.html')
     
+    # Missing routes for existing templates
+    @app.route('/coverage-gap-finder')
+    def coverage_gap_finder():
+        """Serve the Coverage Gap Finder tool"""
+        return render_template('coverage-gap-finder.html')
+    
+    @app.route('/fire-map-pro')
+    def fire_map_pro():
+        """Serve the FireMapPro tool"""
+        return render_template('fire-map-pro.html')
+    
+    @app.route('/data-formatter')
+    def data_formatter():
+        """Serve the Data Formatter tool"""
+        return render_template('data-formatter.html')
+    
+    @app.route('/station-overview')
+    def station_overview():
+        """Serve the Station Overview tool"""
+        return render_template('station-overview.html')
+    
     # Include the rest of your original routes here
 
 # Create app instance for running directly
