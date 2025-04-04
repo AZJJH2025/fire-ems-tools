@@ -1871,5 +1871,148 @@
 
     <!-- Fix for Step 5 visibility -->
     <script src="/static/step-fix.js"></script>
+    
+    <!-- Direct script to add medical sections -->
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        console.log("Adding medical sections directly via script");
+        
+        setTimeout(function() {
+            // Find the first patient entry
+            var patient1 = document.querySelector('.patient-entry');
+            if (!patient1) {
+                console.error("No patient entry found!");
+                return;
+            }
+            
+            // Find where to insert - after PHI section, before Vitals
+            var phiSection = patient1.querySelector('.form-section:has(.phi-label)');
+            var vitalsSection = Array.from(patient1.querySelectorAll('.form-section')).find(section => 
+                section.querySelector('h5') && section.querySelector('h5').textContent.includes('Vitals')
+            );
+            
+            if (!phiSection || !vitalsSection) {
+                console.error("Could not find insert location - PHI or Vitals sections missing");
+                // Fallback to just inserting at the beginning of patient entry
+                phiSection = null;
+                vitalsSection = patient1.firstElementChild;
+            }
+            
+            console.log("Found patient entry, PHI section, and Vitals section");
+            
+            // Create the HTML for medical sections
+            var medSectionsHTML = `
+                <div class="form-section" style="background-color: #ffffcc !important; border: 2px solid #ff0000 !important;">
+                    <h5>Medical History (Dynamically Added)</h5>
+                    <div class="medical-history-container" style="display: block !important;">
+                        <div class="form-group">
+                            <label for="medical-history-1">Past Medical History</label>
+                            <select id="medical-history-1" name="medical-history-1" class="medical-history-select" multiple style="height: 120px">
+                                <option value="hypertension">Hypertension</option>
+                                <option value="diabetes">Diabetes</option>
+                                <option value="copd">COPD</option>
+                                <option value="asthma">Asthma</option>
+                                <option value="cardiac">Cardiac</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section" style="background-color: #e6f7ff !important; border: 2px solid #0000ff !important;">
+                    <h5>Medications (Dynamically Added)</h5>
+                    <div class="medications-container" style="display: block !important;">
+                        <div class="form-group">
+                            <label for="medications-1">Current Medications</label>
+                            <select id="medications-1" name="medications-1" class="medications-select" multiple style="height: 120px">
+                                <option value="lisinopril">Lisinopril</option>
+                                <option value="metoprolol">Metoprolol</option>
+                                <option value="aspirin">Aspirin</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section" style="background-color: #f0fff0 !important; border: 2px solid #00ff00 !important;">
+                    <h5>Allergies (Dynamically Added)</h5>
+                    <div class="allergies-container" style="display: block !important;">
+                        <div class="form-group">
+                            <label for="allergies-1">Known Allergies</label>
+                            <select id="allergies-1" name="allergies-1" class="allergies-select" multiple style="height: 120px">
+                                <option value="penicillin">Penicillin</option>
+                                <option value="sulfa">Sulfa Drugs</option>
+                                <option value="nsaids">NSAIDs</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="nkda-1">No Known Drug Allergies</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="nkda-1" name="nkda-1">
+                                <label for="nkda-1" class="switch-label">NKDA</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            
+            // Insert the HTML
+            if (phiSection && vitalsSection) {
+                console.log("Inserting medical sections between PHI and Vitals");
+                vitalsSection.insertAdjacentHTML('beforebegin', medSectionsHTML);
+            } else {
+                console.log("Fallback: Inserting medical sections at beginning of patient entry");
+                patient1.insertAdjacentHTML('afterbegin', medSectionsHTML);
+            }
+            
+            console.log("Medical sections added successfully");
+            
+            // Initialize Select2 if available
+            if (typeof $.fn !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
+                try {
+                    $('#medical-history-1').select2({
+                        placeholder: 'Select or type medical conditions',
+                        tags: true
+                    });
+                    
+                    $('#medications-1').select2({
+                        placeholder: 'Select or type medications',
+                        tags: true
+                    });
+                    
+                    $('#allergies-1').select2({
+                        placeholder: 'Select or type allergies',
+                        tags: true
+                    });
+                    
+                    console.log("Select2 initialized for medical dropdowns");
+                } catch (e) {
+                    console.error("Error initializing Select2:", e);
+                }
+            } else {
+                console.warn("Select2 not available - using standard dropdowns");
+            }
+            
+            // Add event listener to NKDA checkbox
+            var nkdaCheckbox = document.getElementById('nkda-1');
+            if (nkdaCheckbox) {
+                nkdaCheckbox.addEventListener('change', function() {
+                    var allergiesSelect = document.getElementById('allergies-1');
+                    if (this.checked && allergiesSelect) {
+                        // Clear allergies when NKDA is checked
+                        if (typeof $.fn !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
+                            $(allergiesSelect).val(null).trigger('change');
+                        } else {
+                            for (let i = 0; i < allergiesSelect.options.length; i++) {
+                                allergiesSelect.options[i].selected = false;
+                            }
+                        }
+                        allergiesSelect.disabled = true;
+                    } else if (allergiesSelect) {
+                        allergiesSelect.disabled = false;
+                    }
+                });
+                console.log("NKDA checkbox event listener added");
+            }
+        }, 1500); // Wait 1.5 seconds to ensure everything else is loaded
+    });
+    </script>
 </body>
 </html>
