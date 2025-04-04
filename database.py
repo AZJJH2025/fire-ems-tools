@@ -1,6 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
 import json
+import secrets
+import uuid
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # Initialize SQLAlchemy without binding to an app yet
 db = SQLAlchemy()
@@ -14,11 +17,231 @@ class Department(db.Model):
     name = db.Column(db.String(100), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
+    # Department details
+    address = db.Column(db.String(255))
+    city = db.Column(db.String(100))
+    state = db.Column(db.String(50))
+    zip_code = db.Column(db.String(20))
+    phone = db.Column(db.String(20))
+    email = db.Column(db.String(100))
+    website = db.Column(db.String(255))
+    
+    # Department configuration
+    logo_url = db.Column(db.String(255))
+    primary_color = db.Column(db.String(20), default="#3498db")
+    secondary_color = db.Column(db.String(20), default="#2c3e50")
+    
+    # Department details
+    department_type = db.Column(db.String(20), default="combined") # fire, ems, combined
+    num_stations = db.Column(db.Integer, default=1)
+    num_personnel = db.Column(db.Integer, default=0)
+    service_area = db.Column(db.Float) # in square miles
+    population_served = db.Column(db.Integer)
+    
+    # API Access
+    api_key = db.Column(db.String(64), unique=True, nullable=True)
+    api_enabled = db.Column(db.Boolean, default=False)
+    
+    # Webhook Configuration
+    webhooks_enabled = db.Column(db.Boolean, default=False)
+    webhook_url = db.Column(db.String(255), nullable=True)
+    webhook_secret = db.Column(db.String(64), nullable=True)
+    webhook_events = db.Column(db.JSON, default=lambda: {
+        "incident.created": True,
+        "incident.updated": True,
+        "station.created": False,
+        "user.created": False
+    })
+    webhook_last_error = db.Column(db.Text, nullable=True)
+    webhook_last_success = db.Column(db.DateTime, nullable=True)
+    
+    # Feature access & status
+    is_active = db.Column(db.Boolean, default=True)
+    setup_complete = db.Column(db.Boolean, default=False)
+    features_enabled = db.Column(db.JSON, default=lambda: {
+        "incident_logger": True,
+        "call_density": True,
+        "isochrone_map": True, 
+        "dashboard": True
+    })
+    
     # Relationships
     incidents = db.relationship('Incident', backref='department', lazy=True)
+    stations = db.relationship('Station', backref='department', lazy=True)
+    users = db.relationship('User', backref='department', lazy=True)
     
     def __repr__(self):
         return f"<Department {self.code}: {self.name}>"
+        
+    def to_dict(self):
+        """Convert department to dictionary for API responses"""
+        return {
+            'id': self.id,
+            'code': self.code,
+            'name': self.name,
+            'address': self.address,
+            'city': self.city,
+            'state': self.state,
+            'zip_code': self.zip_code,
+            'phone': self.phone,
+            'email': self.email,
+            'website': self.website,
+            'logo_url': self.logo_url,
+            'primary_color': self.primary_color,
+            'secondary_color': self.secondary_color,
+            'department_type': self.department_type,
+            'num_stations': self.num_stations,
+            'num_personnel': self.num_personnel,
+            'service_area': self.service_area,
+            'population_served': self.population_served,
+            'api_enabled': self.api_enabled,
+            'is_active': self.is_active,
+            'setup_complete': self.setup_complete,
+            'features_enabled': self.features_enabled,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+        
+    def to_dict_with_api_key(self):
+        """Convert department to dictionary including API key (for admin use only)"""
+        result = self.to_dict()
+        result['api_key'] = self.api_key
+        return result
+        
+    def to_dict_with_webhook(self):
+        """Convert department to dictionary including webhook details (for admin use only)"""
+        result = self.to_dict()
+        result['webhook_url'] = self.webhook_url
+        result['webhook_secret'] = self.webhook_secret
+        result['webhook_events'] = self.webhook_events
+        result['webhooks_enabled'] = self.webhooks_enabled
+        result['webhook_last_error'] = self.webhook_last_error
+        result['webhook_last_success'] = self.webhook_last_success.isoformat() if self.webhook_last_success else None
+        return result
+        
+    def generate_api_key(self):
+        """Generate a new API key for this department"""
+        # Create a secure random token
+        self.api_key = f"fems_{uuid.uuid4().hex}_{secrets.token_hex(8)}"
+        self.api_enabled = True
+        return self.api_key
+        
+    def disable_api(self):
+        """Disable API access for this department"""
+        self.api_enabled = False
+        
+    def enable_api(self):
+        """Enable API access for this department"""
+        if not self.api_key:
+            self.generate_api_key()
+        self.api_enabled = True
+        
+    def generate_webhook_secret(self):
+        """Generate a new webhook secret for this department"""
+        # Create a secure random token for webhook signature verification
+        self.webhook_secret = secrets.token_hex(32)
+        return self.webhook_secret
+        
+    def enable_webhooks(self):
+        """Enable webhooks for this department"""
+        if not self.webhook_secret:
+            self.generate_webhook_secret()
+        self.webhooks_enabled = True
+        
+    def disable_webhooks(self):
+        """Disable webhooks for this department"""
+        self.webhooks_enabled = False
+        
+    def update_webhook_success(self):
+        """Update the last successful webhook delivery timestamp"""
+        self.webhook_last_success = datetime.utcnow()
+        
+    def update_webhook_error(self, error_message):
+        """Update the last webhook error message"""
+        self.webhook_last_error = error_message
+
+# Station model
+class Station(db.Model):
+    __tablename__ = 'stations'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    station_number = db.Column(db.String(20), nullable=False)
+    address = db.Column(db.String(255))
+    city = db.Column(db.String(100))
+    state = db.Column(db.String(50))
+    zip_code = db.Column(db.String(20))
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Station details
+    personnel_count = db.Column(db.Integer, default=0)
+    apparatus = db.Column(db.JSON) # List of apparatus at this station
+    
+    def __repr__(self):
+        return f"<Station {self.station_number}: {self.name}>"
+
+# User model for department personnel
+class User(db.Model):
+    __tablename__ = 'users'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'), nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    password_hash = db.Column(db.String(200))
+    name = db.Column(db.String(100), nullable=False)
+    role = db.Column(db.String(20), default='user')  # admin, manager, user
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_login = db.Column(db.DateTime)
+    
+    # User preferences
+    preferences = db.Column(db.JSON, default=dict)
+    
+    # Fields required by Flask-Login
+    @property
+    def is_authenticated(self):
+        return True
+        
+    @property
+    def is_anonymous(self):
+        return False
+    
+    def get_id(self):
+        return str(self.id)
+    
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+        
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+    
+    def update_last_login(self):
+        self.last_login = datetime.utcnow()
+        
+    def is_admin(self):
+        return self.role == 'admin'
+        
+    def is_super_admin(self):
+        """Super admin can access the admin interface"""
+        return self.role == 'super_admin'
+        
+    def __repr__(self):
+        return f"<User {self.email}: {self.name}>"
+        
+    def to_dict(self):
+        """Convert user to dictionary for API responses"""
+        return {
+            'id': self.id,
+            'department_id': self.department_id,
+            'email': self.email,
+            'name': self.name,
+            'role': self.role,
+            'is_active': self.is_active,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'last_login': self.last_login.isoformat() if self.last_login else None
+        }
 
 # Incident model
 class Incident(db.Model):

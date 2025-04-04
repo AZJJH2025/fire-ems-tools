@@ -135,6 +135,77 @@ The API includes comprehensive user management capabilities for departments:
   - Only users with appropriate department association can be managed
   - Role changes are validated against allowed values
 
+## Webhook Integration
+
+The system supports webhooks to allow real-time notifications when specific events occur. This enables external systems to receive updates without polling the API.
+
+### Webhook Features
+
+1. **Event-Based Notification**
+   - Real-time notifications for various event types
+   - Configurable event subscriptions per department
+   - Asynchronous delivery with automatic retries
+
+2. **Secure Delivery**
+   - HMAC signing of all webhook payloads
+   - Secret key management for each department
+   - Signature verification guidance for recipients
+
+3. **Customizable Configuration**
+   - Enable/disable specific event types
+   - Configurable webhook URL per department
+   - Test webhook functionality from the UI
+
+### Webhook Endpoints
+
+- `GET /api/v1/webhooks`: Get webhook configuration
+- `PUT /api/v1/webhooks`: Update webhook configuration
+- `POST /api/v1/webhooks/test`: Send a test webhook
+
+### Webhook Event Types
+
+The following event types are supported:
+
+- `incident.created`: When a new incident is created
+- `incident.updated`: When an incident is updated
+- `station.created`: When a new station is created
+- `user.created`: When a new user is created
+
+### Webhook Payload Format
+
+```json
+{
+  "event": "incident.created",
+  "timestamp": "2025-04-04T15:30:45.123456",
+  "resource_type": "incident",
+  "resource_id": 123,
+  "department_id": 1,
+  "data": {
+    "id": 123,
+    "department_id": 1,
+    "title": "Structure Fire",
+    "incident_number": "F-2025-123",
+    "incident_date": "2025-04-04T15:20:00",
+    "incident_type": "Fire",
+    "location": "123 Main St",
+    "latitude": 33.4484,
+    "longitude": -112.0740
+  }
+}
+```
+
+### Security Considerations
+
+1. **Webhook Signing**
+   - All webhooks are signed using HMAC-SHA256
+   - Signature is included in the `X-FireEMS-Signature` header
+   - Event type is included in the `X-FireEMS-Event` header
+
+2. **Retry Mechanism**
+   - Automatic retries for failed deliveries (up to 3 attempts)
+   - Exponential backoff between retry attempts
+   - Error tracking for debugging delivery issues
+
 ## Next Steps
 
 The following enhancements could be considered for future implementation:
@@ -151,9 +222,10 @@ The following enhancements could be considered for future implementation:
    - Enhance filtering capabilities beyond date ranges
    - Add sorting options for collection endpoints
 
-4. **Webhooks**
-   - Implement webhook callbacks for real-time notifications
-   - Allow departments to configure webhook URLs for incident events
+4. **Additional Webhook Features**
+   - Add more event types (e.g., incident.deleted, station.updated)
+   - Implement webhook event history and delivery logs
+   - Add payload customization options
 
 5. **API Usage Analytics**
    - Track API usage patterns for optimization

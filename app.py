@@ -734,6 +734,24 @@ def register_routes(app):
                               user=current_user,
                               users=users)
                               
+    # Department Webhook Settings
+    @app.route('/dept/<dept_code>/webhooks', methods=['GET'])
+    @login_required
+    def dept_webhooks(dept_code):
+        # Get department
+        department = Department.query.filter_by(code=dept_code).first_or_404()
+        
+        # Check if user belongs to this department unless they are super_admin
+        if not current_user.is_super_admin() and current_user.department_id != department.id:
+            abort(403)  # Forbidden
+            
+        # Check if user is admin
+        if not current_user.is_admin() and not current_user.is_super_admin():
+            flash('You do not have permission to access webhook settings', 'danger')
+            return redirect(url_for('dept_home', dept_code=dept_code))
+        
+        return render_template('dept/webhooks.html', department=department, user=current_user)
+    
     # Department Settings
     @app.route('/dept/<dept_code>/settings', methods=['GET', 'POST'])
     @login_required
@@ -1281,6 +1299,21 @@ def register_routes(app):
             db.session.add(incident)
             db.session.commit()
             
+            # Trigger webhook for incident creation if webhooks are enabled
+            if department.webhooks_enabled:
+                try:
+                    from utils.webhook_sender import deliver_webhook_async
+                    deliver_webhook_async(
+                        department=department,
+                        event_type="created",
+                        resource_type="incident",
+                        resource_id=incident.id,
+                        data=incident.to_dict()
+                    )
+                except Exception as webhook_error:
+                    # Log webhook error but don't fail the API request
+                    app.logger.error(f"Webhook delivery error: {str(webhook_error)}")
+            
             return jsonify({
                 "success": True,
                 "message": "Incident created successfully via API",
@@ -1662,6 +1695,192 @@ def register_routes(app):
         except Exception as e:
             db.session.rollback()
             app.logger.error(f"Error updating user via API: {str(e)}")
+            app.logger.error(traceback.format_exc())
+            return jsonify({"error": str(e)}), 500
+    
+    # =====================
+    # Webhook API Endpoints
+    # =====================
+
+    @app.route('/api/v1/webhooks', methods=['GET'])
+    @require_api_key
+    @limiter.limit("100/hour;20/minute", key_func=get_api_key_identity)
+    def api_get_webhook_config(department):
+        """Get webhook configuration for a department"""
+        try:
+            # Only return webhook configuration (without the secret) for security
+            result = {
+                "webhooks_enabled": department.webhooks_enabled,
+                "webhook_url": department.webhook_url,
+                "webhook_events": department.webhook_events,
+                "webhook_last_success": department.webhook_last_success.isoformat() if department.webhook_last_success else None
+            }
+            
+            return jsonify({
+                "success": True,
+                "webhook_config": result
+            })
+        except Exception as e:
+            app.logger.error(f"Error retrieving webhook config via API: {str(e)}")
+            app.logger.error(traceback.format_exc())
+            return jsonify({"error": str(e)}), 500
+
+    @app.route('/api/v1/webhooks', methods=['PUT'])
+    @require_api_key
+    @limiter.limit("30/hour;5/minute", key_func=get_api_key_identity)
+    def api_update_webhook_config(department):
+        """Update webhook configuration for a department"""
+        try:
+            data = request.json
+            if not data:
+                return jsonify({"error": "No data provided"}), 400
+            
+            # Update webhook URL if provided
+            if 'webhook_url' in data:
+                # Validate URL format
+                if data['webhook_url']:
+                    try:
+                        from urllib.parse import urlparse
+                        result = urlparse(data['webhook_url'])
+                        if not all([result.scheme, result.netloc]):
+                            return jsonify({"error": "Invalid webhook URL format"}), 400
+                    except Exception:
+                        return jsonify({"error": "Invalid webhook URL format"}), 400
+                
+                department.webhook_url = data['webhook_url']
+            
+            # Update webhook events if provided
+            if 'webhook_events' in data:
+                if not isinstance(data['webhook_events'], dict):
+                    return jsonify({"error": "webhook_events must be a dictionary"}), 400
+                
+                # Validate event keys
+                valid_event_keys = [
+                    "incident.created", "incident.updated", 
+                    "station.created", "user.created"
+                ]
+                
+                # Start with existing events
+                updated_events = department.webhook_events.copy() if department.webhook_events else {}
+                
+                # Update only provided events
+                for key, value in data['webhook_events'].items():
+                    if key not in valid_event_keys:
+                        return jsonify({
+                            "error": f"Invalid event type: {key}. Must be one of: {', '.join(valid_event_keys)}"
+                        }), 400
+                    
+                    updated_events[key] = bool(value)
+                
+                department.webhook_events = updated_events
+            
+            # Enable/disable webhooks
+            if 'webhooks_enabled' in data:
+                webhooks_enabled = bool(data['webhooks_enabled'])
+                
+                # Check if we have the required config to enable webhooks
+                if webhooks_enabled and not department.webhook_url:
+                    return jsonify({
+                        "error": "Cannot enable webhooks without a webhook URL"
+                    }), 400
+                
+                # Enable/disable and generate secret if needed
+                if webhooks_enabled:
+                    department.enable_webhooks()
+                else:
+                    department.disable_webhooks()
+            
+            # Generate a new webhook secret if requested
+            if data.get('regenerate_secret', False):
+                department.generate_webhook_secret()
+            
+            db.session.commit()
+            
+            # Return the updated config
+            return jsonify({
+                "success": True,
+                "message": "Webhook configuration updated successfully",
+                "webhook_config": {
+                    "webhooks_enabled": department.webhooks_enabled,
+                    "webhook_url": department.webhook_url,
+                    "webhook_events": department.webhook_events,
+                    "webhook_secret": department.webhook_secret if data.get('show_secret', False) else None
+                }
+            })
+            
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Error updating webhook config via API: {str(e)}")
+            app.logger.error(traceback.format_exc())
+            return jsonify({"error": str(e)}), 500
+
+    @app.route('/api/v1/webhooks/test', methods=['POST'])
+    @require_api_key
+    @limiter.limit("10/hour;2/minute", key_func=get_api_key_identity)
+    def api_test_webhook(department):
+        """Send a test webhook to verify configuration"""
+        try:
+            # Check if webhooks are enabled
+            if not department.webhooks_enabled:
+                return jsonify({
+                    "error": "Webhooks are not enabled for this department"
+                }), 400
+                
+            # Check if webhook URL is configured
+            if not department.webhook_url:
+                return jsonify({
+                    "error": "Webhook URL is not configured"
+                }), 400
+            
+            # Create test payload
+            test_data = {
+                "department_id": department.id,
+                "department_name": department.name,
+                "test": True,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+            
+            # Send test webhook synchronously
+            from utils.webhook_sender import send_webhook, create_webhook_payload
+            
+            payload = create_webhook_payload(
+                event_type="test",
+                resource_type="webhook",
+                resource_id=None,
+                data=test_data,
+                department_id=department.id
+            )
+            
+            try:
+                result = send_webhook(
+                    url=department.webhook_url,
+                    payload=payload,
+                    secret=department.webhook_secret,
+                    max_retries=1  # Only try once for a test
+                )
+                
+                # Update last success
+                department.update_webhook_success()
+                db.session.commit()
+                
+                return jsonify({
+                    "success": True,
+                    "message": "Test webhook sent successfully"
+                })
+                
+            except Exception as webhook_error:
+                # Update last error
+                department.update_webhook_error(str(webhook_error))
+                db.session.commit()
+                
+                return jsonify({
+                    "success": False,
+                    "error": f"Webhook test failed: {str(webhook_error)}"
+                }), 400
+                
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Error testing webhook via API: {str(e)}")
             app.logger.error(traceback.format_exc())
             return jsonify({"error": str(e)}), 500
     
