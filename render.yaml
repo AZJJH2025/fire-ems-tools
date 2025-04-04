@@ -27,4 +27,4 @@ databases:
   - name: fire-ems-db
     databaseName: fire_ems
     user: fire_ems_user
-    plan: free
+    plan: basic-256
