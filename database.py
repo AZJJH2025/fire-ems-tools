@@ -65,10 +65,10 @@ class Department(db.Model):
         "dashboard": True
     })
     
-    # Relationships
-    incidents = db.relationship('Incident', backref='department', lazy=True)
-    stations = db.relationship('Station', backref='department', lazy=True)
-    users = db.relationship('User', backref='department', lazy=True)
+    # Relationships with cascade delete
+    incidents = db.relationship('Incident', backref='department', lazy=True, cascade="all, delete-orphan")
+    stations = db.relationship('Station', backref='department', lazy=True, cascade="all, delete-orphan")
+    users = db.relationship('User', backref='department', lazy=True, cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<Department {self.code}: {self.name}>"

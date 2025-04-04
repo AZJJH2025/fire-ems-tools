@@ -606,9 +606,34 @@ def register_routes(app):
         """List all departments"""
         if not current_user.is_super_admin():
             abort(403)  # Forbidden
-            
-        departments = Department.query.all()
-        return render_template('admin/departments.html', departments=departments)
+        
+        try:    
+            departments = Department.query.all()
+            try:
+                return render_template('admin/departments.html', departments=departments)
+            except jinja2.exceptions.TemplateNotFound:
+                app.logger.error("Template not found: admin/departments.html")
+                # Fallback to inline HTML with error message
+                return f"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Admin - Departments</title>
+                    <link rel="stylesheet" href="/static/styles.css">
+                    <link rel="stylesheet" href="/static/admin-styles.css">
+                </head>
+                <body>
+                    <h1>Admin - Departments</h1>
+                    <p>Error: Template not found. Please check your deployment.</p>
+                    <a href="/admin/dashboard">Return to Dashboard</a>
+                </body>
+                </html>
+                """
+        except Exception as e:
+            app.logger.error(f"Error retrieving departments: {str(e)}")
+            app.logger.error(traceback.format_exc())
+            flash(f"Error retrieving departments: {str(e)}", 'error')
+            return redirect(url_for('admin_dashboard'))
     
     @app.route('/admin/departments/register', methods=['GET', 'POST'])
     @login_required
@@ -621,6 +646,30 @@ def register_routes(app):
             try:
                 # Extract form data
                 form_data = request.form
+                
+                # Validate required fields
+                required_fields = ['name', 'code', 'email', 'admin_name', 'admin_email', 'admin_password']
+                for field in required_fields:
+                    if not form_data.get(field):
+                        flash(f"The field '{field}' is required.", 'error')
+                        return render_template('admin/department-register.html')
+                
+                # Check if department code is already in use
+                existing_dept = Department.query.filter_by(code=form_data.get('code')).first()
+                if existing_dept:
+                    flash(f"Department code '{form_data.get('code')}' is already in use. Please choose another code.", 'error')
+                    return render_template('admin/department-register.html')
+                
+                # Check if admin email is already in use
+                existing_user = User.query.filter_by(email=form_data.get('admin_email')).first()
+                if existing_user:
+                    flash(f"User with email '{form_data.get('admin_email')}' already exists.", 'error')
+                    return render_template('admin/department-register.html')
+                
+                # Validate password confirmation
+                if form_data.get('admin_password') != form_data.get('admin_password_confirm'):
+                    flash("Admin passwords do not match.", 'error')
+                    return render_template('admin/department-register.html')
                 
                 # Create new department
                 department = Department(
@@ -645,9 +694,13 @@ def register_routes(app):
                 
                 # Create features dictionary from checkboxes
                 features_enabled = {}
-                for key in ['incident_logger', 'call_density', 'isochrone_map', 'dashboard']:
-                    features_enabled[key] = key in request.form
-                department.features_enabled = features_enabled
+                for key, value in request.form.items():
+                    if key.startswith('features_enabled.'):
+                        feature_name = key.split('.')[1]
+                        features_enabled[feature_name] = True
+                    
+                if features_enabled:
+                    department.features_enabled = features_enabled
                 
                 # Save department
                 db.session.add(department)
@@ -665,9 +718,9 @@ def register_routes(app):
                 db.session.add(admin_user)
                 db.session.commit()
                 
-                flash(f"Department '{department.name}' has been registered successfully", 'success')
+                flash(f"Department '{department.name}' has been registered successfully with admin user.", 'success')
                 
-                # Redirect to department view or success page
+                # Redirect to department view
                 return redirect(url_for('admin_department_view', dept_id=department.id))
                 
             except Exception as e:
@@ -675,11 +728,48 @@ def register_routes(app):
                 app.logger.error(f"Error registering department: {str(e)}")
                 app.logger.error(traceback.format_exc())
                 # Re-render the form with error message
-                flash(f"Error registering department: {str(e)}", 'danger')
-                return render_template('admin/department-register.html')
+                flash(f"Error registering department: {str(e)}", 'error')
+                try:
+                    return render_template('admin/department-register.html')
+                except jinja2.exceptions.TemplateNotFound:
+                    # Fallback to inline HTML with error message
+                    return f"""
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Error - Department Registration</title>
+                        <link rel="stylesheet" href="/static/styles.css">
+                        <link rel="stylesheet" href="/static/admin-styles.css">
+                    </head>
+                    <body>
+                        <h1>Error Registering Department</h1>
+                        <p>An error occurred: {str(e)}</p>
+                        <a href="/admin/departments">Return to Departments</a>
+                    </body>
+                    </html>
+                    """
         
         # GET request - show the registration form
-        return render_template('admin/department-register.html')
+        try:
+            return render_template('admin/department-register.html')
+        except jinja2.exceptions.TemplateNotFound:
+            app.logger.error("Template not found: admin/department-register.html")
+            # Fallback to inline HTML with error message
+            return f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Admin - Register Department</title>
+                <link rel="stylesheet" href="/static/styles.css">
+                <link rel="stylesheet" href="/static/admin-styles.css">
+            </head>
+            <body>
+                <h1>Admin - Register Department</h1>
+                <p>Error: Template not found. Please check your deployment.</p>
+                <a href="/admin/departments">Return to Departments</a>
+            </body>
+            </html>
+            """
     
     @app.route('/admin/departments/<int:dept_id>')
     @login_required
@@ -688,8 +778,34 @@ def register_routes(app):
         if not current_user.is_super_admin():
             abort(403)  # Forbidden
             
-        department = Department.query.get_or_404(dept_id)
-        return render_template('admin/department-view.html', department=department)
+        try:
+            department = Department.query.get_or_404(dept_id)
+            try:
+                return render_template('admin/department-view.html', department=department)
+            except jinja2.exceptions.TemplateNotFound:
+                app.logger.error("Template not found: admin/department-view.html")
+                # Fallback to inline HTML with error message
+                return f"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Admin - Department Details</title>
+                    <link rel="stylesheet" href="/static/styles.css">
+                    <link rel="stylesheet" href="/static/admin-styles.css">
+                </head>
+                <body>
+                    <h1>Admin - Department Details</h1>
+                    <h2>{department.name} ({department.code})</h2>
+                    <p>Error: Template not found. Please check your deployment.</p>
+                    <a href="/admin/departments">Return to Departments</a>
+                </body>
+                </html>
+                """
+        except Exception as e:
+            app.logger.error(f"Error retrieving department details: {str(e)}")
+            app.logger.error(traceback.format_exc())
+            flash(f"Error retrieving department details: {str(e)}", 'error')
+            return redirect(url_for('admin_departments_list'))
     
     @app.route('/admin/departments/<int:dept_id>/edit', methods=['GET', 'POST'])
     @login_required
@@ -697,52 +813,259 @@ def register_routes(app):
         """Edit a department"""
         if not current_user.is_super_admin():
             abort(403)  # Forbidden
-            
-        department = Department.query.get_or_404(dept_id)
         
-        if request.method == 'POST':
-            # Extract form data & update department
-            form_data = request.form
+        try:    
+            department = Department.query.get_or_404(dept_id)
             
-            # Update department fields
-            department.name = form_data.get('name')
-            department.code = form_data.get('code')
-            department.department_type = form_data.get('department_type', 'combined')
-            department.email = form_data.get('email')
-            department.phone = form_data.get('phone')
-            department.website = form_data.get('website')
-            department.address = form_data.get('address')
-            department.city = form_data.get('city')
-            department.state = form_data.get('state')
-            department.zip_code = form_data.get('zip_code')
-            department.num_stations = int(form_data.get('num_stations', 1))
-            department.num_personnel = int(form_data.get('num_personnel', 0)) if form_data.get('num_personnel') else None
-            department.service_area = float(form_data.get('service_area', 0)) if form_data.get('service_area') else None
-            department.population_served = int(form_data.get('population_served', 0)) if form_data.get('population_served') else None
-            department.logo_url = form_data.get('logo_url')
-            department.primary_color = form_data.get('primary_color', '#3498db')
-            department.secondary_color = form_data.get('secondary_color', '#2c3e50')
+            if request.method == 'POST':
+                try:
+                    # Extract form data & update department
+                    form_data = request.form
+                    
+                    # Validate required fields
+                    required_fields = ['name', 'code', 'email']
+                    for field in required_fields:
+                        if not form_data.get(field):
+                            flash(f"The field '{field}' is required.", 'error')
+                            return render_template('admin/department-edit.html', department=department)
+                    
+                    # Check if department code is already in use by another department
+                    if form_data.get('code') != department.code:
+                        existing_dept = Department.query.filter_by(code=form_data.get('code')).first()
+                        if existing_dept:
+                            flash(f"Department code '{form_data.get('code')}' is already in use. Please choose another code.", 'error')
+                            return render_template('admin/department-edit.html', department=department)
+                    
+                    # Update department fields
+                    department.name = form_data.get('name')
+                    department.code = form_data.get('code')
+                    department.department_type = form_data.get('department_type', 'combined')
+                    department.email = form_data.get('email')
+                    department.phone = form_data.get('phone')
+                    department.website = form_data.get('website')
+                    department.address = form_data.get('address')
+                    department.city = form_data.get('city')
+                    department.state = form_data.get('state')
+                    department.zip_code = form_data.get('zip_code')
+                    department.num_stations = int(form_data.get('num_stations', 1))
+                    department.num_personnel = int(form_data.get('num_personnel', 0)) if form_data.get('num_personnel') else None
+                    department.service_area = float(form_data.get('service_area', 0)) if form_data.get('service_area') else None
+                    department.population_served = int(form_data.get('population_served', 0)) if form_data.get('population_served') else None
+                    department.logo_url = form_data.get('logo_url')
+                    department.primary_color = form_data.get('primary_color', '#3498db')
+                    department.secondary_color = form_data.get('secondary_color', '#2c3e50')
+                    
+                    # Update features from checkboxes with feature_enabled prefix
+                    features_enabled = {}
+                    for key, value in request.form.items():
+                        if key.startswith('features_enabled.'):
+                            feature_name = key.split('.')[1]
+                            features_enabled[feature_name] = True
+                        
+                    if features_enabled:
+                        department.features_enabled = features_enabled
+                    
+                    # Update status
+                    department.is_active = 'is_active' in request.form
+                    department.setup_complete = 'setup_complete' in request.form
+                    
+                    # Save changes
+                    db.session.commit()
+                    
+                    flash(f"Department '{department.name}' has been updated successfully", 'success')
+                    
+                    # Redirect to department view
+                    return redirect(url_for('admin_department_view', dept_id=department.id))
+                
+                except Exception as e:
+                    db.session.rollback()
+                    app.logger.error(f"Error updating department: {str(e)}")
+                    app.logger.error(traceback.format_exc())
+                    flash(f"Error updating department: {str(e)}", 'error')
+                    try:
+                        return render_template('admin/department-edit.html', department=department)
+                    except jinja2.exceptions.TemplateNotFound:
+                        return f"""
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>Error - Department Edit</title>
+                            <link rel="stylesheet" href="/static/styles.css">
+                            <link rel="stylesheet" href="/static/admin-styles.css">
+                        </head>
+                        <body>
+                            <h1>Error Updating Department</h1>
+                            <p>An error occurred: {str(e)}</p>
+                            <a href="/admin/departments/{department.id}">Return to Department</a>
+                        </body>
+                        </html>
+                        """
             
-            # Update features
-            features_enabled = {}
-            for key in ['incident_logger', 'call_density', 'isochrone_map', 'dashboard']:
-                features_enabled[key] = key in request.form
-            department.features_enabled = features_enabled
-            
-            # Update status
-            department.is_active = 'is_active' in request.form
-            department.setup_complete = 'setup_complete' in request.form
-            
-            # Save changes
-            db.session.commit()
-            
-            flash(f"Department '{department.name}' has been updated successfully", 'success')
-            
-            # Redirect to department view
-            return redirect(url_for('admin_department_view', dept_id=department.id))
+            # GET request - show edit form
+            try:
+                return render_template('admin/department-edit.html', department=department)
+            except jinja2.exceptions.TemplateNotFound:
+                app.logger.error("Template not found: admin/department-edit.html")
+                # Fallback to inline HTML with error message
+                return f"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Admin - Edit Department</title>
+                    <link rel="stylesheet" href="/static/styles.css">
+                    <link rel="stylesheet" href="/static/admin-styles.css">
+                </head>
+                <body>
+                    <h1>Admin - Edit Department</h1>
+                    <h2>{department.name} ({department.code})</h2>
+                    <p>Error: Template not found. Please check your deployment.</p>
+                    <a href="/admin/departments/{department.id}">Return to Department</a>
+                </body>
+                </html>
+                """
         
-        # GET request - show edit form
-        return render_template('admin/department-edit.html', department=department)
+        except Exception as e:
+            app.logger.error(f"Error retrieving department for editing: {str(e)}")
+            app.logger.error(traceback.format_exc())
+            flash(f"Error retrieving department for editing: {str(e)}", 'error')
+            return redirect(url_for('admin_departments_list'))
+            
+    @app.route('/admin/departments/<int:dept_id>/delete', methods=['GET', 'POST'])
+    @login_required
+    def admin_department_delete(dept_id):
+        """Delete a department (admin only)"""
+        if not current_user.is_super_admin():
+            abort(403)  # Forbidden
+            
+        try:
+            department = Department.query.get_or_404(dept_id)
+            
+            if request.method == 'POST':
+                try:
+                    # Verify confirmation code
+                    confirmation_code = request.form.get('confirmation_code')
+                    if confirmation_code != department.code:
+                        flash("Confirmation code does not match department code. Department was not deleted.", 'error')
+                        return redirect(url_for('admin_department_view', dept_id=dept_id))
+                    
+                    # Get department name for flash message
+                    dept_name = department.name
+                    
+                    # Delete all associated records
+                    # Note: This assumes cascade delete is set up in the database
+                    # If not, you'll need to delete related records manually
+                    
+                    # Delete the department
+                    db.session.delete(department)
+                    db.session.commit()
+                    
+                    flash(f"Department '{dept_name}' and all associated data has been deleted.", 'success')
+                    return redirect(url_for('admin_departments_list'))
+                    
+                except Exception as e:
+                    db.session.rollback()
+                    app.logger.error(f"Error deleting department: {str(e)}")
+                    app.logger.error(traceback.format_exc())
+                    flash(f"Error deleting department: {str(e)}", 'error')
+                    return redirect(url_for('admin_department_view', dept_id=dept_id))
+            
+            # GET request - show confirmation form
+            try:
+                return render_template('admin/department-delete.html', department=department)
+            except jinja2.exceptions.TemplateNotFound:
+                app.logger.error("Template not found: admin/department-delete.html")
+                # Fallback to inline HTML with confirmation form
+                return f"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Admin - Delete Department</title>
+                    <link rel="stylesheet" href="/static/styles.css">
+                    <link rel="stylesheet" href="/static/admin-styles.css">
+                    <style>
+                        .delete-warning {{
+                            color: #e74c3c;
+                            background-color: #fadbd8;
+                            padding: 1rem;
+                            border-radius: 4px;
+                            margin-bottom: 1.5rem;
+                        }}
+                        .confirmation-form {{
+                            background-color: white;
+                            padding: 2rem;
+                            border-radius: 8px;
+                            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                            max-width: 600px;
+                            margin: 0 auto;
+                        }}
+                    </style>
+                </head>
+                <body>
+                    <header>
+                        <div class="container">
+                            <div class="header-content">
+                                <div class="logo">
+                                    <i class="fas fa-fire-extinguisher"></i> FireEMS.ai Admin
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+                    
+                    <nav>
+                        <div class="container">
+                            <ul class="nav-list">
+                                <li class="nav-item">
+                                    <a href="/admin/dashboard" class="nav-link">Dashboard</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/admin/departments" class="nav-link active">Departments</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
+                    
+                    <main class="container">
+                        <div class="content-header">
+                            <h1 class="content-title">Delete Department</h1>
+                            <a href="/admin/departments/{department.id}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Department
+                            </a>
+                        </div>
+                        
+                        <div class="confirmation-form">
+                            <div class="delete-warning">
+                                <h3><i class="fas fa-exclamation-triangle"></i> Warning: This action cannot be undone</h3>
+                                <p>You are about to delete department <strong>{department.name}</strong> ({department.code}) and all associated data including:</p>
+                                <ul>
+                                    <li>All stations</li>
+                                    <li>All users</li>
+                                    <li>All incidents</li>
+                                    <li>All department settings</li>
+                                </ul>
+                            </div>
+                            
+                            <form action="/admin/departments/{department.id}/delete" method="POST">
+                                <div class="form-group">
+                                    <label for="confirmation_code">To confirm, please enter the department code: <strong>{department.code}</strong></label>
+                                    <input type="text" id="confirmation_code" name="confirmation_code" required>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <a href="/admin/departments/{department.id}" class="btn btn-secondary">Cancel</a>
+                                    <button type="submit" class="btn btn-danger">Permanently Delete Department</button>
+                                </div>
+                            </form>
+                        </div>
+                    </main>
+                </body>
+                </html>
+                """
+                
+        except Exception as e:
+            app.logger.error(f"Error preparing department deletion: {str(e)}")
+            app.logger.error(traceback.format_exc())
+            flash(f"Error preparing department deletion: {str(e)}", 'error')
+            return redirect(url_for('admin_departments_list'))
     
     # Department routing
     @app.route('/dept/<dept_code>')

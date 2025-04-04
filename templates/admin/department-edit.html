@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Department - FireEMS.ai</title>
+    <title>Edit Department - FireEMS.ai Admin</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/styles.css">
     <link rel="stylesheet" href="/static/admin-styles.css">
@@ -60,6 +60,41 @@
             content: "*";
             color: #e74c3c;
             margin-left: 0.25rem;
+        }
+        
+        .status-toggle {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        
+        .toggle-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .danger-zone {
+            margin-top: 2rem;
+            padding: 1rem;
+            border: 1px dashed #e74c3c;
+            border-radius: 8px;
+            background-color: #fadbd8;
+        }
+        
+        .danger-zone h3 {
+            color: #c0392b;
+            margin-top: 0;
+        }
+        
+        .btn-danger {
+            background-color: #e74c3c;
+            border-color: #c0392b;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
         }
     </style>
 </head>
@@ -211,8 +246,8 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="logo_url">Logo URL</label>
-                            <input type="url" id="logo_url" name="logo_url" value="{{ department.logo_url or '' }}">
-                            <p class="help-text">Provide a URL to your department logo (or upload later)</p>
+                            <input type="url" id="logo_url" name="logo_url" value="{{ department.logo_url }}">
+                            <p class="help-text">Provide a URL to your department logo</p>
                         </div>
                     </div>
                     
@@ -229,38 +264,35 @@
                 </div>
                 
                 <div class="form-section">
-                    <h3 class="section-title">Features & Access</h3>
+                    <h3 class="section-title">Features & Status</h3>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Enabled Features</label>
                             <div class="checkbox-group">
                                 <label>
-                                    <input type="checkbox" name="incident_logger" {% if department.features_enabled.get('incident_logger', True) %}checked{% endif %}> Incident Logger
+                                    <input type="checkbox" name="features_enabled.incident_logger" {% if department.features_enabled and department.features_enabled.get('incident_logger', True) %}checked{% endif %}> Incident Logger
                                 </label>
                                 <label>
-                                    <input type="checkbox" name="call_density" {% if department.features_enabled.get('call_density', True) %}checked{% endif %}> Call Density Heatmap
+                                    <input type="checkbox" name="features_enabled.call_density" {% if department.features_enabled and department.features_enabled.get('call_density', True) %}checked{% endif %}> Call Density Heatmap
                                 </label>
                                 <label>
-                                    <input type="checkbox" name="isochrone_map" {% if department.features_enabled.get('isochrone_map', True) %}checked{% endif %}> Isochrone Map
+                                    <input type="checkbox" name="features_enabled.isochrone_map" {% if department.features_enabled and department.features_enabled.get('isochrone_map', True) %}checked{% endif %}> Isochrone Map
                                 </label>
                                 <label>
-                                    <input type="checkbox" name="dashboard" {% if department.features_enabled.get('dashboard', True) %}checked{% endif %}> Department Dashboard
+                                    <input type="checkbox" name="features_enabled.dashboard" {% if department.features_enabled and department.features_enabled.get('dashboard', True) %}checked{% endif %}> Department Dashboard
                                 </label>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Department Status</label>
-                            <div class="checkbox-group">
-                                <label>
-                                    <input type="checkbox" name="is_active" {% if department.is_active %}checked{% endif %}> Department is Active
-                                </label>
-                                <label>
-                                    <input type="checkbox" name="setup_complete" {% if department.setup_complete %}checked{% endif %}> Setup is Complete
-                                </label>
-                            </div>
+                    <div class="status-toggle">
+                        <div class="toggle-item">
+                            <input type="checkbox" id="is_active" name="is_active" {% if department.is_active %}checked{% endif %}>
+                            <label for="is_active">Department is active</label>
+                        </div>
+                        <div class="toggle-item">
+                            <input type="checkbox" id="setup_complete" name="setup_complete" {% if department.setup_complete %}checked{% endif %}>
+                            <label for="setup_complete">Setup is complete</label>
                         </div>
                     </div>
                 </div>
@@ -270,26 +302,15 @@
                     <button type="submit" class="btn btn-primary">Save Changes</button>
                 </div>
             </form>
+            
+            <div class="danger-zone">
+                <h3><i class="fas fa-exclamation-triangle"></i> Danger Zone</h3>
+                <p>The following actions are destructive and cannot be undone. Please be careful.</p>
+                <a href="/admin/departments/{{ department.id }}/delete" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Delete Department
+                </a>
+            </div>
         </div>
     </main>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Form validation
-            const form = document.querySelector('form');
-            form.addEventListener('submit', function(event) {
-                // Perform validation checks here
-                // Example: Ensure code only contains valid URL characters
-                const codeInput = document.getElementById('code');
-                const codeValue = codeInput.value.trim();
-                
-                if (!codeValue.match(/^[a-z0-9-]+$/)) {
-                    event.preventDefault();
-                    alert('Department code must contain only lowercase letters, numbers, and hyphens.');
-                    codeInput.focus();
-                }
-            });
-        });
-    </script>
 </body>
 </html>
