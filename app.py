@@ -1705,6 +1705,156 @@ def register_routes(app):
                               user=current_user,
                               users=users)
                               
+    # Department Help Page
+    @app.route('/dept/<dept_code>/help')
+    @login_required
+    def dept_help(dept_code):
+        """Department help and documentation page"""
+        department = Department.query.filter_by(code=dept_code).first_or_404()
+        
+        # Check if user belongs to this department unless they are super_admin
+        if not current_user.is_super_admin() and current_user.department_id != department.id:
+            abort(403)  # Forbidden
+            
+        try:
+            return render_template('dept/help.html', department=department, user=current_user)
+        except jinja2.exceptions.TemplateNotFound:
+            app.logger.error("Template not found: dept/help.html")
+            # Create a fallback help page
+            return f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Department Help - {department.name}</title>
+                <link rel="stylesheet" href="/static/styles.css">
+                <style>
+                    .help-section {
+                        background-color: white;
+                        border-radius: 8px;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                        padding: 20px;
+                        margin-bottom: 20px;
+                    }
+                    .help-section h2 {
+                        color: #3498db;
+                        border-bottom: 1px solid #eee;
+                        padding-bottom: 10px;
+                        margin-top: 0;
+                    }
+                    .help-topic {
+                        margin-bottom: 30px;
+                    }
+                    .help-topic h3 {
+                        color: #2c3e50;
+                        margin-bottom: 10px;
+                    }
+                </style>
+            </head>
+            <body>
+                <header>
+                    <div class="container">
+                        <div class="header-content">
+                            <div class="logo">
+                                <i class="fas fa-fire-extinguisher"></i> {department.name}
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                
+                <nav>
+                    <div class="container">
+                        <ul class="nav-list">
+                            <li class="nav-item">
+                                <a href="/dept/{department.code}" class="nav-link">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/dept/{department.code}/dashboard" class="nav-link">Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/dept/{department.code}/incidents" class="nav-link">Incidents</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/dept/{department.code}/help" class="nav-link active">Help</a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+                
+                <main class="container">
+                    <div class="content-header">
+                        <h1 class="content-title">Help & Documentation</h1>
+                    </div>
+                    
+                    <div class="help-section">
+                        <h2>Getting Started</h2>
+                        <div class="help-topic">
+                            <h3>Navigating the Portal</h3>
+                            <p>The department portal is organized into several sections accessible from the navigation menu:</p>
+                            <ul>
+                                <li><strong>Home</strong> - Overview of department features and quick links</li>
+                                <li><strong>Dashboard</strong> - Statistics and visual representations of your department data</li>
+                                <li><strong>Incidents</strong> - Log and manage incident reports</li>
+                                <li><strong>Stations</strong> - Manage your department's stations and resources</li>
+                                <li><strong>Users</strong> - Manage department users (admin only)</li>
+                                <li><strong>Settings</strong> - Configure department preferences (admin only)</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="help-topic">
+                            <h3>User Roles</h3>
+                            <p>The system has three user roles with different permissions:</p>
+                            <ul>
+                                <li><strong>Admin</strong> - Full access to all department features and settings</li>
+                                <li><strong>Manager</strong> - Can view all data and manage incidents and stations</li>
+                                <li><strong>User</strong> - Basic access to view and log incidents</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="help-section">
+                        <h2>Features</h2>
+                        
+                        <div class="help-topic">
+                            <h3>Incident Logger</h3>
+                            <p>The Incident Logger allows you to record detailed information about emergency incidents:</p>
+                            <ul>
+                                <li>Record incident number, date, time, location, and type</li>
+                                <li>Track resources dispatched and response times</li>
+                                <li>Document patient information with HIPAA compliance</li>
+                                <li>Upload images and additional files</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="help-topic">
+                            <h3>Call Density Heatmap</h3>
+                            <p>Visualize incident hotspots across your service area:</p>
+                            <ul>
+                                <li>View geographic distribution of incidents</li>
+                                <li>Filter by incident type, date range, and time of day</li>
+                                <li>Identify high-activity areas for resource planning</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="help-topic">
+                            <h3>Isochrone Map</h3>
+                            <p>Analyze response time coverage from your stations:</p>
+                            <ul>
+                                <li>Visualize 4, 8, and 12-minute response zones</li>
+                                <li>Identify coverage gaps in your service area</li>
+                                <li>Plan optimal locations for new stations</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="help-section">
+                        <h2>Need More Help?</h2>
+                        <p>If you need additional assistance, contact your department administrator or email support@fireems.ai.</p>
+                    </div>
+                </main>
+            </body>
+            </html>
+            """
+    
     # Department Webhook Settings
     @app.route('/dept/<dept_code>/webhooks', methods=['GET'])
     @login_required
@@ -2868,6 +3018,508 @@ def register_routes(app):
             app.logger.error(traceback.format_exc())
             return jsonify({"error": str(e)}), 500
     
+    # Department Incidents List
+    @app.route('/dept/<dept_code>/incidents')
+    @login_required
+    def dept_incidents(dept_code):
+        """List all incidents for a department"""
+        department = Department.query.filter_by(code=dept_code).first_or_404()
+        
+        # Check if user belongs to this department unless they are super_admin
+        if not current_user.is_super_admin() and current_user.department_id != department.id:
+            abort(403)  # Forbidden
+            
+        # Get incidents with pagination
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 20, type=int)
+        
+        # Get filter parameters
+        incident_type = request.args.get('type')
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+        
+        # Build query
+        query = Incident.query.filter_by(department_id=department.id)
+        
+        # Apply filters if provided
+        if incident_type:
+            query = query.filter_by(incident_type=incident_type)
+            
+        if start_date:
+            try:
+                start_datetime = datetime.fromisoformat(start_date)
+                query = query.filter(Incident.incident_date >= start_datetime)
+            except ValueError:
+                flash('Invalid start date format', 'warning')
+                
+        if end_date:
+            try:
+                end_datetime = datetime.fromisoformat(end_date)
+                query = query.filter(Incident.incident_date <= end_datetime)
+            except ValueError:
+                flash('Invalid end date format', 'warning')
+        
+        # Order by date descending
+        query = query.order_by(Incident.incident_date.desc())
+        
+        # Paginate results
+        incidents = query.paginate(page=page, per_page=per_page)
+        
+        # Get incident types for filter dropdown
+        incident_types = db.session.query(Incident.incident_type).filter_by(
+            department_id=department.id
+        ).distinct().all()
+        incident_types = [t[0] for t in incident_types if t[0]] # Filter out None values
+        
+        try:
+            return render_template('dept/incidents.html', 
+                                  department=department, 
+                                  user=current_user,
+                                  incidents=incidents,
+                                  incident_types=incident_types)
+        except jinja2.exceptions.TemplateNotFound:
+            app.logger.error("Template not found: dept/incidents.html")
+            # Generate a fallback template
+            incidents_list = ""
+            for incident in incidents.items:
+                date_str = incident.incident_date.strftime('%m/%d/%Y') if incident.incident_date else 'Unknown'
+                incidents_list += f"""
+                <tr>
+                    <td>{incident.incident_number or 'N/A'}</td>
+                    <td>{date_str}</td>
+                    <td>{incident.incident_title or 'Untitled'}</td>
+                    <td>{incident.incident_type or 'Unknown'}</td>
+                    <td>
+                        <a href="/dept/{department.code}/incidents/{incident.id}" class="btn btn-sm btn-primary">View</a>
+                    </td>
+                </tr>
+                """
+                
+            # Pagination controls
+            pagination = ""
+            if incidents.pages > 1:
+                pagination = "<div class='pagination'>"
+                if incidents.has_prev:
+                    pagination += f"<a href='?page={incidents.prev_num}' class='btn btn-sm'>&laquo; Previous</a>"
+                else:
+                    pagination += "<span class='btn btn-sm disabled'>&laquo; Previous</span>"
+                    
+                for page_num in range(max(1, incidents.page - 2), min(incidents.pages + 1, incidents.page + 3)):
+                    if page_num == incidents.page:
+                        pagination += f"<span class='btn btn-sm active'>{page_num}</span>"
+                    else:
+                        pagination += f"<a href='?page={page_num}' class='btn btn-sm'>{page_num}</a>"
+                        
+                if incidents.has_next:
+                    pagination += f"<a href='?page={incidents.next_num}' class='btn btn-sm'>Next &raquo;</a>"
+                else:
+                    pagination += "<span class='btn btn-sm disabled'>Next &raquo;</span>"
+                pagination += "</div>"
+            
+            return f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Incidents - {department.name}</title>
+                <link rel="stylesheet" href="/static/styles.css">
+                <style>
+                    .table-container {{
+                        background-color: white;
+                        border-radius: 8px;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                        padding: 20px;
+                        margin-bottom: 20px;
+                        overflow-x: auto;
+                    }}
+                    table {{
+                        width: 100%;
+                        border-collapse: collapse;
+                    }}
+                    th, td {{
+                        padding: 10px;
+                        text-align: left;
+                        border-bottom: 1px solid #ddd;
+                    }}
+                    th {{
+                        background-color: #f5f8fa;
+                        font-weight: bold;
+                    }}
+                    tr:hover {{
+                        background-color: #f5f8fa;
+                    }}
+                    .pagination {{
+                        display: flex;
+                        justify-content: center;
+                        margin-top: 20px;
+                    }}
+                    .pagination .btn {{
+                        margin: 0 5px;
+                    }}
+                    .pagination .active {{
+                        background-color: #3498db;
+                        color: white;
+                    }}
+                    .pagination .disabled {{
+                        color: #95a5a6;
+                        cursor: not-allowed;
+                    }}
+                    .filters {{
+                        background-color: white;
+                        border-radius: 8px;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                        padding: 20px;
+                        margin-bottom: 20px;
+                    }}
+                    .filter-row {{
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 15px;
+                        align-items: center;
+                    }}
+                    .filter-group {{
+                        flex: 1;
+                        min-width: 200px;
+                    }}
+                </style>
+            </head>
+            <body>
+                <header>
+                    <div class="container">
+                        <div class="header-content">
+                            <div class="logo">
+                                <i class="fas fa-fire-extinguisher"></i> {department.name}
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                
+                <nav>
+                    <div class="container">
+                        <ul class="nav-list">
+                            <li class="nav-item">
+                                <a href="/dept/{department.code}" class="nav-link">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/dept/{department.code}/dashboard" class="nav-link">Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/dept/{department.code}/incidents" class="nav-link active">Incidents</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/dept/{department.code}/help" class="nav-link">Help</a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+                
+                <main class="container">
+                    <div class="content-header">
+                        <h1 class="content-title">Incident Reports</h1>
+                        <a href="/dept/{department.code}/incident-logger" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> New Incident
+                        </a>
+                    </div>
+                    
+                    <div class="filters">
+                        <h3>Filters</h3>
+                        <form method="GET" action="/dept/{department.code}/incidents">
+                            <div class="filter-row">
+                                <div class="filter-group">
+                                    <label for="type">Incident Type:</label>
+                                    <select name="type" id="type" class="form-control">
+                                        <option value="">All Types</option>
+                                        {''.join([f'<option value="{t}">{t}</option>' for t in incident_types])}
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label for="start_date">Start Date:</label>
+                                    <input type="date" name="start_date" id="start_date" class="form-control">
+                                </div>
+                                <div class="filter-group">
+                                    <label for="end_date">End Date:</label>
+                                    <input type="date" name="end_date" id="end_date" class="form-control">
+                                </div>
+                                <div class="filter-group" style="display: flex; align-items: flex-end;">
+                                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                                    <a href="/dept/{department.code}/incidents" class="btn btn-secondary" style="margin-left: 10px;">Reset</a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Incident #</th>
+                                    <th>Date</th>
+                                    <th>Title</th>
+                                    <th>Type</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {incidents_list}
+                            </tbody>
+                        </table>
+                        
+                        {pagination}
+                    </div>
+                </main>
+            </body>
+            </html>
+            """
+
+    # Department Incident View
+    @app.route('/dept/<dept_code>/incidents/<int:incident_id>')
+    @login_required
+    def dept_view_incident(dept_code, incident_id):
+        """View a specific incident"""
+        department = Department.query.filter_by(code=dept_code).first_or_404()
+        
+        # Check if user belongs to this department unless they are super_admin
+        if not current_user.is_super_admin() and current_user.department_id != department.id:
+            abort(403)  # Forbidden
+            
+        # Get the incident
+        incident = Incident.query.filter_by(id=incident_id, department_id=department.id).first_or_404()
+        
+        try:
+            return render_template('dept/incident_view.html', 
+                                  department=department, 
+                                  user=current_user,
+                                  incident=incident)
+        except jinja2.exceptions.TemplateNotFound:
+            app.logger.error("Template not found: dept/incident_view.html")
+            # Generate a fallback template
+            incident_date = incident.incident_date.strftime('%m/%d/%Y %I:%M %p') if incident.incident_date else 'Unknown'
+            
+            # Format the address
+            address_parts = []
+            if incident.address:
+                address_parts.append(incident.address)
+            if incident.city:
+                address_parts.append(incident.city)
+            if incident.state:
+                address_parts.append(incident.state)
+            if incident.zip_code:
+                address_parts.append(incident.zip_code)
+            
+            location = ", ".join(address_parts) if address_parts else "No address recorded"
+            
+            return f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Incident {incident.incident_number} - {department.name}</title>
+                <link rel="stylesheet" href="/static/styles.css">
+                <style>
+                    .incident-details {{
+                        background-color: white;
+                        border-radius: 8px;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                        padding: 20px;
+                        margin-bottom: 20px;
+                    }}
+                    .incident-section {{
+                        margin-bottom: 20px;
+                        padding-bottom: 20px;
+                        border-bottom: 1px solid #eee;
+                    }}
+                    .incident-section:last-child {{
+                        border-bottom: none;
+                    }}
+                    .field-group {{
+                        margin-bottom: 15px;
+                    }}
+                    .field-label {{
+                        font-weight: bold;
+                        color: #7f8c8d;
+                        margin-bottom: 5px;
+                    }}
+                    .field-value {{
+                        font-size: 1.1em;
+                    }}
+                    .map-container {{
+                        height: 300px;
+                        border-radius: 8px;
+                        overflow: hidden;
+                        margin-top: 10px;
+                    }}
+                    .no-map {{
+                        height: 300px;
+                        border-radius: 8px;
+                        background-color: #ecf0f1;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: #7f8c8d;
+                    }}
+                </style>
+            </head>
+            <body>
+                <header>
+                    <div class="container">
+                        <div class="header-content">
+                            <div class="logo">
+                                <i class="fas fa-fire-extinguisher"></i> {department.name}
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                
+                <nav>
+                    <div class="container">
+                        <ul class="nav-list">
+                            <li class="nav-item">
+                                <a href="/dept/{department.code}" class="nav-link">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/dept/{department.code}/dashboard" class="nav-link">Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/dept/{department.code}/incidents" class="nav-link">Incidents</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/dept/{department.code}/help" class="nav-link">Help</a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+                
+                <main class="container">
+                    <div class="content-header">
+                        <h1 class="content-title">Incident Report: {incident.incident_number or 'No Number'}</h1>
+                        <div>
+                            <a href="/dept/{department.code}/incidents" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Incidents
+                            </a>
+                            <a href="/dept/{department.code}/incidents/{incident.id}/edit" class="btn btn-primary">
+                                <i class="fas fa-edit"></i> Edit Incident
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="incident-details">
+                        <div class="incident-section">
+                            <h2>Basic Information</h2>
+                            <div class="field-group">
+                                <div class="field-label">Incident Title</div>
+                                <div class="field-value">{incident.incident_title or 'No title'}</div>
+                            </div>
+                            <div class="field-group">
+                                <div class="field-label">Incident Number</div>
+                                <div class="field-value">{incident.incident_number or 'No number assigned'}</div>
+                            </div>
+                            <div class="field-group">
+                                <div class="field-label">Date/Time</div>
+                                <div class="field-value">{incident_date}</div>
+                            </div>
+                            <div class="field-group">
+                                <div class="field-label">Incident Type</div>
+                                <div class="field-value">{incident.incident_type or 'Unknown'}</div>
+                            </div>
+                            <div class="field-group">
+                                <div class="field-label">Priority</div>
+                                <div class="field-value">{incident.priority or 'Not specified'}</div>
+                            </div>
+                            <div class="field-group">
+                                <div class="field-label">Status</div>
+                                <div class="field-value">{incident.status or 'Unknown'}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="incident-section">
+                            <h2>Location</h2>
+                            <div class="field-group">
+                                <div class="field-label">Address</div>
+                                <div class="field-value">{location}</div>
+                            </div>
+                            <div class="field-group">
+                                <div class="field-label">Location Details</div>
+                                <div class="field-value">{incident.location_details or 'No additional details'}</div>
+                            </div>
+                            <div class="field-group">
+                                <div class="field-label">Map</div>
+                                <div class="field-value">
+                                    {'<div class="map-container" id="map"></div>' if incident.latitude and incident.longitude else '<div class="no-map">No location coordinates available</div>'}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="incident-section">
+                            <h2>Description</h2>
+                            <div class="field-value">
+                                {incident.description or 'No description provided'}
+                            </div>
+                        </div>
+                        
+                        <div class="incident-section">
+                            <h2>Response Details</h2>
+                            <div class="field-group">
+                                <div class="field-label">Units Dispatched</div>
+                                <div class="field-value">{incident.units_dispatched or 'No units recorded'}</div>
+                            </div>
+                            <div class="field-group">
+                                <div class="field-label">First Unit Arrival</div>
+                                <div class="field-value">
+                                    {incident.first_unit_arrived.strftime('%m/%d/%Y %I:%M %p') if incident.first_unit_arrived else 'Not recorded'}
+                                </div>
+                            </div>
+                            <div class="field-group">
+                                <div class="field-label">Incident Commander</div>
+                                <div class="field-value">{incident.incident_commander or 'Not specified'}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="incident-section">
+                            <h2>Additional Information</h2>
+                            <div class="field-value">
+                                {incident.additional_info or 'No additional information provided'}
+                            </div>
+                        </div>
+                        
+                        <div class="incident-section">
+                            <h2>Record Information</h2>
+                            <div class="field-group">
+                                <div class="field-label">Created By</div>
+                                <div class="field-value">{incident.user_name or 'System'}</div>
+                            </div>
+                            <div class="field-group">
+                                <div class="field-label">Created Date</div>
+                                <div class="field-value">
+                                    {incident.created_at.strftime('%m/%d/%Y %I:%M %p') if incident.created_at else 'Unknown'}
+                                </div>
+                            </div>
+                            <div class="field-group">
+                                <div class="field-label">Last Updated</div>
+                                <div class="field-value">
+                                    {incident.updated_at.strftime('%m/%d/%Y %I:%M %p') if incident.updated_at else 'Never updated'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+                
+                {'<script>
+                    function initMap() {
+                        const map = new google.maps.Map(document.getElementById("map"), {
+                            center: { lat: ' + str(incident.latitude) + ', lng: ' + str(incident.longitude) + ' },
+                            zoom: 15,
+                        });
+                        
+                        new google.maps.Marker({
+                            position: { lat: ' + str(incident.latitude) + ', lng: ' + str(incident.longitude) + ' },
+                            map: map,
+                            title: "Incident Location"
+                        });
+                    }
+                </script>
+                <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"></script>' if incident.latitude and incident.longitude else ''}
+            </body>
+            </html>
+            """
+            
     # API to get a specific incident
     @app.route('/api/dept/<dept_code>/incidents/<int:incident_id>', methods=['GET'])
     @login_required
