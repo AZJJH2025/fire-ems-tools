@@ -1067,6 +1067,184 @@ def register_routes(app):
             flash(f"Error preparing department deletion: {str(e)}", 'error')
             return redirect(url_for('admin_departments_list'))
     
+    # Admin Users Management
+    @app.route('/admin/users')
+    @login_required
+    def admin_users_list():
+        """List all users (admin only)"""
+        if not current_user.is_super_admin():
+            abort(403)  # Forbidden
+            
+        try:
+            # Get all users, ordered by department
+            users = User.query.join(Department).order_by(Department.name, User.name).all()
+            departments = Department.query.all()
+            
+            try:
+                return render_template('admin/users.html', users=users, departments=departments)
+            except jinja2.exceptions.TemplateNotFound:
+                app.logger.error("Template not found: admin/users.html")
+                # Fallback to inline HTML with basic functionality
+                users_html = ""
+                for user in users:
+                    dept_name = user.department.name if user.department else "No Department"
+                    users_html += f"""
+                    <tr>
+                        <td>{user.name}</td>
+                        <td>{user.email}</td>
+                        <td>{user.role}</td>
+                        <td>{dept_name}</td>
+                        <td>{'Active' if user.is_active else 'Inactive'}</td>
+                    </tr>
+                    """
+                
+                return f"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Admin - Users</title>
+                    <link rel="stylesheet" href="/static/styles.css">
+                    <link rel="stylesheet" href="/static/admin-styles.css">
+                </head>
+                <body>
+                    <header>
+                        <div class="container">
+                            <div class="header-content">
+                                <div class="logo">
+                                    <i class="fas fa-fire-extinguisher"></i> FireEMS.ai Admin
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+                    
+                    <nav>
+                        <div class="container">
+                            <ul class="nav-list">
+                                <li class="nav-item">
+                                    <a href="/admin/dashboard" class="nav-link">Dashboard</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/admin/departments" class="nav-link">Departments</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/admin/users" class="nav-link active">Users</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/admin/settings" class="nav-link">Settings</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
+                    
+                    <main class="container">
+                        <div class="content-header">
+                            <h1 class="content-title">Users</h1>
+                            <p>Emergency mode: Template not found. Limited functionality available.</p>
+                        </div>
+                        
+                        <div style="background-color: white; padding: 20px; border-radius: 8px;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd;">Name</th>
+                                        <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd;">Email</th>
+                                        <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd;">Role</th>
+                                        <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd;">Department</th>
+                                        <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd;">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {users_html}
+                                </tbody>
+                            </table>
+                        </div>
+                    </main>
+                </body>
+                </html>
+                """
+        except Exception as e:
+            app.logger.error(f"Error retrieving users: {str(e)}")
+            app.logger.error(traceback.format_exc())
+            flash(f"Error retrieving users: {str(e)}", 'error')
+            return redirect(url_for('admin_dashboard'))
+    
+    # Admin Settings
+    @app.route('/admin/settings')
+    @login_required
+    def admin_settings():
+        """Admin settings page"""
+        if not current_user.is_super_admin():
+            abort(403)  # Forbidden
+            
+        try:
+            try:
+                return render_template('admin/settings.html')
+            except jinja2.exceptions.TemplateNotFound:
+                app.logger.error("Template not found: admin/settings.html")
+                # Fallback to inline HTML with basic functionality
+                return f"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Admin - Settings</title>
+                    <link rel="stylesheet" href="/static/styles.css">
+                    <link rel="stylesheet" href="/static/admin-styles.css">
+                </head>
+                <body>
+                    <header>
+                        <div class="container">
+                            <div class="header-content">
+                                <div class="logo">
+                                    <i class="fas fa-fire-extinguisher"></i> FireEMS.ai Admin
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+                    
+                    <nav>
+                        <div class="container">
+                            <ul class="nav-list">
+                                <li class="nav-item">
+                                    <a href="/admin/dashboard" class="nav-link">Dashboard</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/admin/departments" class="nav-link">Departments</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/admin/users" class="nav-link">Users</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="/admin/settings" class="nav-link active">Settings</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
+                    
+                    <main class="container">
+                        <div class="content-header">
+                            <h1 class="content-title">System Settings</h1>
+                            <p>Emergency mode: Template not found. Limited functionality available.</p>
+                        </div>
+                        
+                        <div style="background-color: white; padding: 20px; border-radius: 8px;">
+                            <h2>System Information</h2>
+                            <p>Version: 1.0.0</p>
+                            <p>Database: SQLite</p>
+                            <p>Environment: Production</p>
+                            
+                            <h2>Maintenance</h2>
+                            <p>This section will allow system maintenance operations when fully implemented.</p>
+                        </div>
+                    </main>
+                </body>
+                </html>
+                """
+        except Exception as e:
+            app.logger.error(f"Error loading settings page: {str(e)}")
+            app.logger.error(traceback.format_exc())
+            flash(f"Error loading settings page: {str(e)}", 'error')
+            return redirect(url_for('admin_dashboard'))
+    
     # Department routing
     @app.route('/dept/<dept_code>')
     @login_required

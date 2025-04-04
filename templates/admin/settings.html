@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - FireEMS.ai Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/admin-styles.css">
+    <style>
+        .settings-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .settings-card h2 {
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 0.5rem;
+        }
+        
+        .settings-group {
+            margin-bottom: 2rem;
+        }
+        
+        .settings-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        .settings-group h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: #34495e;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+        
+        .setting-label {
+            font-weight: 500;
+        }
+        
+        .setting-description {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+        
+        .setting-control {
+            display: flex;
+            align-items: center;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #3498db;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 500;
+            color: #34495e;
+        }
+        
+        .info-value {
+            color: #7f8c8d;
+        }
+        
+        .maintenance-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .maintenance-action {
+            background-color: #f8f9fa;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .maintenance-action:hover {
+            background-color: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .maintenance-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #3498db;
+        }
+        
+        .maintenance-label {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        .maintenance-description {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-fire-extinguisher"></i> FireEMS.ai Admin
+                </div>
+                <div class="user-info">
+                    <span class="user-avatar">{{ current_user.name[0] }}</span>
+                    <span class="user-name">{{ current_user.name }}</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <nav>
+        <div class="container">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="/admin/dashboard" class="nav-link">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/departments" class="nav-link">
+                        <i class="fas fa-building"></i> Departments
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/users" class="nav-link">
+                        <i class="fas fa-users"></i> Users
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/settings" class="nav-link active">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main class="container">
+        <div class="content-header">
+            <h1 class="content-title">System Settings</h1>
+            <button class="btn btn-primary" id="saveSettings">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+        </div>
+        
+        <div class="settings-card">
+            <h2>System Information</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Version</div>
+                    <div class="info-value">1.0.0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Last Updated</div>
+                    <div class="info-value">April 4, 2025</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Database</div>
+                    <div class="info-value">SQLite (Production)</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Environment</div>
+                    <div class="info-value">Production</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-card">
+            <h2>System Settings</h2>
+            
+            <div class="settings-group">
+                <h3>Security</h3>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Enhanced Security Mode</div>
+                        <div class="setting-description">Enable additional security measures for sensitive data</div>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Force Secure Passwords</div>
+                        <div class="setting-description">Require strong passwords for all users</div>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Session Timeout (minutes)</div>
+                        <div class="setting-description">Time before inactive users are logged out</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="number" value="30" min="5" max="120" class="form-control" style="width: 100px;">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-group">
+                <h3>Feature Configuration</h3>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">New Department Registration</div>
+                        <div class="setting-description">Allow new departments to be registered</div>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">API Access</div>
+                        <div class="setting-description">Enable API access for all departments</div>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <div>
+                        <div class="setting-label">Default Map View</div>
+                        <div class="setting-description">Default location for maps when no specific region is selected</div>
+                    </div>
+                    <div class="setting-control">
+                        <select class="form-control">
+                            <option>United States</option>
+                            <option>North America</option>
+                            <option>Europe</option>
+                            <option>Asia</option>
+                            <option>Global</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-card">
+            <h2>Maintenance</h2>
+            <p>System maintenance operations. Use with caution.</p>
+            
+            <div class="maintenance-actions">
+                <div class="maintenance-action">
+                    <div class="maintenance-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <div class="maintenance-label">Database Backup</div>
+                    <div class="maintenance-description">Create a complete backup of all system data</div>
+                </div>
+                
+                <div class="maintenance-action">
+                    <div class="maintenance-icon">
+                        <i class="fas fa-broom"></i>
+                    </div>
+                    <div class="maintenance-label">Clear Caches</div>
+                    <div class="maintenance-description">Clear system caches and temporary files</div>
+                </div>
+                
+                <div class="maintenance-action">
+                    <div class="maintenance-icon">
+                        <i class="fas fa-sync"></i>
+                    </div>
+                    <div class="maintenance-label">Run Migrations</div>
+                    <div class="maintenance-description">Apply any pending database migrations</div>
+                </div>
+                
+                <div class="maintenance-action">
+                    <div class="maintenance-icon">
+                        <i class="fas fa-file-export"></i>
+                    </div>
+                    <div class="maintenance-label">Export System Logs</div>
+                    <div class="maintenance-description">Download system logs for review</div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle save button click
+            document.getElementById('saveSettings').addEventListener('click', function() {
+                // In a real implementation, this would save the settings
+                // For now, just show a simple alert
+                alert('Settings saved successfully!');
+            });
+            
+            // Handle maintenance action clicks
+            const maintenanceActions = document.querySelectorAll('.maintenance-action');
+            maintenanceActions.forEach(action => {
+                action.addEventListener('click', function() {
+                    const actionName = this.querySelector('.maintenance-label').textContent;
+                    alert(`${actionName} action will be implemented in a future update.`);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
