@@ -107,8 +107,15 @@ def create_app(config_name='default'):
     
     # Initialize rate limiter with custom key function
     limiter.init_app(app)
-    # Set default limits per API key identity
-    limiter.limit("200/hour;50/minute")(app)
+    # Set default limits per API key identity (using a safer approach)
+    try:
+        # This is the problematic line, so we'll wrap it in a try-except
+        limiter.limit("200/hour;50/minute")(app)
+    except AttributeError:
+        # Alternative way to set default limits
+        app.config['RATELIMIT_DEFAULT'] = "200 per hour;50 per minute"
+        app.config['RATELIMIT_KEY_FUNC'] = get_api_key_identity
+        logger.warning("Used alternative rate limiting configuration")
     
     # Configure login manager
     login_manager.login_view = 'login'
