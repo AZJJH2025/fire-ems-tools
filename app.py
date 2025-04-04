@@ -1616,9 +1616,12 @@ def register_routes(app):
                 email=data['email'],
                 name=data['name'],
                 role=data['role'],
-                is_active=data.get('is_active', True),
-                preferences=data.get('preferences', {})
+                is_active=data.get('is_active', True)
             )
+            
+            # Handle preferences if the field exists in the User model
+            if hasattr(User, 'preferences'):
+                user.preferences = data.get('preferences', {})
             
             user.set_password(data['password'])
             
@@ -1687,7 +1690,8 @@ def register_routes(app):
             if 'is_active' in data:
                 user.is_active = bool(data['is_active'])
                 
-            if 'preferences' in data:
+            # Update preferences if the field exists and data is provided
+            if 'preferences' in data and hasattr(User, 'preferences'):
                 user.preferences = data['preferences']
                 
             # Update password if provided

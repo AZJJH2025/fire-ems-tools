@@ -75,31 +75,27 @@ class Department(db.Model):
         
     def to_dict(self):
         """Convert department to dictionary for API responses"""
-        return {
+        result = {
             'id': self.id,
             'code': self.code,
-            'name': self.name,
-            'address': self.address,
-            'city': self.city,
-            'state': self.state,
-            'zip_code': self.zip_code,
-            'phone': self.phone,
-            'email': self.email,
-            'website': self.website,
-            'logo_url': self.logo_url,
-            'primary_color': self.primary_color,
-            'secondary_color': self.secondary_color,
-            'department_type': self.department_type,
-            'num_stations': self.num_stations,
-            'num_personnel': self.num_personnel,
-            'service_area': self.service_area,
-            'population_served': self.population_served,
-            'api_enabled': self.api_enabled,
-            'is_active': self.is_active,
-            'setup_complete': self.setup_complete,
-            'features_enabled': self.features_enabled,
-            'created_at': self.created_at.isoformat() if self.created_at else None
+            'name': self.name
         }
+        
+        # Add optional fields that might not exist in older deployments
+        for field in [
+            'address', 'city', 'state', 'zip_code', 'phone', 'email', 'website',
+            'logo_url', 'primary_color', 'secondary_color', 'department_type',
+            'num_stations', 'num_personnel', 'service_area', 'population_served',
+            'api_enabled', 'is_active', 'setup_complete', 'features_enabled'
+        ]:
+            if hasattr(self, field):
+                result[field] = getattr(self, field)
+        
+        # Add date fields with proper formatting
+        if hasattr(self, 'created_at') and self.created_at:
+            result['created_at'] = self.created_at.isoformat()
+        
+        return result
         
     def to_dict_with_api_key(self):
         """Convert department to dictionary including API key (for admin use only)"""
@@ -232,7 +228,7 @@ class User(db.Model):
         
     def to_dict(self):
         """Convert user to dictionary for API responses"""
-        return {
+        result = {
             'id': self.id,
             'department_id': self.department_id,
             'email': self.email,
@@ -242,6 +238,12 @@ class User(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'last_login': self.last_login.isoformat() if self.last_login else None
         }
+        
+        # Add preferences if the field exists
+        if hasattr(self, 'preferences'):
+            result['preferences'] = self.preferences
+            
+        return result
 
 # Incident model
 class Incident(db.Model):
