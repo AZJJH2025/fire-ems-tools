@@ -448,6 +448,16 @@ def simple_test():
     """Serve a simple test page"""
     return send_from_directory('static', 'simple-test.html')
 
+@app.route('/diagnostic')
+def diagnostic():
+    """Serve the diagnostic tool"""
+    return send_from_directory('static', 'diagnostic.html')
+
+@app.route('/medical-test')
+def medical_test():
+    """Serve the medical fields test page"""
+    return render_template('medical-test.html')
+
 @app.route('/test-central-square')
 def test_central_square():
     """Serve the Central Square data validation tool"""
@@ -1239,20 +1249,43 @@ def export_incidents():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    # Try multiple ports in case some are blocked
-    ports_to_try = [8080, 3000, 4000, 5000, 7000, 9000]
+    import sys
     
-    for port in ports_to_try:
+    # Check if a port is specified in the command line arguments
+    custom_port = None
+    for arg in sys.argv[1:]:
+        if arg.startswith("port="):
+            try:
+                custom_port = int(arg.split('=')[1])
+                print(f"Using custom port: {custom_port}")
+            except ValueError:
+                print(f"Invalid port specified: {arg}")
+                sys.exit(1)
+    
+    if custom_port:
+        # Use the specified port
         try:
-            print(f"Trying to run on port {port}...")
-            app.run(host="0.0.0.0", port=port, debug=True)
-            break  # If successful, exit the loop
+            print(f"Starting server on port {custom_port}...")
+            app.run(host="0.0.0.0", port=custom_port, debug=True)
         except OSError as e:
-            print(f"Port {port} unavailable: {e}")
-            if port == ports_to_try[-1]:
-                print("All ports failed. Please check your network configuration.")
-            else:
-                continue
+            print(f"Port {custom_port} unavailable: {e}")
+            print("Please specify a different port with port=XXXX")
+            sys.exit(1)
+    else:
+        # Try multiple ports in case some are blocked
+        ports_to_try = [8080, 3000, 4000, 5000, 7000, 9000]
+        
+        for port in ports_to_try:
+            try:
+                print(f"Trying to run on port {port}...")
+                app.run(host="0.0.0.0", port=port, debug=True)
+                break  # If successful, exit the loop
+            except OSError as e:
+                print(f"Port {port} unavailable: {e}")
+                if port == ports_to_try[-1]:
+                    print("All ports failed. Please check your network configuration.")
+                else:
+                    continue
 else:
     # When run via flask command
     app.config['ENV'] = 'development'

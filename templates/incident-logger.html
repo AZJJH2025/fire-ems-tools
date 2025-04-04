@@ -1900,28 +1900,35 @@
                 
                 console.log("Found 'Patient #1' header!");
                 
-                // Find the Personal Information (PHI) section that follows the Patient #1 header
-                var phiSection = null;
-                var currentElement = patient1Header.parentElement;
-                
-                // Traverse forward to find PHI section
-                while (currentElement && !phiSection) {
-                    // Move to next sibling
-                    currentElement = currentElement.nextElementSibling;
-                    
-                    // Check if this is the PHI section
-                    if (currentElement && 
-                        currentElement.classList.contains('form-section') && 
-                        currentElement.querySelector('h5') && 
-                        currentElement.querySelector('h5').textContent.includes('Personal Information')) {
-                        phiSection = currentElement;
-                        console.log("Found PHI section!");
-                    }
-                }
-                
-                if (!phiSection) {
-                    console.error("Could not find Personal Information (PHI) section!");
+                // Find the parent patient entry that contains the Patient #1 header
+                var patientEntry = patient1Header.closest('.patient-entry');
+                if (!patientEntry) {
+                    console.error("Could not find patient entry container!");
                     return;
+                }
+                console.log("Found patient entry container");
+                
+                // Get basic information fields at the beginning of patient entry
+                var basicInfoFields = Array.from(patientEntry.querySelectorAll('.form-group')).filter(el => 
+                    !el.closest('.form-section')
+                );
+                
+                // If we have the basic info fields, insert after the last one
+                var insertTarget = null;
+                if (basicInfoFields.length > 0) {
+                    insertTarget = basicInfoFields[basicInfoFields.length - 1];
+                    console.log("Found basic info fields, will insert after the last one");
+                } else {
+                    // Or try to find the first form section (might be vitals or something else)
+                    var firstSection = patientEntry.querySelector('.form-section');
+                    if (firstSection) {
+                        insertTarget = firstSection.previousElementSibling || patientEntry.firstElementChild;
+                        console.log("Found first form section, will insert before it");
+                    } else {
+                        // Fallback to just inserting at the end of the patient entry
+                        insertTarget = patientEntry.lastElementChild;
+                        console.log("No suitable target found, inserting at the end");
+                    }
                 }
                 
                 // Create the HTML for medical sections with exact template matching
@@ -2099,5 +2106,6 @@
         }, 1500); // Wait 1.5 seconds to ensure everything else is loaded
     });
     </script>
+    <script src="/static/add-medical-sections.js"></script>
 </body>
 </html>
