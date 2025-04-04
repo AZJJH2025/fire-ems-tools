@@ -1885,10 +1885,12 @@
                 return;
             }
             
-            // Find where to insert - after PHI section, before Vitals
+            // Find where to insert - after PHI section, before Vitals or GCS section
             var phiSection = patient1.querySelector('.form-section:has(.phi-label)');
             var vitalsSection = Array.from(patient1.querySelectorAll('.form-section')).find(section => 
-                section.querySelector('h5') && section.querySelector('h5').textContent.includes('Vitals')
+                section.querySelector('h5') && 
+                (section.querySelector('h5').textContent.includes('Vitals') || 
+                 section.querySelector('h5').textContent.includes('Glasgow Coma Scale'))
             );
             
             if (!phiSection || !vitalsSection) {
