@@ -643,6 +643,15 @@ tr:hover {
     border-left: 4px solid #e74c3c;
 }
 
+/* Ensure medical history, medications, and allergies sections are visible */
+.medical-history-container,
+.medications-container,
+.allergies-container {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
 .vitals-table {
     overflow-x: auto;
     margin-bottom: 1rem;
