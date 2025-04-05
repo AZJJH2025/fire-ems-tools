@@ -47,6 +47,51 @@ The Incident Logger now includes NFIRS (National Fire Incident Reporting System)
 2. Navigate to http://localhost:8080 (or other available port)
 3. Select a tool from the home page
 
+## Testing Framework
+
+FireEMS.ai includes a comprehensive testing framework to ensure reliability across different department configurations:
+
+### Test Department Generation
+
+```bash
+python create_test_departments.py
+```
+
+Creates four test department profiles with varying configurations:
+- **Rural Department**: Small fire district with basic features
+- **Suburban Department**: Mid-sized combined department with extended features
+- **Urban Department**: Large city department with all features
+- **Regional Agency**: Complex multi-jurisdiction agency with advanced configuration
+
+### Running Tests
+
+Run comprehensive tests:
+```bash
+python run_all_tests.py
+```
+
+Run specific test suites:
+```bash
+python test_departments.py    # Department configuration tests
+python test_incident_logger.py  # Incident Logger tests
+python test_api.py            # API tests
+python test_performance.py    # Performance tests
+```
+
+Optional arguments:
+- `--verbose` or `-v`: Show detailed test output
+- `--department CODE`: Test only a specific department
+- `--tool TOOLNAME`: Test only a specific tool
+
+### Performance Testing
+
+Test application performance with different user loads:
+```bash
+python test_performance.py --users 10 --runtime 60
+```
+
+For detailed testing documentation, see [TESTING_FRAMEWORK.md](TESTING_FRAMEWORK.md).
+
 ## License
 
 All rights reserved. This software is proprietary.
