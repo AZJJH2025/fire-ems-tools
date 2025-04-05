@@ -1433,6 +1433,13 @@ def register_routes(app):
             }
         ]
         
+        # Update tool status from session if available
+        if 'tool_status' in session:
+            tool_status = session['tool_status']
+            for tool in tools:
+                if tool['route'] in tool_status:
+                    tool['enabled'] = tool_status[tool['route']]
+        
         # Get usage statistics
         statistics = {
             "total_usage": 2856,
@@ -1507,6 +1514,45 @@ def register_routes(app):
             </body>
             </html>
             """
+    
+    # API endpoint to update tool status
+    @app.route('/api/admin/tools/update_status', methods=['POST'])
+    @login_required
+    def update_tool_status():
+        """Update the enabled status of a tool"""
+        if not current_user.is_super_admin():
+            return jsonify({"error": "Unauthorized"}), 403
+            
+        data = request.json
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+            
+        tool_route = data.get('route')
+        enabled = data.get('enabled', False)
+        
+        if not tool_route:
+            return jsonify({"error": "Tool route is required"}), 400
+            
+        # For this implementation, we'll store tool status in a tool_status table in the database
+        # But for now, we'll use a simple approach with Flask session since we don't 
+        # have a proper tool model in the database
+        
+        # Initialize tool_status in session if it doesn't exist
+        if 'tool_status' not in session:
+            session['tool_status'] = {}
+            
+        # Update the tool status
+        session['tool_status'][tool_route] = enabled
+        session.modified = True
+        
+        # In a real app, this would update a database record
+        
+        return jsonify({
+            "success": True, 
+            "message": f"Tool {tool_route} has been {'enabled' if enabled else 'disabled'}",
+            "route": tool_route, 
+            "enabled": enabled
+        })
     
     # Department routing
     @app.route('/dept/<dept_code>')
