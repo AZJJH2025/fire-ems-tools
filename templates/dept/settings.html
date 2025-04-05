@@ -458,6 +458,38 @@
                             </label>
                             <p class="help-text">Enable the department statistics dashboard</p>
                         </div>
+                        
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="coverage_gap_finder" name="coverage_gap_finder" value="1" {% if department.features_enabled.get('coverage_gap_finder', False) %}checked{% endif %}>
+                                Coverage Gap Finder
+                            </label>
+                            <p class="help-text">Enable identification of underserved areas in your jurisdiction</p>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="fire_map_pro" name="fire_map_pro" value="1" {% if department.features_enabled.get('fire_map_pro', False) %}checked{% endif %}>
+                                FireMapPro
+                            </label>
+                            <p class="help-text">Enable advanced interactive mapping for planning with multiple data layers</p>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="data_formatter" name="data_formatter" value="1" {% if department.features_enabled.get('data_formatter', False) %}checked{% endif %}>
+                                Data Formatter
+                            </label>
+                            <p class="help-text">Enable data conversion and standardization tools</p>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="station_overview" name="station_overview" value="1" {% if department.features_enabled.get('station_overview', False) %}checked{% endif %}>
+                                Station Overview
+                            </label>
+                            <p class="help-text">Enable comprehensive station performance dashboards</p>
+                        </div>
                     </div>
                 </div>
                 
