@@ -455,12 +455,12 @@
                     {{ tool.description }}
                 </div>
                 <div class="tool-actions">
-                    <button class="tool-btn btn-view">
+                    <a href="/{{ tool.route }}" class="tool-btn btn-view">
                         <i class="fas fa-eye"></i> View Tool
-                    </button>
-                    <button class="tool-btn btn-stats">
+                    </a>
+                    <a href="/admin/tools/usage?tool={{ tool.route }}" class="tool-btn btn-stats">
                         <i class="fas fa-chart-bar"></i> Stats
-                    </button>
+                    </a>
                 </div>
                 <div class="tool-status">
                     <div class="status-label status-ready">
@@ -505,8 +505,8 @@
                     
                     // Reload the page after a short delay to show the change
                     setTimeout(() => {
-                        // In a real implementation, you would update the UI without reloading
-                        // window.location.reload();
+                        // Reload to show the updated state
+                        window.location.reload();
                     }, 1000);
                 });
             });
