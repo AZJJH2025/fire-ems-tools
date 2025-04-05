@@ -3545,6 +3545,8 @@ def register_routes(app):
     def call_density_heatmap():
         """Serve the Call Density Heatmap tool"""
         return render_template('call-density-heatmap.html')
+        
+    # Coverage Gap Finder route defined in the section below
     
     # Incident Logger routes
     @app.route('/incident-logger')
@@ -3571,23 +3573,23 @@ def register_routes(app):
     # Ultra-minimal routes for navigation links
     @app.route('/coverage-gap-finder')
     def coverage_gap_finder():
-        """Minimal route for Coverage Gap Finder"""
-        return redirect('/')
+        """Serve the Coverage Gap Finder tool"""
+        return render_template('coverage-gap-finder.html')
     
     @app.route('/fire-map-pro')
     def fire_map_pro():
-        """Minimal route for FireMapPro"""
-        return redirect('/')
+        """Serve the FireMapPro tool"""
+        return render_template('fire-map-pro.html')
     
     @app.route('/data-formatter')
     def data_formatter():
-        """Minimal route for Data Formatter"""
-        return redirect('/')
+        """Serve the Data Formatter tool"""
+        return render_template('data-formatter.html')
     
     @app.route('/station-overview')
     def station_overview():
-        """Minimal route for Station Overview"""
-        return redirect('/')
+        """Serve the Station Overview tool"""
+        return render_template('station-overview.html')
     
     # Include the rest of your original routes here
 
