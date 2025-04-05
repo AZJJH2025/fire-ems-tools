@@ -2075,7 +2075,8 @@ def register_routes(app):
                 
                 # Feature settings
                 features_enabled = {}
-                for key in ['incident_logger', 'call_density', 'isochrone_map', 'dashboard']:
+                for key in ['incident_logger', 'call_density', 'isochrone_map', 'dashboard', 
+                           'coverage_gap_finder', 'fire_map_pro', 'data_formatter', 'station_overview']:
                     features_enabled[key] = key in request.form
                 department.features_enabled = features_enabled
                 
