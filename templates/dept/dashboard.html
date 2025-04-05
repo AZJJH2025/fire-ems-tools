@@ -220,6 +220,22 @@
                 <a href="/dept/{{ department.code }}/isochrone-map">Isochrone Map</a>
             {% endif %}
             
+            {% if department.features_enabled.get('coverage_gap_finder', False) %}
+                <a href="/dept/{{ department.code }}/coverage-gap-finder">Coverage Gap Finder</a>
+            {% endif %}
+            
+            {% if department.features_enabled.get('fire_map_pro', False) %}
+                <a href="/dept/{{ department.code }}/fire-map-pro">FireMapPro</a>
+            {% endif %}
+            
+            {% if department.features_enabled.get('data_formatter', False) %}
+                <a href="/dept/{{ department.code }}/data-formatter">Data Formatter</a>
+            {% endif %}
+            
+            {% if department.features_enabled.get('station_overview', False) %}
+                <a href="/dept/{{ department.code }}/station-overview">Station Overview</a>
+            {% endif %}
+            
             {% if current_user.is_admin() or current_user.is_super_admin() %}
                 <a href="/dept/{{ department.code }}/stations">Stations</a>
                 <a href="/dept/{{ department.code }}/users">Users</a>

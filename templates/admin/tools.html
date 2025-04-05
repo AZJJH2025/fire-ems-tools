@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tool Management - FireEMS.ai Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/admin-styles.css">
+    <style>
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .tool-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background-color: #4a89dc;
+        }
+        
+        .tool-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .tool-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #f8f9fa;
+            color: #4a89dc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .tool-title {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #2c3e50;
+        }
+        
+        .tool-description {
+            color: #7f8c8d;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+        
+        .tool-status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+        
+        .status-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .status-ready {
+            color: #2ecc71;
+        }
+        
+        .status-planned {
+            color: #e67e22;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 22px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #4a89dc;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(22px);
+        }
+        
+        .tool-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .tool-btn {
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            border: none;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .btn-view {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+        }
+        
+        .btn-view:hover {
+            background-color: #e9ecef;
+        }
+        
+        .btn-stats {
+            background-color: #e8f5e9;
+            color: #43a047;
+        }
+        
+        .btn-stats:hover {
+            background-color: #c8e6c9;
+        }
+        
+        .stats-container {
+            margin-bottom: 2rem;
+        }
+        
+        .stats-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        
+        .stats-title {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            margin: 0;
+        }
+        
+        .stats-period {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4a89dc;
+            margin: 0.5rem 0;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-fire-extinguisher"></i> FireEMS.ai Admin
+                </div>
+                <div class="user-info">
+                    <span class="user-avatar">{{ current_user.name[0] }}</span>
+                    <span class="user-name">{{ current_user.name }}</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <nav>
+        <div class="container">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="/admin/dashboard" class="nav-link">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/departments" class="nav-link">
+                        <i class="fas fa-building"></i> Departments
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/users" class="nav-link">
+                        <i class="fas fa-users"></i> Users
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/tools" class="nav-link active">
+                        <i class="fas fa-tools"></i> Tools
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/settings" class="nav-link">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main class="container">
+        <div class="content-header">
+            <h1 class="content-title">Tool Management</h1>
+            <div>
+                <a href="/admin/tools/usage" class="btn btn-secondary">
+                    <i class="fas fa-chart-bar"></i> View Usage
+                </a>
+                <a href="/admin/settings" class="btn btn-primary">
+                    <i class="fas fa-cog"></i> Tool Settings
+                </a>
+            </div>
+        </div>
+        
+        <div class="stats-container">
+            <div class="stats-header">
+                <h2 class="stats-title">Tool Usage Overview</h2>
+                <div class="stats-period">Last 30 days</div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Tool Usage</div>
+                    <div class="stat-value">2,856</div>
+                    <div class="stat-label">sessions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Most Used Tool</div>
+                    <div class="stat-value">Incident Logger</div>
+                    <div class="stat-label">872 sessions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Average Usage</div>
+                    <div class="stat-value">6.4</div>
+                    <div class="stat-label">tools per department</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">New Tool Activations</div>
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">this month</div>
+                </div>
+            </div>
+        </div>
+        
+        <h2>Active Tools</h2>
+        <div class="tool-grid">
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-stopwatch"></i>
+                    </div>
+                    <h3 class="tool-title">Response Time Analyzer</h3>
+                </div>
+                <div class="tool-description">
+                    Upload and analyze incident data to visualize response time patterns, identify bottlenecks, and improve performance metrics.
+                </div>
+                <div class="tool-actions">
+                    <button class="tool-btn btn-view">
+                        <i class="fas fa-eye"></i> View Tool
+                    </button>
+                    <button class="tool-btn btn-stats">
+                        <i class="fas fa-chart-bar"></i> Stats
+                    </button>
+                </div>
+                <div class="tool-status">
+                    <div class="status-label status-ready">
+                        <i class="fas fa-check-circle"></i> Ready
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-map"></i>
+                    </div>
+                    <h3 class="tool-title">Isochrone Map Generator</h3>
+                </div>
+                <div class="tool-description">
+                    Create coverage area maps based on emergency response travel times to visualize and optimize response boundaries.
+                </div>
+                <div class="tool-actions">
+                    <button class="tool-btn btn-view">
+                        <i class="fas fa-eye"></i> View Tool
+                    </button>
+                    <button class="tool-btn btn-stats">
+                        <i class="fas fa-chart-bar"></i> Stats
+                    </button>
+                </div>
+                <div class="tool-status">
+                    <div class="status-label status-ready">
+                        <i class="fas fa-check-circle"></i> Ready
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <h3 class="tool-title">Incident Logger</h3>
+                </div>
+                <div class="tool-description">
+                    Streamlined incident data entry and management system with NFIRS compliance, validation, and export capabilities.
+                </div>
+                <div class="tool-actions">
+                    <button class="tool-btn btn-view">
+                        <i class="fas fa-eye"></i> View Tool
+                    </button>
+                    <button class="tool-btn btn-stats">
+                        <i class="fas fa-chart-bar"></i> Stats
+                    </button>
+                </div>
+                <div class="tool-status">
+                    <div class="status-label status-ready">
+                        <i class="fas fa-check-circle"></i> Ready
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <h3 class="tool-title">Call Density Heatmap</h3>
+                </div>
+                <div class="tool-description">
+                    Visualize historical call data with customizable heatmaps to identify activity hotspots and optimize resource allocation.
+                </div>
+                <div class="tool-actions">
+                    <button class="tool-btn btn-view">
+                        <i class="fas fa-eye"></i> View Tool
+                    </button>
+                    <button class="tool-btn btn-stats">
+                        <i class="fas fa-chart-bar"></i> Stats
+                    </button>
+                </div>
+                <div class="tool-status">
+                    <div class="status-label status-ready">
+                        <i class="fas fa-check-circle"></i> Ready
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <h2>Recently Added Tools</h2>
+        <div class="tool-grid">
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-search-location"></i>
+                    </div>
+                    <h3 class="tool-title">Coverage Gap Finder</h3>
+                </div>
+                <div class="tool-description">
+                    Identify underserved areas in your jurisdiction to optimize station locations and resource deployment.
+                </div>
+                <div class="tool-actions">
+                    <button class="tool-btn btn-view">
+                        <i class="fas fa-eye"></i> View Tool
+                    </button>
+                    <button class="tool-btn btn-stats">
+                        <i class="fas fa-chart-bar"></i> Stats
+                    </button>
+                </div>
+                <div class="tool-status">
+                    <div class="status-label status-ready">
+                        <i class="fas fa-check-circle"></i> Ready
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="coverage_gap_finder_toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <h3 class="tool-title">FireMapPro</h3>
+                </div>
+                <div class="tool-description">
+                    Advanced interactive map creator for fire department and EMS planning with multiple data layers.
+                </div>
+                <div class="tool-actions">
+                    <button class="tool-btn btn-view">
+                        <i class="fas fa-eye"></i> View Tool
+                    </button>
+                    <button class="tool-btn btn-stats">
+                        <i class="fas fa-chart-bar"></i> Stats
+                    </button>
+                </div>
+                <div class="tool-status">
+                    <div class="status-label status-ready">
+                        <i class="fas fa-check-circle"></i> Ready
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="fire_map_pro_toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <h3 class="tool-title">Data Formatter</h3>
+                </div>
+                <div class="tool-description">
+                    Convert, standardize, and prepare your data for seamless use with any FireEMS.ai tool. Supports multiple formats.
+                </div>
+                <div class="tool-actions">
+                    <button class="tool-btn btn-view">
+                        <i class="fas fa-eye"></i> View Tool
+                    </button>
+                    <button class="tool-btn btn-stats">
+                        <i class="fas fa-chart-bar"></i> Stats
+                    </button>
+                </div>
+                <div class="tool-status">
+                    <div class="status-label status-ready">
+                        <i class="fas fa-check-circle"></i> Ready
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="data_formatter_toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <h3 class="tool-title">Station Overview</h3>
+                </div>
+                <div class="tool-description">
+                    Comprehensive overview of station performance, unit utilization, and response metrics by station.
+                </div>
+                <div class="tool-actions">
+                    <button class="tool-btn btn-view">
+                        <i class="fas fa-eye"></i> View Tool
+                    </button>
+                    <button class="tool-btn btn-stats">
+                        <i class="fas fa-chart-bar"></i> Stats
+                    </button>
+                </div>
+                <div class="tool-status">
+                    <div class="status-label status-ready">
+                        <i class="fas fa-check-circle"></i> Ready
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="station_overview_toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <h2>Upcoming Tools</h2>
+        <div class="tool-grid">
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="tool-title">Call Volume Forecaster</h3>
+                </div>
+                <div class="tool-description">
+                    AI-powered forecasting for call volumes based on historical patterns, seasonal trends, and other factors.
+                </div>
+                <div class="tool-actions">
+                    <button class="tool-btn btn-view" disabled>
+                        <i class="fas fa-eye"></i> View Tool
+                    </button>
+                    <button class="tool-btn btn-stats" disabled>
+                        <i class="fas fa-chart-bar"></i> Stats
+                    </button>
+                </div>
+                <div class="tool-status">
+                    <div class="status-label status-planned">
+                        <i class="fas fa-clock"></i> Coming Soon
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" disabled>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <h3 class="tool-title">User Guide</h3>
+                </div>
+                <div class="tool-description">
+                    Comprehensive documentation and tutorials for using all FireEMS.ai tools effectively.
+                </div>
+                <div class="tool-actions">
+                    <button class="tool-btn btn-view" disabled>
+                        <i class="fas fa-eye"></i> View Tool
+                    </button>
+                    <button class="tool-btn btn-stats" disabled>
+                        <i class="fas fa-chart-bar"></i> Stats
+                    </button>
+                </div>
+                <div class="tool-status">
+                    <div class="status-label status-planned">
+                        <i class="fas fa-clock"></i> Coming Soon
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" disabled>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <h3 class="tool-title">Quick Stats</h3>
+                </div>
+                <div class="tool-description">
+                    Instant summary metrics and KPIs from your incident data for quick analysis and reporting.
+                </div>
+                <div class="tool-actions">
+                    <button class="tool-btn btn-view" disabled>
+                        <i class="fas fa-eye"></i> View Tool
+                    </button>
+                    <button class="tool-btn btn-stats" disabled>
+                        <i class="fas fa-chart-bar"></i> Stats
+                    </button>
+                </div>
+                <div class="tool-status">
+                    <div class="status-label status-planned">
+                        <i class="fas fa-clock"></i> Coming Soon
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" disabled>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tool toggle functionality
+            const toolToggles = document.querySelectorAll('.toggle-switch input[type="checkbox"]');
+            toolToggles.forEach(toggle => {
+                toggle.addEventListener('change', function() {
+                    const toolId = this.id || 'unknown';
+                    const isEnabled = this.checked;
+                    console.log(`Tool ${toolId} is now ${isEnabled ? 'enabled' : 'disabled'}`);
+                    
+                    // Here you would normally make an API call to update the database
+                    // For a real implementation, you would add AJAX code here
+                });
+            });
+            
+            // View tool buttons
+            const viewButtons = document.querySelectorAll('.btn-view');
+            viewButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const toolName = this.closest('.tool-card').querySelector('.tool-title').textContent;
+                    if (!this.disabled) {
+                        window.location.href = `/${toolName.toLowerCase().replace(/\s+/g, '-')}`;
+                    }
+                });
+            });
+            
+            // Stats buttons
+            const statsButtons = document.querySelectorAll('.btn-stats');
+            statsButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const toolName = this.closest('.tool-card').querySelector('.tool-title').textContent;
+                    if (!this.disabled) {
+                        window.location.href = `/admin/tools/usage?tool=${toolName.toLowerCase().replace(/\s+/g, '-')}`;
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

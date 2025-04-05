@@ -375,6 +375,74 @@
                     </div>
                 </a>
             {% endif %}
+            
+            {% if department.features_enabled.get('coverage_gap_finder', False) %}
+                <a href="/dept/{{ department.code }}/coverage-gap-finder" class="tool-card">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-search-location"></i>
+                        </div>
+                        <h2 class="tool-title">Coverage Gap Finder</h2>
+                    </div>
+                    <div class="tool-content">
+                        <div class="tool-description">
+                            Identify underserved areas in your jurisdiction to optimize resource deployment.
+                        </div>
+                        <button class="btn btn-primary">Find Gaps</button>
+                    </div>
+                </a>
+            {% endif %}
+            
+            {% if department.features_enabled.get('fire_map_pro', False) %}
+                <a href="/dept/{{ department.code }}/fire-map-pro" class="tool-card">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-map-marked-alt"></i>
+                        </div>
+                        <h2 class="tool-title">FireMapPro</h2>
+                    </div>
+                    <div class="tool-content">
+                        <div class="tool-description">
+                            Advanced interactive mapping for fire and EMS planning with multiple data layers.
+                        </div>
+                        <button class="btn btn-primary">Open Map</button>
+                    </div>
+                </a>
+            {% endif %}
+            
+            {% if department.features_enabled.get('data_formatter', False) %}
+                <a href="/dept/{{ department.code }}/data-formatter" class="tool-card">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <h2 class="tool-title">Data Formatter</h2>
+                    </div>
+                    <div class="tool-content">
+                        <div class="tool-description">
+                            Convert and standardize your data for seamless use with any FireEMS.ai tool.
+                        </div>
+                        <button class="btn btn-primary">Format Data</button>
+                    </div>
+                </a>
+            {% endif %}
+            
+            {% if department.features_enabled.get('station_overview', False) %}
+                <a href="/dept/{{ department.code }}/station-overview" class="tool-card">
+                    <div class="tool-header">
+                        <div class="tool-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <h2 class="tool-title">Station Overview</h2>
+                    </div>
+                    <div class="tool-content">
+                        <div class="tool-description">
+                            Comprehensive overview of station performance and unit utilization metrics.
+                        </div>
+                        <button class="btn btn-primary">View Stations</button>
+                    </div>
+                </a>
+            {% endif %}
         </div>
         
         {% if current_user.is_admin() or current_user.is_super_admin() %}
