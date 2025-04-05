@@ -3710,6 +3710,24 @@ def register_routes(app):
     def medical_test():
         """Serve the medical fields test page"""
         return render_template('medical-test.html')
+        
+    @app.route('/test-route')
+    def test_route():
+        """A simple test route to verify deployment"""
+        return """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Test Route</title>
+            <link rel="stylesheet" href="/static/styles.css">
+        </head>
+        <body>
+            <h1>Test Route Working</h1>
+            <p>This is a test route to verify that new routes are working properly.</p>
+            <p>Current time: """ + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + """</p>
+        </body>
+        </html>
+        """
     
     @app.route('/simple-test')
     def simple_test():
