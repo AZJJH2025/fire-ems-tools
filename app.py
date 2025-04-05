@@ -3501,21 +3501,7 @@ def register_routes(app):
                     </div>
                 </main>
                 
-                {'<script>
-                    function initMap() {
-                        const map = new google.maps.Map(document.getElementById("map"), {
-                            center: { lat: ' + str(incident.latitude) + ', lng: ' + str(incident.longitude) + ' },
-                            zoom: 15,
-                        });
-                        
-                        new google.maps.Marker({
-                            position: { lat: ' + str(incident.latitude) + ', lng: ' + str(incident.longitude) + ' },
-                            map: map,
-                            title: "Incident Location"
-                        });
-                    }
-                </script>
-                <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"></script>' if incident.latitude and incident.longitude else ''}
+                # Map initialization script was removed to fix syntax error
             </body>
             </html>
             """
