@@ -1357,6 +1357,157 @@ def register_routes(app):
             flash(f"Error loading settings page: {str(e)}", 'error')
             return redirect(url_for('admin_dashboard'))
     
+    # Admin Tool Management
+    @app.route('/admin/tools')
+    @login_required
+    def admin_tools():
+        """Admin tools management page"""
+        if not current_user.is_super_admin():
+            abort(403)  # Forbidden
+            
+        # Get list of all tools and their status
+        tools = [
+            {
+                "name": "Response Time Analyzer",
+                "route": "fire-ems-dashboard",
+                "icon": "stopwatch",
+                "status": "ready",
+                "enabled": True,
+                "description": "Upload and analyze incident data to visualize response time patterns, identify bottlenecks, and improve performance metrics."
+            },
+            {
+                "name": "Isochrone Map Generator",
+                "route": "isochrone-map",
+                "icon": "map",
+                "status": "ready",
+                "enabled": True,
+                "description": "Create coverage area maps based on emergency response travel times to visualize and optimize response boundaries."
+            },
+            {
+                "name": "Incident Logger",
+                "route": "incident-logger",
+                "icon": "clipboard-list",
+                "status": "ready",
+                "enabled": True,
+                "description": "Streamlined incident data entry and management system with NFIRS compliance, validation, and export capabilities."
+            },
+            {
+                "name": "Call Density Heatmap",
+                "route": "call-density-heatmap",
+                "icon": "fire",
+                "status": "ready",
+                "enabled": True,
+                "description": "Visualize historical call data with customizable heatmaps to identify activity hotspots and optimize resource allocation."
+            },
+            {
+                "name": "Coverage Gap Finder",
+                "route": "coverage-gap-finder",
+                "icon": "search-location",
+                "status": "ready",
+                "enabled": False,
+                "description": "Identify underserved areas in your jurisdiction to optimize station locations and resource deployment."
+            },
+            {
+                "name": "FireMapPro",
+                "route": "fire-map-pro",
+                "icon": "map-marked-alt",
+                "status": "ready",
+                "enabled": False,
+                "description": "Advanced interactive map creator for fire department and EMS planning with multiple data layers."
+            },
+            {
+                "name": "Data Formatter",
+                "route": "data-formatter",
+                "icon": "exchange-alt",
+                "status": "ready", 
+                "enabled": False,
+                "description": "Convert, standardize, and prepare your data for seamless use with any FireEMS.ai tool."
+            },
+            {
+                "name": "Station Overview",
+                "route": "station-overview",
+                "icon": "building",
+                "status": "ready",
+                "enabled": False,
+                "description": "Comprehensive overview of station performance, unit utilization, and response metrics by station."
+            }
+        ]
+        
+        # Get usage statistics
+        statistics = {
+            "total_usage": 2856,
+            "most_used": "Incident Logger",
+            "most_used_count": 872,
+            "avg_per_dept": 6.4,
+            "new_activations": 12
+        }
+        
+        try:
+            return render_template('admin/tools.html', tools=tools, statistics=statistics)
+        except jinja2.exceptions.TemplateNotFound:
+            app.logger.error("Template not found: admin/tools.html")
+            # Fallback to inline HTML with basic functionality
+            return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Admin Tool Management</title>
+                <link rel="stylesheet" href="/static/styles.css">
+            </head>
+            <body>
+                <h1>Tool Management</h1>
+                <p>The tool management template could not be found. Please check your deployment.</p>
+                <a href="/admin/dashboard">Return to Dashboard</a>
+            </body>
+            </html>
+            """
+    
+    @app.route('/admin/tools/usage')
+    @login_required
+    def admin_tools_usage():
+        """Admin tools usage statistics page"""
+        if not current_user.is_super_admin():
+            abort(403)  # Forbidden
+            
+        # Get tool usage statistics - in a real app, this would come from a database
+        tool_id = request.args.get('tool')
+        
+        # Sample data for the view
+        tools = [
+            {"name": "Response Time Analyzer", "id": "response-time-analyzer", "total_uses": 458, "departments": 12},
+            {"name": "Isochrone Map Generator", "id": "isochrone-map", "total_uses": 386, "departments": 14},
+            {"name": "Incident Logger", "id": "incident-logger", "total_uses": 872, "departments": 18},
+            {"name": "Call Density Heatmap", "id": "call-density-heatmap", "total_uses": 321, "departments": 11},
+            {"name": "Coverage Gap Finder", "id": "coverage-gap-finder", "total_uses": 214, "departments": 8},
+            {"name": "FireMapPro", "id": "fire-map-pro", "total_uses": 189, "departments": 7},
+            {"name": "Data Formatter", "id": "data-formatter", "total_uses": 276, "departments": 14},
+            {"name": "Station Overview", "id": "station-overview", "total_uses": 140, "departments": 9}
+        ]
+        
+        # Filter to specific tool if requested
+        if tool_id:
+            tools = [t for t in tools if t["id"] == tool_id]
+            
+        try:
+            return render_template('admin/tools-usage.html', tools=tools, selected_tool=tool_id)
+        except jinja2.exceptions.TemplateNotFound:
+            app.logger.error("Template not found: admin/tools-usage.html")
+            # Fallback to inline HTML with basic functionality
+            return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Tool Usage Statistics</title>
+                <link rel="stylesheet" href="/static/styles.css">
+            </head>
+            <body>
+                <h1>Tool Usage Statistics</h1>
+                <p>The tool usage statistics template could not be found. Please check your deployment.</p>
+                <a href="/admin/tools">Return to Tool Management</a>
+            </body>
+            </html>
+            """
+    
     # Department routing
     @app.route('/dept/<dept_code>')
     @login_required
@@ -3593,154 +3744,6 @@ def register_routes(app):
     
     # Include the rest of your original routes here
 
-# Admin Tool Management Routes
-@app.route('/admin/tools')
-@login_required
-def admin_tools():
-    """Admin tools management page"""
-    if not current_user.is_super_admin():
-        abort(403)  # Forbidden
-        
-    # Get list of all tools and their status
-    tools = [
-        {
-            "name": "Response Time Analyzer",
-            "route": "fire-ems-dashboard",
-            "icon": "stopwatch",
-            "status": "ready",
-            "enabled": True,
-            "description": "Upload and analyze incident data to visualize response time patterns, identify bottlenecks, and improve performance metrics."
-        },
-        {
-            "name": "Isochrone Map Generator",
-            "route": "isochrone-map",
-            "icon": "map",
-            "status": "ready",
-            "enabled": True,
-            "description": "Create coverage area maps based on emergency response travel times to visualize and optimize response boundaries."
-        },
-        {
-            "name": "Incident Logger",
-            "route": "incident-logger",
-            "icon": "clipboard-list",
-            "status": "ready",
-            "enabled": True,
-            "description": "Streamlined incident data entry and management system with NFIRS compliance, validation, and export capabilities."
-        },
-        {
-            "name": "Call Density Heatmap",
-            "route": "call-density-heatmap",
-            "icon": "fire",
-            "status": "ready",
-            "enabled": True,
-            "description": "Visualize historical call data with customizable heatmaps to identify activity hotspots and optimize resource allocation."
-        },
-        {
-            "name": "Coverage Gap Finder",
-            "route": "coverage-gap-finder",
-            "icon": "search-location",
-            "status": "ready",
-            "enabled": False,
-            "description": "Identify underserved areas in your jurisdiction to optimize station locations and resource deployment."
-        },
-        {
-            "name": "FireMapPro",
-            "route": "fire-map-pro",
-            "icon": "map-marked-alt",
-            "status": "ready",
-            "enabled": False,
-            "description": "Advanced interactive map creator for fire department and EMS planning with multiple data layers."
-        },
-        {
-            "name": "Data Formatter",
-            "route": "data-formatter",
-            "icon": "exchange-alt",
-            "status": "ready", 
-            "enabled": False,
-            "description": "Convert, standardize, and prepare your data for seamless use with any FireEMS.ai tool."
-        },
-        {
-            "name": "Station Overview",
-            "route": "station-overview",
-            "icon": "building",
-            "status": "ready",
-            "enabled": False,
-            "description": "Comprehensive overview of station performance, unit utilization, and response metrics by station."
-        }
-    ]
-    
-    # Get usage statistics
-    statistics = {
-        "total_usage": 2856,
-        "most_used": "Incident Logger",
-        "most_used_count": 872,
-        "avg_per_dept": 6.4,
-        "new_activations": 12
-    }
-    
-    try:
-        return render_template('admin/tools.html', tools=tools, statistics=statistics)
-    except jinja2.exceptions.TemplateNotFound:
-        app.logger.error("Template not found: admin/tools.html")
-        return """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Admin Tool Management</title>
-            <link rel="stylesheet" href="/static/styles.css">
-        </head>
-        <body>
-            <h1>Tool Management</h1>
-            <p>The tool management template could not be found. Please check your deployment.</p>
-            <a href="/admin/dashboard">Return to Dashboard</a>
-        </body>
-        </html>
-        """
-
-@app.route('/admin/tools/usage')
-@login_required
-def admin_tools_usage():
-    """Admin tools usage statistics page"""
-    if not current_user.is_super_admin():
-        abort(403)  # Forbidden
-        
-    # Get tool usage statistics - in a real app, this would come from a database
-    tool_id = request.args.get('tool')
-    
-    # Sample data for the view
-    tools = [
-        {"name": "Response Time Analyzer", "id": "response-time-analyzer", "total_uses": 458, "departments": 12},
-        {"name": "Isochrone Map Generator", "id": "isochrone-map", "total_uses": 386, "departments": 14},
-        {"name": "Incident Logger", "id": "incident-logger", "total_uses": 872, "departments": 18},
-        {"name": "Call Density Heatmap", "id": "call-density-heatmap", "total_uses": 321, "departments": 11},
-        {"name": "Coverage Gap Finder", "id": "coverage-gap-finder", "total_uses": 214, "departments": 8},
-        {"name": "FireMapPro", "id": "fire-map-pro", "total_uses": 189, "departments": 7},
-        {"name": "Data Formatter", "id": "data-formatter", "total_uses": 276, "departments": 14},
-        {"name": "Station Overview", "id": "station-overview", "total_uses": 140, "departments": 9}
-    ]
-    
-    # Filter to specific tool if requested
-    if tool_id:
-        tools = [t for t in tools if t["id"] == tool_id]
-        
-    try:
-        return render_template('admin/tools-usage.html', tools=tools, selected_tool=tool_id)
-    except jinja2.exceptions.TemplateNotFound:
-        app.logger.error("Template not found: admin/tools-usage.html")
-        return """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Tool Usage Statistics</title>
-            <link rel="stylesheet" href="/static/styles.css">
-        </head>
-        <body>
-            <h1>Tool Usage Statistics</h1>
-            <p>The tool usage statistics template could not be found. Please check your deployment.</p>
-            <a href="/admin/tools">Return to Tool Management</a>
-        </body>
-        </html>
-        """
 
 # Create app instance for running directly
 try:
