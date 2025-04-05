@@ -2347,6 +2347,74 @@ def register_routes(app):
             
         return render_template('isochrone-map.html', department=department, user=current_user)
         
+    # Department-specific Coverage Gap Finder
+    @app.route('/dept/<dept_code>/coverage-gap-finder')
+    @login_required
+    def dept_coverage_gap_finder(dept_code):
+        department = Department.query.filter_by(code=dept_code).first_or_404()
+        
+        # Check if user belongs to this department unless they are super_admin
+        if not current_user.is_super_admin() and current_user.department_id != department.id:
+            abort(403)  # Forbidden
+            
+        # Check if feature is enabled for this department
+        if not department.features_enabled.get('coverage_gap_finder', False):
+            flash('The Coverage Gap Finder feature is not enabled for your department', 'warning')
+            return redirect(url_for('dept_home', dept_code=dept_code))
+            
+        return render_template('coverage-gap-finder.html', department=department, user=current_user)
+        
+    # Department-specific FireMapPro
+    @app.route('/dept/<dept_code>/fire-map-pro')
+    @login_required
+    def dept_fire_map_pro(dept_code):
+        department = Department.query.filter_by(code=dept_code).first_or_404()
+        
+        # Check if user belongs to this department unless they are super_admin
+        if not current_user.is_super_admin() and current_user.department_id != department.id:
+            abort(403)  # Forbidden
+            
+        # Check if feature is enabled for this department
+        if not department.features_enabled.get('fire_map_pro', False):
+            flash('The FireMapPro feature is not enabled for your department', 'warning')
+            return redirect(url_for('dept_home', dept_code=dept_code))
+            
+        return render_template('fire-map-pro.html', department=department, user=current_user)
+        
+    # Department-specific Data Formatter
+    @app.route('/dept/<dept_code>/data-formatter')
+    @login_required
+    def dept_data_formatter(dept_code):
+        department = Department.query.filter_by(code=dept_code).first_or_404()
+        
+        # Check if user belongs to this department unless they are super_admin
+        if not current_user.is_super_admin() and current_user.department_id != department.id:
+            abort(403)  # Forbidden
+            
+        # Check if feature is enabled for this department
+        if not department.features_enabled.get('data_formatter', False):
+            flash('The Data Formatter feature is not enabled for your department', 'warning')
+            return redirect(url_for('dept_home', dept_code=dept_code))
+            
+        return render_template('data-formatter.html', department=department, user=current_user)
+        
+    # Department-specific Station Overview
+    @app.route('/dept/<dept_code>/station-overview')
+    @login_required
+    def dept_station_overview(dept_code):
+        department = Department.query.filter_by(code=dept_code).first_or_404()
+        
+        # Check if user belongs to this department unless they are super_admin
+        if not current_user.is_super_admin() and current_user.department_id != department.id:
+            abort(403)  # Forbidden
+            
+        # Check if feature is enabled for this department
+        if not department.features_enabled.get('station_overview', False):
+            flash('The Station Overview feature is not enabled for your department', 'warning')
+            return redirect(url_for('dept_home', dept_code=dept_code))
+            
+        return render_template('station-overview.html', department=department, user=current_user)
+        
     # Department Reports
     @app.route('/dept/<dept_code>/reports')
     @login_required
