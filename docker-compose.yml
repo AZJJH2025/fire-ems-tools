@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: fire-ems-tools-app
+    volumes:
+      - ./:/app
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=testing
+      - DATABASE_URL=sqlite:///test_fire_ems.db
+    command: python app.py
+    networks:
+      - fire-ems-network
+
+  test:
+    build: .
+    container_name: fire-ems-tools-test
+    volumes:
+      - ./:/app
+      - ./test-results:/app/test-results
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=testing
+      - DATABASE_URL=sqlite:///test_fire_ems.db
+    command: python run_all_tests.py --simplified
+    networks:
+      - fire-ems-network
+
+  test-error:
+    build: .
+    container_name: fire-ems-tools-test-error
+    volumes:
+      - ./:/app
+      - ./test-results:/app/test-results
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=testing
+      - DATABASE_URL=sqlite:///test_fire_ems.db
+    command: python run_all_tests.py --error-tests
+    networks:
+      - fire-ems-network
+
+  test-boundary:
+    build: .
+    container_name: fire-ems-tools-test-boundary
+    volumes:
+      - ./:/app
+      - ./test-results:/app/test-results
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=testing
+      - DATABASE_URL=sqlite:///test_fire_ems.db
+    command: python run_all_tests.py --boundary-tests
+    networks:
+      - fire-ems-network
+
+  test-performance:
+    build: .
+    container_name: fire-ems-tools-test-performance
+    volumes:
+      - ./:/app
+      - ./test-results:/app/test-results
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=testing
+      - DATABASE_URL=sqlite:///test_fire_ems.db
+    command: python run_all_tests.py --performance
+    networks:
+      - fire-ems-network
+
+networks:
+  fire-ems-network:
+    driver: bridge
