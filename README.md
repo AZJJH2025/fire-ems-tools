@@ -91,6 +91,16 @@ Tests that validate application security and vulnerability mitigation:
 
 Documentation: [SECURITY_TESTING.md](SECURITY_TESTING.md)
 
+### Test Coverage Analysis
+
+Analyzes which parts of the code are covered by tests:
+
+```
+./run_coverage.py --categories all --html
+```
+
+Documentation: [COVERAGE_TESTING.md](COVERAGE_TESTING.md)
+
 ## CI/CD Integration
 
 The project includes GitHub Actions workflows for continuous integration and deployment:

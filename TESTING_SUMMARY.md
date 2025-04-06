@@ -174,6 +174,28 @@ Security tests focus on authentication, authorization, and data protection:
 
 **Documentation:** [SECURITY_TESTING.md](SECURITY_TESTING.md)
 
+## Test Coverage Analysis
+
+Test coverage analysis measures how much of the codebase is exercised by our tests:
+
+**Key Features:**
+- Line-by-line coverage tracking
+- HTML reports with visual highlighting
+- XML reports for CI integration
+- Coverage threshold enforcement
+- Exclusion of test code and utilities
+
+**Tools:**
+- `run_coverage.py`: Script for running tests with coverage analysis
+- `.coveragerc`: Configuration for coverage reporting
+
+**Running Coverage Analysis:**
+```
+./run_coverage.py --categories all --html --xml
+```
+
+**Documentation:** [COVERAGE_TESTING.md](COVERAGE_TESTING.md)
+
 ## Test Execution and Reporting
 
 Test execution and reporting is streamlined through various scripts:
@@ -181,7 +203,9 @@ Test execution and reporting is streamlined through various scripts:
 - `run_all_tests.py`: Executes tests by category
 - `run_docker_tests.sh`: Runs tests in Docker containers
 - `run_e2e_tests.sh`: Executes end-to-end tests
+- `run_coverage.py`: Runs tests with coverage analysis
 - HTML and JSON test reports for simplified analysis
+- Coverage reports in HTML and XML formats
 
 ## Best Practices
 
