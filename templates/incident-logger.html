@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
     <link rel="stylesheet" href="/static/styles.css">
     <link rel="stylesheet" href="/static/incident-logger.css?v=1.2">
+    <link rel="stylesheet" href="/static/form-validation-fix.css">
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     
     <!-- jQuery and Select2 -->
@@ -1769,10 +1770,10 @@
     <script src="https://maps.googleapis.com/maps/api/js?libraries=places&callback=googleMapsLoaded"></script>
     
     <!-- NFIRS module scripts -->
-    <script src="/static/js/nfirs/nfirs-codes.js" type="module"></script>
+    <script src="/static/js/nfirs/nfirs-codes.js"></script>
     <script src="/static/js/nfirs/nfirs-validator.js"></script>
     <script src="/static/js/nfirs/nfirs-export.js"></script>
-    <script src="/static/js/nfirs/nfirs-ui.js" type="module"></script>
+    <script src="/static/js/nfirs/nfirs-ui.js"></script>
     
     <!-- Component scripts - changed from type="module" to normal scripts -->
     <script src="/static/js/components/incident-form.js"></script>
@@ -2107,5 +2108,39 @@
     });
     </script>
     <script src="/static/add-medical-sections.js"></script>
+    
+    <!-- Fixes for module loading and form validation issues -->
+    <script src="/static/js/incident-module-fix.js"></script>
+    <script src="/static/js/form-validation-fix.js"></script>
+    <script>
+        // Initialize the fixes once the page is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Applying fixes to Incident Logger...");
+            
+            // Apply form validation fixes
+            if (window.IncidentLogger && window.IncidentLogger.Form) {
+                console.log("IncidentLogger namespace loaded successfully");
+                
+                // Set up save button handlers
+                const saveDraftBtn = document.getElementById('save-draft-btn');
+                if (saveDraftBtn) {
+                    saveDraftBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        window.IncidentLogger.Form.save(false);
+                    });
+                }
+                
+                const submitBtn = document.getElementById('submit-incident-btn');
+                if (submitBtn) {
+                    submitBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        window.IncidentLogger.Form.save(true);
+                    });
+                }
+            } else {
+                console.warn("IncidentLogger namespace not found - using fallback functionality");
+            }
+        });
+    </script>
 </body>
 </html>
