@@ -1770,17 +1770,19 @@
     <script src="https://maps.googleapis.com/maps/api/js?libraries=places&callback=googleMapsLoaded"></script>
     
     <!-- NFIRS module scripts -->
-    <script src="/static/js/nfirs/nfirs-codes.js"></script>
-    <script src="/static/js/nfirs/nfirs-validator.js"></script>
-    <script src="/static/js/nfirs/nfirs-export.js"></script>
+    <!-- Using fixed versions of the NFIRS scripts to resolve module loading issues -->
+    <script src="/static/js/nfirs/nfirs-codes-fix.js"></script>
+    <script src="/static/js/nfirs/nfirs-validator-fix.js"></script>
+    <script src="/static/js/nfirs/nfirs-export-fix.js"></script>
     <script src="/static/js/nfirs/nfirs-ui.js"></script>
     
     <!-- Component scripts - changed from type="module" to normal scripts -->
     <script src="/static/js/components/incident-form.js"></script>
-    <script src="/static/js/components/incident-validator.js"></script>
+    <!-- Using fixed versions of components to resolve module loading issues -->
+    <script src="/static/js/components/incident-validator-fix.js"></script>
     <script src="/static/js/components/incident-list.js"></script>
     <script src="/static/js/components/incident-map.js"></script>
-    <script src="/static/js/components/incident-export.js"></script>
+    <script src="/static/js/components/incident-export-fix.js"></script>
     <script src="/static/js/components/hipaa-compliance.js"></script>
     <script src="/static/js/components/cad-integration.js"></script>
     
@@ -2112,6 +2114,29 @@
     <!-- Fixes for module loading and form validation issues -->
     <script src="/static/js/incident-module-fix.js"></script>
     <script src="/static/js/form-validation-fix.js"></script>
+    <script>
+        // NFIRS module integration fix
+        window.IncidentLogger = window.IncidentLogger || {};
+        
+        // Resolve references between modules
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the NFIRS integration
+            if (window.IncidentLogger.NFIRS) {
+                // Connect validator and export modules that previously used imports
+                console.log("Connecting NFIRS modules in namespace pattern...");
+                
+                // Backwards compatibility for code expecting the old import/export pattern
+                window.validateNFIRSCompliance = window.IncidentLogger.NFIRS.Validator.validate;
+                window.isNFIRSReadyForExport = window.IncidentLogger.NFIRS.Validator.isReadyForExport;
+                window.getMissingNFIRSFields = window.IncidentLogger.NFIRS.Validator.getMissingFields;
+                window.convertToNFIRSXML = window.IncidentLogger.NFIRS.Export.toXML;
+                window.convertToNFIRSCSV = window.IncidentLogger.NFIRS.Export.toCSV;
+                window.convertToNFIRSJSON = window.IncidentLogger.NFIRS.Export.toJSON;
+                
+                console.log("NFIRS module integration completed successfully");
+            }
+        });
+    </script>
     <script>
         // Initialize the fixes once the page is loaded
         document.addEventListener('DOMContentLoaded', function() {
