@@ -128,6 +128,8 @@ function setupEventListeners() {
     // Map controls
     document.getElementById('fullscreen-btn').addEventListener('click', toggleFullscreen);
     document.getElementById('home-btn').addEventListener('click', resetMapView);
+    document.getElementById('title-toggle-btn').addEventListener('click', toggleMapTitle);
+    document.getElementById('edit-title-btn').addEventListener('click', showMapTitleModal);
     
     // Export buttons
     document.getElementById('export-png').addEventListener('click', exportPNG);
@@ -137,6 +139,16 @@ function setupEventListeners() {
     document.getElementById('export-data').addEventListener('click', function() {
         showExportModal('data');
     });
+    
+    // Map title modal
+    document.getElementById('map-title-apply').addEventListener('click', applyMapTitle);
+    document.getElementById('map-title-cancel').addEventListener('click', function() {
+        closeModal('map-title-modal');
+    });
+    
+    // Logo upload handlers
+    document.getElementById('map-logo-file').addEventListener('change', handleLogoUpload);
+    document.getElementById('logo-file').addEventListener('change', handleExportLogoUpload);
     
     console.log('Event listeners set up successfully');
 }
@@ -2850,4 +2862,110 @@ function createMarkerPopup(marker) {
     });
     
     return popupContent;
+}
+
+/**
+ * Toggle map title visibility
+ */
+function toggleMapTitle() {
+    const titleContainer = document.getElementById('map-title-container');
+    titleContainer.classList.toggle('hidden');
+    
+    if (!titleContainer.classList.contains('hidden') && 
+        !document.getElementById('map-title').textContent.trim()) {
+        // If showing title but it's empty, show modal
+        showMapTitleModal();
+    }
+}
+
+/**
+ * Show map title edit modal
+ */
+function showMapTitleModal() {
+    const modal = document.getElementById('map-title-modal');
+    
+    // Populate the form with current values
+    document.getElementById('map-title-input').value = document.getElementById('map-title').textContent;
+    document.getElementById('map-subtitle-input').value = document.getElementById('map-subtitle').textContent;
+    
+    // Show the modal
+    modal.style.display = 'flex';
+}
+
+/**
+ * Apply map title changes
+ */
+function applyMapTitle() {
+    const title = document.getElementById('map-title-input').value;
+    const subtitle = document.getElementById('map-subtitle-input').value;
+    const position = document.getElementById('map-title-position').value;
+    
+    // Update the title elements
+    document.getElementById('map-title').textContent = title;
+    document.getElementById('map-subtitle').textContent = subtitle;
+    
+    // Update position
+    const titleContainer = document.getElementById('map-title-container');
+    titleContainer.className = 'map-title-container';
+    
+    if (position === 'topleft') {
+        titleContainer.style.left = '10px';
+        titleContainer.style.transform = 'none';
+    } else if (position === 'topright') {
+        titleContainer.style.left = 'auto';
+        titleContainer.style.right = '10px';
+        titleContainer.style.transform = 'none';
+    } else { // top center
+        titleContainer.style.left = '50%';
+        titleContainer.style.right = 'auto';
+        titleContainer.style.transform = 'translateX(-50%)';
+    }
+    
+    // Show the title
+    titleContainer.classList.remove('hidden');
+    
+    // Close the modal
+    closeModal('map-title-modal');
+}
+
+/**
+ * Handle logo file upload for map title
+ */
+function handleLogoUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Display file name
+    document.getElementById('map-logo-file-name').textContent = file.name;
+    
+    // Read the file and preview it
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const logoPreview = document.getElementById('map-logo-preview');
+        logoPreview.style.backgroundImage = `url(${e.target.result})`;
+        
+        // Also set it on the map
+        const mapLogo = document.getElementById('map-logo');
+        mapLogo.style.backgroundImage = `url(${e.target.result})`;
+    };
+    reader.readAsDataURL(file);
+}
+
+/**
+ * Handle logo file upload for export
+ */
+function handleExportLogoUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Display file name
+    document.getElementById('logo-file-name').textContent = file.name;
+    
+    // Read the file and preview it
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const logoPreview = document.getElementById('logo-preview');
+        logoPreview.style.backgroundImage = `url(${e.target.result})`;
+    };
+    reader.readAsDataURL(file);
 }

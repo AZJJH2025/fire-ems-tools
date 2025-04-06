@@ -1248,3 +1248,103 @@ footer {
     right: 20px;
     z-index: 9999;
 }
+
+/* Map Title and Logo Styles */
+.map-title-container {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    padding: 8px 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    max-width: 80%;
+    transition: all 0.3s ease;
+}
+
+.map-title-container.hidden {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-50%) translateY(-20px);
+}
+
+.map-logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.map-title-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.map-title-text h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.map-title-text p {
+    margin: 3px 0 0 0;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.logo-upload {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.custom-file-upload {
+    display: inline-block;
+    padding: 6px 12px;
+    cursor: pointer;
+    background-color: var(--light-gray);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.custom-file-upload:hover {
+    background-color: #e0e0e0;
+}
+
+#logo-file-name, #map-logo-file-name {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+.logo-preview {
+    width: 60px;
+    height: 60px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-top: 5px;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #f9f9f9;
+}
