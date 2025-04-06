@@ -111,6 +111,9 @@ else
     python app.py & 
     APP_PID=$!
     
+    # Set the BASE_URL environment variable
+    export BASE_URL=http://localhost:8080
+    
     # Wait for the application to start
     echo "Waiting for the application to start..."
     sleep 5
