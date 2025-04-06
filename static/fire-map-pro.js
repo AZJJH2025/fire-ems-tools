@@ -1839,9 +1839,37 @@ function exportPNG() {
         exportContainer.style.backgroundColor = 'white';
         document.body.appendChild(exportContainer);
         
-        // Clone the map for capturing
-        const clonedMap = map.getContainer().cloneNode(true);
-        exportContainer.appendChild(clonedMap);
+        // Create a new container for just the map content
+        const mapContentContainer = document.createElement('div');
+        mapContentContainer.style.width = '100%';
+        mapContentContainer.style.height = '100%';
+        mapContentContainer.style.overflow = 'hidden';
+        mapContentContainer.style.position = 'relative';
+        exportContainer.appendChild(mapContentContainer);
+        
+        // Get the map canvas elements - these contain the actual map without UI elements
+        const mapCanvas = map.getContainer().querySelector('.leaflet-map-pane');
+        if (mapCanvas) {
+            // Clone just the map content, not the controls
+            const mapCanvasClone = mapCanvas.cloneNode(true);
+            mapContentContainer.appendChild(mapCanvasClone);
+        } else {
+            // Fallback to cloning the whole map if we can't find just the map pane
+            const clonedMap = map.getContainer().cloneNode(true);
+            
+            // Remove UI elements from clone
+            const uiElements = clonedMap.querySelectorAll(
+                '.leaflet-control-container, .leaflet-top, .leaflet-bottom, ' +
+                '.map-controls, .coords-display, .navbar, .tool-header'
+            );
+            uiElements.forEach(element => {
+                if (element.parentNode) {
+                    element.parentNode.removeChild(element);
+                }
+            });
+            
+            mapContentContainer.appendChild(clonedMap);
+        }
         
         // Add title banner
         const titleBanner = document.createElement('div');
@@ -2068,9 +2096,37 @@ function exportPDF() {
         exportContainer.style.backgroundColor = 'white';
         document.body.appendChild(exportContainer);
         
-        // Clone the map for capturing
-        const clonedMap = map.getContainer().cloneNode(true);
-        exportContainer.appendChild(clonedMap);
+        // Create a new container for just the map content
+        const mapContentContainer = document.createElement('div');
+        mapContentContainer.style.width = '100%';
+        mapContentContainer.style.height = '100%';
+        mapContentContainer.style.overflow = 'hidden';
+        mapContentContainer.style.position = 'relative';
+        exportContainer.appendChild(mapContentContainer);
+        
+        // Get the map canvas elements - these contain the actual map without UI elements
+        const mapCanvas = map.getContainer().querySelector('.leaflet-map-pane');
+        if (mapCanvas) {
+            // Clone just the map content, not the controls
+            const mapCanvasClone = mapCanvas.cloneNode(true);
+            mapContentContainer.appendChild(mapCanvasClone);
+        } else {
+            // Fallback to cloning the whole map if we can't find just the map pane
+            const clonedMap = map.getContainer().cloneNode(true);
+            
+            // Remove UI elements from clone
+            const uiElements = clonedMap.querySelectorAll(
+                '.leaflet-control-container, .leaflet-top, .leaflet-bottom, ' +
+                '.map-controls, .coords-display, .navbar, .tool-header'
+            );
+            uiElements.forEach(element => {
+                if (element.parentNode) {
+                    element.parentNode.removeChild(element);
+                }
+            });
+            
+            mapContentContainer.appendChild(clonedMap);
+        }
         
         // Add title banner
         const titleBanner = document.createElement('div');
