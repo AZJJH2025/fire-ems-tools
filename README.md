@@ -81,6 +81,16 @@ Browser-based tests that validate the application from a user's perspective:
 
 Documentation: [E2E_TESTING.md](E2E_TESTING.md)
 
+### Security Testing
+
+Tests that validate application security and vulnerability mitigation:
+
+```
+./run_e2e_tests.sh --test-match="security.spec.js"
+```
+
+Documentation: [SECURITY_TESTING.md](SECURITY_TESTING.md)
+
 ## CI/CD Integration
 
 The project includes GitHub Actions workflows for continuous integration and deployment:

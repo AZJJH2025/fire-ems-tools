@@ -66,6 +66,7 @@ E2E tests are located in the `e2e/tests` directory and are organized by feature:
 - `fire-map-pro.spec.js`: Fire Map Pro feature tests
 - `response-time-analysis.spec.js`: Response Time Analysis feature tests
 - `data-formatter.spec.js`: Data Formatter feature tests
+- `security.spec.js`: Security and vulnerability tests
 
 ## Fixtures and Utilities
 

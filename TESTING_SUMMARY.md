@@ -158,10 +158,21 @@ Security tests focus on authentication, authorization, and data protection:
 - Authentication and session management
 - Authorization and access control
 - Input validation and sanitization
-- HIPAA compliance
+- XSS and CSRF prevention
+- SQL injection prevention
+- Rate limiting and brute force protection
+- HIPAA compliance requirements
 
-**Examples:**
+**Test Files:**
+- `e2e/tests/security.spec.js`: End-to-end security tests
 - `test_examples/test_incident_authentication_errors.py`: Example of authentication error testing
+
+**Running Security Tests:**
+```
+./run_e2e_tests.sh --test-match="security.spec.js"
+```
+
+**Documentation:** [SECURITY_TESTING.md](SECURITY_TESTING.md)
 
 ## Test Execution and Reporting
 
