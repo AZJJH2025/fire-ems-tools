@@ -64,12 +64,17 @@ E2E tests are located in the `e2e/tests` directory and are organized by feature:
 - `call-density.spec.js`: Call Density Heatmap tests
 - `station-overview.spec.js`: Station Overview feature tests
 - `fire-map-pro.spec.js`: Fire Map Pro feature tests
+- `response-time-analysis.spec.js`: Response Time Analysis feature tests
+- `data-formatter.spec.js`: Data Formatter feature tests
 
 ## Fixtures and Utilities
 
 - `fixtures/auth-fixture.js`: Authentication fixtures for different user roles
 - `fixtures/station_data_sample.csv`: Sample data for Station Overview tests
 - `fixtures/fire_incidents_sample.csv`: Sample incident data for Fire Map Pro tests
+- `fixtures/response_time_sample.csv`: Sample data for Response Time Analysis tests
+- `fixtures/source_data_sample.csv`: Sample source data for Data Formatter tests
+- `fixtures/invalid_file.txt`: Invalid file format for error case testing
 - `utils/auth.js`: Authentication utilities
 
 ## Configuration
