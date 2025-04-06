@@ -30,6 +30,17 @@ fix_deployment.apply_fixes()
 from database import db, Department, Incident, User, Station
 from config import config
 
+# Import test dashboard routes
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+try:
+    import test_dashboard_routes
+    has_test_dashboard = True
+except ImportError:
+    logger.warning("Test dashboard routes not available")
+    has_test_dashboard = False
+
 login_manager = LoginManager()
 
 # Create a safer version of limiter that won't fail in production
@@ -3874,6 +3885,117 @@ def register_routes(app):
     def station_overview():
         """Serve the Station Overview tool"""
         return render_template('station-overview.html')
+    
+    # Test Dashboard routes
+    @app.route('/test-dashboard')
+    def test_dashboard():
+        """Serve the Test Dashboard tool"""
+        try:
+            return render_template('test-dashboard.html')
+        except Exception as e:
+            logger.error(f"Error rendering test dashboard: {str(e)}")
+            return f"Error: {str(e)}", 500
+            
+    @app.route('/api/test-dashboard/data')
+    def test_dashboard_data():
+        """Get test dashboard mock data for visualization."""
+        try:
+            # Import sample data generator
+            try:
+                from tests.monitoring.sample_data import generate_mock_dashboard_data
+                mock_data = generate_mock_dashboard_data()
+                return jsonify(mock_data)
+            except ImportError:
+                # If we can't import the sample data generator, return empty data
+                logger.warning("Test dashboard sample data not available")
+                return jsonify({
+                    'summary': {
+                        'totalRuns': 0,
+                        'successRate': 0,
+                        'totalTests': 0,
+                        'activeAlerts': 0
+                    },
+                    'history': {
+                        'dates': [],
+                        'passed': [],
+                        'failed': []
+                    },
+                    'typeDistribution': {},
+                    'durationsByType': {},
+                    'latestRuns': [],
+                    'alertRules': []
+                })
+        except Exception as e:
+            logger.error(f"Error fetching test dashboard data: {str(e)}")
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/test-runs/<int:run_id>')
+    def get_test_run(run_id):
+        """Get details for a specific test run."""
+        try:
+            # Import sample data generator
+            try:
+                import random
+                from tests.monitoring.sample_data import generate_mock_dashboard_data
+                
+                # Use mock data
+                mock_data = generate_mock_dashboard_data()
+                run = next((r for r in mock_data['latestRuns'] if r['id'] == run_id), None)
+                
+                if not run:
+                    return jsonify({'error': 'Test run not found'}), 404
+                
+                # Generate mock results
+                results = []
+                
+                # Add passed tests
+                for i in range(run['passed_tests']):
+                    results.append({
+                        'id': i + 1,
+                        'name': f'test_passed_{i + 1}',
+                        'module': f'tests.{run["type"]}.test_module_{i // 5 + 1}',
+                        'class': f'Test{run["type"].capitalize()}Class{i // 10 + 1}',
+                        'result': 'pass',
+                        'duration': round(0.1 + random.random() * 0.5, 3)
+                    })
+                
+                # Add failed tests
+                for i in range(run['failed_tests']):
+                    results.append({
+                        'id': i + run['passed_tests'] + 1,
+                        'name': f'test_failed_{i + 1}',
+                        'module': f'tests.{run["type"]}.test_module_{i // 2 + 1}',
+                        'class': f'Test{run["type"].capitalize()}Class{i // 3 + 1}',
+                        'result': 'fail',
+                        'duration': round(0.1 + random.random() * 0.5, 3),
+                        'error_message': f'AssertionError: Expected True but got False',
+                        'error_type': 'AssertionError'
+                    })
+                
+                # Add skipped tests
+                for i in range(run['skipped_tests']):
+                    results.append({
+                        'id': i + run['passed_tests'] + run['failed_tests'] + 1,
+                        'name': f'test_skipped_{i + 1}',
+                        'module': f'tests.{run["type"]}.test_module_{i // 2 + 1}',
+                        'class': f'Test{run["type"].capitalize()}Class{i // 3 + 1}',
+                        'result': 'skip',
+                        'duration': 0
+                    })
+                
+                # Add results to run data
+                run_copy = run.copy()
+                run_copy['results'] = results
+                
+                return jsonify(run_copy)
+            except ImportError:
+                # If we can't import the sample data generator, return empty data
+                logger.warning("Test dashboard sample data not available")
+                return jsonify({'error': 'Test run details not available'}), 404
+                
+        except Exception as e:
+            logger.error(f"Error fetching test run {run_id}: {str(e)}")
+            return jsonify({'error': str(e)}), 500
     
     # Include the rest of your original routes here
 
