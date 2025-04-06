@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>FireEMS.ai - User Guide</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="stylesheet" href="/static/home-styles.css">
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Favicon -->
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+  <style>
+    /* User Guide specific styles */
+    .guide-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .guide-nav {
+      position: sticky;
+      top: 20px;
+      width: 280px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 30px;
+      align-self: flex-start;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .guide-content {
+      flex: 1;
+      min-width: 0;
+      padding-left: 30px;
+    }
+    
+    .guide-section {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+    
+    .guide-section h2 {
+      color: #3498db;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+      margin-top: 0;
+    }
+    
+    .guide-topic {
+      margin-bottom: 40px;
+    }
+    
+    .guide-topic h3 {
+      color: #2c3e50;
+      margin-bottom: 15px;
+    }
+    
+    .guide-img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin: 20px 0;
+    }
+    
+    .guide-flex {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    
+    .guide-search {
+      margin-bottom: 30px;
+    }
+    
+    .guide-search input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    
+    .nav-list {
+      list-style-type: none;
+      padding-left: 0;
+    }
+    
+    .nav-list li {
+      margin-bottom: 8px;
+    }
+    
+    .nav-list a {
+      color: #2c3e50;
+      text-decoration: none;
+      display: block;
+      padding: 5px 10px;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+    
+    .nav-list a:hover {
+      background-color: #e9ecef;
+    }
+    
+    .nav-list a.active {
+      background-color: #3498db;
+      color: white;
+    }
+    
+    .nav-section {
+      margin-bottom: 15px;
+    }
+    
+    .nav-section-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
+    
+    .sub-nav {
+      list-style-type: none;
+      padding-left: 15px;
+    }
+    
+    .callout {
+      background-color: #f8f9fa;
+      border-left: 4px solid #3498db;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 0 4px 4px 0;
+    }
+    
+    .callout.warning {
+      border-left-color: #e74c3c;
+    }
+    
+    .callout.tip {
+      border-left-color: #2ecc71;
+    }
+    
+    @media (max-width: 991px) {
+      .guide-flex {
+        flex-direction: column;
+      }
+      
+      .guide-nav {
+        width: 100%;
+        position: relative;
+        margin-bottom: 30px;
+      }
+      
+      .guide-content {
+        padding-left: 0;
+      }
+    }
+    
+    /* Table styles */
+    .guide-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    
+    .guide-table th, .guide-table td {
+      padding: 12px 15px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    
+    .guide-table th {
+      background-color: #f8f9fa;
+    }
+    
+    .guide-table tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+    
+    /* Code block styles */
+    .code-block {
+      background-color: #f8f9fa;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 15px;
+      font-family: monospace;
+      overflow-x: auto;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="navbar">
+    <div class="logo">
+      <a href="/">
+        <i class="fas fa-fire"></i> FireEMS.ai
+      </a>
+    </div>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/fire-ems-dashboard">Response Time Analyzer</a>
+      <a href="/isochrone-map">Isochrone Map</a>
+      <a href="/call-density-heatmap">Call Density</a>
+      <a href="/station-overview">Station Overview</a>
+      <a href="/incident-logger">Incident Logger</a>
+      <a href="/coverage-gap-finder">Coverage Gap Finder</a>
+      <a href="/fire-map-pro">FireMapPro</a>
+      <a href="/data-formatter">Data Formatter</a>
+      <a href="/user-guide" class="active">User Guide</a>
+    </div>
+  </div>
+
+  <header class="tool-header">
+    <div class="container">
+      <h1><i class="fas fa-book"></i> User Guide</h1>
+      <p>Comprehensive documentation for using FireEMS.ai tools and features</p>
+    </div>
+  </header>
+
+  <main class="guide-container">
+    <div class="guide-search">
+      <input type="text" id="guideSearch" placeholder="Search the user guide..." onkeyup="searchGuide()">
+    </div>
+
+    <div class="guide-flex">
+      <nav class="guide-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Getting Started</div>
+          <ul class="nav-list">
+            <li><a href="#introduction" class="active">Introduction</a></li>
+            <li><a href="#account-setup">Account Setup</a></li>
+            <li><a href="#navigation">Navigating the Platform</a></li>
+            <li><a href="#user-roles">User Roles & Permissions</a></li>
+          </ul>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Core Tools</div>
+          <ul class="nav-list">
+            <li>
+              <a href="#incident-logger">Incident Logger</a>
+              <ul class="sub-nav">
+                <li><a href="#creating-incidents">Creating Incidents</a></li>
+                <li><a href="#medical-sections">Medical Sections</a></li>
+                <li><a href="#nfirs-reporting">NFIRS Reporting</a></li>
+              </ul>
+            </li>
+            <li><a href="#response-time">Response Time Analyzer</a></li>
+            <li><a href="#call-density">Call Density Heatmap</a></li>
+            <li><a href="#isochrone-map">Isochrone Map</a></li>
+            <li><a href="#station-overview">Station Overview</a></li>
+            <li><a href="#coverage-gap">Coverage Gap Finder</a></li>
+            <li><a href="#fire-map-pro">FireMapPro</a></li>
+            <li><a href="#data-formatter">Data Formatter</a></li>
+          </ul>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Administration</div>
+          <ul class="nav-list">
+            <li><a href="#department-settings">Department Settings</a></li>
+            <li><a href="#user-management">User Management</a></li>
+            <li><a href="#station-management">Station Management</a></li>
+            <li><a href="#data-management">Data Management</a></li>
+            <li><a href="#integrations">Integrations & APIs</a></li>
+          </ul>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Advanced Topics</div>
+          <ul class="nav-list">
+            <li><a href="#data-analysis">Advanced Data Analysis</a></li>
+            <li><a href="#custom-reporting">Custom Reporting</a></li>
+            <li><a href="#bulk-operations">Bulk Operations</a></li>
+            <li><a href="#api-usage">API Usage</a></li>
+          </ul>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Support</div>
+          <ul class="nav-list">
+            <li><a href="#faq">FAQ</a></li>
+            <li><a href="#troubleshooting">Troubleshooting</a></li>
+            <li><a href="#contacting-support">Contacting Support</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <div class="guide-content">
+        <!-- Introduction Section -->
+        <section class="guide-section" id="introduction">
+          <h2>Introduction to FireEMS.ai</h2>
+          
+          <div class="guide-topic">
+            <h3>What is FireEMS.ai?</h3>
+            <p>FireEMS.ai is a comprehensive suite of analytics and management tools designed specifically for Fire and EMS agencies. Our platform helps you visualize incident data, optimize response times, manage resources, and make data-driven decisions to improve emergency services.</p>
+            
+            <p>Whether you're a small volunteer department or a large metropolitan agency, FireEMS.ai scales to meet your needs with powerful tools that are intuitive and easy to use.</p>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Key Features</h3>
+            <p>FireEMS.ai includes the following core features:</p>
+            <ul>
+              <li><strong>Incident Logger</strong> - A comprehensive incident reporting system with HIPAA compliance and NFIRS integration</li>
+              <li><strong>Response Time Analyzer</strong> - Analyze response time patterns to identify areas for improvement</li>
+              <li><strong>Call Density Heatmap</strong> - Visualize incident hotspots to optimize resource deployment</li>
+              <li><strong>Isochrone Map</strong> - Map response time coverage to identify service gaps</li>
+              <li><strong>Station Overview</strong> - Monitor performance metrics for individual stations</li>
+              <li><strong>Coverage Gap Finder</strong> - Identify underserved areas in your jurisdiction</li>
+              <li><strong>FireMapPro</strong> - Advanced interactive mapping tools for planning</li>
+              <li><strong>Data Formatter</strong> - Prepare and standardize your data for analysis</li>
+            </ul>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>System Requirements</h3>
+            <p>FireEMS.ai is a web-based platform that works on any modern browser. For optimal performance, we recommend:</p>
+            <ul>
+              <li><strong>Browsers</strong>: Chrome (recommended), Firefox, Safari, or Edge (latest versions)</li>
+              <li><strong>Internet Connection</strong>: Broadband connection (minimum 5 Mbps)</li>
+              <li><strong>Screen Resolution</strong>: Minimum 1280 x 800</li>
+              <li><strong>Mobile Devices</strong>: iOS 13+ or Android 10+</li>
+            </ul>
+            
+            <div class="callout tip">
+              <p><strong>Tip:</strong> For the best experience with mapping features, we recommend using a device with at least 8GB of RAM.</p>
+            </div>
+          </div>
+        </section>
+        
+        <!-- Account Setup Section -->
+        <section class="guide-section" id="account-setup">
+          <h2>Account Setup</h2>
+          
+          <div class="guide-topic">
+            <h3>Registration Process</h3>
+            <p>To get started with FireEMS.ai, your department administrator needs to register your agency:</p>
+            <ol>
+              <li>Visit the FireEMS.ai homepage and click "Register Department"</li>
+              <li>Fill out the department registration form with your agency information</li>
+              <li>Select the subscription plan that fits your needs</li>
+              <li>Complete the payment process</li>
+              <li>Verify your email address to activate your account</li>
+            </ol>
+            
+            <div class="callout">
+              <p><strong>Note:</strong> The person who completes registration will automatically become the initial department administrator with full access to all features.</p>
+            </div>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Department Profile Setup</h3>
+            <p>After registration, complete your department profile:</p>
+            <ol>
+              <li>Upload your department logo</li>
+              <li>Configure department settings (time zone, units of measurement, etc.)</li>
+              <li>Set up initial stations and resources</li>
+              <li>Add users and assign roles</li>
+              <li>Import historical incident data (optional)</li>
+            </ol>
+            
+            <div class="callout tip">
+              <p><strong>Tip:</strong> Use the Setup Wizard for a guided step-by-step process to complete your department profile setup.</p>
+            </div>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>User Account Setup</h3>
+            <p>Once invited to join by your administrator, follow these steps to set up your user account:</p>
+            <ol>
+              <li>Check your email for the invitation link</li>
+              <li>Create a secure password (minimum 8 characters with letters, numbers, and special characters)</li>
+              <li>Complete your user profile information</li>
+              <li>Review and accept the terms of service</li>
+              <li>Complete the brief orientation tutorial</li>
+            </ol>
+            
+            <div class="callout warning">
+              <p><strong>Important:</strong> For security reasons, invitation links expire after 48 hours. If your link has expired, contact your department administrator for a new invitation.</p>
+            </div>
+          </div>
+        </section>
+        
+        <!-- Navigation Section -->
+        <section class="guide-section" id="navigation">
+          <h2>Navigating the Platform</h2>
+          
+          <div class="guide-topic">
+            <h3>User Interface Overview</h3>
+            <p>The FireEMS.ai interface consists of several key elements:</p>
+            <ul>
+              <li><strong>Top Navigation Bar</strong> - Access all main tools and features</li>
+              <li><strong>User Menu</strong> - Access your profile, settings, and logout</li>
+              <li><strong>Tool Dashboard</strong> - The main working area for each tool</li>
+              <li><strong>Control Panel</strong> - Tool-specific options and settings</li>
+              <li><strong>Status Bar</strong> - System notifications and status updates</li>
+            </ul>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Home Dashboard</h3>
+            <p>The Home Dashboard provides quick access to all available tools and recent activity:</p>
+            <ul>
+              <li><strong>Tool Cards</strong> - Click any card to open the corresponding tool</li>
+              <li><strong>Recent Activity</strong> - View recent incidents and actions</li>
+              <li><strong>Quick Stats</strong> - See key metrics at a glance</li>
+              <li><strong>Notifications</strong> - Important alerts and updates</li>
+            </ul>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Common Controls</h3>
+            <p>Throughout the platform, you'll encounter these common controls:</p>
+            <ul>
+              <li><strong>Search Bars</strong> - Filter content by keywords</li>
+              <li><strong>Date Selectors</strong> - Filter data by time periods</li>
+              <li><strong>Dropdown Menus</strong> - Select from available options</li>
+              <li><strong>Action Buttons</strong> - Perform specific actions (Save, Edit, Delete, etc.)</li>
+              <li><strong>Data Tables</strong> - View and interact with tabular data</li>
+              <li><strong>Maps</strong> - Interactive geographic displays</li>
+            </ul>
+            
+            <div class="callout tip">
+              <p><strong>Tip:</strong> Most data tables support sorting by clicking column headers and filtering using the search box above the table.</p>
+            </div>
+          </div>
+        </section>
+        
+        <!-- User Roles Section -->
+        <section class="guide-section" id="user-roles">
+          <h2>User Roles & Permissions</h2>
+          
+          <div class="guide-topic">
+            <h3>Available Roles</h3>
+            <p>FireEMS.ai has a role-based permission system with four standard roles:</p>
+            
+            <table class="guide-table">
+              <tr>
+                <th>Role</th>
+                <th>Description</th>
+                <th>Typical Users</th>
+              </tr>
+              <tr>
+                <td>Administrator</td>
+                <td>Full access to all features, settings, and administrative functions</td>
+                <td>Fire Chief, EMS Director, IT Manager</td>
+              </tr>
+              <tr>
+                <td>Manager</td>
+                <td>Can view all data and manage incidents and resources, but cannot change system settings</td>
+                <td>Battalion Chiefs, Captains, Shift Supervisors</td>
+              </tr>
+              <tr>
+                <td>User</td>
+                <td>Basic access to view and log incidents, limited analytical capabilities</td>
+                <td>Firefighters, Paramedics, EMTs</td>
+              </tr>
+              <tr>
+                <td>Viewer</td>
+                <td>Read-only access to view data and reports, cannot create or modify content</td>
+                <td>City Officials, Dispatch Center, Partner Agencies</td>
+              </tr>
+            </table>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Feature Access by Role</h3>
+            <p>The following table outlines which features are available to each role:</p>
+            
+            <table class="guide-table">
+              <tr>
+                <th>Feature</th>
+                <th>Administrator</th>
+                <th>Manager</th>
+                <th>User</th>
+                <th>Viewer</th>
+              </tr>
+              <tr>
+                <td>View Incidents</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Yes</td>
+              </tr>
+              <tr>
+                <td>Create/Edit Incidents</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>No</td>
+              </tr>
+              <tr>
+                <td>Delete Incidents</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>No</td>
+                <td>No</td>
+              </tr>
+              <tr>
+                <td>Access Analytics Tools</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Limited</td>
+                <td>Limited</td>
+              </tr>
+              <tr>
+                <td>Manage Users</td>
+                <td>Yes</td>
+                <td>No</td>
+                <td>No</td>
+                <td>No</td>
+              </tr>
+              <tr>
+                <td>Manage Stations</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>No</td>
+                <td>No</td>
+              </tr>
+              <tr>
+                <td>System Settings</td>
+                <td>Yes</td>
+                <td>No</td>
+                <td>No</td>
+                <td>No</td>
+              </tr>
+              <tr>
+                <td>Export Data</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Limited</td>
+                <td>Limited</td>
+              </tr>
+            </table>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Custom Roles</h3>
+            <p>Administrators can create custom roles with specific permission sets tailored to your department's needs:</p>
+            <ol>
+              <li>Navigate to Admin &gt; User Management &gt; Roles</li>
+              <li>Click "Create New Role"</li>
+              <li>Name the role and select specific permissions</li>
+              <li>Save the custom role</li>
+              <li>Assign users to the new role as needed</li>
+            </ol>
+            
+            <div class="callout">
+              <p><strong>Note:</strong> Custom roles are available on Professional and Enterprise subscription plans only.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Incident Logger Section -->
+        <section class="guide-section" id="incident-logger">
+          <h2>Incident Logger</h2>
+          
+          <div class="guide-topic" id="creating-incidents">
+            <h3>Creating Incidents</h3>
+            <p>The Incident Logger is your primary tool for recording emergency incident information:</p>
+            <ol>
+              <li>Navigate to the Incident Logger from the main menu</li>
+              <li>Click the "New Incident" button in the top right corner</li>
+              <li>Complete the required incident information:
+                <ul>
+                  <li>Incident number (generated automatically or enter manually)</li>
+                  <li>Date and time</li>
+                  <li>Location (address or coordinates)</li>
+                  <li>Incident type</li>
+                  <li>Units responding</li>
+                </ul>
+              </li>
+              <li>Add additional details as needed (see sections below)</li>
+              <li>Click "Save Incident" to create the record</li>
+            </ol>
+            
+            <div class="callout">
+              <p><strong>Note:</strong> You can save an incident as "Draft" if you need to complete it later.</p>
+            </div>
+          </div>
+          
+          <div class="guide-topic" id="medical-sections">
+            <h3>Working with Medical Sections</h3>
+            <p>For EMS incidents, you can record detailed patient information:</p>
+            <ol>
+              <li>In the incident form, click "Add Patient" to create a new patient record</li>
+              <li>Enter patient demographic information</li>
+              <li>Record vital signs (initial and ongoing)</li>
+              <li>Document patient history:
+                <ul>
+                  <li>Medical history</li>
+                  <li>Current medications</li>
+                  <li>Allergies</li>
+                </ul>
+              </li>
+              <li>Document assessment findings</li>
+              <li>Record treatments provided</li>
+              <li>Note transport information</li>
+            </ol>
+            
+            <div class="callout warning">
+              <p><strong>Important:</strong> All patient information is protected under HIPAA. Access is logged and restricted to authorized users only.</p>
+            </div>
+          </div>
+          
+          <div class="guide-topic" id="nfirs-reporting">
+            <h3>NFIRS Reporting</h3>
+            <p>FireEMS.ai supports National Fire Incident Reporting System (NFIRS) reporting:</p>
+            <ol>
+              <li>Complete the incident information as described above</li>
+              <li>Navigate to the NFIRS tab within the incident</li>
+              <li>Complete all required NFIRS fields:
+                <ul>
+                  <li>Basic incident information (Module 1)</li>
+                  <li>Fire information (Module 2, if applicable)</li>
+                  <li>Structural fire information (Module 3, if applicable)</li>
+                  <li>Civilian fire casualty information (Module 4, if applicable)</li>
+                  <li>Fire service casualty information (Module 5, if applicable)</li>
+                  <li>EMS information (Module 6, if applicable)</li>
+                  <li>Hazardous materials information (Module 7, if applicable)</li>
+                  <li>Wildland fire information (Module 8, if applicable)</li>
+                  <li>Apparatus and personnel information (Module 9, if applicable)</li>
+                  <li>Additional specialized information (Module 10+, if applicable)</li>
+                </ul>
+              </li>
+              <li>Use the validation tool to check for errors or missing information</li>
+              <li>Generate the NFIRS export file for submission</li>
+            </ol>
+            
+            <div class="callout tip">
+              <p><strong>Tip:</strong> The system will automatically populate many NFIRS fields based on the information you've already entered in the main incident form.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- More sections would continue here... -->
+        
+        <!-- FAQ Section -->
+        <section class="guide-section" id="faq">
+          <h2>Frequently Asked Questions</h2>
+          
+          <div class="guide-topic">
+            <h3>General Questions</h3>
+            
+            <p><strong>Q: How do I reset my password?</strong></p>
+            <p>A: Click on your profile name in the top-right corner, select "Profile", and use the "Change Password" option. If you're locked out, use the "Forgot Password" link on the login page.</p>
+            
+            <p><strong>Q: Can I access FireEMS.ai on mobile devices?</strong></p>
+            <p>A: Yes, FireEMS.ai is fully responsive and works on all modern mobile devices, tablets, and desktop computers.</p>
+            
+            <p><strong>Q: Is my data secure?</strong></p>
+            <p>A: Yes. All data is encrypted in transit and at rest. Patient information is stored in compliance with HIPAA requirements. Access is limited to authorized users within your department only.</p>
+            
+            <p><strong>Q: How do I export incident data?</strong></p>
+            <p>A: From the Incidents page, use the "Export" button to download incident data in various formats (CSV, Excel, PDF). You can export all data or filtered results.</p>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Technical Questions</h3>
+            
+            <p><strong>Q: What browsers are supported?</strong></p>
+            <p>A: FireEMS.ai works best with Chrome, Firefox, Safari, and Edge (latest versions). Internet Explorer is not supported.</p>
+            
+            <p><strong>Q: Can I integrate FireEMS.ai with our CAD system?</strong></p>
+            <p>A: Yes, FireEMS.ai supports integration with most major CAD systems. Contact support with your specific CAD details for integration options.</p>
+            
+            <p><strong>Q: Is there an offline mode?</strong></p>
+            <p>A: Yes, the Incident Logger has limited offline capabilities. You can create and edit incidents without an internet connection, and they will sync when you're back online.</p>
+            
+            <p><strong>Q: How often is the system updated?</strong></p>
+            <p>A: FireEMS.ai receives regular updates approximately every 2-4 weeks. Major feature updates are released quarterly.</p>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Account & Billing Questions</h3>
+            
+            <p><strong>Q: How do I upgrade my subscription?</strong></p>
+            <p>A: Department administrators can upgrade the subscription from Admin > Billing & Subscription > Upgrade Plan.</p>
+            
+            <p><strong>Q: Can we add more users to our account?</strong></p>
+            <p>A: Yes, user limits depend on your subscription plan. You can add users up to your plan limit in the User Management section.</p>
+            
+            <p><strong>Q: Do you offer discounts for volunteer departments?</strong></p>
+            <p>A: Yes, we offer special pricing for volunteer and small rural departments. Contact our sales team for details.</p>
+            
+            <p><strong>Q: How do I cancel my subscription?</strong></p>
+            <p>A: Department administrators can cancel subscriptions from Admin > Billing & Subscription > Cancel Subscription. Data retention policies will apply.</p>
+          </div>
+        </section>
+        
+        <!-- Troubleshooting Section -->
+        <section class="guide-section" id="troubleshooting">
+          <h2>Troubleshooting</h2>
+          
+          <div class="guide-topic">
+            <h3>Common Issues & Solutions</h3>
+            
+            <p><strong>Issue: Unable to log in</strong></p>
+            <p>Solution:</p>
+            <ul>
+              <li>Verify your email address and password</li>
+              <li>Check if Caps Lock is enabled</li>
+              <li>Clear browser cache and cookies</li>
+              <li>Use the "Forgot Password" link to reset your password</li>
+              <li>Contact your department administrator if issues persist</li>
+            </ul>
+            
+            <p><strong>Issue: Maps not loading properly</strong></p>
+            <p>Solution:</p>
+            <ul>
+              <li>Check your internet connection</li>
+              <li>Ensure your browser is up to date</li>
+              <li>Clear browser cache</li>
+              <li>Disable browser extensions that might be interfering</li>
+              <li>Try a different browser</li>
+            </ul>
+            
+            <p><strong>Issue: Unable to save incident reports</strong></p>
+            <p>Solution:</p>
+            <ul>
+              <li>Check that all required fields are completed</li>
+              <li>Look for error messages indicating specific issues</li>
+              <li>Verify your user permissions</li>
+              <li>Check your internet connection</li>
+              <li>Try saving as a draft first</li>
+            </ul>
+            
+            <p><strong>Issue: Data not displaying in reports</strong></p>
+            <p>Solution:</p>
+            <ul>
+              <li>Verify that data exists for the selected time period</li>
+              <li>Check filter settings that might be excluding data</li>
+              <li>Clear browser cache</li>
+              <li>Verify that you have permission to view the data</li>
+              <li>Try a different browser</li>
+            </ul>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Error Messages</h3>
+            <p>Common error messages and their solutions:</p>
+            
+            <p><strong>Error: "Access Denied"</strong></p>
+            <p>Solution: Your user account doesn't have permission to access this feature. Contact your department administrator to request access.</p>
+            
+            <p><strong>Error: "Session Expired"</strong></p>
+            <p>Solution: Your login session has timed out for security reasons. Log in again to continue.</p>
+            
+            <p><strong>Error: "Invalid Data Format"</strong></p>
+            <p>Solution: The data you entered doesn't match the expected format. Check for specific requirements (e.g., date formats, number ranges).</p>
+            
+            <p><strong>Error: "Server Connection Lost"</strong></p>
+            <p>Solution: Check your internet connection. If connected, the server might be temporarily unavailable. Try again later.</p>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Performance Optimization</h3>
+            <p>If you're experiencing slow performance:</p>
+            <ul>
+              <li>Close other browser tabs and applications to free up system resources</li>
+              <li>Clear browser cache and cookies</li>
+              <li>Use Chrome or Firefox for best performance</li>
+              <li>Limit date ranges for large data queries</li>
+              <li>Disable browser extensions</li>
+              <li>Ensure your device meets the minimum system requirements</li>
+            </ul>
+            
+            <div class="callout tip">
+              <p><strong>Tip:</strong> For analyzing large datasets, use the data filtering options to narrow results before generating reports and visualizations.</p>
+            </div>
+          </div>
+        </section>
+        
+        <!-- Contact Support Section -->
+        <section class="guide-section" id="contacting-support">
+          <h2>Contacting Support</h2>
+          
+          <div class="guide-topic">
+            <h3>Support Options</h3>
+            <p>FireEMS.ai offers multiple support channels:</p>
+            <ul>
+              <li><strong>Email Support:</strong> support@fireems.ai</li>
+              <li><strong>Phone Support:</strong> 1-800-FIRE-EMS (Mon-Fri, 8am-8pm ET)</li>
+              <li><strong>Live Chat:</strong> Available within the application (click the support icon)</li>
+              <li><strong>Knowledge Base:</strong> <a href="https://support.fireems.ai" target="_blank">support.fireems.ai</a></li>
+              <li><strong>Community Forum:</strong> <a href="https://community.fireems.ai" target="_blank">community.fireems.ai</a></li>
+            </ul>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Support Hours</h3>
+            <table class="guide-table">
+              <tr>
+                <th>Support Type</th>
+                <th>Hours</th>
+                <th>Response Time</th>
+              </tr>
+              <tr>
+                <td>Standard Email Support</td>
+                <td>Monday-Friday, 8am-8pm ET</td>
+                <td>Within 24 hours</td>
+              </tr>
+              <tr>
+                <td>Phone Support</td>
+                <td>Monday-Friday, 8am-8pm ET</td>
+                <td>Immediate</td>
+              </tr>
+              <tr>
+                <td>Live Chat</td>
+                <td>Monday-Friday, 8am-8pm ET</td>
+                <td>Immediate</td>
+              </tr>
+              <tr>
+                <td>Emergency Support (Enterprise Plan)</td>
+                <td>24/7/365</td>
+                <td>Within 1 hour</td>
+              </tr>
+            </table>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Submitting Support Tickets</h3>
+            <p>For the fastest resolution, please include the following information when contacting support:</p>
+            <ol>
+              <li>Your department name and account ID</li>
+              <li>Your name and role</li>
+              <li>Description of the issue with specific steps to reproduce</li>
+              <li>Screenshots showing the issue (if applicable)</li>
+              <li>Error messages (if any)</li>
+              <li>Browser and device information</li>
+              <li>Date and time when the issue occurred</li>
+            </ol>
+            
+            <div class="callout tip">
+              <p><strong>Tip:</strong> You can generate a system diagnostic report to include with your support ticket by going to Help > Generate Support Report.</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 FireEMS.ai - Advanced Analytics for Fire & EMS Agencies</p>
+    </div>
+  </footer>
+
+  <script>
+    // Scroll spy for navigation
+    window.addEventListener('DOMContentLoaded', function() {
+      // Get all sections and nav links
+      const sections = document.querySelectorAll('.guide-section');
+      const navLinks = document.querySelectorAll('.nav-list a');
+      
+      // Function to update active state based on scroll position
+      function updateActiveLink() {
+        let currentSection = '';
+        
+        sections.forEach(section => {
+          const sectionTop = section.offsetTop;
+          const sectionHeight = section.clientHeight;
+          
+          if (window.pageYOffset >= (sectionTop - 100)) {
+            currentSection = '#' + section.getAttribute('id');
+          }
+        });
+        
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === currentSection) {
+            link.classList.add('active');
+          }
+        });
+      }
+      
+      // Listen for scroll events
+      window.addEventListener('scroll', updateActiveLink);
+      
+      // Initial call
+      updateActiveLink();
+    });
+    
+    // Search functionality
+    function searchGuide() {
+      const input = document.getElementById('guideSearch');
+      const filter = input.value.toUpperCase();
+      const topics = document.querySelectorAll('.guide-topic');
+      const sections = document.querySelectorAll('.guide-section');
+      
+      // Reset all sections and topics to visible
+      sections.forEach(section => {
+        section.style.display = '';
+      });
+      
+      topics.forEach(topic => {
+        topic.style.display = '';
+      });
+      
+      // If there's no search input, exit early
+      if (filter === '') return;
+      
+      // Hide topics that don't match search
+      topics.forEach(topic => {
+        const content = topic.textContent || topic.innerText;
+        
+        if (content.toUpperCase().indexOf(filter) > -1) {
+          topic.style.display = '';
+        } else {
+          topic.style.display = 'none';
+        }
+      });
+      
+      // Hide sections with no visible topics
+      sections.forEach(section => {
+        const visibleTopics = Array.from(section.querySelectorAll('.guide-topic')).filter(topic => {
+          return topic.style.display !== 'none';
+        });
+        
+        if (visibleTopics.length === 0) {
+          section.style.display = 'none';
+        } else {
+          section.style.display = '';
+        }
+      });
+    }
+  </script>
+</body>
+</html>

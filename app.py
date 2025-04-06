@@ -136,7 +136,7 @@ def create_app(config_name='default'):
         for route in ['/fire-ems-dashboard', '/isochrone-map', '/call-density-heatmap', 
                       '/incident-logger', '/coverage-gap-finder', '/fire-map-pro',
                       '/data-formatter', '/station-overview', '/call-volume-forecaster',
-                      '/quick-stats']:
+                      '/quick-stats', '/user-guide']:
             # Create a route function dynamically
             def make_route_func(template_name):
                 def route_func():
