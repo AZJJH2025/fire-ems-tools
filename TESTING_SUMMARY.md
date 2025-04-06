@@ -1,127 +1,181 @@
-# Fire-EMS Tools Testing Summary
+# Fire-EMS Tools Testing Framework
 
-## Overview
-
-This document provides a summary of the testing framework for the Fire-EMS Tools application. The testing framework has been designed to ensure the application meets quality standards, handles edge cases properly, and provides a reliable user experience.
+This document provides an overview of the testing framework for the Fire-EMS Tools application.
 
 ## Testing Approach
 
-Our testing approach focuses on several key areas:
+Our testing strategy is built around four key principles:
 
-1. **Unit Testing**: Testing individual components in isolation
-2. **Integration Testing**: Testing interactions between components
-3. **Feature Testing**: Testing end-to-end functionality of specific features
-4. **Error Condition Testing**: Testing how the application handles various error scenarios
-5. **Boundary Condition Testing**: Testing the application with extreme or edge case inputs
-6. **Performance Testing**: Testing application performance under various conditions
+1. **Environment Independence**: Tests should run in any environment without external dependencies
+2. **Comprehensive Coverage**: Tests should cover all functionality, edge cases, and error conditions
+3. **CI/CD Integration**: Tests should integrate with continuous integration and deployment systems
+4. **User-focused Validation**: Tests should validate the application from a user's perspective
 
-## Test Environment
+## Testing Layers
 
-The testing framework supports multiple test environments:
+### 1. Simplified Tests
 
-1. **Full Environment**: Complete setup with database, external services, etc.
-2. **Simplified Environment**: Uses mocks and simplified data for testing without external dependencies
-3. **CI/CD Pipeline**: Automated testing in the continuous integration environment
+Simplified tests use a base test class (`SimpleDepartmentTestBase`) that provides mock departments, users, and data. This approach allows tests to run in any environment without external dependencies.
 
-## Test Categories
+**Key Features:**
+- Mock departments with configurable features and permissions
+- In-memory data storage to avoid database dependencies
+- Flask test client for simulating HTTP requests
+- Environment-agnostic execution
 
-### Feature Tests
+**Test Files:**
+- `test_departments_simplified.py`: Base class for simplified tests
+- `test_incident_logger_simplified.py`: Tests for Incident Logger feature
+- `test_call_density_simplified.py`: Tests for Call Density Heatmap feature
+- `test_isochrone_map_simplified.py`: Tests for Isochrone Map feature
+- `test_response_time_simplified.py`: Tests for Response Time Analysis feature
+- `test_station_overview_simplified.py`: Tests for Station Overview feature
+- `test_fire_map_pro_simplified.py`: Tests for Fire Map Pro feature
+- `test_data_formatter_simplified.py`: Tests for Data Formatter feature
 
-Tests specific features of the application:
-
-- **Incident Logger** (`test_incident_logger.py`, `test_incident_logger_simplified.py`): Tests the incident logging functionality
-- **Call Density Heatmap** (`test_call_density.py`, `test_call_density_simplified.py`): Tests the call density visualization
-- **Isochrone Map** (`test_isochrone_map.py`, `test_isochrone_map_simplified.py`): Tests the response time isochrone mapping
-- **Response Time Analysis** (`test_response_time.py`, `test_response_time_simplified.py`): Tests the response time analytics dashboard
-- **Station Overview** (`test_station_overview.py`, `test_station_overview_simplified.py`): Tests the station information display
-- **Fire Map Pro** (`test_fire_map_pro.py`, `test_fire_map_pro_simplified.py`): Tests the advanced mapping features
-- **Data Formatter** (`test_data_formatter.py`, `test_data_formatter_simplified.py`): Tests the data formatting and transformation tools
-
-### Error Condition Tests
-
-Tests how the application handles various error scenarios:
-
-- **Service Errors** (`test_error_conditions.py`): Tests behavior when services are unavailable
-- **Network Failures** (`test_error_conditions.py`): Tests behavior when network issues occur
-- **Invalid Inputs** (`test_error_conditions.py`): Tests handling of invalid user inputs
-- **Database Errors** (`test_error_conditions.py`): Tests behavior when database operations fail
-- **Authentication Errors** (`test_error_conditions.py`): Tests behavior with invalid authentication
-- **API Errors** (`test_api_errors.py`): Tests behavior when external APIs return errors
-
-### Boundary Condition Tests
-
-Tests the application with extreme or edge case inputs:
-
-- **Boundary Values** (`test_boundary_conditions.py`): Tests with minimum/maximum values
-- **Large Datasets** (`test_boundary_conditions.py`): Tests with unusually large data volumes
-- **String Manipulation** (`test_boundary_conditions.py`): Tests with special characters, very long inputs
-- **Concurrent Operations** (`test_boundary_conditions.py`): Tests with multiple simultaneous operations
-
-### Performance Tests
-
-Tests application performance under various conditions:
-
-- **Load Testing** (`test_performance.py`): Tests under high load
-- **Response Time** (`test_performance.py`): Tests response time under various conditions
-- **Resource Usage** (`test_performance.py`): Tests memory and CPU usage
-
-## Simplified Testing Approach
-
-To ensure tests can run in any environment, we've created simplified versions of our feature tests:
-
-1. **Base Class**: `SimpleDepartmentTestBase` in `test_departments_simplified.py` provides:
-   - Mock departments with different feature configurations
-   - Simplified authentication
-   - Test client setup
-
-2. **Feature Test Simplification**:
-   - All feature tests have simplified versions (e.g., `test_incident_logger_simplified.py`)
-   - Uses mock responses instead of real database connections
-   - Tests UI elements, functionality, and API endpoints
-
-3. **Running Simplified Tests**:
-   ```
-   python run_all_tests.py --simplified
-   ```
-
-## Test Coverage
-
-Current test coverage by feature:
-
-| Feature            | Unit Tests | Integration Tests | UI Tests | API Tests | Error Tests | Simplified Tests |
-|--------------------|------------|-------------------|----------|-----------|-------------|------------------|
-| Incident Logger    | ✅         | ✅                | ✅       | ✅        | ✅          | ✅               |
-| Call Density       | ✅         | ✅                | ✅       | ✅        | ✅          | ✅               |
-| Isochrone Map      | ✅         | ✅                | ✅       | ✅        | ✅          | ✅               |
-| Response Time      | ✅         | ✅                | ✅       | ✅        | ✅          | ✅               |
-| Station Overview   | ✅         | ✅                | ✅       | ✅        | ✅          | ✅               |
-| Fire Map Pro       | ✅         | ✅                | ✅       | ✅        | ✅          | ✅               |
-| Data Formatter     | ✅         | ✅                | ✅       | ✅        | ✅          | ✅               |
-
-## Running Tests
-
-The test runner (`run_all_tests.py`) provides several options:
-
+**Running Simplified Tests:**
 ```
-python run_all_tests.py                       # Run all tests
-python run_all_tests.py --department=rural    # Run tests for rural department only
-python run_all_tests.py --feature=incident_logger  # Run tests for the Incident Logger feature only
-python run_all_tests.py --verbose             # Run with verbose output
-python run_all_tests.py --failfast            # Stop on first failure
-python run_all_tests.py --performance         # Run performance tests
-python run_all_tests.py --error-tests         # Run error condition tests
-python run_all_tests.py --boundary-tests      # Run boundary condition tests
-python run_all_tests.py --simplified          # Run simplified tests
-python run_all_tests.py --report=html         # Generate HTML test report
+python run_all_tests.py --category simplified
 ```
 
-## Future Improvements
+**Documentation:** [SIMPLIFIED_TESTS.md](SIMPLIFIED_TESTS.md)
 
-Planned improvements to the testing framework:
+### 2. Error and Boundary Testing
 
-1. **CI/CD Integration**: Fully integrate with CI/CD pipeline for automated testing
-2. **Test Data Generation**: Create a tool for generating realistic test data
-3. **Database Test Environment**: Create a dedicated test database setup
-4. **User Flow Testing**: Add more comprehensive end-to-end user flow tests
-5. **Accessibility Testing**: Add tests for accessibility compliance
-6. **Security Testing**: Expand security-focused tests
+Error and boundary tests focus on how the application handles abnormal conditions, edge cases, and invalid inputs.
+
+**Error Testing:**
+- Service failures and network issues
+- Authentication and authorization errors
+- Invalid input handling
+- Resource constraints
+
+**Boundary Testing:**
+- Extreme inputs (very large/small values)
+- Empty or null inputs
+- Edge cases in business logic
+- Resource limitations
+
+**Test Files:**
+- `test_error_conditions.py`: Tests for error conditions
+- `test_api_errors.py`: Tests for API-specific errors
+- `test_boundary_conditions.py`: Tests for boundary conditions
+
+**Running Error and Boundary Tests:**
+```
+python run_all_tests.py --category error
+python run_all_tests.py --category boundary
+```
+
+**Documentation:** [ERROR_TESTING.md](ERROR_TESTING.md)
+
+### 3. Docker Testing
+
+Docker-based testing ensures consistent test environments across different platforms and development machines.
+
+**Key Features:**
+- Dockerfile for reproducible test environment
+- docker-compose.yml for multi-container test setup
+- Easy test execution with run_docker_tests.sh
+- CI/CD integration
+
+**Docker Configuration:**
+- `Dockerfile`: Container definition for testing environment
+- `docker-compose.yml`: Multi-container setup for different test types
+- `run_docker_tests.sh`: Script for executing tests in Docker
+
+**Running Docker Tests:**
+```
+./run_docker_tests.sh
+```
+
+**Documentation:** [DOCKER_TESTING.md](DOCKER_TESTING.md)
+
+### 4. End-to-End Testing
+
+End-to-end (E2E) tests validate the application from a user's perspective, ensuring all components work together correctly.
+
+**Key Features:**
+- Browser automation with Playwright
+- Tests for critical user flows
+- Fixtures for different user roles
+- CI/CD integration
+
+**Test Files:**
+- `e2e/tests/auth.spec.js`: Authentication tests
+- `e2e/tests/incident-logger.spec.js`: Tests for Incident Logger feature
+- `e2e/tests/call-density.spec.js`: Tests for Call Density Heatmap feature
+
+**Running E2E Tests:**
+```
+./run_e2e_tests.sh
+```
+
+**Documentation:** [E2E_TESTING.md](E2E_TESTING.md)
+
+## CI/CD Integration
+
+Our CI/CD pipeline integrates all testing layers to ensure code quality and reliability:
+
+**GitHub Actions Workflow:**
+- Runs on every push to main and pull requests
+- Tests multiple Python versions (3.10, 3.11, 3.12)
+- Executes simplified, error, boundary, and E2E tests
+- Generates and stores test reports
+- Blocks PRs with failing tests
+
+**Configuration:**
+- `.github/workflows/ci.yml`: GitHub Actions workflow definition
+
+## Test Data Management
+
+We use a dedicated script for setting up test data:
+
+**Key Features:**
+- `setup_test_database.py`: Script for creating test database and data
+- Generates realistic test data for departments, stations, users, and incidents
+- Supports CSV export for data portability
+- Creates consistent test data across environments
+
+## Performance Testing
+
+Performance tests evaluate the application's performance under various conditions:
+
+**Key Aspects:**
+- Load testing with concurrent users
+- Response time measurements
+- Resource utilization monitoring
+- Scalability assessment
+
+**Examples:**
+- `test_examples/test_performance_specific.py`: Example of performance testing
+
+## Security Testing
+
+Security tests focus on authentication, authorization, and data protection:
+
+**Key Aspects:**
+- Authentication and session management
+- Authorization and access control
+- Input validation and sanitization
+- HIPAA compliance
+
+**Examples:**
+- `test_examples/test_incident_authentication_errors.py`: Example of authentication error testing
+
+## Test Execution and Reporting
+
+Test execution and reporting is streamlined through various scripts:
+
+- `run_all_tests.py`: Executes tests by category
+- `run_docker_tests.sh`: Runs tests in Docker containers
+- `run_e2e_tests.sh`: Executes end-to-end tests
+- HTML and JSON test reports for simplified analysis
+
+## Best Practices
+
+1. **Independence**: Each test should be independent and not rely on other tests
+2. **Isolation**: Tests should clean up after themselves and not affect the environment
+3. **Determinism**: Tests should produce the same results on each run
+4. **Clarity**: Test names and assertions should clearly indicate what's being tested
+5. **Maintainability**: Tests should be easy to maintain and update as the application evolves

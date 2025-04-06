@@ -1,97 +1,103 @@
-# FireEMS.ai Tools
+# Fire-EMS Tools
 
-A collection of AI-powered analytics tools for Fire and EMS agencies.
+A comprehensive suite of tools for Fire and EMS departments to manage incidents, visualize response data, and improve operational efficiency.
 
-## Overview
+## Features
 
-FireEMS.ai provides specialized analytics tools designed specifically for Fire and EMS agencies. These tools help you visualize incident data, optimize response times, identify coverage gaps, and make data-driven decisions to improve emergency services.
+- **Incident Logger**: A HIPAA-compliant tool for logging and managing emergency incidents
+- **Call Density Heatmap**: Visualize call volume across your service area
+- **Isochrone Map**: Analyze response times and coverage areas
+- **Station Overview**: Track station performance and resource utilization
+- **Response Time Analysis**: Analyze response time data across your jurisdiction
+- **Fire Map Pro**: Advanced mapping tools for fire departments
+- **Data Formatter**: Tools for importing, cleaning, and normalizing data
 
-## Tools Included
+## Getting Started
 
-1. **Response Time Analyzer** - Upload and analyze incident data to visualize response time patterns
-2. **Isochrone Map Generator** - Create coverage area maps based on emergency response travel times
-3. **Incident Logger with NFIRS Integration** - Comprehensive incident data entry and management with NFIRS compliance
-4. **Call Density Heatmap** - Visualize historical call data with customizable heatmaps
-5. **Station Overview** - Comprehensive overview of station performance and unit utilization
-6. **Coverage Gap Finder** - Identify underserved areas in your jurisdiction
-7. **FireMapPro** - Advanced interactive map creator with multiple data layers
-8. **Data Formatter** - Convert and standardize data for use with all tools
+### Prerequisites
 
-## NFIRS Integration
-
-The Incident Logger now includes NFIRS (National Fire Incident Reporting System) compliance features:
-
-- NFIRS code validation for incident reports
-- Standardized NFIRS code selection for incident types, property use, and actions taken
-- Conditional display of Fire Module for fire incidents
-- Search functionality for NFIRS codes
-- Export capabilities in NFIRS-compliant formats (XML, CSV, JSON)
-- Comprehensive NFIRS validation with error/warning classification
-- Complete library of NFIRS code tables
-
-## Requirements
-
-- Python 3.8+
-- Flask
+- Python 3.10 or later
 - Required Python packages (see requirements.txt)
 
-## Installation
+### Installation
 
-1. Clone the repository
-2. Install dependencies: `pip install -r requirements.txt`
-3. Start the server: `./start.sh` or `python app.py`
+1. Clone the repository:
+   ```
+   git clone https://github.com/yourusername/fire-ems-tools.git
+   ```
 
-## Usage
+2. Install dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
 
-1. Start the server
-2. Navigate to http://localhost:8080 (or other available port)
-3. Select a tool from the home page
+3. Run the application:
+   ```
+   python app.py
+   ```
 
 ## Testing Framework
 
-FireEMS.ai includes a comprehensive testing framework to ensure reliability across different department configurations:
+This project includes a comprehensive testing framework with multiple testing approaches:
 
-### Test Department Generation
+### Simplified Tests
 
-```bash
-python create_test_departments.py
+Simplified tests use mock data and dependencies to ensure tests can run in any environment without external dependencies:
+
+```
+python run_all_tests.py --category simplified
 ```
 
-Creates four test department profiles with varying configurations:
-- **Rural Department**: Small fire district with basic features
-- **Suburban Department**: Mid-sized combined department with extended features
-- **Urban Department**: Large city department with all features
-- **Regional Agency**: Complex multi-jurisdiction agency with advanced configuration
+Documentation: [SIMPLIFIED_TESTS.md](SIMPLIFIED_TESTS.md)
 
-### Running Tests
+### Error and Boundary Testing
 
-Run comprehensive tests:
-```bash
-python run_all_tests.py
+Tests that verify the application handles errors and edge cases correctly:
+
+```
+python run_all_tests.py --category error
+python run_all_tests.py --category boundary
 ```
 
-Run specific test suites:
-```bash
-python test_departments.py    # Department configuration tests
-python test_incident_logger.py  # Incident Logger tests
-python test_api.py            # API tests
-python test_performance.py    # Performance tests
+Documentation: [ERROR_TESTING.md](ERROR_TESTING.md)
+
+### Docker Testing
+
+Run tests in a containerized environment for consistency across platforms:
+
+```
+./run_docker_tests.sh
 ```
 
-Optional arguments:
-- `--verbose` or `-v`: Show detailed test output
-- `--department CODE`: Test only a specific department
-- `--tool TOOLNAME`: Test only a specific tool
+Documentation: [DOCKER_TESTING.md](DOCKER_TESTING.md)
 
-### Performance Testing
+### End-to-End Testing
 
-Test application performance with different user loads:
-```bash
-python test_performance.py --users 10 --runtime 60
+Browser-based tests that validate the application from a user's perspective:
+
+```
+./run_e2e_tests.sh
 ```
 
-For detailed testing documentation, see [TESTING_FRAMEWORK.md](TESTING_FRAMEWORK.md).
+Documentation: [E2E_TESTING.md](E2E_TESTING.md)
+
+## CI/CD Integration
+
+The project includes GitHub Actions workflows for continuous integration and deployment:
+
+- Automated testing on pull requests and pushes to main branch
+- Support for Python 3.10, 3.11, and 3.12
+- End-to-end testing with Playwright
+- Test report generation and artifact storage
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-All rights reserved. This software is proprietary.
+This project is licensed under the MIT License - see the LICENSE file for details.

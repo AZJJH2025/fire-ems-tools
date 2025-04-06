@@ -1,209 +1,117 @@
 # End-to-End Testing for Fire-EMS Tools
 
-This document describes how to use the end-to-end testing framework for Fire-EMS Tools.
+This document describes the end-to-end (E2E) testing setup for the Fire-EMS Tools application.
 
 ## Overview
 
-The Fire-EMS Tools end-to-end testing framework uses Playwright to simulate real user interactions with the application in a browser. This allows us to test the application from a user's perspective, ensuring that all components work together correctly.
+E2E tests validate the application from a user's perspective, ensuring all components work together correctly. Our E2E tests use Playwright, a powerful browser automation framework.
 
-## Requirements
+## Setup
 
-- Node.js (v14 or higher)
-- npm
-- Docker and Docker Compose (optional, for containerized testing)
+### Prerequisites
 
-## Getting Started
+- Node.js 14 or later
+- npm (comes with Node.js)
+- Python 3.10 or later (for running the Fire-EMS Tools backend)
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/AZJJH2025/fire-ems-tools.git
-   cd fire-ems-tools
+### Installation
+
+1. Navigate to the `e2e` directory:
+   ```
+   cd e2e
    ```
 
 2. Install dependencies:
-   ```bash
-   cd e2e
+   ```
    npm install
    ```
 
-3. Install browsers:
-   ```bash
+3. Install Playwright browsers:
+   ```
    npx playwright install
    ```
 
-4. Run tests:
-   ```bash
-   ./run_e2e_tests.sh
-   ```
-
-## Test Structure
-
-The end-to-end tests are organized as follows:
-
-- `e2e/tests/`: Test files
-- `e2e/fixtures/`: Test fixtures
-- `e2e/utils/`: Utility functions
-- `e2e/playwright.config.js`: Playwright configuration
-
 ## Running Tests
 
-### Using the Script
+You can run E2E tests using the provided script:
 
-The `run_e2e_tests.sh` script provides a convenient way to run the end-to-end tests:
-
-```bash
-# Run tests with Chromium (default)
+```
 ./run_e2e_tests.sh
+```
 
-# Run tests with Firefox
-./run_e2e_tests.sh --browser firefox
+### Options
 
-# Run tests with Safari (WebKit)
-./run_e2e_tests.sh --browser webkit
+- `--browser=BROWSER`: Browser to run tests in (chromium, firefox, webkit)
+- `--headed`: Run tests in headed mode (show browser)
+- `--debug`: Run tests in debug mode
+- `--ui`: Run tests with Playwright UI
+- `--base-url=URL`: Base URL for tests (default: http://localhost:8080)
+- `--help`: Show help message
 
-# Run tests with browser visible
-./run_e2e_tests.sh --headed
-
-# Run tests in debug mode
+Examples:
+```
+./run_e2e_tests.sh --browser=firefox --headed
 ./run_e2e_tests.sh --debug
-
-# Run tests with Playwright UI
 ./run_e2e_tests.sh --ui
 ```
 
-### Using Docker
+## Test Structure
 
-If you have Docker and Docker Compose installed, the script will automatically use them to run the tests in a containerized environment:
+E2E tests are located in the `e2e/tests` directory and are organized by feature:
 
-```bash
-./run_e2e_tests.sh
-```
+- `auth.spec.js`: Authentication tests
+- `incident-logger.spec.js`: Incident Logger feature tests
+- `call-density.spec.js`: Call Density Heatmap tests
 
-This will:
-1. Build and start the Fire-EMS Tools application
-2. Build and run the end-to-end tests
-3. Stop the application when tests are complete
+## Fixtures and Utilities
 
-### Using npm Directly
+- `fixtures/auth-fixture.js`: Authentication fixtures for different user roles
+- `utils/auth.js`: Authentication utilities
 
-You can also run the tests directly using npm:
+## Configuration
 
-```bash
-cd e2e
-npm test
-```
+The Playwright configuration is defined in `playwright.config.js`, which includes:
 
-For more options:
+- Browser configurations
+- Test timeouts
+- Screenshot and video settings
+- Web server setup
 
-```bash
-cd e2e
-npx playwright test --help
-```
+## CI/CD Integration
 
-## Test Categories
+E2E tests are integrated into our CI/CD pipeline and run on every push to the main branch and on pull requests.
 
-The end-to-end tests cover the following categories:
+The GitHub Actions workflow:
 
-- **Authentication**: Tests for login, logout, and access control
-- **Incident Logger**: Tests for creating, viewing, and searching incidents
-- **Call Density**: Tests for viewing and filtering the call density heatmap
+1. Sets up Python and Node.js environments
+2. Installs dependencies
+3. Runs the simplified tests first
+4. Runs E2E tests with Chromium
+5. Uploads test reports as artifacts
 
-## Creating New Tests
+## Debugging Failed Tests
 
-To create a new test, follow these steps:
+When tests fail in CI, you can:
 
-1. Create a new test file in `e2e/tests/`
-2. Import the necessary fixtures and utilities
-3. Create tests using the Playwright API
-
-Example:
-
-```javascript
-const { test, expect } = require('../fixtures/auth-fixture');
-const { navigateToFeature } = require('../utils/auth');
-
-test.describe('Feature Name', () => {
-  test('should do something', async ({ authenticatedPage: page }) => {
-    await navigateToFeature(page, 'feature-name');
-    
-    // Perform actions and assertions
-    await page.getByRole('button', { name: 'Click Me' }).click();
-    await expect(page.getByText('Success')).toBeVisible();
-  });
-});
-```
-
-## Test Results
-
-Test results are saved in the `e2e/test-results` directory:
-
-- HTML report: `e2e/test-results/html-report/`
-- JSON report: `e2e/test-results/test-results.json`
-- Screenshots: `e2e/test-results/screenshots/`
-- Videos: `e2e/test-results/videos/`
-
-To view the HTML report:
-
-```bash
-cd e2e
-npx playwright show-report test-results/html-report
-```
-
-## Continuous Integration
-
-The end-to-end tests are designed to run in a CI/CD environment. The GitHub Actions workflow includes a job to run the end-to-end tests:
-
-```yaml
-e2e-tests:
-  runs-on: ubuntu-latest
-  steps:
-  - uses: actions/checkout@v3
-  
-  - name: Set up Docker
-    uses: docker/setup-buildx-action@v2
-  
-  - name: Run E2E tests
-    run: ./run_e2e_tests.sh
-  
-  - name: Upload test results
-    uses: actions/upload-artifact@v3
-    with:
-      name: e2e-test-results
-      path: e2e/test-results
-    if: always()
-```
+1. Check the GitHub Actions logs for error messages
+2. Download the Playwright report artifact, which includes screenshots of failed tests
+3. Run the failing tests locally with `--debug` flag for interactive debugging
 
 ## Best Practices
 
-1. **Use page objects**: Create reusable page objects for common pages
-2. **Use fixtures**: Create fixtures for common setup and teardown
-3. **Make tests independent**: Each test should run independently
-4. **Use descriptive names**: Test names should describe what they're testing
-5. **Verify visually**: Use screenshots to verify visual elements
-6. **Avoid fragile selectors**: Use role, label, and text selectors instead of CSS selectors
-7. **Test real user flows**: Test complete user journeys
-8. **Keep tests fast**: Avoid unnecessary waiting
+1. Keep tests independent - each test should not depend on other tests
+2. Use data fixtures for test data
+3. Make assertions specific and meaningful
+4. Focus on user flows rather than implementation details
+5. Keep tests fast and reliable
+6. Add appropriate wait strategies (avoid fixed timeouts)
+7. Use page object patterns for maintainability
 
-## Troubleshooting
+## Adding New Tests
 
-### Tests Not Finding Elements
+To add new tests:
 
-If tests can't find elements, try:
-
-1. Use the `--headed` option to see what's happening
-2. Use the `--debug` option to pause tests
-3. Check that selectors are correct
-4. Add waits for dynamic content
-
-### Tests Failing in CI but Not Locally
-
-Common issues:
-
-1. Timing issues: Add explicit waits
-2. Environment differences: Use Docker locally
-3. Screen size differences: Set consistent viewport size
-4. Network issues: Mock external services
-
-## Support
-
-For issues with the end-to-end testing framework, please create an issue in the GitHub repository.
+1. Create a new spec file in `e2e/tests` or add to an existing one
+2. Follow the existing patterns and examples
+3. Run the tests locally to verify they work
+4. Submit a pull request with your changes
