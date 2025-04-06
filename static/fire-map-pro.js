@@ -590,14 +590,31 @@ function createHospitalsLayer() {
 /**
  * Create a custom icon
  */
-function createCustomIcon(iconName, color) {
+function createCustomIcon(iconName, color, size = 'medium') {
+    // Set icon size based on parameter
+    let iconSize, fontSize;
+    switch(size) {
+        case 'small':
+            iconSize = 24;
+            fontSize = 14;
+            break;
+        case 'large':
+            iconSize = 36;
+            fontSize = 18;
+            break;
+        case 'medium':
+        default:
+            iconSize = 30;
+            fontSize = 16;
+    }
+    
     return L.divIcon({
         className: 'custom-div-icon',
-        html: `<div style="background-color: ${color};" class="custom-marker">
-                <i class="fas ${iconName}"></i>
+        html: `<div style="background-color: ${color}; width: ${iconSize}px; height: ${iconSize}px;" class="custom-marker">
+                <i class="fas ${iconName}" style="font-size: ${fontSize}px;"></i>
                </div>`,
-        iconSize: [30, 30],
-        iconAnchor: [15, 15]
+        iconSize: [iconSize, iconSize],
+        iconAnchor: [iconSize/2, iconSize/2]
     });
 }
 
@@ -846,9 +863,15 @@ function initializeSymbolDragging() {
         const point = L.point(x, y);
         const latlng = map.containerPointToLatLng(point);
         
+        // Get the selected color and size
+        const colorSelector = document.getElementById('icon-color');
+        const sizeSelector = document.getElementById('icon-size');
+        const iconColor = colorSelector ? colorSelector.value : '#d32f2f';
+        const iconSize = sizeSelector ? sizeSelector.value : 'medium';
+        
         // Create a marker at that position
         const marker = L.marker(latlng, {
-            icon: createCustomIcon(iconName, '#d32f2f'),
+            icon: createCustomIcon(iconName, iconColor, iconSize),
             draggable: true
         }).addTo(drawnItems);
         
@@ -1778,37 +1801,205 @@ function exportPNG() {
         // Show loading indicator
         showToast("Generating PNG...", "info");
         
+        // Get export options from modal
+        const mapTitle = document.getElementById('export-title').value || 'Fire Department Map';
+        const dpiValue = document.getElementById('export-dpi').value;
+        const includeLegend = document.getElementById('export-legend').checked;
+        const includeScale = document.getElementById('export-scale').checked;
+        const includeNorth = document.getElementById('export-north').checked;
+        
+        // Calculate scale for higher DPI exports
+        const dpi = parseInt(dpiValue);
+        const scale = dpi / 96;
+        
         // Create a temporary container to hold the map for exporting
         const exportContainer = document.createElement('div');
+        exportContainer.className = 'export-container';
         exportContainer.style.width = map.getContainer().offsetWidth + 'px';
         exportContainer.style.height = map.getContainer().offsetHeight + 'px';
         exportContainer.style.position = 'absolute';
         exportContainer.style.top = '-9999px';
         exportContainer.style.left = '-9999px';
+        exportContainer.style.backgroundColor = 'white';
         document.body.appendChild(exportContainer);
         
         // Clone the map for capturing
         const clonedMap = map.getContainer().cloneNode(true);
         exportContainer.appendChild(clonedMap);
         
-        // Use html2canvas to capture the map
-        html2canvas(map.getContainer(), {
+        // Add title banner
+        const titleBanner = document.createElement('div');
+        titleBanner.style.position = 'absolute';
+        titleBanner.style.top = '10px';
+        titleBanner.style.left = '10px';
+        titleBanner.style.padding = '5px 15px';
+        titleBanner.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+        titleBanner.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.2)';
+        titleBanner.style.borderRadius = '4px';
+        titleBanner.style.zIndex = '1000';
+        
+        const titleElement = document.createElement('h2');
+        titleElement.style.margin = '0';
+        titleElement.style.padding = '0';
+        titleElement.style.fontSize = '18px';
+        titleElement.style.fontWeight = 'bold';
+        titleElement.style.color = '#d32f2f';
+        titleElement.textContent = mapTitle;
+        
+        const subtitleElement = document.createElement('p');
+        subtitleElement.style.margin = '2px 0 0 0';
+        subtitleElement.style.padding = '0';
+        subtitleElement.style.fontSize = '11px';
+        subtitleElement.style.color = '#666';
+        subtitleElement.textContent = 'Generated on ' + new Date().toLocaleDateString();
+        
+        titleBanner.appendChild(titleElement);
+        titleBanner.appendChild(subtitleElement);
+        exportContainer.appendChild(titleBanner);
+        
+        // Add north arrow if selected
+        if (includeNorth) {
+            const northArrow = document.createElement('div');
+            northArrow.style.position = 'absolute';
+            northArrow.style.top = '10px';
+            northArrow.style.right = '10px';
+            northArrow.style.width = '40px';
+            northArrow.style.height = '40px';
+            northArrow.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+            northArrow.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.2)';
+            northArrow.style.borderRadius = '50%';
+            northArrow.style.display = 'flex';
+            northArrow.style.alignItems = 'center';
+            northArrow.style.justifyContent = 'center';
+            northArrow.style.zIndex = '1000';
+            northArrow.innerHTML = '<i class="fas fa-arrow-up" style="color: #d32f2f; font-size: 18px;"></i>';
+            
+            const northLabel = document.createElement('div');
+            northLabel.style.position = 'absolute';
+            northLabel.style.bottom = '-6px';
+            northLabel.style.left = '0';
+            northLabel.style.right = '0';
+            northLabel.style.textAlign = 'center';
+            northLabel.style.fontSize = '10px';
+            northLabel.style.fontWeight = 'bold';
+            northLabel.textContent = 'N';
+            
+            northArrow.appendChild(northLabel);
+            exportContainer.appendChild(northArrow);
+        }
+        
+        // Add scale bar if selected
+        if (includeScale) {
+            const scaleBar = document.createElement('div');
+            scaleBar.style.position = 'absolute';
+            scaleBar.style.bottom = '10px';
+            scaleBar.style.right = '10px';
+            scaleBar.style.padding = '5px 10px';
+            scaleBar.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+            scaleBar.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.2)';
+            scaleBar.style.borderRadius = '4px';
+            scaleBar.style.fontSize = '11px';
+            scaleBar.style.zIndex = '1000';
+            
+            // Calculate scale based on current zoom
+            const zoom = map.getZoom();
+            const scale = Math.round(40075 / Math.pow(2, zoom + 8)) / 1000; // Approx. scale in km
+            scaleBar.innerHTML = `
+                <div style="width: 100px; height: 5px; border-bottom: 2px solid #333; border-left: 2px solid #333; border-right: 2px solid #333; margin-bottom: 3px;"></div>
+                <div style="font-size: 10px; text-align: center;">~${scale} km</div>
+            `;
+            
+            exportContainer.appendChild(scaleBar);
+        }
+        
+        // Add legend if selected
+        if (includeLegend) {
+            const legend = document.createElement('div');
+            legend.style.position = 'absolute';
+            legend.style.bottom = '10px';
+            legend.style.left = '10px';
+            legend.style.padding = '10px';
+            legend.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+            legend.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.2)';
+            legend.style.borderRadius = '4px';
+            legend.style.fontSize = '12px';
+            legend.style.zIndex = '1000';
+            legend.style.minWidth = '150px';
+            
+            // Add legend title
+            const legendTitle = document.createElement('h4');
+            legendTitle.style.margin = '0 0 5px 0';
+            legendTitle.style.padding = '0';
+            legendTitle.style.fontSize = '13px';
+            legendTitle.style.fontWeight = 'bold';
+            legendTitle.textContent = 'Legend';
+            legend.appendChild(legendTitle);
+            
+            // Add visible layers to legend
+            const legendItems = document.createElement('div');
+            
+            if (map.hasLayer(customDataLayers.stations)) {
+                legendItems.innerHTML += `
+                    <div style="display: flex; align-items: center; margin-bottom: 3px;">
+                        <div style="width: 12px; height: 12px; border-radius: 50%; background: #d32f2f; margin-right: 5px;"></div>
+                        <span>Fire Stations</span>
+                    </div>
+                `;
+            }
+            
+            if (map.hasLayer(customDataLayers.incidents)) {
+                legendItems.innerHTML += `
+                    <div style="display: flex; align-items: center; margin-bottom: 3px;">
+                        <div style="width: 12px; height: 12px; border-radius: 50%; background: #2196f3; margin-right: 5px;"></div>
+                        <span>Incidents</span>
+                    </div>
+                `;
+            }
+            
+            if (map.hasLayer(customDataLayers.responseZones)) {
+                legendItems.innerHTML += `
+                    <div style="display: flex; align-items: center; margin-bottom: 3px;">
+                        <div style="width: 12px; height: 8px; background: rgba(25, 118, 210, 0.3); border: 1px solid #1976d2; margin-right: 5px;"></div>
+                        <span>Response Zones</span>
+                    </div>
+                `;
+            }
+            
+            if (map.hasLayer(customDataLayers.hydrants)) {
+                legendItems.innerHTML += `
+                    <div style="display: flex; align-items: center; margin-bottom: 3px;">
+                        <div style="width: 12px; height: 12px; border-radius: 50%; background: #1976d2; margin-right: 5px;"></div>
+                        <span>Hydrants</span>
+                    </div>
+                `;
+            }
+            
+            if (map.hasLayer(customDataLayers.hospitals)) {
+                legendItems.innerHTML += `
+                    <div style="display: flex; align-items: center; margin-bottom: 3px;">
+                        <div style="width: 12px; height: 12px; border-radius: 50%; background: #4caf50; margin-right: 5px;"></div>
+                        <span>Hospitals</span>
+                    </div>
+                `;
+            }
+            
+            legend.appendChild(legendItems);
+            exportContainer.appendChild(legend);
+        }
+        
+        // Use html2canvas to capture the map with added elements
+        html2canvas(exportContainer, {
             useCORS: true,
             allowTaint: true,
             logging: false,
-            backgroundColor: null
+            backgroundColor: 'white',
+            scale: scale,
+            width: exportContainer.offsetWidth,
+            height: exportContainer.offsetHeight
         }).then(function(canvas) {
-            // Add title and footer
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            ctx.fillRect(10, 10, 400, 30);
-            ctx.fillStyle = '#000';
-            ctx.font = 'bold 16px Arial';
-            ctx.fillText('FireMapPro Export - ' + new Date().toLocaleDateString(), 20, 30);
-            
             // Create download link
             const link = document.createElement('a');
-            link.download = 'firemap_export_' + Date.now() + '.png';
+            link.download = mapTitle.replace(/\s+/g, '_') + '_' + Date.now() + '.png';
             link.href = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
             document.body.appendChild(link);
             link.click();
@@ -1817,6 +2008,9 @@ function exportPNG() {
             // Clean up
             document.body.removeChild(exportContainer);
             showToast("PNG export complete!", "success");
+            
+            // Close modal
+            closeModal('export-modal');
         }).catch(function(error) {
             console.error("PNG export failed:", error);
             document.body.removeChild(exportContainer);
@@ -1836,21 +2030,203 @@ function exportPDF() {
         // Show loading indicator
         showToast("Generating PDF...", "info");
         
-        // Get current map dimensions
-        const width = map.getContainer().offsetWidth;
-        const height = map.getContainer().offsetHeight;
+        // Get export options from modal
+        const mapTitle = document.getElementById('export-title').value || 'Fire Department Map';
+        const dpiValue = document.getElementById('export-dpi').value;
+        const includeLegend = document.getElementById('export-legend').checked;
+        const includeScale = document.getElementById('export-scale').checked;
+        const includeNorth = document.getElementById('export-north').checked;
         
-        // Capture the map using html2canvas
-        html2canvas(map.getContainer(), {
+        // Calculate scale for higher DPI exports
+        const dpi = parseInt(dpiValue);
+        const scale = dpi / 96;
+        
+        // Create a temporary container to hold the map for exporting
+        const exportContainer = document.createElement('div');
+        exportContainer.className = 'export-container';
+        exportContainer.style.width = map.getContainer().offsetWidth + 'px';
+        exportContainer.style.height = map.getContainer().offsetHeight + 'px';
+        exportContainer.style.position = 'absolute';
+        exportContainer.style.top = '-9999px';
+        exportContainer.style.left = '-9999px';
+        exportContainer.style.backgroundColor = 'white';
+        document.body.appendChild(exportContainer);
+        
+        // Clone the map for capturing
+        const clonedMap = map.getContainer().cloneNode(true);
+        exportContainer.appendChild(clonedMap);
+        
+        // Add title banner
+        const titleBanner = document.createElement('div');
+        titleBanner.style.position = 'absolute';
+        titleBanner.style.top = '10px';
+        titleBanner.style.left = '10px';
+        titleBanner.style.padding = '5px 15px';
+        titleBanner.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+        titleBanner.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.2)';
+        titleBanner.style.borderRadius = '4px';
+        titleBanner.style.zIndex = '1000';
+        
+        const titleElement = document.createElement('h2');
+        titleElement.style.margin = '0';
+        titleElement.style.padding = '0';
+        titleElement.style.fontSize = '18px';
+        titleElement.style.fontWeight = 'bold';
+        titleElement.style.color = '#d32f2f';
+        titleElement.textContent = mapTitle;
+        
+        const subtitleElement = document.createElement('p');
+        subtitleElement.style.margin = '2px 0 0 0';
+        subtitleElement.style.padding = '0';
+        subtitleElement.style.fontSize = '11px';
+        subtitleElement.style.color = '#666';
+        subtitleElement.textContent = 'Generated on ' + new Date().toLocaleDateString();
+        
+        titleBanner.appendChild(titleElement);
+        titleBanner.appendChild(subtitleElement);
+        exportContainer.appendChild(titleBanner);
+        
+        // Add export elements (north arrow, scale, legend) - same as in PNG export
+        if (includeNorth) {
+            const northArrow = document.createElement('div');
+            northArrow.style.position = 'absolute';
+            northArrow.style.top = '10px';
+            northArrow.style.right = '10px';
+            northArrow.style.width = '40px';
+            northArrow.style.height = '40px';
+            northArrow.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+            northArrow.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.2)';
+            northArrow.style.borderRadius = '50%';
+            northArrow.style.display = 'flex';
+            northArrow.style.alignItems = 'center';
+            northArrow.style.justifyContent = 'center';
+            northArrow.style.zIndex = '1000';
+            northArrow.innerHTML = '<i class="fas fa-arrow-up" style="color: #d32f2f; font-size: 18px;"></i>';
+            
+            const northLabel = document.createElement('div');
+            northLabel.style.position = 'absolute';
+            northLabel.style.bottom = '-6px';
+            northLabel.style.left = '0';
+            northLabel.style.right = '0';
+            northLabel.style.textAlign = 'center';
+            northLabel.style.fontSize = '10px';
+            northLabel.style.fontWeight = 'bold';
+            northLabel.textContent = 'N';
+            
+            northArrow.appendChild(northLabel);
+            exportContainer.appendChild(northArrow);
+        }
+        
+        if (includeScale) {
+            const scaleBar = document.createElement('div');
+            scaleBar.style.position = 'absolute';
+            scaleBar.style.bottom = '10px';
+            scaleBar.style.right = '10px';
+            scaleBar.style.padding = '5px 10px';
+            scaleBar.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+            scaleBar.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.2)';
+            scaleBar.style.borderRadius = '4px';
+            scaleBar.style.fontSize = '11px';
+            scaleBar.style.zIndex = '1000';
+            
+            // Calculate scale based on current zoom
+            const zoom = map.getZoom();
+            const mapScale = Math.round(40075 / Math.pow(2, zoom + 8)) / 1000; // Approx. scale in km
+            scaleBar.innerHTML = `
+                <div style="width: 100px; height: 5px; border-bottom: 2px solid #333; border-left: 2px solid #333; border-right: 2px solid #333; margin-bottom: 3px;"></div>
+                <div style="font-size: 10px; text-align: center;">~${mapScale} km</div>
+            `;
+            
+            exportContainer.appendChild(scaleBar);
+        }
+        
+        if (includeLegend) {
+            const legend = document.createElement('div');
+            legend.style.position = 'absolute';
+            legend.style.bottom = '10px';
+            legend.style.left = '10px';
+            legend.style.padding = '10px';
+            legend.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+            legend.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.2)';
+            legend.style.borderRadius = '4px';
+            legend.style.fontSize = '12px';
+            legend.style.zIndex = '1000';
+            legend.style.minWidth = '150px';
+            
+            // Add legend title
+            const legendTitle = document.createElement('h4');
+            legendTitle.style.margin = '0 0 5px 0';
+            legendTitle.style.padding = '0';
+            legendTitle.style.fontSize = '13px';
+            legendTitle.style.fontWeight = 'bold';
+            legendTitle.textContent = 'Legend';
+            legend.appendChild(legendTitle);
+            
+            // Add visible layers to legend
+            const legendItems = document.createElement('div');
+            
+            if (map.hasLayer(customDataLayers.stations)) {
+                legendItems.innerHTML += `
+                    <div style="display: flex; align-items: center; margin-bottom: 3px;">
+                        <div style="width: 12px; height: 12px; border-radius: 50%; background: #d32f2f; margin-right: 5px;"></div>
+                        <span>Fire Stations</span>
+                    </div>
+                `;
+            }
+            
+            if (map.hasLayer(customDataLayers.incidents)) {
+                legendItems.innerHTML += `
+                    <div style="display: flex; align-items: center; margin-bottom: 3px;">
+                        <div style="width: 12px; height: 12px; border-radius: 50%; background: #2196f3; margin-right: 5px;"></div>
+                        <span>Incidents</span>
+                    </div>
+                `;
+            }
+            
+            if (map.hasLayer(customDataLayers.responseZones)) {
+                legendItems.innerHTML += `
+                    <div style="display: flex; align-items: center; margin-bottom: 3px;">
+                        <div style="width: 12px; height: 8px; background: rgba(25, 118, 210, 0.3); border: 1px solid #1976d2; margin-right: 5px;"></div>
+                        <span>Response Zones</span>
+                    </div>
+                `;
+            }
+            
+            if (map.hasLayer(customDataLayers.hydrants)) {
+                legendItems.innerHTML += `
+                    <div style="display: flex; align-items: center; margin-bottom: 3px;">
+                        <div style="width: 12px; height: 12px; border-radius: 50%; background: #1976d2; margin-right: 5px;"></div>
+                        <span>Hydrants</span>
+                    </div>
+                `;
+            }
+            
+            if (map.hasLayer(customDataLayers.hospitals)) {
+                legendItems.innerHTML += `
+                    <div style="display: flex; align-items: center; margin-bottom: 3px;">
+                        <div style="width: 12px; height: 12px; border-radius: 50%; background: #4caf50; margin-right: 5px;"></div>
+                        <span>Hospitals</span>
+                    </div>
+                `;
+            }
+            
+            legend.appendChild(legendItems);
+            exportContainer.appendChild(legend);
+        }
+        
+        // Capture the map with html2canvas
+        html2canvas(exportContainer, {
             useCORS: true,
             allowTaint: true,
-            logging: false,
-            backgroundColor: null
+            backgroundColor: 'white',
+            scale: scale
         }).then(function(canvas) {
             // Convert canvas to image
-            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            const imgData = canvas.toDataURL('image/jpeg', 0.9);
             
             // Calculate PDF orientation and size
+            const width = canvas.width;
+            const height = canvas.height;
             const orientation = width > height ? 'landscape' : 'portrait';
             let pdfWidth, pdfHeight;
             
@@ -1862,39 +2238,58 @@ function exportPDF() {
                 pdfHeight = 297; // A4 portrait height in mm
             }
             
-            // Create PDF - handle both UMD and standard imports
+            // Create PDF with correct constructor based on context
             const pdf = (typeof jspdf === 'object' && jspdf.jsPDF) ? 
                 new jspdf.jsPDF(orientation, 'mm', [pdfWidth, pdfHeight]) : 
                 new jsPDF(orientation, 'mm', [pdfWidth, pdfHeight]);
             
             // Calculate image dimensions to fit PDF
             const aspectRatio = width / height;
-            let imgWidth = pdfWidth - 20; // 10mm margin on each side
-            let imgHeight = imgWidth / aspectRatio;
+            const imgWidth = pdfWidth - 20; // 10mm margin on each side
+            const imgHeight = imgWidth / aspectRatio;
             
             // Add image to PDF
-            pdf.addImage(imgData, 'JPEG', 10, 20, imgWidth, imgHeight);
+            pdf.addImage(imgData, 'JPEG', 10, 10, imgWidth, imgHeight);
             
-            // Add title
-            pdf.setFontSize(16);
-            pdf.text('FireMapPro Export', 10, 15);
-            
-            // Add metadata as footer
+            // Add metadata in footer
             pdf.setFontSize(8);
             const center = map.getCenter();
-            const footerText = `Date: ${new Date().toLocaleDateString()} | Map Center: ${center.lat.toFixed(5)}, ${center.lng.toFixed(5)} | Zoom: ${map.getZoom()}`;
+            pdf.setTextColor(100, 100, 100);
+            const footerText = `Generated by FireMapPro | Map Center: ${center.lat.toFixed(4)}, ${center.lng.toFixed(4)} | Zoom: ${map.getZoom()} | Date: ${new Date().toLocaleDateString()}`;
             pdf.text(footerText, 10, pdfHeight - 5);
             
+            // Add department logo watermark if available
+            // This would be replaced with actual logo in production
+            pdf.setFontSize(20);
+            pdf.setTextColor(220, 220, 220);
+            pdf.text("FireEMS.ai", pdfWidth - 50, pdfHeight - 10);
+            
+            // Add PDF metadata
+            pdf.setProperties({
+                title: mapTitle,
+                subject: 'Fire Department Map',
+                author: 'FireEMS.ai',
+                keywords: 'fire, ems, map, emergency services',
+                creator: 'FireMapPro'
+            });
+            
             // Save PDF
-            pdf.save('firemap_export_' + Date.now() + '.pdf');
+            pdf.save(mapTitle.replace(/\s+/g, '_') + '_' + Date.now() + '.pdf');
             showToast("PDF export complete!", "success");
+            
+            // Close modal
+            closeModal('export-modal');
+            
+            // Clean up
+            document.body.removeChild(exportContainer);
         }).catch(function(error) {
             console.error("PDF export failed:", error);
-            showToast("PDF export failed", "error");
+            document.body.removeChild(exportContainer);
+            showToast("PDF export failed: " + error.message, "error");
         });
     } catch (e) {
         console.error("Error in PDF export:", e);
-        showToast("Error generating PDF", "error");
+        showToast("Error generating PDF: " + e.message, "error");
     }
 }
 
@@ -2264,4 +2659,191 @@ function showToast(message, type = 'info') {
             }
         }, 300);
     }, 3000);
+}
+
+/**
+ * Create marker popup with edit/remove options
+ */
+function createMarkerPopup(marker) {
+    const popupContent = document.createElement('div');
+    popupContent.className = 'custom-popup';
+    
+    // Create title field
+    const titleField = document.createElement('input');
+    titleField.type = 'text';
+    titleField.value = marker.options.title || 'Marker';
+    titleField.className = 'popup-title-field';
+    titleField.style.width = '100%';
+    titleField.style.marginBottom = '10px';
+    titleField.style.padding = '4px';
+    titleField.style.border = '1px solid #ccc';
+    titleField.style.borderRadius = '3px';
+    
+    // Create color selector
+    const colorLabel = document.createElement('label');
+    colorLabel.textContent = 'Icon Color:';
+    colorLabel.style.display = 'block';
+    colorLabel.style.marginBottom = '3px';
+    colorLabel.style.fontSize = '12px';
+    
+    const colorSelector = document.createElement('select');
+    colorSelector.className = 'popup-color-selector';
+    colorSelector.style.width = '100%';
+    colorSelector.style.marginBottom = '10px';
+    colorSelector.style.padding = '4px';
+    colorSelector.style.border = '1px solid #ccc';
+    colorSelector.style.borderRadius = '3px';
+    
+    // Add color options
+    const colorOptions = [
+        {value: '#d32f2f', label: 'Red'},
+        {value: '#1976d2', label: 'Blue'},
+        {value: '#4caf50', label: 'Green'},
+        {value: '#ff9800', label: 'Orange'},
+        {value: '#9c27b0', label: 'Purple'},
+        {value: '#607d8b', label: 'Gray'},
+        {value: '#000000', label: 'Black'},
+        {value: '#e91e63', label: 'Pink'},
+        {value: '#ffeb3b', label: 'Yellow'},
+        {value: '#009688', label: 'Teal'},
+        {value: '#795548', label: 'Brown'},
+        {value: '#ffffff', label: 'White'}
+    ];
+    
+    // Get current marker color
+    let currentColor = '#d32f2f';
+    if (marker.options.icon && marker.options.icon.options.html) {
+        const htmlContent = marker.options.icon.options.html;
+        const match = htmlContent.match(/background-color:\s*([^;]+)/);
+        if (match && match[1]) {
+            currentColor = match[1].trim();
+        }
+    }
+    
+    colorOptions.forEach(option => {
+        const optionEl = document.createElement('option');
+        optionEl.value = option.value;
+        optionEl.textContent = option.label;
+        if (option.value === currentColor) {
+            optionEl.selected = true;
+        }
+        colorSelector.appendChild(optionEl);
+    });
+    
+    // Create size selector
+    const sizeLabel = document.createElement('label');
+    sizeLabel.textContent = 'Icon Size:';
+    sizeLabel.style.display = 'block';
+    sizeLabel.style.marginBottom = '3px';
+    sizeLabel.style.fontSize = '12px';
+    
+    const sizeSelector = document.createElement('select');
+    sizeSelector.className = 'popup-size-selector';
+    sizeSelector.style.width = '100%';
+    sizeSelector.style.marginBottom = '10px';
+    sizeSelector.style.padding = '4px';
+    sizeSelector.style.border = '1px solid #ccc';
+    sizeSelector.style.borderRadius = '3px';
+    
+    // Add size options
+    const sizeOptions = [
+        {value: 'small', label: 'Small'},
+        {value: 'medium', label: 'Medium'},
+        {value: 'large', label: 'Large'}
+    ];
+    
+    // Try to get current marker size
+    let currentSize = 'medium';
+    if (marker.options.icon && marker.options.icon.options.iconSize) {
+        const iconSize = marker.options.icon.options.iconSize[0];
+        if (iconSize <= 24) currentSize = 'small';
+        else if (iconSize >= 36) currentSize = 'large';
+    }
+    
+    sizeOptions.forEach(option => {
+        const optionEl = document.createElement('option');
+        optionEl.value = option.value;
+        optionEl.textContent = option.label;
+        if (option.value === currentSize) {
+            optionEl.selected = true;
+        }
+        sizeSelector.appendChild(optionEl);
+    });
+    
+    // Save button
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = 'Save';
+    saveBtn.className = 'popup-save-btn';
+    saveBtn.style.marginRight = '5px';
+    saveBtn.style.padding = '3px 10px';
+    saveBtn.style.backgroundColor = '#4caf50';
+    saveBtn.style.color = 'white';
+    saveBtn.style.border = 'none';
+    saveBtn.style.borderRadius = '3px';
+    saveBtn.style.cursor = 'pointer';
+    
+    // Remove button
+    const removeBtn = document.createElement('button');
+    removeBtn.textContent = 'Remove';
+    removeBtn.className = 'remove-marker-btn';
+    removeBtn.style.padding = '3px 10px';
+    removeBtn.style.backgroundColor = '#f44336';
+    removeBtn.style.color = 'white';
+    removeBtn.style.border = 'none';
+    removeBtn.style.borderRadius = '3px';
+    removeBtn.style.cursor = 'pointer';
+    
+    // Add elements to popup
+    popupContent.appendChild(titleField);
+    
+    // Add color selector
+    popupContent.appendChild(colorLabel);
+    popupContent.appendChild(colorSelector);
+    
+    // Add size selector
+    popupContent.appendChild(sizeLabel);
+    popupContent.appendChild(sizeSelector);
+    
+    // Add coordinates display
+    const coordinates = document.createElement('p');
+    coordinates.style.fontSize = '11px';
+    coordinates.style.color = '#666';
+    coordinates.style.margin = '10px 0 5px 0';
+    coordinates.textContent = `Coordinates: ${marker.getLatLng().lat.toFixed(5)}, ${marker.getLatLng().lng.toFixed(5)}`;
+    popupContent.appendChild(coordinates);
+    
+    // Add buttons
+    const buttonDiv = document.createElement('div');
+    buttonDiv.style.marginTop = '10px';
+    buttonDiv.style.display = 'flex';
+    buttonDiv.style.justifyContent = 'space-between';
+    buttonDiv.appendChild(saveBtn);
+    buttonDiv.appendChild(removeBtn);
+    popupContent.appendChild(buttonDiv);
+    
+    // Save icon data for reference
+    let iconName = 'fa-map-marker';
+    if (marker.options.icon && marker.options.icon.options.html) {
+        const match = marker.options.icon.options.html.match(/fa-[a-z-]+/);
+        if (match && match[0]) {
+            iconName = match[0];
+        }
+    }
+    
+    // Add event handlers
+    saveBtn.addEventListener('click', function() {
+        marker.options.title = titleField.value;
+        
+        // Update marker icon
+        const newColor = colorSelector.value;
+        const newSize = sizeSelector.value;
+        
+        // Get the icon name from the original marker
+        const newIcon = createCustomIcon(iconName, newColor, newSize);
+        marker.setIcon(newIcon);
+        
+        marker.closePopup();
+    });
+    
+    return popupContent;
 }

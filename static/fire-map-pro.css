@@ -1032,11 +1032,20 @@ footer {
     border-radius: 50%;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
     background-color: var(--primary-color);
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.custom-marker:hover {
+    transform: scale(1.1);
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.4);
+    cursor: move;
 }
 
 .custom-marker i {
     color: white;
     font-size: 16px;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
 }
 
 /* Ensure Font Awesome icons are displayed correctly */
