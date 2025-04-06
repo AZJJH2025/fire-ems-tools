@@ -2124,6 +2124,15 @@ function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.style.display = 'block';
+        console.log(`Opening modal: ${modalId}`);
+        
+        // Make sure default tab is selected for modals with tabs
+        if (modalId === 'export-modal') {
+            const defaultTab = modal.querySelector('.modal-tab');
+            if (defaultTab) {
+                defaultTab.click();
+            }
+        }
     }
 }
 
@@ -2232,18 +2241,29 @@ function initMap() {
 
 // Initialize everything when the document is loaded
 document.addEventListener("DOMContentLoaded", function() {
+    console.log("DOM content loaded, initializing FireMapPro");
+    
     // Initialize map
     initMap();
     
     // Initialize export buttons
     const exportPngBtn = document.getElementById('export-png');
     if (exportPngBtn) {
+        console.log("Found export-png button, adding event listener");
         exportPngBtn.addEventListener('click', function() {
+            console.log("Export PNG button clicked");
             openModal('export-modal');
             // Set focus to Basic tab
             const basicTab = document.querySelector('[data-tab="export-basic"]');
-            if (basicTab) basicTab.click();
+            if (basicTab) {
+                console.log("Clicking Basic tab");
+                basicTab.click();
+            } else {
+                console.log("Basic tab not found");
+            }
         });
+    } else {
+        console.log("Export PNG button not found");
     }
     
     const exportPdfBtn = document.getElementById('export-pdf');

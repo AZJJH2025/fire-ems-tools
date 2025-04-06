@@ -1185,6 +1185,11 @@ footer {
     align-items: center;
 }
 
+/* When the modal is shown, display as flex */
+.modal[style*="display: block"] {
+    display: flex !important;
+}
+
 .modal-content {
     background-color: white;
     border-radius: 8px;
@@ -1355,6 +1360,10 @@ footer {
     z-index: 2000;
     justify-content: center;
     align-items: center;
+}
+
+#print-preview-modal[style*="display: block"] {
+    display: flex !important;
 }
 
 .print-preview-content {
