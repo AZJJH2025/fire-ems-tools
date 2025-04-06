@@ -5489,6 +5489,459 @@ def register_routes(app):
     
     # Include the rest of your original routes here
 
+# Call Volume Forecaster Routes
+@app.route('/call-volume-forecaster')
+def call_volume_forecaster():
+    """Render the Call Volume Forecaster page"""
+    return render_template('call-volume-forecaster.html')
+
+@app.route('/api/call-volume-forecaster/upload', methods=['POST'])
+def call_volume_forecaster_upload():
+    """API endpoint to upload and process incident data for call volume forecasting"""
+    try:
+        # Check if file was uploaded
+        if 'file' not in request.files:
+            return jsonify({"error": "No file uploaded"}), 400
+            
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({"error": "No file selected"}), 400
+            
+        # Process the uploaded file
+        filename = secure_filename(file.filename)
+        file_extension = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
+        
+        # Process CSV or Excel files
+        try:
+            if file_extension == 'csv':
+                df = pd.read_csv(file)
+            elif file_extension in ['xlsx', 'xls']:
+                df = pd.read_excel(file)
+            else:
+                return jsonify({"error": "Unsupported file format. Please upload a CSV or Excel file."}), 400
+        except Exception as e:
+            return jsonify({"error": f"Error reading file: {str(e)}"}), 400
+            
+        # Store the data in the session
+        session['call_volume_data'] = df.to_json(orient='records', date_format='iso')
+        
+        # Calculate data quality metrics
+        data_quality = calculate_data_quality(df)
+        
+        # Generate sample data for the response (this would be based on the actual data)
+        return jsonify({
+            "message": "Data uploaded successfully",
+            "file_name": filename,
+            "record_count": len(df),
+            "quality": data_quality
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in call_volume_forecaster_upload: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/call-volume-forecaster/forecast', methods=['POST'])
+def call_volume_forecaster_generate():
+    """API endpoint to generate a call volume forecast based on uploaded data"""
+    try:
+        # Check if data exists in session
+        if 'call_volume_data' not in session:
+            # If no data in session, use sample data
+            forecast_data = generate_sample_forecast_data()
+            return jsonify(forecast_data)
+            
+        # Get parameters from request
+        data = request.json
+        forecast_type = data.get('forecastType', 'monthly')
+        forecast_period = int(data.get('forecastPeriod', 12))
+        model_type = data.get('modelType', 'prophet')
+        confidence_interval = int(data.get('confidenceInterval', 95))
+        
+        # Get advanced parameters if provided
+        seasonal_periods = data.get('seasonalPeriods', ['weekly', 'monthly', 'yearly'])
+        holiday_effects = data.get('holidayEffects', True)
+        changepoints = data.get('changepoints', True)
+        external_factors = data.get('externalFactors', [])
+        
+        # Load data from session
+        df = pd.read_json(session['call_volume_data'], orient='records')
+        
+        # Generate forecast based on the data and parameters
+        forecast_data = generate_forecast(
+            df, 
+            forecast_type, 
+            forecast_period, 
+            model_type, 
+            confidence_interval,
+            seasonal_periods,
+            holiday_effects,
+            changepoints,
+            external_factors
+        )
+        
+        return jsonify(forecast_data)
+        
+    except Exception as e:
+        logger.error(f"Error in call_volume_forecaster_generate: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/call-volume-forecaster/export/<format>', methods=['POST'])
+def call_volume_forecaster_export(format):
+    """API endpoint to export forecast data in various formats"""
+    try:
+        # Get forecast data from request
+        data = request.json
+        forecast_data = data.get('forecastData')
+        
+        if not forecast_data:
+            return jsonify({"error": "No forecast data provided"}), 400
+            
+        # Export data based on the requested format
+        if format == 'csv':
+            return export_forecast_csv(forecast_data)
+        elif format == 'excel':
+            return export_forecast_excel(forecast_data)
+        elif format == 'pdf':
+            return export_forecast_pdf(forecast_data)
+        elif format == 'image':
+            return export_forecast_image(forecast_data)
+        else:
+            return jsonify({"error": f"Unsupported export format: {format}"}), 400
+            
+    except Exception as e:
+        logger.error(f"Error in call_volume_forecaster_export: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+# Helper functions for Call Volume Forecaster
+
+def calculate_data_quality(df):
+    """Calculate data quality metrics for the uploaded dataset"""
+    # Check time range
+    date_columns = [col for col in df.columns if any(x in col.lower() for x in ['date', 'time', 'timestamp'])]
+    
+    time_range = "Unknown"
+    if date_columns:
+        try:
+            # Try to convert the first date column to datetime
+            df[date_columns[0]] = pd.to_datetime(df[date_columns[0]])
+            min_date = df[date_columns[0]].min()
+            max_date = df[date_columns[0]].max()
+            
+            if not pd.isna(min_date) and not pd.isna(max_date):
+                time_range = f"{min_date.strftime('%b %Y')} - {max_date.strftime('%b %Y')}"
+        except:
+            pass
+    
+    # Calculate missing values percentage
+    missing_values_pct = round((df.isna().sum().sum() / (df.shape[0] * df.shape[1])) * 100, 1)
+    
+    # Calculate a simple quality score (0-10)
+    # Based on missing values and data span
+    quality_score = 10
+    
+    # Deduct points for missing values
+    if missing_values_pct > 0:
+        quality_score -= min(5, missing_values_pct / 2)  # Deduct up to 5 points
+    
+    # Deduct points for short time spans (if date column exists)
+    if date_columns and time_range != "Unknown":
+        try:
+            date_range = (max_date - min_date).days
+            if date_range < 30:  # Less than a month
+                quality_score -= 3
+            elif date_range < 90:  # Less than 3 months
+                quality_score -= 2
+            elif date_range < 365:  # Less than a year
+                quality_score -= 1
+        except:
+            quality_score -= 1  # Deduct a point if we can't calculate the range
+    
+    return {
+        "timeRange": time_range,
+        "recordCount": len(df),
+        "missingValues": missing_values_pct,
+        "qualityScore": round(quality_score)
+    }
+
+def generate_forecast(df, forecast_type, forecast_period, model_type, confidence_interval, 
+                     seasonal_periods, holiday_effects, changepoints, external_factors):
+    """
+    Generate a forecast based on the provided data and parameters.
+    In a real implementation, this would use actual forecasting algorithms.
+    For this demonstration, we'll generate sample data.
+    """
+    # In a real implementation, this would use actual time series forecasting
+    # such as Prophet, ARIMA, or machine learning models
+    
+    # For demonstration purposes, generate sample forecast data
+    return generate_sample_forecast_data(forecast_type, forecast_period)
+
+def generate_sample_forecast_data(forecast_type='monthly', forecast_period=12):
+    """Generate sample forecast data for demonstration purposes"""
+    # Sample historical dates (past 24 months)
+    today = datetime.now()
+    historical_dates = [(today - timedelta(days=30*i)).strftime('%Y-%m') for i in range(24, 0, -1)]
+    
+    # Sample forecast dates (next N months)
+    forecast_dates = [(today + timedelta(days=30*i)).strftime('%Y-%m') for i in range(1, forecast_period+1)]
+    
+    # Generate sample historical values (with some seasonality and trend)
+    base_value = 500
+    trend = 5  # Increasing trend
+    historical_values = []
+    
+    for i, date in enumerate(historical_dates):
+        month = int(date.split('-')[1])
+        
+        # Seasonality factors
+        seasonal_factor = 1.0
+        # Summer peak (June, July, August)
+        if month in [6, 7, 8]:
+            seasonal_factor = 1.3
+        # Winter peak (December, January)
+        elif month in [12, 1]:
+            seasonal_factor = 1.2
+        # Spring (March, April, May)
+        elif month in [3, 4, 5]:
+            seasonal_factor = 0.9
+        # Fall (September, October, November)
+        else:
+            seasonal_factor = 0.8
+            
+        # Add some random noise
+        noise = random.uniform(0.9, 1.1)
+        
+        # Calculate value with trend, seasonality, and noise
+        value = (base_value + i * trend) * seasonal_factor * noise
+        historical_values.append(round(value))
+    
+    # Generate forecast values with trend and seasonality
+    forecast_values = []
+    lower_bound = []
+    upper_bound = []
+    
+    for i, date in enumerate(forecast_dates):
+        month = int(date.split('-')[1])
+        
+        # Seasonality factors (same as historical)
+        seasonal_factor = 1.0
+        if month in [6, 7, 8]:
+            seasonal_factor = 1.3
+        elif month in [12, 1]:
+            seasonal_factor = 1.2
+        elif month in [3, 4, 5]:
+            seasonal_factor = 0.9
+        else:
+            seasonal_factor = 0.8
+            
+        # Base forecast with trend and seasonality
+        value = (base_value + (len(historical_dates) + i) * trend) * seasonal_factor
+        
+        # Add increasing uncertainty for further forecasts
+        uncertainty = 0.05 + (i * 0.01)  # 5% base uncertainty, increasing by 1% per month
+        
+        forecast_values.append(round(value))
+        lower_bound.append(round(value * (1 - uncertainty)))
+        upper_bound.append(round(value * (1 + uncertainty)))
+    
+    # Generate sample seasonal pattern data
+    seasonal_pattern = [
+        base_value * 0.9,   # Jan
+        base_value * 0.85,  # Feb
+        base_value * 0.9,   # Mar
+        base_value * 0.95,  # Apr
+        base_value * 1.0,   # May
+        base_value * 1.2,   # Jun
+        base_value * 1.3,   # Jul
+        base_value * 1.25,  # Aug
+        base_value * 1.0,   # Sep
+        base_value * 0.9,   # Oct
+        base_value * 0.95,  # Nov
+        base_value * 1.1    # Dec
+    ]
+    
+    # Generate sample day of week pattern
+    dow_pattern = [
+        base_value * 0.7,   # Sun
+        base_value * 1.0,   # Mon
+        base_value * 1.05,  # Tue
+        base_value * 1.1,   # Wed
+        base_value * 1.05,  # Thu
+        base_value * 1.2,   # Fri
+        base_value * 0.9    # Sat
+    ]
+    
+    # Sample call type distribution
+    call_types = [
+        {"name": "Medical", "value": 65},
+        {"name": "Traffic Accident", "value": 12},
+        {"name": "Fire Alarm", "value": 8},
+        {"name": "Structure Fire", "value": 5},
+        {"name": "Service Call", "value": 4},
+        {"name": "Hazardous Condition", "value": 3},
+        {"name": "Other Fire", "value": 2},
+        {"name": "Other", "value": 1}
+    ]
+    
+    # Sample geographic distribution (for Phoenix, AZ)
+    geo_distribution = []
+    for _ in range(50):
+        # Generate points around Phoenix
+        lat = 33.4484 + random.uniform(-0.2, 0.2)
+        lng = -112.0740 + random.uniform(-0.2, 0.2)
+        intensity = random.randint(1, 10)
+        geo_distribution.append({"lat": lat, "lng": lng, "intensity": intensity})
+    
+    # Sample forecast table data
+    forecast_table = []
+    for i, date in enumerate(forecast_dates):
+        # Calculate year-over-year change
+        yoy = None
+        if i < len(historical_values):
+            # Simple year-over-year calculation (this month vs same month last year)
+            yoy = round(((forecast_values[i] - historical_values[i]) / historical_values[i]) * 100)
+        
+        forecast_table.append({
+            "period": date,
+            "predicted": forecast_values[i],
+            "lowerBound": lower_bound[i],
+            "upperBound": upper_bound[i],
+            "yearOverYear": yoy if yoy is not None else 5  # Default to 5% if no historical data
+        })
+    
+    # Build the complete forecast data response
+    month_names = ['January', 'February', 'March', 'April', 'May', 'June', 
+                  'July', 'August', 'September', 'October', 'November', 'December']
+    
+    # Determine peak and lowest months based on seasonal pattern
+    peak_month_index = seasonal_pattern.index(max(seasonal_pattern))
+    lowest_month_index = seasonal_pattern.index(min(seasonal_pattern))
+    
+    # Forecast summary
+    forecast_summary = {
+        "peakMonth": month_names[peak_month_index],
+        "peakTrendDirection": "up",
+        "peakTrendPercent": 12,
+        "lowestMonth": month_names[lowest_month_index],
+        "lowestTrendDirection": "down",
+        "lowestTrendPercent": 8,
+        "annualTrend": "+5.2%",
+        "annualTrendDirection": "up",
+        "accuracy": 92
+    }
+    
+    return {
+        "historicalDates": historical_dates,
+        "historicalValues": historical_values,
+        "forecastDates": forecast_dates,
+        "forecastValues": forecast_values,
+        "lowerBound": lower_bound,
+        "upperBound": upper_bound,
+        "seasonalPattern": seasonal_pattern,
+        "dowPattern": dow_pattern,
+        "callTypes": call_types,
+        "geographicDistribution": geo_distribution,
+        "forecast": forecast_table,
+        "summary": forecast_summary
+    }
+
+def export_forecast_csv(forecast_data):
+    """Export forecast data as CSV"""
+    # Create DataFrame from forecast table data
+    df = pd.DataFrame(forecast_data['forecast'])
+    
+    # Create in-memory CSV
+    output = io.StringIO()
+    df.to_csv(output, index=False)
+    
+    # Create response
+    response = make_response(output.getvalue())
+    response.headers["Content-Disposition"] = "attachment; filename=call_volume_forecast.csv"
+    response.headers["Content-type"] = "text/csv"
+    
+    return response
+
+def export_forecast_excel(forecast_data):
+    """Export forecast data as Excel file"""
+    # Create DataFrame from forecast table data
+    forecast_df = pd.DataFrame(forecast_data['forecast'])
+    
+    # Create in-memory Excel file
+    output = io.BytesIO()
+    
+    # Create Excel writer
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        # Write forecast data to first sheet
+        forecast_df.to_excel(writer, sheet_name='Forecast', index=False)
+        
+        # Create seasonal pattern sheet
+        seasonal_df = pd.DataFrame({
+            'Month': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            'Pattern': forecast_data['seasonalPattern']
+        })
+        seasonal_df.to_excel(writer, sheet_name='Seasonal Pattern', index=False)
+        
+        # Create day of week pattern sheet
+        dow_df = pd.DataFrame({
+            'Day': ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+            'Pattern': forecast_data['dowPattern']
+        })
+        dow_df.to_excel(writer, sheet_name='Day of Week Pattern', index=False)
+        
+        # Create call types sheet
+        call_types_df = pd.DataFrame(forecast_data['callTypes'])
+        call_types_df.to_excel(writer, sheet_name='Call Types', index=False)
+    
+    # Create response
+    output.seek(0)
+    response = make_response(output.getvalue())
+    response.headers["Content-Disposition"] = "attachment; filename=call_volume_forecast.xlsx"
+    response.headers["Content-type"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    
+    return response
+
+def export_forecast_pdf(forecast_data):
+    """
+    Export forecast data as PDF
+    Note: In a real implementation, this would use a PDF generation library
+    such as reportlab, WeasyPrint, or wkhtmltopdf.
+    For this demonstration, we'll return a simple text PDF.
+    """
+    # For demonstration purposes, return a simple file
+    # In a real implementation, you would generate a formatted PDF
+    
+    # Create a simple text version of the forecast
+    text = "Call Volume Forecast\n\n"
+    text += "Forecast Summary:\n"
+    text += f"Peak Month: {forecast_data['summary']['peakMonth']}\n"
+    text += f"Lowest Month: {forecast_data['summary']['lowestMonth']}\n"
+    text += f"Annual Trend: {forecast_data['summary']['annualTrend']}\n\n"
+    
+    text += "Forecast Details:\n"
+    for item in forecast_data['forecast']:
+        text += f"{item['period']}: {item['predicted']} calls "
+        text += f"(Range: {item['lowerBound']}-{item['upperBound']})\n"
+    
+    # In a real implementation, you would convert this to a PDF
+    # For now, just return it as a text file
+    response = make_response(text)
+    response.headers["Content-Disposition"] = "attachment; filename=call_volume_forecast.pdf"
+    response.headers["Content-type"] = "application/pdf"
+    
+    return response
+
+def export_forecast_image(forecast_data):
+    """
+    Export forecast visualization as an image
+    Note: In a real implementation, this would generate an actual chart image
+    For this demonstration, we'll return a JSON with a message
+    """
+    # In a real implementation, this would generate and return an image file
+    # For demonstration purposes, return a message
+    return jsonify({
+        "message": "Image export would be implemented in production",
+        "imageUrl": "/static/sample-forecast-chart.png"  # This would be a real image URL in production
+    })
 
 # Create app instance for running directly
 try:

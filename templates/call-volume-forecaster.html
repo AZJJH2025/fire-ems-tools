@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call Volume Forecaster - FireEMS.ai</title>
+    
+    <!-- External CSS -->
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/call-volume-forecaster.css">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+    
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    
+    <!-- Leaflet for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+          crossorigin="">
+          
+    <!-- Date Range Picker -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.css" />
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">
+            <a href="/">
+                <i class="fas fa-fire"></i> FireEMS.ai
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/fire-ems-dashboard">Response Time Analyzer</a>
+            <a href="/isochrone-map">Isochrone Map</a>
+            <a href="/call-density-heatmap">Call Density</a>
+            <a href="/station-overview">Station Overview</a>
+            <a href="/incident-logger">Incident Logger</a>
+            <a href="/coverage-gap-finder">Coverage Gap Finder</a>
+            <a href="/call-volume-forecaster" class="active">Call Volume Forecaster</a>
+            <a href="/fire-map-pro">FireMapPro</a>
+            <a href="/data-formatter">Data Formatter</a>
+        </div>
+    </div>
+
+    <header class="tool-header">
+        <div class="container">
+            <h1><i class="fas fa-chart-line"></i> Call Volume Forecaster</h1>
+            <p>AI-powered forecasting for emergency call volumes with seasonal and temporal analysis</p>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <h2>Call Volume Forecaster</h2>
+            <p class="tool-description">Predict future call volumes based on historical data, seasonal patterns, and environmental factors.</p>
+            
+            <div class="content-layout">
+                <!-- Left Panel -->
+                <div class="control-panel">
+                    <!-- Data Upload Section -->
+                    <div class="panel-section">
+                        <h3><i class="fas fa-upload"></i> Data Upload</h3>
+                        <p>Upload your historical incident data to generate forecasts.</p>
+                        
+                        <div class="file-input-wrapper">
+                            <input type="file" id="fileInput" accept=".csv, .xlsx, .xls">
+                            <button id="uploadBtn" class="primary-btn">
+                                <i class="fas fa-upload"></i> Upload Data
+                            </button>
+                        </div>
+                        <div id="uploadStatus" class="status-message"></div>
+                        
+                        <div class="divider"></div>
+                        
+                        <div class="data-quality">
+                            <h4>Data Quality</h4>
+                            <div class="quality-indicator">
+                                <span>Time Range:</span>
+                                <span id="timeRange">No data</span>
+                            </div>
+                            <div class="quality-indicator">
+                                <span>Record Count:</span>
+                                <span id="recordCount">No data</span>
+                            </div>
+                            <div class="quality-indicator">
+                                <span>Missing Values:</span>
+                                <span id="missingValues">No data</span>
+                            </div>
+                            <div class="quality-indicator">
+                                <span>Data Quality Score:</span>
+                                <span id="qualityScore">No data</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Forecast Parameters -->
+                    <div class="panel-section">
+                        <h3><i class="fas fa-sliders-h"></i> Forecast Parameters</h3>
+                        
+                        <div class="form-group">
+                            <label for="forecastType">Forecast Type:</label>
+                            <select id="forecastType">
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly" selected>Monthly</option>
+                                <option value="quarterly">Quarterly</option>
+                                <option value="yearly">Yearly</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="forecastPeriod">Forecast Period:</label>
+                            <select id="forecastPeriod">
+                                <option value="3">3 Months</option>
+                                <option value="6">6 Months</option>
+                                <option value="12" selected>12 Months</option>
+                                <option value="24">24 Months</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="modelType">Forecasting Model:</label>
+                            <select id="modelType">
+                                <option value="arima">ARIMA (Time Series)</option>
+                                <option value="prophet" selected>Prophet (Seasonal)</option>
+                                <option value="ensemble">Ensemble (Multiple Models)</option>
+                                <option value="ml">Machine Learning</option>
+                            </select>
+                            <div class="model-description" id="modelDescription">
+                                Prophet model is excellent for seasonal time series with multiple seasonality periods and holiday effects.
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="confidenceInterval">Confidence Interval:</label>
+                            <select id="confidenceInterval">
+                                <option value="80">80%</option>
+                                <option value="90">90%</option>
+                                <option value="95" selected>95%</option>
+                                <option value="99">99%</option>
+                            </select>
+                        </div>
+                        
+                        <div class="advanced-toggle">
+                            <button id="advancedToggle" class="toggle-btn">
+                                <i class="fas fa-cog"></i> Advanced Parameters
+                            </button>
+                        </div>
+                        
+                        <div id="advancedParams" class="advanced-params" style="display: none;">
+                            <div class="form-group">
+                                <label for="seasonalPeriods">Seasonal Periods:</label>
+                                <select id="seasonalPeriods" multiple>
+                                    <option value="weekly" selected>Weekly</option>
+                                    <option value="monthly" selected>Monthly</option>
+                                    <option value="quarterly" selected>Quarterly</option>
+                                    <option value="yearly" selected>Yearly</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="holidayEffects">Include Holiday Effects:</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="holidayEffects" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="changepoints">Detect Trend Changes:</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="changepoints" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="externalFactors">Include External Factors:</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="externalFactors">
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </div>
+                            
+                            <div id="externalFactorsSection" style="display: none;">
+                                <div class="form-group">
+                                    <label>Select External Factors:</label>
+                                    <div class="checkbox-group">
+                                        <label>
+                                            <input type="checkbox" name="externalFactor" value="weather" checked> Weather
+                                        </label>
+                                        <label>
+                                            <input type="checkbox" name="externalFactor" value="events"> Public Events
+                                        </label>
+                                        <label>
+                                            <input type="checkbox" name="externalFactor" value="population"> Population Changes
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button id="generateForecastBtn" class="primary-btn">
+                            <i class="fas fa-chart-line"></i> Generate Forecast
+                        </button>
+                    </div>
+                    
+                    <!-- Export Options -->
+                    <div class="panel-section">
+                        <h3><i class="fas fa-download"></i> Export Options</h3>
+                        
+                        <button id="exportCsvBtn" class="export-btn" disabled>
+                            <i class="fas fa-file-csv"></i> Export CSV
+                        </button>
+                        
+                        <button id="exportExcelBtn" class="export-btn" disabled>
+                            <i class="fas fa-file-excel"></i> Export Excel
+                        </button>
+                        
+                        <button id="exportPdfBtn" class="export-btn" disabled>
+                            <i class="fas fa-file-pdf"></i> Export PDF Report
+                        </button>
+                        
+                        <button id="exportImageBtn" class="export-btn" disabled>
+                            <i class="fas fa-file-image"></i> Export Image
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Right Panel -->
+                <div class="results-panel">
+                    <!-- Forecast Summary -->
+                    <div class="results-section">
+                        <h3>Forecast Summary</h3>
+                        
+                        <div id="forecastSummary" class="summary-container">
+                            <div class="empty-state">
+                                <i class="fas fa-chart-line"></i>
+                                <p>Generate a forecast to see results</p>
+                            </div>
+                        </div>
+                        
+                        <div id="kpiCards" class="kpi-container" style="display: none;">
+                            <div class="kpi-card">
+                                <div class="kpi-title">Peak Month</div>
+                                <div class="kpi-value" id="peakMonth">July</div>
+                                <div class="kpi-trend positive">
+                                    <i class="fas fa-arrow-up"></i> <span>12%</span>
+                                </div>
+                            </div>
+                            
+                            <div class="kpi-card">
+                                <div class="kpi-title">Lowest Month</div>
+                                <div class="kpi-value" id="lowestMonth">February</div>
+                                <div class="kpi-trend negative">
+                                    <i class="fas fa-arrow-down"></i> <span>8%</span>
+                                </div>
+                            </div>
+                            
+                            <div class="kpi-card">
+                                <div class="kpi-title">Annual Trend</div>
+                                <div class="kpi-value" id="annualTrend">+5.2%</div>
+                                <div class="kpi-trend positive">
+                                    <i class="fas fa-arrow-up"></i> <span>Increasing</span>
+                                </div>
+                            </div>
+                            
+                            <div class="kpi-card">
+                                <div class="kpi-title">Forecast Accuracy</div>
+                                <div class="kpi-value" id="forecastAccuracy">92%</div>
+                                <div class="kpi-info">
+                                    <i class="fas fa-info-circle"></i> <span>MAPE: 8%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Main Forecast Chart -->
+                    <div class="results-section">
+                        <h3>Forecast Visualization</h3>
+                        <div class="chart-container">
+                            <canvas id="forecastChart"></canvas>
+                            <div id="chartLoader" class="chart-loader" style="display: none;">
+                                <div class="loader"></div>
+                                <p>Generating forecast...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Secondary Charts -->
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h3>Seasonal Patterns</h3>
+                            <div class="chart-container">
+                                <canvas id="seasonalChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h3>Day of Week Patterns</h3>
+                            <div class="chart-container">
+                                <canvas id="dowChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h3>Call Type Distribution</h3>
+                            <div class="chart-container">
+                                <canvas id="typeChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h3>Geographic Distribution</h3>
+                            <div class="map-container" id="geoMap"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Forecast Details Table -->
+                    <div class="results-section">
+                        <h3>Detailed Forecast</h3>
+                        <div class="table-container">
+                            <table id="forecastTable">
+                                <thead>
+                                    <tr>
+                                        <th>Period</th>
+                                        <th>Predicted Calls</th>
+                                        <th>Lower Bound</th>
+                                        <th>Upper Bound</th>
+                                        <th>Year-over-Year</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Table rows will be filled dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-container">
+            <p>&copy; 2025 FireEMS.ai - Call Volume Forecaster v1.0</p>
+        </div>
+    </footer>
+
+    <!-- External JS Libraries -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="/static/call-volume-forecaster.js"></script>
+</body>
+</html>

@@ -1,0 +1,482 @@
+/* Call Volume Forecaster Styles */
+
+/* Layout */
+.content-layout {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1.5rem;
+}
+
+.control-panel {
+    flex: 0 0 350px;
+    position: sticky;
+    top: 2rem;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+}
+
+.results-panel {
+    flex: 1;
+}
+
+/* Panel Sections */
+.panel-section {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.panel-section h3 {
+    display: flex;
+    align-items: center;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+    font-size: 1.2rem;
+}
+
+.panel-section h3 i {
+    margin-right: 0.5rem;
+    color: #3498db;
+}
+
+.divider {
+    height: 1px;
+    background-color: #e9ecef;
+    margin: 1.5rem 0;
+}
+
+/* File Input */
+.file-input-wrapper {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+#fileInput {
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.primary-btn {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s;
+    text-align: center;
+}
+
+.primary-btn:hover {
+    background-color: #2980b9;
+}
+
+.primary-btn i {
+    margin-right: 0.5rem;
+}
+
+.status-message {
+    margin-top: 0.5rem;
+    min-height: 20px;
+    font-size: 0.9rem;
+}
+
+/* Data Quality Section */
+.data-quality {
+    font-size: 0.9rem;
+}
+
+.data-quality h4 {
+    margin-bottom: 0.75rem;
+    color: #2c3e50;
+}
+
+.quality-indicator {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.quality-indicator span:first-child {
+    color: #7f8c8d;
+}
+
+.quality-indicator span:last-child {
+    font-weight: 600;
+}
+
+/* Form Group */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.form-group select, 
+.form-group input[type="text"],
+.form-group input[type="number"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #dfe4ea;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    color: #2c3e50;
+}
+
+.model-description {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    line-height: 1.4;
+}
+
+/* Toggle Button */
+.toggle-btn {
+    background: none;
+    border: none;
+    padding: 0.5rem 0;
+    color: #3498db;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    text-align: left;
+}
+
+.toggle-btn i {
+    margin-right: 0.5rem;
+}
+
+/* Advanced Parameters */
+.advanced-params {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background-color: #3498db;
+}
+
+input:focus + .toggle-slider {
+    box-shadow: 0 0 1px #3498db;
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(26px);
+}
+
+/* Checkbox Group */
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    font-weight: normal;
+    margin-bottom: 0;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 0.5rem;
+}
+
+/* Export Buttons */
+.export-btn {
+    display: block;
+    width: 100%;
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+    background-color: #f8f9fa;
+    color: #2c3e50;
+    border: 1px solid #dfe4ea;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s;
+    text-align: center;
+}
+
+.export-btn:hover {
+    background-color: #e9ecef;
+}
+
+.export-btn i {
+    margin-right: 0.5rem;
+    color: #3498db;
+}
+
+.export-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Results Sections */
+.results-section {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.results-section h3 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #2c3e50;
+    font-size: 1.2rem;
+}
+
+/* Empty State */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: #dfe4ea;
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    color: #7f8c8d;
+    margin: 0;
+}
+
+/* KPI Cards */
+.kpi-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.kpi-card {
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    padding: 1.25rem;
+    text-align: center;
+}
+
+.kpi-title {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-trend {
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.kpi-trend i {
+    margin-right: 0.25rem;
+}
+
+.kpi-trend.positive {
+    color: #27ae60;
+}
+
+.kpi-trend.negative {
+    color: #e74c3c;
+}
+
+.kpi-info {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.kpi-info i {
+    margin-right: 0.25rem;
+}
+
+/* Chart Container */
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin-bottom: 1rem;
+}
+
+.chart-loader {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.8);
+    z-index: 2;
+}
+
+.loader {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 2s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Charts Grid */
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.chart-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+}
+
+.chart-card h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+    font-size: 1.1rem;
+}
+
+/* Map Container */
+.map-container {
+    height: 300px;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+/* Table */
+.table-container {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background-color: #f8f9fa;
+}
+
+th, td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+}
+
+th {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .content-layout {
+        flex-direction: column;
+    }
+    
+    .control-panel {
+        flex: auto;
+        position: static;
+        max-height: none;
+        overflow-y: visible;
+    }
+    
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+}
