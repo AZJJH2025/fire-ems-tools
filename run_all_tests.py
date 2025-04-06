@@ -63,7 +63,15 @@ FEATURE_TEST_FILES = {
     'response_time_simplified': 'test_response_time_simplified',
     'station_overview_simplified': 'test_station_overview_simplified',
     'fire_map_pro_simplified': 'test_fire_map_pro_simplified',
-    'data_formatter_simplified': 'test_data_formatter_simplified'
+    'data_formatter_simplified': 'test_data_formatter_simplified',
+    
+    # Blueprint route tests (new)
+    'routes': 'tests.routes',
+    'main_routes': 'tests.routes.test_main_routes',
+    'auth_routes': 'tests.routes.test_auth_routes',
+    'api_routes': 'tests.routes.test_api_routes',
+    'dashboards_routes': 'tests.routes.test_dashboards_routes',
+    'tools_routes': 'tests.routes.test_tools_routes'
 }
 
 def discover_tests(department=None, feature=None, verbose=False, failfast=False):

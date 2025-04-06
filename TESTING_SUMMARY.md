@@ -13,7 +13,33 @@ Our testing strategy is built around four key principles:
 
 ## Testing Layers
 
-### 1. Simplified Tests
+### 1. Blueprint Route Tests
+
+Blueprint route tests focus on testing the Flask blueprint routes used to modularize the application. This ensures that each module's routes function correctly and handle errors appropriately.
+
+**Key Features:**
+- Base test classes for each blueprint (main, auth, api, dashboards, tools)
+- In-memory SQLite database for testing with real database models
+- Route existence and response validation
+- Content type verification and basic content validation
+- Error handling validation
+
+**Test Files:**
+- `tests/routes/test_main_routes.py`: Tests for main page routes
+- `tests/routes/test_auth_routes.py`: Tests for authentication routes
+- `tests/routes/test_api_routes.py`: Tests for API endpoints
+- `tests/routes/test_dashboards_routes.py`: Tests for dashboard routes
+- `tests/routes/test_tools_routes.py`: Tests for tool-specific routes
+
+**Running Blueprint Tests:**
+```
+python run_all_tests.py --feature=routes
+python tests/routes/run_blueprint_tests.py
+```
+
+**Documentation:** [BLUEPRINT_TESTS.md](BLUEPRINT_TESTS.md)
+
+### 2. Simplified Tests
 
 Simplified tests use a base test class (`SimpleDepartmentTestBase`) that provides mock departments, users, and data. This approach allows tests to run in any environment without external dependencies.
 
