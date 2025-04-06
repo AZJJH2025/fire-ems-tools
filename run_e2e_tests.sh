@@ -11,6 +11,8 @@ HEADED=false
 DEBUG=false
 UI=false
 BASE_URL="http://localhost:8080"
+TEST_MATCH=""
+TEST_TYPE=""
 
 # Display help message
 function show_help {
@@ -22,12 +24,16 @@ function show_help {
   echo "  --debug             Run tests in debug mode"
   echo "  --ui                Run tests with Playwright UI"
   echo "  --base-url=URL      Base URL for tests (default: http://localhost:8080)"
+  echo "  --test-match=PATTERN Glob pattern to match test files"
+  echo "  --test-type=TYPE    Run specific test type (feature, security, accessibility)"
   echo "  --help              Show this help message"
   echo ""
   echo "Examples:"
   echo "  ./run_e2e_tests.sh --browser=firefox --headed"
   echo "  ./run_e2e_tests.sh --debug"
   echo "  ./run_e2e_tests.sh --ui"
+  echo "  ./run_e2e_tests.sh --test-type=accessibility"
+  echo "  ./run_e2e_tests.sh --test-match=\"auth.spec.js\""
 }
 
 # Process command line arguments
@@ -47,6 +53,12 @@ for arg in "$@"; do
       ;;
     --base-url=*)
       BASE_URL="${arg#*=}"
+      ;;
+    --test-match=*)
+      TEST_MATCH="${arg#*=}"
+      ;;
+    --test-type=*)
+      TEST_TYPE="${arg#*=}"
       ;;
     --help)
       show_help
@@ -91,9 +103,31 @@ if [ "$UI" = true ]; then
   CMD="$CMD --ui"
 fi
 
+# Add test matching if specified
+if [ -n "$TEST_MATCH" ]; then
+  CMD="$CMD --grep=\"$TEST_MATCH\""
+fi
+
+# Add test type filtering if specified
+if [ "$TEST_TYPE" = "accessibility" ]; then
+  echo "Installing Axe for accessibility testing..."
+  npm install @axe-core/playwright --save-dev
+  CMD="$CMD --grep=\"Accessibility Testing\""
+elif [ "$TEST_TYPE" = "security" ]; then
+  CMD="$CMD --grep=\"Security Testing\""
+elif [ "$TEST_TYPE" = "feature" ]; then
+  CMD="$CMD --grep-invert=\"Security Testing|Accessibility Testing\""
+fi
+
 # Run the tests
 echo "Running E2E tests with browser: $BROWSER"
 echo "Base URL: $BASE_URL"
+if [ -n "$TEST_MATCH" ]; then
+  echo "Test match pattern: $TEST_MATCH"
+fi
+if [ -n "$TEST_TYPE" ]; then
+  echo "Test type: $TEST_TYPE"
+fi
 export BASE_URL
 eval $CMD
 

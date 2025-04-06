@@ -196,6 +196,28 @@ Test coverage analysis measures how much of the codebase is exercised by our tes
 
 **Documentation:** [COVERAGE_TESTING.md](COVERAGE_TESTING.md)
 
+## Accessibility Testing
+
+Accessibility tests ensure the application is usable by people with disabilities:
+
+**Key Features:**
+- Automated accessibility checks with Axe
+- WCAG 2.1 AA compliance validation
+- Color contrast verification
+- Keyboard navigation testing
+- Screen reader compatibility testing
+- Focus management validation
+
+**Test Files:**
+- `e2e/tests/accessibility.spec.js`: Automated accessibility tests
+
+**Running Accessibility Tests:**
+```
+./run_e2e_tests.sh --test-type=accessibility
+```
+
+**Documentation:** [ACCESSIBILITY_TESTING.md](ACCESSIBILITY_TESTING.md)
+
 ## Test Execution and Reporting
 
 Test execution and reporting is streamlined through various scripts:

@@ -101,6 +101,16 @@ Analyzes which parts of the code are covered by tests:
 
 Documentation: [COVERAGE_TESTING.md](COVERAGE_TESTING.md)
 
+### Accessibility Testing
+
+Validates application compliance with WCAG accessibility standards:
+
+```
+./run_e2e_tests.sh --test-type=accessibility
+```
+
+Documentation: [ACCESSIBILITY_TESTING.md](ACCESSIBILITY_TESTING.md)
+
 ## CI/CD Integration
 
 The project includes GitHub Actions workflows for continuous integration and deployment:

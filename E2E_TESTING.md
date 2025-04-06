@@ -46,6 +46,8 @@ You can run E2E tests using the provided script:
 - `--debug`: Run tests in debug mode
 - `--ui`: Run tests with Playwright UI
 - `--base-url=URL`: Base URL for tests (default: http://localhost:8080)
+- `--test-match=PATTERN`: Glob pattern to match test files
+- `--test-type=TYPE`: Run specific test type (feature, security, accessibility)
 - `--help`: Show help message
 
 Examples:
@@ -53,6 +55,8 @@ Examples:
 ./run_e2e_tests.sh --browser=firefox --headed
 ./run_e2e_tests.sh --debug
 ./run_e2e_tests.sh --ui
+./run_e2e_tests.sh --test-type=accessibility
+./run_e2e_tests.sh --test-match="auth.spec.js"
 ```
 
 ## Test Structure
@@ -67,6 +71,7 @@ E2E tests are located in the `e2e/tests` directory and are organized by feature:
 - `response-time-analysis.spec.js`: Response Time Analysis feature tests
 - `data-formatter.spec.js`: Data Formatter feature tests
 - `security.spec.js`: Security and vulnerability tests
+- `accessibility.spec.js`: Accessibility and WCAG compliance tests
 
 ## Fixtures and Utilities
 
