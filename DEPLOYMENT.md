@@ -1,135 +1,108 @@
-# Fire-EMS Tools Deployment Guide
+# FireEMS.ai Deployment Guide
 
-This document provides detailed instructions for deploying the Fire-EMS Tools application, with specific attention to the fixes for deployment issues.
+This document provides information and solutions for common deployment issues with the FireEMS.ai application.
 
-## Pre-deployment Steps
+## Prerequisites
 
-Before deploying to production, run the following verification steps to ensure all fixes are properly applied:
+- Python 3.9+
+- SQLite or PostgreSQL database
+- Web server (for production deployments)
 
-1. Run the verification script:
-   ```
-   python verify_deployment.py
-   ```
+## Deployment Steps
 
-   This will verify that all required fixes are in place and produce a verification report.
-
-2. Run the migration script:
-   ```
-   python run_migrations.py
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-repo/fire-ems-tools.git
+   cd fire-ems-tools
    ```
 
-   This will apply all necessary database migrations.
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-## Deployment Process
+3. Run the deployment fix script to ensure compatibility:
+   ```bash
+   python deployment_fix.py --all
+   ```
 
-### 1. Prepare the Environment
+4. Start the application:
+   ```bash
+   # Development
+   python app.py
+   
+   # Production (using gunicorn)
+   gunicorn -w 4 -b 0.0.0.0:8000 app:app
+   ```
 
-Make sure all required packages are installed:
+## Known Deployment Issues and Solutions
 
-```
-pip install -r requirements.txt
-```
+### Database Schema Evolution
 
-### 2. Apply Database Migrations
+The application uses a fix_deployment.py script to handle database schema changes and missing fields. This ensures backward compatibility with existing databases when new features are added.
 
-The application has been updated to automatically apply database fixes and migrations at startup. However, it's recommended to run migrations explicitly before starting the application:
+### FireMapPro Export Issues
 
-```
-python run_migrations.py
-```
+The map export functionality in FireMapPro may encounter issues in certain deployment environments:
 
-### 3. Start the Application
+- **Problem**: Map tiles don't fully load before export
+- **Solution**: Use deployment_fix.py script to apply patches that improve the tile loading tracking and export process
 
-The application can be started using:
+### Call Volume Forecaster Chart Rendering
 
-```
-python app.py
-```
+- **Problem**: Chart.js rendering issues in some browsers
+- **Solution**: The deployment_fix.py script adds error handling for Chart.js to prevent crashes
 
-Or with a specific port:
+### Quick Stats Fetch Operations
 
-```
-python app.py port=8080
-```
+- **Problem**: Network requests may time out in certain environments
+- **Solution**: The deployment_fix.py script adds global error handling and better timeout management
 
-### 4. Verify Deployment
+### Data Formatter File Upload Timeouts
 
-Once the application is running, verify that the deployment was successful by accessing the deployment status endpoint:
-
-```
-curl http://your-server:port/deployment-status
-```
-
-This should return a JSON response with deployment status information.
+- **Problem**: Large file uploads may time out in production environments
+- **Solution**: The script adds proper timeout handling for large file uploads
 
 ## Troubleshooting
 
-If you encounter deployment issues, follow these troubleshooting steps:
+If you encounter deployment issues even after running the fix script, try the following:
 
-### Database Issues
+1. Check the deployment_fix.log file for detailed error information
+2. Ensure all required dependencies are installed
+3. Verify database connection and permissions
+4. Check server logs for any missing paths or resources
 
-1. Check database connections:
-   ```
-   python test_db.py
-   ```
+## Running Diagnostics Only
 
-2. Manually apply migrations:
-   ```
-   python -c "from database import db; from migrations.user_api_migration import run_migration; run_migration(db)"
-   python -c "from database import db; from migrations.webhook_migration import run_migration; run_migration(db)"
-   ```
+If you want to check for potential issues without applying fixes:
 
-### Application Issues
-
-1. Check logs for error messages.
-
-2. Ensure the application has access to all required files and directories.
-
-3. If the application starts in emergency mode, access the `/error` endpoint to see the error details.
-
-4. If webhook functionality fails, you may need to manually add webhook secrets:
-   ```python
-   python -c "from database import db, Department; import secrets; from flask import Flask; app = Flask(__name__); db.init_app(app); with app.app_context(): departments = Department.query.filter_by(api_enabled=True).all(); for dept in departments: dept.webhook_secret = secrets.token_hex(32); db.session.commit()"
-   ```
-
-## Key Components
-
-The deployment fixes include:
-
-1. **fix_deployment.py**: Emergency fixes for models and tables
-2. **migrations/**: Database migration scripts
-3. **verify_deployment.py**: Verification script
-4. **run_migrations.py**: Migration runner
-
-## Important Notes
-
-- The application now includes comprehensive error handling and fallbacks to ensure it can start even if some components fail.
-- A new `/deployment-status` endpoint is available to verify the status of deployment fixes.
-- All migrations and fixes are applied automatically when the application starts.
-- The `fix_deployment.py` module should be included in any deployment.
-
-## Recovery
-
-If deployment fails completely, you can revert to a minimal version of the application:
-
-1. Rename `app.py` to `app.py.full`
-2. Create a new `app.py` with minimal functionality that doesn't rely on database models.
-
-Example minimal app:
-
-```python
-from flask import Flask, jsonify
-
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return "Emergency mode - basic functionality only"
-
-@app.route('/status')
-def status():
-    return jsonify({"status": "emergency mode"})
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+```bash
+python deployment_fix.py --diagnose
 ```
+
+This will generate a detailed log of potential issues without modifying any files.
+
+## Applying Fixes Only
+
+If you've already diagnosed issues and want to apply fixes:
+
+```bash
+python deployment_fix.py --fix
+```
+
+## Production Deployment Recommendations
+
+1. Use a dedicated web server (nginx, Apache) in front of gunicorn
+2. Configure proper database backups
+3. Use environment variables for sensitive configuration
+4. Implement proper logging and monitoring
+5. Consider using a CDN for static assets
+
+## Contact Support
+
+If you continue to experience deployment issues, please contact:
+support@fireems.ai
+
+## Version Compatibility
+
+This deployment guide is applicable to version 2.0+ of the FireEMS.ai platform.
