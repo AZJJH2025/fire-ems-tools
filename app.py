@@ -7,6 +7,8 @@ import jinja2
 import pandas as pd
 import numpy as np
 import os
+import math
+import random
 import traceback
 from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
@@ -25,6 +27,9 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# Global constants
+METERS_PER_MILE = 1609.34
 
 # Apply deployment fixes before importing models
 import fix_deployment
@@ -3889,6 +3894,11 @@ def register_routes(app):
     def station_overview():
         """Serve the Station Overview tool"""
         return render_template('station-overview.html')
+        
+    @app.route('/coverage-gap-finder')
+    def coverage_gap_finder():
+        """Serve the Coverage Gap Finder tool"""
+        return render_template('coverage-gap-finder.html')
     
     # Station Overview helper functions
     def calculate_station_metrics(stations, incidents):
@@ -4352,6 +4362,478 @@ def register_routes(app):
         
         return response_time_data
     
+    # Coverage Gap Finder helper functions
+    def calculate_coverage_gaps(stations, boundary=None, response_time=4, travel_speed=25, turnout_time=1.0):
+        """
+        Calculate coverage gaps based on station locations and parameters
+        
+        Args:
+            stations (list): List of station dictionaries with coordinates
+            boundary (dict, optional): GeoJSON boundary of the jurisdiction
+            response_time (float): Target response time in minutes
+            travel_speed (float): Average travel speed in mph
+            turnout_time (float): Turnout time in minutes
+            
+        Returns:
+            dict: Coverage analysis with gaps and statistics
+        """
+        # Initialize result structure
+        result = {
+            'coverage_areas': [],
+            'gap_areas': [],
+            'stats': {
+                'total_area': 0,
+                'covered_area': 0,
+                'coverage_percentage': 0,
+                'population_covered': 0,
+                'population_percentage': 0,
+            }
+        }
+        
+        # Skip calculations if no stations
+        if not stations:
+            return result
+        
+        # Calculate travel distance based on response time and speed
+        # response_time = turnout_time + travel_time, so travel_time = response_time - turnout_time
+        travel_time = max(0, response_time - turnout_time)  # Travel time in minutes
+        travel_distance = (travel_time / 60) * travel_speed  # Distance in miles
+        
+        # Convert to meters for GeoJSON calculations
+        travel_distance_meters = travel_distance * METERS_PER_MILE
+        
+        # Generate coverage areas for each station
+        for station in stations:
+            # Get station coordinates
+            try:
+                lat = float(station.get('latitude', station.get('Latitude')))
+                lng = float(station.get('longitude', station.get('Longitude')))
+                
+                # Skip if invalid coordinates
+                if not (lat and lng):
+                    continue
+                
+                # Create a point for the station
+                station_point = {
+                    'type': 'Point',
+                    'coordinates': [lng, lat]
+                }
+                
+                # Create a circle for the coverage area
+                # Note: In a real implementation, this would use more advanced algorithms
+                # considering road networks, but for simplicity we use a circle
+                coverage_area = {
+                    'type': 'Feature',
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [lng, lat]
+                    },
+                    'properties': {
+                        'station_id': station.get('station_id', station.get('Station ID', '')),
+                        'name': station.get('name', station.get('Station Name', '')),
+                        'radius': travel_distance_meters
+                    }
+                }
+                
+                result['coverage_areas'].append(coverage_area)
+                
+            except (ValueError, TypeError) as e:
+                print(f"Error processing station {station.get('station_id', station.get('Station ID', ''))}: {e}")
+                continue
+        
+        # If we have a boundary, calculate the gap areas
+        if boundary:
+            # In a real implementation, this would compute the difference between the boundary
+            # and the union of all coverage areas. Here we're simplifying.
+            result['gap_areas'] = {
+                'type': 'Feature',
+                'geometry': boundary,
+                'properties': {
+                    'description': 'Coverage gaps (simplified)'
+                }
+            }
+            
+            # Calculate approximate statistics
+            result['stats']['total_area'] = boundary.get('total_area', 0)
+            result['stats']['covered_area'] = sum([area.get('properties', {}).get('radius', 0) ** 2 * math.pi 
+                                                for area in result['coverage_areas']])
+            
+            # Note: This is a simplification as it doesn't account for overlapping coverage areas
+            if result['stats']['total_area'] > 0:
+                result['stats']['coverage_percentage'] = min(100, 
+                    (result['stats']['covered_area'] / result['stats']['total_area']) * 100)
+            
+        return result
+
+    def suggest_station_locations(stations, incidents, gaps, num_stations=1):
+        """
+        Suggest new station locations to fill coverage gaps
+        
+        Args:
+            stations (list): List of existing station dictionaries
+            incidents (list): List of incident dictionaries
+            gaps (dict): Coverage gap analysis from calculate_coverage_gaps
+            num_stations (int): Number of new stations to suggest
+            
+        Returns:
+            list: Suggested station locations
+        """
+        # Initialize result
+        suggested_stations = []
+        
+        # Skip if no gaps or if gaps structure is invalid
+        if not gaps or 'gap_areas' not in gaps:
+            return suggested_stations
+        
+        # In a real implementation, this would use a clustering algorithm on incidents
+        # in gap areas to suggest optimal station locations
+        # For simplicity, we'll use a random approach for demo purposes
+        
+        # Get random incidents in gap areas as potential station locations
+        if incidents and len(incidents) > 0:
+            # Filter incidents to those in gap areas (simplified approach)
+            gap_incidents = []
+            for incident in incidents:
+                # In a real implementation, would check if incident is within gap_areas
+                # For demo, we'll just check if it's far from existing stations
+                try:
+                    lat = float(incident.get('latitude', incident.get('Latitude')))
+                    lng = float(incident.get('longitude', incident.get('Longitude')))
+                    
+                    # Skip if invalid coordinates
+                    if not (lat and lng):
+                        continue
+                        
+                    # Check if incident is far from all existing stations (simplified)
+                    is_in_gap = True
+                    for station in stations:
+                        station_lat = float(station.get('latitude', station.get('Latitude')))
+                        station_lng = float(station.get('longitude', station.get('Longitude')))
+                        
+                        # Calculate distance (simplified)
+                        dist = math.sqrt((lat - station_lat) ** 2 + (lng - station_lng) ** 2)
+                        
+                        # If incident is close to a station, it's not in a gap
+                        if dist < 0.05:  # Arbitrary threshold, should be based on coverage radius
+                            is_in_gap = False
+                            break
+                    
+                    if is_in_gap:
+                        gap_incidents.append(incident)
+                        
+                except (ValueError, TypeError):
+                    continue
+            
+            # Create suggested stations from gap incidents
+            if gap_incidents:
+                # Sort incidents by frequency or priority (simplified)
+                # In a real implementation, would use proper clustering
+                for _ in range(min(num_stations, len(gap_incidents))):
+                    # Pick a random incident as a suggested station location
+                    incident = random.choice(gap_incidents)
+                    
+                    try:
+                        lat = float(incident.get('latitude', incident.get('Latitude')))
+                        lng = float(incident.get('longitude', incident.get('Longitude')))
+                        
+                        suggested_stations.append({
+                            'station_id': f'NEW-{len(suggested_stations) + 1}',
+                            'name': f'Suggested Station {len(suggested_stations) + 1}',
+                            'latitude': lat,
+                            'longitude': lng,
+                            'suggested': True
+                        })
+                        
+                        # Remove this incident from candidates
+                        gap_incidents.remove(incident)
+                        
+                    except (ValueError, TypeError):
+                        continue
+            
+        # If we couldn't create enough stations from incidents, just use random points
+        while len(suggested_stations) < num_stations:
+            # In a real implementation, would use a proper algorithm to find optimal locations
+            # For demo, we'll use random coordinates within the bounds of existing stations
+            if not stations:
+                break
+                
+            # Get bounds from existing stations
+            lats = [float(s.get('latitude', s.get('Latitude', 0))) for s in stations if s.get('latitude') or s.get('Latitude')]
+            lngs = [float(s.get('longitude', s.get('Longitude', 0))) for s in stations if s.get('longitude') or s.get('Longitude')]
+            
+            if not lats or not lngs:
+                break
+                
+            min_lat, max_lat = min(lats), max(lats)
+            min_lng, max_lng = min(lngs), max(lngs)
+            
+            # Add some randomness to the bounds
+            lat_range = max_lat - min_lat
+            lng_range = max_lng - min_lng
+            
+            min_lat -= lat_range * 0.1
+            max_lat += lat_range * 0.1
+            min_lng -= lng_range * 0.1
+            max_lng += lng_range * 0.1
+            
+            # Create a random station within these bounds
+            random_lat = min_lat + (max_lat - min_lat) * random.random()
+            random_lng = min_lng + (max_lng - min_lng) * random.random()
+            
+            suggested_stations.append({
+                'station_id': f'NEW-{len(suggested_stations) + 1}',
+                'name': f'Suggested Station {len(suggested_stations) + 1}',
+                'latitude': random_lat,
+                'longitude': random_lng,
+                'suggested': True
+            })
+        
+        return suggested_stations
+
+    # Coverage Gap Finder API endpoints
+    @app.route('/api/coverage-gap/upload-stations', methods=['POST'])
+    def coverage_gap_upload_stations():
+        """Handle station data upload for coverage gap analysis"""
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'}), 400
+            
+        uploaded_file = request.files['file']
+        if uploaded_file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+            
+        if uploaded_file and '.' in uploaded_file.filename:
+            file_ext = uploaded_file.filename.rsplit('.', 1)[1].lower()
+            
+            if file_ext == 'csv':
+                # Process CSV file
+                try:
+                    data = []
+                    csv_content = uploaded_file.read().decode('utf-8')
+                    csv_reader = csv.DictReader(io.StringIO(csv_content))
+                    for row in csv_reader:
+                        data.append(row)
+                    
+                    # Store in session
+                    session['station_data'] = data
+                    
+                    return jsonify({
+                        'success': True,
+                        'message': f'Successfully uploaded and processed {len(data)} station records',
+                        'stations': data
+                    })
+                except Exception as e:
+                    return jsonify({'error': f'Error processing CSV file: {str(e)}'}), 400
+            
+            elif file_ext in ['xls', 'xlsx']:
+                # Process Excel file
+                try:
+                    data = []
+                    df = pd.read_excel(uploaded_file)
+                    data = df.to_dict('records')
+                    
+                    # Store in session
+                    session['station_data'] = data
+                    
+                    return jsonify({
+                        'success': True,
+                        'message': f'Successfully uploaded and processed {len(data)} station records',
+                        'stations': data
+                    })
+                except Exception as e:
+                    return jsonify({'error': f'Error processing Excel file: {str(e)}'}), 400
+            
+            else:
+                return jsonify({'error': 'Unsupported file format. Please upload CSV or Excel files.'}), 400
+        
+        return jsonify({'error': 'Invalid file'}), 400
+
+    @app.route('/api/coverage-gap/upload-incidents', methods=['POST'])
+    def coverage_gap_upload_incidents():
+        """Handle incident data upload for coverage gap analysis"""
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'}), 400
+            
+        uploaded_file = request.files['file']
+        if uploaded_file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+            
+        if uploaded_file and '.' in uploaded_file.filename:
+            file_ext = uploaded_file.filename.rsplit('.', 1)[1].lower()
+            
+            if file_ext == 'csv':
+                # Process CSV file
+                try:
+                    data = []
+                    csv_content = uploaded_file.read().decode('utf-8')
+                    csv_reader = csv.DictReader(io.StringIO(csv_content))
+                    for row in csv_reader:
+                        data.append(row)
+                    
+                    # Store in session
+                    session['incident_data'] = data
+                    
+                    return jsonify({
+                        'success': True,
+                        'message': f'Successfully uploaded and processed {len(data)} incident records',
+                        'incidents': data
+                    })
+                except Exception as e:
+                    return jsonify({'error': f'Error processing CSV file: {str(e)}'}), 400
+            
+            elif file_ext in ['xls', 'xlsx']:
+                # Process Excel file
+                try:
+                    data = []
+                    df = pd.read_excel(uploaded_file)
+                    data = df.to_dict('records')
+                    
+                    # Store in session
+                    session['incident_data'] = data
+                    
+                    return jsonify({
+                        'success': True,
+                        'message': f'Successfully uploaded and processed {len(data)} incident records',
+                        'incidents': data
+                    })
+                except Exception as e:
+                    return jsonify({'error': f'Error processing Excel file: {str(e)}'}), 400
+            
+            else:
+                return jsonify({'error': 'Unsupported file format. Please upload CSV or Excel files.'}), 400
+        
+        return jsonify({'error': 'Invalid file'}), 400
+
+    @app.route('/api/coverage-gap/upload-boundary', methods=['POST'])
+    def coverage_gap_upload_boundary():
+        """Handle jurisdiction boundary upload for coverage gap analysis"""
+        # Check if data was provided
+        if not request.json:
+            return jsonify({'error': 'No boundary data provided'}), 400
+        
+        boundary_data = request.json
+        
+        # Validate GeoJSON format
+        if 'type' not in boundary_data or 'coordinates' not in boundary_data:
+            return jsonify({'error': 'Invalid GeoJSON format for boundary'}), 400
+        
+        # Store in session
+        session['boundary_data'] = boundary_data
+        
+        return jsonify({
+            'success': True,
+            'message': 'Boundary data uploaded successfully',
+            'boundary': boundary_data
+        })
+
+    @app.route('/api/coverage-gap/calculate', methods=['POST'])
+    def coverage_gap_calculate():
+        """Calculate coverage gaps based on stations and parameters"""
+        # Get parameters
+        params = request.json or {}
+        
+        response_time = float(params.get('response_time', 4))
+        travel_speed = float(params.get('travel_speed', 25))
+        turnout_time = float(params.get('turnout_time', 1.0))
+        
+        # Get data from session or use provided data
+        stations = params.get('stations', session.get('station_data', []))
+        boundary = params.get('boundary', session.get('boundary_data'))
+        
+        # Calculate coverage
+        coverage_analysis = calculate_coverage_gaps(
+            stations=stations,
+            boundary=boundary,
+            response_time=response_time,
+            travel_speed=travel_speed,
+            turnout_time=turnout_time
+        )
+        
+        # Store the analysis and parameters
+        session['coverage_analysis'] = coverage_analysis
+        session['coverage_parameters'] = {
+            'response_time': response_time,
+            'travel_speed': travel_speed,
+            'turnout_time': turnout_time
+        }
+        
+        return jsonify({
+            'success': True,
+            'coverage': coverage_analysis
+        })
+
+    @app.route('/api/coverage-gap/suggest-stations', methods=['POST'])
+    def coverage_gap_suggest_stations():
+        """Suggest new station locations to fill coverage gaps"""
+        # Get parameters
+        params = request.json or {}
+        
+        num_stations = int(params.get('num_stations', 1))
+        
+        # Get data from session or use provided data
+        stations = params.get('stations', session.get('station_data', []))
+        incidents = params.get('incidents', session.get('incident_data', []))
+        
+        # Get coverage gaps from session
+        gaps = params.get('gaps', session.get('coverage_analysis', {}))
+        
+        # Generate suggestions
+        suggested_stations = suggest_station_locations(
+            stations=stations,
+            incidents=incidents,
+            gaps=gaps,
+            num_stations=num_stations
+        )
+        
+        # Store suggested stations
+        session['suggested_stations'] = suggested_stations
+        
+        return jsonify({
+            'success': True,
+            'suggested_stations': suggested_stations
+        })
+
+    @app.route('/api/coverage-gap/export', methods=['GET'])
+    def coverage_gap_export_data():
+        """Export coverage analysis and suggested stations"""
+        # Get export format
+        export_format = request.args.get('format', 'json')
+        
+        # Gather data to export
+        export_data = {
+            'stations': session.get('station_data', []),
+            'suggested_stations': session.get('suggested_stations', []),
+            'coverage_analysis': session.get('coverage_analysis', {}),
+            'parameters': session.get('coverage_parameters', {})
+        }
+        
+        if export_format == 'json':
+            response = make_response(json.dumps(export_data, indent=2))
+            response.headers["Content-Disposition"] = "attachment; filename=coverage_analysis.json"
+            response.headers["Content-Type"] = "application/json"
+            return response
+            
+        elif export_format == 'csv':
+            # Create CSV for stations and suggested stations
+            stations = export_data.get('stations', []) + export_data.get('suggested_stations', [])
+            
+            if not stations:
+                return jsonify({'error': 'No station data to export'}), 404
+                
+            csvfile = io.StringIO()
+            fieldnames = stations[0].keys()
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for station in stations:
+                writer.writerow(station)
+            
+            response = make_response(csvfile.getvalue())
+            response.headers["Content-Disposition"] = "attachment; filename=stations_with_suggestions.csv"
+            response.headers["Content-Type"] = "text/csv"
+            return response
+            
+        else:
+            return jsonify({'error': f'Unsupported export format: {export_format}'}), 400
+
     # Station Overview API endpoints
     @app.route('/api/station-overview/upload', methods=['POST'])
     def station_overview_upload():
