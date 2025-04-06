@@ -15,6 +15,7 @@ let measurementActive = false;
 let currentBaseLayer = 'street';
 let hotspotLayer = null;
 let bufferLayer = null;
+let toastTimeout = null;
 
 // Base layers
 const baseLayers = {
@@ -1861,8 +1862,10 @@ function exportPDF() {
                 pdfHeight = 297; // A4 portrait height in mm
             }
             
-            // Create PDF
-            const pdf = new jspdf.jsPDF(orientation, 'mm', [pdfWidth, pdfHeight]);
+            // Create PDF - handle both UMD and standard imports
+            const pdf = (typeof jspdf === 'object' && jspdf.jsPDF) ? 
+                new jspdf.jsPDF(orientation, 'mm', [pdfWidth, pdfHeight]) : 
+                new jsPDF(orientation, 'mm', [pdfWidth, pdfHeight]);
             
             // Calculate image dimensions to fit PDF
             const aspectRatio = width / height;
@@ -2198,4 +2201,67 @@ function escapeXml(text) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&apos;');
+}
+
+/**
+ * Display a toast notification
+ */
+function showToast(message, type = 'info') {
+    // Clear any existing toast timeout
+    if (toastTimeout) {
+        clearTimeout(toastTimeout);
+    }
+    
+    // Create toast container if it doesn't exist
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.style.position = 'fixed';
+        toastContainer.style.bottom = '20px';
+        toastContainer.style.right = '20px';
+        toastContainer.style.zIndex = '1000';
+        document.body.appendChild(toastContainer);
+    }
+    
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = 'toast toast-' + type;
+    toast.innerHTML = message;
+    
+    // Style the toast
+    toast.style.backgroundColor = type === 'error' ? '#f44336' : 
+                                 type === 'success' ? '#4CAF50' : 
+                                 type === 'warning' ? '#ff9800' : '#2196F3';
+    toast.style.color = 'white';
+    toast.style.padding = '12px 16px';
+    toast.style.borderRadius = '4px';
+    toast.style.marginTop = '10px';
+    toast.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+    toast.style.minWidth = '250px';
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.3s ease-in-out';
+    
+    // Add the toast to the container
+    toastContainer.appendChild(toast);
+    
+    // Make the toast visible with a fade effect
+    setTimeout(() => {
+        toast.style.opacity = '1';
+    }, 10);
+    
+    // Set a timeout to remove the toast
+    toastTimeout = setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toastContainer.removeChild(toast);
+            }
+            
+            // Remove container if empty
+            if (toastContainer.children.length === 0) {
+                document.body.removeChild(toastContainer);
+            }
+        }, 300);
+    }, 3000);
 }
