@@ -1,0 +1,32 @@
+{
+  "name": "small_test",
+  "metadata": {
+    "created": "2025-04-05T21:46:45.961121",
+    "id": "6b4c1d64-2be8-487a-9e4a-350affbb151c",
+    "version": "1.0",
+    "dataset_ids": [
+      "e343ea58-ff0e-4310-9e85-d24cd1be8e2c",
+      "fc58c83e-de19-432f-ac1c-ccf2858d668a",
+      "685da40e-adf9-4401-86e0-25142afba59d",
+      "ed42112d-78a1-41d0-b48f-950303aabbe8"
+    ]
+  },
+  "datasets": [
+    {
+      "name": "small_test_departments",
+      "category": "departments"
+    },
+    {
+      "name": "small_test_department_1_stations",
+      "category": "stations"
+    },
+    {
+      "name": "small_test_department_1_users",
+      "category": "users"
+    },
+    {
+      "name": "small_test_department_1_incidents",
+      "category": "incidents"
+    }
+  ]
+}

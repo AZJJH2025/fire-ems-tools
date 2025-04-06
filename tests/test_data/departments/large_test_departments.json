@@ -1,0 +1,99 @@
+{
+  "metadata": {
+    "created": "2025-04-05T21:46:46.027559",
+    "id": "5e6ad111-6086-4251-b041-acd8cc0ea564",
+    "version": "1.0"
+  },
+  "data": [
+    {
+      "id": "01663411-a266-41ac-acb7-f6a0e8c5df47",
+      "name": "Westview Fire",
+      "type": "Combined",
+      "size": "metro",
+      "service_area": "Mixed",
+      "station_count": 69,
+      "personnel_count": 1120,
+      "vehicle_count": 208,
+      "annual_budget": 81313139,
+      "contact": {
+        "phone": "555-682-1144",
+        "email": "info@westviewfire.gov",
+        "address": "202 Main Street"
+      },
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    },
+    {
+      "id": "7badf7e8-23b6-455a-a7e4-78e6634a93b3",
+      "name": "Pinecrest EMS",
+      "type": "Hospital-based EMS",
+      "size": "large",
+      "service_area": "Suburban",
+      "station_count": 35,
+      "personnel_count": 547,
+      "vehicle_count": 43,
+      "annual_budget": 14854227,
+      "contact": {
+        "phone": "555-595-1180",
+        "email": "info@pinecrestems.gov",
+        "address": "217 Main Street"
+      },
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    },
+    {
+      "id": "d658f133-8cc6-4917-9dbc-45108d940201",
+      "name": "Riverside EMS",
+      "type": "Fire",
+      "size": "medium",
+      "service_area": "Rural",
+      "station_count": 15,
+      "personnel_count": 188,
+      "vehicle_count": 36,
+      "annual_budget": 2269958,
+      "contact": {
+        "phone": "555-131-2129",
+        "email": "info@riversideems.gov",
+        "address": "901 Main Street"
+      },
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    },
+    {
+      "id": "fa985ad5-5063-4208-b970-6f9e86e8d5ba",
+      "name": "Millbrook Fire",
+      "type": "Private EMS",
+      "size": "metro",
+      "service_area": "County-wide",
+      "station_count": 67,
+      "personnel_count": 3099,
+      "vehicle_count": 249,
+      "annual_budget": 155338207,
+      "contact": {
+        "phone": "555-730-1670",
+        "email": "info@millbrookfire.gov",
+        "address": "914 Main Street"
+      },
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    },
+    {
+      "id": "7b7d12b0-e3f8-4c94-8e76-14389b3927c6",
+      "name": "Northridge Fire-EMS",
+      "type": "Combined",
+      "size": "large",
+      "service_area": "Mixed",
+      "station_count": 43,
+      "personnel_count": 370,
+      "vehicle_count": 60,
+      "annual_budget": 17215516,
+      "contact": {
+        "phone": "555-604-4611",
+        "email": "info@northridgefire-ems.gov",
+        "address": "323 Main Street"
+      },
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    }
+  ]
+}

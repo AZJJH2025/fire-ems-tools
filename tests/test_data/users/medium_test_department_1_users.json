@@ -1,0 +1,610 @@
+{
+  "metadata": {
+    "created": "2025-04-05T21:46:45.970477",
+    "id": "e7dc9b3b-5b30-47a7-89a9-554eb5aa5ca5",
+    "version": "1.0"
+  },
+  "data": [
+    {
+      "id": "34ee8ca3-19ea-48d7-a258-b9a38ddcec84",
+      "username": "sscott29",
+      "first_name": "Steven",
+      "last_name": "Scott",
+      "email": "steven.scott@example.com",
+      "password_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "role": "Firefighter/EMT",
+      "department_id": "0e9026fd-f4a2-433d-b257-64e94c0686c0",
+      "station_id": "da31869d-fad3-4740-b386-fe501f646aaf",
+      "permissions": [
+        "view_station",
+        "create_incidents",
+        "edit_own_incidents"
+      ],
+      "level": 1,
+      "phone": "555-330-2911",
+      "hire_date": "2021-12-06",
+      "active": true,
+      "last_login": "2025-03-18T21:46:45.968974",
+      "created_at": "2025-03-21T21:46:45.968974",
+      "updated_at": "2025-04-05T21:46:45.968974",
+      "position": "Firefighter",
+      "certifications": [
+        "Firefighter I",
+        "Firefighter II",
+        "Hazmat Operations",
+        "EMT-Basic"
+      ]
+    },
+    {
+      "id": "6aa26aab-75d6-4631-99ee-0def122a7765",
+      "username": "jallen39",
+      "first_name": "Jessica",
+      "last_name": "Allen",
+      "email": "jessica.allen@countyems.net",
+      "password_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "role": "Firefighter/EMT",
+      "department_id": "0e9026fd-f4a2-433d-b257-64e94c0686c0",
+      "station_id": "da31869d-fad3-4740-b386-fe501f646aaf",
+      "permissions": [
+        "view_station",
+        "create_incidents",
+        "edit_own_incidents"
+      ],
+      "level": 1,
+      "phone": "555-174-8934",
+      "hire_date": "2021-05-19",
+      "active": true,
+      "last_login": "2025-04-05T21:46:45.969009",
+      "created_at": "2025-03-24T21:46:45.969009",
+      "updated_at": "2025-04-05T21:46:45.969009",
+      "position": "Firefighter",
+      "certifications": [
+        "Firefighter I",
+        "Firefighter II",
+        "Hazmat Operations",
+        "EMT-Basic",
+        "EMT-Advanced"
+      ]
+    },
+    {
+      "id": "bd5544b3-1b41-4960-b337-2169eb812a76",
+      "username": "whall",
+      "first_name": "William",
+      "last_name": "Hall",
+      "email": "william.hall@example.com",
+      "password_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "role": "Firefighter/EMT",
+      "department_id": "0e9026fd-f4a2-433d-b257-64e94c0686c0",
+      "station_id": "815f5f0c-f964-4153-974d-823fbc12df33",
+      "permissions": [
+        "view_station",
+        "create_incidents",
+        "edit_own_incidents"
+      ],
+      "level": 1,
+      "phone": "555-749-9449",
+      "hire_date": "2015-07-16",
+      "active": true,
+      "last_login": "2025-04-01T21:46:45.969033",
+      "created_at": "2024-12-08T21:46:45.969033",
+      "updated_at": "2025-04-05T21:46:45.969033",
+      "position": "Paramedic",
+      "certifications": [
+        "Firefighter I",
+        "Firefighter II",
+        "Hazmat Operations",
+        "Paramedic",
+        "ACLS",
+        "PALS"
+      ]
+    },
+    {
+      "id": "0ad389f9-cb54-4091-a686-f5cea0314635",
+      "username": "mbrown",
+      "first_name": "Matthew",
+      "last_name": "Brown",
+      "email": "matthew.brown@countyems.net",
+      "password_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "role": "Firefighter/EMT",
+      "department_id": "0e9026fd-f4a2-433d-b257-64e94c0686c0",
+      "station_id": "364108bc-2cdc-4901-a46f-a6723e703967",
+      "permissions": [
+        "view_station",
+        "create_incidents",
+        "edit_own_incidents"
+      ],
+      "level": 1,
+      "phone": "555-363-9395",
+      "hire_date": "2018-10-12",
+      "active": true,
+      "last_login": "2025-03-24T21:46:45.969055",
+      "created_at": "2024-10-11T21:46:45.969055",
+      "updated_at": "2025-04-05T21:46:45.969055",
+      "position": "Engineer",
+      "certifications": [
+        "Firefighter I",
+        "Firefighter II",
+        "Hazmat Operations",
+        "Driver/Operator"
+      ]
+    },
+    {
+      "id": "6e5fddaa-b6f5-4504-ae55-75b08efeb736",
+      "username": "rclark",
+      "first_name": "Rebecca",
+      "last_name": "Clark",
+      "email": "rebecca.clark@fireems.org",
+      "password_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "role": "Battalion Chief",
+      "department_id": "0e9026fd-f4a2-433d-b257-64e94c0686c0",
+      "station_id": null,
+      "permissions": [
+        "view_all",
+        "edit_incidents",
+        "manage_stations",
+        "export_data",
+        "generate_reports"
+      ],
+      "level": 3,
+      "phone": "555-912-9279",
+      "hire_date": "2019-03-08",
+      "active": true,
+      "last_login": "2025-03-30T21:46:45.969076",
+      "created_at": "2024-11-01T21:46:45.969076",
+      "updated_at": "2025-04-05T21:46:45.969076",
+      "position": "Battalion Chief",
+      "certifications": [
+        "Fire Officer IV",
+        "Fire Instructor III",
+        "Fire Inspector II"
+      ]
+    },
+    {
+      "id": "f9ce5931-e4d1-4098-9219-3c9c610b97bc",
+      "username": "wlewis",
+      "first_name": "William",
+      "last_name": "Lewis",
+      "email": "william.lewis@countyems.net",
+      "password_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "role": "Firefighter/EMT",
+      "department_id": "0e9026fd-f4a2-433d-b257-64e94c0686c0",
+      "station_id": "55dae66e-5431-47ec-adff-c8dcc014df56",
+      "permissions": [
+        "view_station",
+        "create_incidents",
+        "edit_own_incidents"
+      ],
+      "level": 1,
+      "phone": "555-623-1813",
+      "hire_date": "2021-07-20",
+      "active": true,
+      "last_login": "2025-03-15T21:46:45.969098",
+      "created_at": "2024-06-25T21:46:45.969098",
+      "updated_at": "2025-04-05T21:46:45.969098",
+      "position": "Firefighter",
+      "certifications": [
+        "Firefighter I",
+        "Firefighter II",
+        "Hazmat Operations",
+        "EMT-Advanced"
+      ]
+    },
+    {
+      "id": "d2b30873-93c7-41ab-97b8-a0ab8f991503",
+      "username": "mreed",
+      "first_name": "Michelle",
+      "last_name": "Reed",
+      "email": "michelle.reed@cityfiredept.gov",
+      "password_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "role": "Firefighter/EMT",
+      "department_id": "0e9026fd-f4a2-433d-b257-64e94c0686c0",
+      "station_id": "815f5f0c-f964-4153-974d-823fbc12df33",
+      "permissions": [
+        "view_station",
+        "create_incidents",
+        "edit_own_incidents"
+      ],
+      "level": 1,
+      "phone": "555-584-6407",
+      "hire_date": "2022-06-17",
+      "active": true,
+      "last_login": "2025-04-03T21:46:45.969119",
+      "created_at": "2024-04-15T21:46:45.969119",
+      "updated_at": "2025-04-05T21:46:45.969119",
+      "position": "Paramedic",
+      "certifications": [
+        "Firefighter I",
+        "Firefighter II",
+        "Hazmat Operations",
+        "Paramedic",
+        "ACLS",
+        "PALS"
+      ]
+    },
+    {
+      "id": "6c8f6e8d-ed33-4752-9b42-d720dff6bcf9",
+      "username": "brogers30",
+      "first_name": "Barbara",
+      "last_name": "Rogers",
+      "email": "barbara.rogers@fireems.org",
+      "password_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "role": "Firefighter/EMT",
+      "department_id": "0e9026fd-f4a2-433d-b257-64e94c0686c0",
+      "station_id": "da31869d-fad3-4740-b386-fe501f646aaf",
+      "permissions": [
+        "view_station",
+        "create_incidents",
+        "edit_own_incidents"
+      ],
+      "level": 1,
+      "phone": "555-361-7510",
+      "hire_date": "2015-11-04",
+      "active": true,
+      "last_login": "2025-03-19T21:46:45.969140",
+      "created_at": "2024-06-26T21:46:45.969140",
+      "updated_at": "2025-04-05T21:46:45.969140",
+      "position": "Engineer",
+      "certifications": [
+        "Firefighter I",
+        "Firefighter II",
+        "Hazmat Operations",
+        "Driver/Operator"
+      ]
+    },
+    {
+      "id": "3986b9a4-682f-4718-afab-5ba84a432e36",
+      "username": "jjones",
+      "first_name": "Jessica",
+      "last_name": "Jones",
+      "email": "jessica.jones@countyems.net",
+      "password_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "role": "Firefighter/EMT",
+      "department_id": "0e9026fd-f4a2-433d-b257-64e94c0686c0",
+      "station_id": "364108bc-2cdc-4901-a46f-a6723e703967",
+      "permissions": [
+        "view_station",
+        "create_incidents",
+        "edit_own_incidents"
+      ],
+      "level": 1,
+      "phone": "555-134-3298",
+      "hire_date": "2021-01-07",
+      "active": true,
+      "last_login": "2025-03-31T21:46:45.969162",
+      "created_at": "2024-09-08T21:46:45.969162",
+      "updated_at": "2025-04-05T21:46:45.969162",
+      "position": "Engineer",
+      "certifications": [
+        "Firefighter I",
+        "Firefighter II",
+        "Hazmat Operations",
+        "Driver/Operator"
+      ]
+    },
+    {
+      "id": "7b901c7f-0344-409b-8c38-13984dfa535b",
+      "username": "mreed",
+      "first_name": "Madison",
+      "last_name": "Reed",
+      "email": "madison.reed@fireems.org",
+      "password_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "role": "Department Chief",
+      "department_id": "0e9026fd-f4a2-433d-b257-64e94c0686c0",
+      "station_id": null,
+      "permissions": [
+        "view_all",
+        "edit_all",
+        "manage_department",
+        "manage_stations",
+        "manage_incidents",
+        "export_data",
+        "generate_reports"
+      ],
+      "level": 4,
+      "phone": "555-835-9528",
+      "hire_date": "2017-03-15",
+      "active": true,
+      "last_login": "2025-03-25T21:46:45.969183",
+      "created_at": "2024-07-31T21:46:45.969183",
+      "updated_at": "2025-04-05T21:46:45.969183",
+      "position": "Department Chief",
+      "certifications": [
+        "Fire Officer IV",
+        "Fire Instructor III",
+        "Fire Inspector II"
+      ]
+    },
+    {
+      "id": "f6b11da1-6aa3-47e9-871a-25e8d8f96015",
+      "username": "thernandez",
+      "first_name": "Thomas",
+      "last_name": "Hernandez",
+      "email": "thomas.hernandez@cityfiredept.gov",
+      "password_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "role": "Dispatcher",
+      "department_id": "0e9026fd-f4a2-433d-b257-64e94c0686c0",
+      "station_id": null,
+      "permissions": [
+        "view_all",
+        "create_incidents",
+        "update_incident_status"
+      ],
+      "level": 2,
+      "phone": "555-324-8315",
+      "hire_date": "2019-09-18",
+      "active": true,
+      "last_login": "2025-03-26T21:46:45.969204",
+      "created_at": "2024-09-22T21:46:45.969204",
+      "updated_at": "2025-04-05T21:46:45.969204",
+      "position": "Dispatcher",
+      "certifications": []
+    },
+    {
+      "id": "f913292d-5ff8-4cd1-addc-79baa91b4447",
+      "username": "djackson",
+      "first_name": "David",
+      "last_name": "Jackson",
+      "email": "david.jackson@fireems.org",
+      "password_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "role": "Administrator",
+      "department_id": "0e9026fd-f4a2-433d-b257-64e94c0686c0",
+      "station_id": null,
+      "permissions": [
+        "view_all",
+        "edit_all",
+        "admin_panel",
+        "manage_users",
+        "manage_departments",
+        "manage_incidents",
+        "export_data",
+        "generate_reports",
+        "system_settings"
+      ],
+      "level": 5,
+      "phone": "555-865-4010",
+      "hire_date": "2021-10-14",
+      "active": true,
+      "last_login": "2025-03-27T21:46:45.969225",
+      "created_at": "2025-02-23T21:46:45.969225",
+      "updated_at": "2025-04-05T21:46:45.969225",
+      "position": "Administrator",
+      "certifications": []
+    },
+    {
+      "id": "3010ce55-1256-417e-ae61-bed1284bb94c",
+      "username": "rsmith",
+      "first_name": "Rebecca",
+      "last_name": "Smith",
+      "email": "rebecca.smith@countyems.net",
+      "password_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "role": "Station Officer",
+      "department_id": "0e9026fd-f4a2-433d-b257-64e94c0686c0",
+      "station_id": "815f5f0c-f964-4153-974d-823fbc12df33",
+      "permissions": [
+        "view_station",
+        "edit_incidents",
+        "generate_reports"
+      ],
+      "level": 2,
+      "phone": "555-530-4783",
+      "hire_date": "2021-10-20",
+      "active": true,
+      "last_login": "2025-04-02T21:46:45.969247",
+      "created_at": "2024-07-01T21:46:45.969247",
+      "updated_at": "2025-04-05T21:46:45.969247",
+      "position": "Lieutenant",
+      "certifications": [
+        "Fire Officer II",
+        "Fire Instructor I"
+      ]
+    },
+    {
+      "id": "98e4c2d8-12e3-493b-b757-767318ba8d11",
+      "username": "rlee42",
+      "first_name": "Robert",
+      "last_name": "Lee",
+      "email": "robert.lee@example.com",
+      "password_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "role": "Firefighter/EMT",
+      "department_id": "0e9026fd-f4a2-433d-b257-64e94c0686c0",
+      "station_id": "364108bc-2cdc-4901-a46f-a6723e703967",
+      "permissions": [
+        "view_station",
+        "create_incidents",
+        "edit_own_incidents"
+      ],
+      "level": 1,
+      "phone": "555-547-7192",
+      "hire_date": "2019-10-29",
+      "active": true,
+      "last_login": "2025-04-05T21:46:45.969269",
+      "created_at": "2024-11-07T21:46:45.969269",
+      "updated_at": "2025-04-05T21:46:45.969269",
+      "position": "Paramedic",
+      "certifications": [
+        "Firefighter I",
+        "Firefighter II",
+        "Hazmat Operations",
+        "Paramedic",
+        "ACLS",
+        "PALS"
+      ]
+    },
+    {
+      "id": "64bf242a-c33b-4f10-95cf-95f16d3a39ac",
+      "username": "ajackson",
+      "first_name": "Anna",
+      "last_name": "Jackson",
+      "email": "anna.jackson@fireems.org",
+      "password_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "role": "Station Officer",
+      "department_id": "0e9026fd-f4a2-433d-b257-64e94c0686c0",
+      "station_id": "436bda6c-2939-4762-b93f-9fe3d9ca3a1e",
+      "permissions": [
+        "view_station",
+        "edit_incidents",
+        "generate_reports"
+      ],
+      "level": 2,
+      "phone": "555-297-8362",
+      "hire_date": "2022-12-04",
+      "active": true,
+      "last_login": "2025-03-24T21:46:45.969290",
+      "created_at": "2025-03-14T21:46:45.969290",
+      "updated_at": "2025-04-05T21:46:45.969290",
+      "position": "Lieutenant",
+      "certifications": [
+        "Fire Officer II",
+        "Fire Instructor I"
+      ]
+    },
+    {
+      "id": "974dcae6-40e5-4428-b4be-fab89012d59b",
+      "username": "edavis39",
+      "first_name": "Elizabeth",
+      "last_name": "Davis",
+      "email": "elizabeth.davis@countyems.net",
+      "password_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "role": "Station Officer",
+      "department_id": "0e9026fd-f4a2-433d-b257-64e94c0686c0",
+      "station_id": "da31869d-fad3-4740-b386-fe501f646aaf",
+      "permissions": [
+        "view_station",
+        "edit_incidents",
+        "generate_reports"
+      ],
+      "level": 2,
+      "phone": "555-796-1173",
+      "hire_date": "2017-03-02",
+      "active": true,
+      "last_login": "2025-03-07T21:46:45.969311",
+      "created_at": "2025-03-24T21:46:45.969311",
+      "updated_at": "2025-04-05T21:46:45.969311",
+      "position": "Lieutenant",
+      "certifications": [
+        "Fire Officer II",
+        "Fire Instructor I"
+      ]
+    },
+    {
+      "id": "aa9c8851-8deb-40fc-bbaa-dd6df03c0c9f",
+      "username": "kmartinez62",
+      "first_name": "Karen",
+      "last_name": "Martinez",
+      "email": "karen.martinez@fireems.org",
+      "password_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "role": "Supervisor",
+      "department_id": "0e9026fd-f4a2-433d-b257-64e94c0686c0",
+      "station_id": null,
+      "permissions": [
+        "view_all",
+        "edit_incidents",
+        "export_data",
+        "generate_reports"
+      ],
+      "level": 3,
+      "phone": "555-142-2510",
+      "hire_date": "2019-12-10",
+      "active": true,
+      "last_login": "2025-03-15T21:46:45.969334",
+      "created_at": "2024-10-16T21:46:45.969334",
+      "updated_at": "2025-04-05T21:46:45.969334",
+      "position": "Supervisor",
+      "certifications": []
+    },
+    {
+      "id": "7ed8be2c-a9fe-42ff-8faa-367c23a621e2",
+      "username": "mthomas",
+      "first_name": "Michelle",
+      "last_name": "Thomas",
+      "email": "michelle.thomas@fireems.org",
+      "password_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "role": "Firefighter/EMT",
+      "department_id": "0e9026fd-f4a2-433d-b257-64e94c0686c0",
+      "station_id": "436bda6c-2939-4762-b93f-9fe3d9ca3a1e",
+      "permissions": [
+        "view_station",
+        "create_incidents",
+        "edit_own_incidents"
+      ],
+      "level": 1,
+      "phone": "555-428-1454",
+      "hire_date": "2021-08-01",
+      "active": true,
+      "last_login": "2025-03-21T21:46:45.969355",
+      "created_at": "2024-11-05T21:46:45.969355",
+      "updated_at": "2025-04-05T21:46:45.969355",
+      "position": "Engineer",
+      "certifications": [
+        "Firefighter I",
+        "Firefighter II",
+        "Hazmat Operations",
+        "Driver/Operator"
+      ]
+    },
+    {
+      "id": "1a8f5d3a-7deb-4fac-87df-4d2b00e39f7a",
+      "username": "ethomas",
+      "first_name": "Emily",
+      "last_name": "Thomas",
+      "email": "emily.thomas@example.com",
+      "password_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "role": "Firefighter/EMT",
+      "department_id": "0e9026fd-f4a2-433d-b257-64e94c0686c0",
+      "station_id": "da31869d-fad3-4740-b386-fe501f646aaf",
+      "permissions": [
+        "view_station",
+        "create_incidents",
+        "edit_own_incidents"
+      ],
+      "level": 1,
+      "phone": "555-417-6828",
+      "hire_date": "2022-07-05",
+      "active": true,
+      "last_login": "2025-03-31T21:46:45.969376",
+      "created_at": "2024-08-10T21:46:45.969376",
+      "updated_at": "2025-04-05T21:46:45.969376",
+      "position": "Paramedic",
+      "certifications": [
+        "Firefighter I",
+        "Firefighter II",
+        "Hazmat Operations",
+        "Paramedic",
+        "ACLS",
+        "PALS"
+      ]
+    },
+    {
+      "id": "9c1d23dc-1333-46b0-9753-54dd8ad294cc",
+      "username": "ahernandez",
+      "first_name": "Andrew",
+      "last_name": "Hernandez",
+      "email": "andrew.hernandez@cityfiredept.gov",
+      "password_hash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "role": "Firefighter/EMT",
+      "department_id": "0e9026fd-f4a2-433d-b257-64e94c0686c0",
+      "station_id": "436bda6c-2939-4762-b93f-9fe3d9ca3a1e",
+      "permissions": [
+        "view_station",
+        "create_incidents",
+        "edit_own_incidents"
+      ],
+      "level": 1,
+      "phone": "555-775-2426",
+      "hire_date": "2022-05-05",
+      "active": true,
+      "last_login": "2025-03-24T21:46:45.969397",
+      "created_at": "2024-07-31T21:46:45.969397",
+      "updated_at": "2025-04-05T21:46:45.969397",
+      "position": "Paramedic",
+      "certifications": [
+        "Firefighter I",
+        "Firefighter II",
+        "Hazmat Operations",
+        "Paramedic",
+        "ACLS",
+        "PALS"
+      ]
+    }
+  ]
+}

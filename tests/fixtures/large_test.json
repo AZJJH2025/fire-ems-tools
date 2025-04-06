@@ -1,0 +1,92 @@
+{
+  "name": "large_test",
+  "metadata": {
+    "created": "2025-04-05T21:46:46.483519",
+    "id": "c6411be1-6a14-4bad-8799-5d84b2d36b7e",
+    "version": "1.0",
+    "dataset_ids": [
+      "5e6ad111-6086-4251-b041-acd8cc0ea564",
+      "b8765666-570e-4d1e-b75e-e68235460b60",
+      "a5be83a2-41f9-4942-82ff-e6a58cf412bb",
+      "38c692c0-6446-4a49-9792-fdcf635b52de",
+      "90bc1849-bb2f-4de8-ada3-77b0270182a4",
+      "2f71dc8e-6113-4d2e-b9a1-ed377a596138",
+      "0818d8e1-35d5-406e-bc5e-f0f2b1e0dfa1",
+      "bd4c92d2-4d91-4989-90da-8ad0e1ec2d70",
+      "2ac7515c-09b0-4eff-89da-8cd7ddecb8f7",
+      "4bd963ac-5c06-4b04-b550-267fb3a299ed",
+      "03d30e75-d470-467d-944f-69be48bf7e38",
+      "fe4a33d5-2d64-4c19-8619-eb142fb73b38",
+      "c9ffb94c-5645-4eea-bbba-10f6a787ee87",
+      "280c8841-5eec-4e5e-a1a0-e5f04df9288a",
+      "fd03c62f-cbe7-4c9b-b3ae-995bbfc019e8",
+      "abb63a38-38d4-45e5-9e1b-9907058efe92"
+    ]
+  },
+  "datasets": [
+    {
+      "name": "large_test_departments",
+      "category": "departments"
+    },
+    {
+      "name": "large_test_department_1_stations",
+      "category": "stations"
+    },
+    {
+      "name": "large_test_department_1_users",
+      "category": "users"
+    },
+    {
+      "name": "large_test_department_1_incidents",
+      "category": "incidents"
+    },
+    {
+      "name": "large_test_department_2_stations",
+      "category": "stations"
+    },
+    {
+      "name": "large_test_department_2_users",
+      "category": "users"
+    },
+    {
+      "name": "large_test_department_2_incidents",
+      "category": "incidents"
+    },
+    {
+      "name": "large_test_department_3_stations",
+      "category": "stations"
+    },
+    {
+      "name": "large_test_department_3_users",
+      "category": "users"
+    },
+    {
+      "name": "large_test_department_3_incidents",
+      "category": "incidents"
+    },
+    {
+      "name": "large_test_department_4_stations",
+      "category": "stations"
+    },
+    {
+      "name": "large_test_department_4_users",
+      "category": "users"
+    },
+    {
+      "name": "large_test_department_4_incidents",
+      "category": "incidents"
+    },
+    {
+      "name": "large_test_department_5_stations",
+      "category": "stations"
+    },
+    {
+      "name": "large_test_department_5_users",
+      "category": "users"
+    },
+    {
+      "name": "large_test_department_5_incidents",
+      "category": "incidents"
+    }
+  ]
+}
