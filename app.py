@@ -3894,11 +3894,6 @@ def register_routes(app):
     def station_overview():
         """Serve the Station Overview tool"""
         return render_template('station-overview.html')
-        
-    @app.route('/coverage-gap-finder')
-    def coverage_gap_finder():
-        """Serve the Coverage Gap Finder tool"""
-        return render_template('coverage-gap-finder.html')
     
     # Station Overview helper functions
     def calculate_station_metrics(stations, incidents):
