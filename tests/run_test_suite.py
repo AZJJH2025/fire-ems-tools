@@ -244,12 +244,30 @@ def generate_test_report(test_type, success, output_file=None):
     return report
 
 
+def run_browser_tests(url=None, verbose=False):
+    """Run browser compatibility tests."""
+    # Import the specific browser test runner
+    sys.path.append(str(Path(__file__).parent))
+    
+    try:
+        # Try to import and run browser tests
+        from run_browser_tests import run_browser_tests as _run_browser_tests
+        return _run_browser_tests(url)
+    except ImportError as e:
+        print(f"Error importing browser tests: {e}")
+        print("Make sure Selenium is installed: pip install selenium")
+        return False
+    except Exception as e:
+        print(f"Error running browser tests: {e}")
+        return False
+
+
 def main():
     """Main entry point for the script."""
     parser = argparse.ArgumentParser(description="Run test suite for Fire-EMS Tools")
     parser.add_argument(
         "test_type",
-        choices=["unit", "integration", "api", "performance", "scenarios", "e2e", "all"],
+        choices=["unit", "integration", "api", "performance", "scenarios", "e2e", "browser", "all"],
         help="Type of tests to run"
     )
     parser.add_argument(
