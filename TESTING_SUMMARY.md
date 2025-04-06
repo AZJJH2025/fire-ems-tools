@@ -39,7 +39,31 @@ python tests/routes/run_blueprint_tests.py
 
 **Documentation:** [BLUEPRINT_TESTS.md](BLUEPRINT_TESTS.md)
 
-### 2. Simplified Tests
+### 2. Feature Scenario Tests
+
+Feature scenario tests validate complete features and their components through realistic usage scenarios. These tests focus on the functional correctness of entire features rather than just individual routes or components.
+
+**Key Features:**
+- Comprehensive end-to-end feature testing
+- Tests multiple components working together
+- Validates complex business logic
+- Tests data persistence and state management
+- Verifies integration with external services
+
+**Test Files:**
+- `tests/scenarios/incident_logger_hipaa_test.py`: HIPAA compliance testing for Incident Logger
+- `tests/scenarios/incident_logger_validation_test.py`: Data validation for Incident Logger
+- `tests/scenarios/incident_logger_cad_test.py`: CAD integration for Incident Logger
+
+**Running Scenario Tests:**
+```
+python run_test_suite.py scenarios
+python tests/scenarios/run_incident_logger_tests.py
+```
+
+**Documentation:** [tests/scenarios/INCIDENT_LOGGER_TESTS.md](tests/scenarios/INCIDENT_LOGGER_TESTS.md)
+
+### 3. Simplified Tests
 
 Simplified tests use a base test class (`SimpleDepartmentTestBase`) that provides mock departments, users, and data. This approach allows tests to run in any environment without external dependencies.
 
@@ -66,7 +90,7 @@ python run_all_tests.py --category simplified
 
 **Documentation:** [SIMPLIFIED_TESTS.md](SIMPLIFIED_TESTS.md)
 
-### 2. Error and Boundary Testing
+### 4. Error and Boundary Testing
 
 Error and boundary tests focus on how the application handles abnormal conditions, edge cases, and invalid inputs.
 
@@ -95,7 +119,7 @@ python run_all_tests.py --category boundary
 
 **Documentation:** [ERROR_TESTING.md](ERROR_TESTING.md)
 
-### 3. Docker Testing
+### 5. Docker Testing
 
 Docker-based testing ensures consistent test environments across different platforms and development machines.
 
@@ -117,7 +141,7 @@ Docker-based testing ensures consistent test environments across different platf
 
 **Documentation:** [DOCKER_TESTING.md](DOCKER_TESTING.md)
 
-### 4. End-to-End Testing
+### 6. End-to-End Testing
 
 End-to-end (E2E) tests validate the application from a user's perspective, ensuring all components work together correctly.
 

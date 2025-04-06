@@ -77,12 +77,15 @@ def run_unittest_suite(test_type, verbose=False, failfast=False):
         test_dirs = [os.path.join(os.path.dirname(__file__), "api")]
     elif test_type == "performance":
         test_dirs = [os.path.join(os.path.dirname(__file__), "performance")]
+    elif test_type == "scenarios":
+        test_dirs = [os.path.join(os.path.dirname(__file__), "scenarios")]
     elif test_type == "all":
         test_dirs = [
             os.path.join(os.path.dirname(__file__), "unit"),
             os.path.join(os.path.dirname(__file__), "integration"),
             os.path.join(os.path.dirname(__file__), "api"),
-            os.path.join(os.path.dirname(__file__), "performance")
+            os.path.join(os.path.dirname(__file__), "performance"),
+            os.path.join(os.path.dirname(__file__), "scenarios")
         ]
     
     # Discover and run tests
@@ -126,6 +129,8 @@ def run_pytest_suite(test_type, verbose=False, failfast=False):
         test_dirs = [os.path.join(os.path.dirname(__file__), "api")]
     elif test_type == "performance":
         test_dirs = [os.path.join(os.path.dirname(__file__), "performance")]
+    elif test_type == "scenarios":
+        test_dirs = [os.path.join(os.path.dirname(__file__), "scenarios")]
     elif test_type == "all":
         test_dirs = [os.path.dirname(__file__)]
     
@@ -244,7 +249,7 @@ def main():
     parser = argparse.ArgumentParser(description="Run test suite for Fire-EMS Tools")
     parser.add_argument(
         "test_type",
-        choices=["unit", "integration", "api", "performance", "e2e", "all"],
+        choices=["unit", "integration", "api", "performance", "scenarios", "e2e", "all"],
         help="Type of tests to run"
     )
     parser.add_argument(
