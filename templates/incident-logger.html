@@ -1774,6 +1774,8 @@
     <script src="/static/js/nfirs/nfirs-codes-fix.js"></script>
     <script src="/static/js/nfirs/nfirs-validator-fix.js"></script>
     <script src="/static/js/nfirs/nfirs-export-fix.js"></script>
+    <!-- Module bridge ensures consistent namespaces -->
+    <script src="/static/js/nfirs-module-bridge.js"></script>
     <script src="/static/js/nfirs/nfirs-ui-fix.js"></script>
     
     <!-- Component scripts - changed from type="module" to normal scripts -->
@@ -2114,6 +2116,7 @@
     <!-- Fixes for module loading and form validation issues -->
     <script src="/static/js/incident-module-fix.js"></script>
     <script src="/static/js/form-validation-fix.js"></script>
+    <script src="/static/js/patient-section-fix.js"></script>
     <script>
         // NFIRS module integration fix
         window.IncidentLogger = window.IncidentLogger || {};
