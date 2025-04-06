@@ -30,14 +30,14 @@ body {
     padding: 20px;
 }
 
-.panel-container {
+.firemappro-container {
     display: flex;
     gap: 20px;
     height: calc(100vh - 180px);
     min-height: 650px;
 }
 
-.left-panel {
+.sidebar {
     width: 380px;
     background: white;
     border-radius: 8px;
@@ -47,7 +47,7 @@ body {
     flex-shrink: 0;
 }
 
-.right-panel {
+.map-container {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -121,31 +121,31 @@ body {
 /* Nav styles moved to global styles.css */
 
 /* Panel Content Styles */
-.left-panel h2 {
+.sidebar h2 {
     color: var(--primary-color);
     font-size: 1.8rem;
     margin-top: 0;
     margin-bottom: 10px;
 }
 
-.left-panel > p {
+.sidebar > p {
     color: var(--text-light);
     margin-bottom: 25px;
 }
 
-.tools-section {
+.tools-section, .tool-section {
     margin-bottom: 25px;
     padding-bottom: 20px;
     border-bottom: 1px solid var(--border-color);
 }
 
-.tools-section:last-child {
+.tools-section:last-child, .tool-section:last-child {
     border-bottom: none;
     margin-bottom: 0;
     padding-bottom: 0;
 }
 
-.tools-section h3 {
+.tools-section h3, .tool-section h3 {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -154,7 +154,7 @@ body {
     margin-bottom: 15px;
 }
 
-.tools-section h4 {
+.tools-section h4, .tool-section h4 {
     font-size: 1rem;
     color: var(--text-color);
     margin-bottom: 10px;
@@ -188,26 +188,27 @@ body {
     gap: 8px;
 }
 
-.checkbox-item {
+.checkbox-item, .layer-item {
     display: flex;
     align-items: center;
     gap: 8px;
+    margin-bottom: 8px;
 }
 
-.checkbox-item label {
+.checkbox-item label, .layer-item label {
     cursor: pointer;
 }
 
 /* Upload Section */
-.upload-section {
+.upload-section, .import-controls {
     margin-bottom: 15px;
 }
 
-.file-upload {
+.file-upload, .import-item {
     margin-bottom: 10px;
 }
 
-.upload-btn {
+.upload-btn, .import-btn {
     display: inline-block;
     background-color: var(--light-gray);
     color: var(--text-color);
@@ -217,9 +218,12 @@ body {
     font-size: 0.9rem;
     width: 100%;
     transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.upload-btn:hover {
+.upload-btn:hover, .import-btn:hover {
     background-color: #e6e6e6;
 }
 
@@ -275,7 +279,7 @@ input[type="file"] {
 }
 
 /* Map Tools */
-.map-tools {
+.map-tools, .tool-buttons, .analysis-buttons, .export-buttons {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
@@ -486,11 +490,52 @@ input[type="file"] {
     color: var(--secondary-color);
 }
 
-#coordinates-display {
+#coordinates-display, .coords-display {
     bottom: 20px;
     left: 20px;
     font-size: 0.8rem;
     background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px 10px;
+    border-radius: 4px;
+    z-index: 1000;
+}
+
+/* Map Control Buttons */
+.map-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.map-control-item {
+    margin-bottom: 5px;
+}
+
+.map-btn {
+    width: 36px;
+    height: 36px;
+    background-color: white;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.15);
+    transition: all 0.2s;
+}
+
+.map-btn:hover {
+    background-color: var(--light-gray);
+}
+
+.map-btn i {
+    font-size: 16px;
+    color: var(--secondary-color);
 }
 
 /* Data Panel */
@@ -705,17 +750,17 @@ footer {
 
 /* Responsive Design */
 @media (max-width: 1200px) {
-    .panel-container {
+    .firemappro-container {
         flex-direction: column;
         height: auto;
     }
 
-    .left-panel {
+    .sidebar {
         width: 100%;
         order: 2;
     }
 
-    .right-panel {
+    .map-container {
         order: 1;
     }
 
