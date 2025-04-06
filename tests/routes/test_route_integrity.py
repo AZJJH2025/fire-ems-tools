@@ -30,6 +30,24 @@ class TestRouteIntegrity(BlueprintTestCase):
             'WTF_CSRF_ENABLED': False
         })
         
+        # Set up mock template loader
+        from jinja2 import DictLoader
+        self.app.jinja_loader = DictLoader({
+            'index.html': '<html><body><h1>Test Home</h1></body></html>',
+            'fire-ems-dashboard.html': '<html><body><h1>Test Dashboard</h1></body></html>',
+            'isochrone-map.html': '<html><body><h1>Test Isochrone Map</h1></body></html>',
+            'call-density-heatmap.html': '<html><body><h1>Test Call Density Heatmap</h1></body></html>',
+            'incident-logger.html': '<html><body><h1>Test Incident Logger</h1></body></html>',
+            'coverage-gap-finder.html': '<html><body><h1>Test Coverage Gap Finder</h1></body></html>',
+            'fire-map-pro.html': '<html><body><h1>Test Fire Map Pro</h1></body></html>',
+            'data-formatter.html': '<html><body><h1>Test Data Formatter</h1></body></html>',
+            'station-overview.html': '<html><body><h1>Test Station Overview</h1></body></html>',
+            'call-volume-forecaster.html': '<html><body><h1>Test Call Volume Forecaster</h1></body></html>',
+            'quick-stats.html': '<html><body><h1>Test Quick Stats</h1></body></html>',
+            'errors/404.html': '<html><body><h1>404 Not Found</h1></body></html>',
+            'errors/500.html': '<html><body><h1>500 Server Error</h1></body></html>',
+        })
+        
         # Initialize extensions
         db.init_app(self.app)
         
