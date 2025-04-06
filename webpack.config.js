@@ -6,7 +6,8 @@ module.exports = {
     // Main entry points
     'incident-logger': './src/js/incident-logger.js',
     'nfirs-bundle': './src/js/nfirs-bundle.js',
-    'components-bundle': './src/js/components-bundle.js'
+    'components-bundle': './src/js/components-bundle.js',
+    'test-bundle': './src/js/test-bundle.js'
   },
   output: {
     filename: '[name].bundle.js',

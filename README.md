@@ -12,6 +12,19 @@ A comprehensive suite of tools for Fire and EMS departments to manage incidents,
 - **Fire Map Pro**: Advanced mapping tools for fire departments
 - **Data Formatter**: Tools for importing, cleaning, and normalizing data
 
+## Architecture
+
+The application uses a modern architecture with:
+
+- **Backend**: Flask-based Python application
+- **Frontend**: 
+  - ES6 modules bundled with webpack
+  - Component-based architecture
+  - Proper separation of concerns
+- **Storage**: 
+  - Client-side localStorage for offline capability
+  - Server-side SQLite database for persistence
+
 ## Getting Started
 
 ### Prerequisites
@@ -26,15 +39,35 @@ A comprehensive suite of tools for Fire and EMS departments to manage incidents,
    git clone https://github.com/yourusername/fire-ems-tools.git
    ```
 
-2. Install dependencies:
+2. Install Python dependencies:
    ```
    pip install -r requirements.txt
    ```
 
-3. Run the application:
+3. Install JavaScript dependencies (for ES6 module support):
+   ```
+   npm install
+   ```
+
+4. Build the JavaScript bundles:
+   ```
+   npm run build
+   ```
+
+5. Run the application:
    ```
    python app.py
    ```
+
+### Development Workflow
+
+For active development with automatic rebuilding of JavaScript:
+
+```
+npm run watch
+```
+
+This will watch for changes in JavaScript files and automatically rebuild the bundles.
 
 ## Testing Framework
 

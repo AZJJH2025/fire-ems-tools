@@ -22,5 +22,30 @@ export const NFIRS = {
 window.IncidentLogger = window.IncidentLogger || {};
 window.IncidentLogger.NFIRS = NFIRS;
 
+// Expose individual functions for backwards compatibility
+window.validateNFIRSCompliance = function(incident) {
+  return NFIRS.Validator.validate(incident);
+};
+
+window.isNFIRSReadyForExport = function(incident) {
+  return NFIRS.Validator.isReadyForExport(incident);
+};
+
+window.getMissingNFIRSFields = function(incident) {
+  return NFIRS.Validator.getMissingFields(incident);
+};
+
+window.convertToNFIRSXML = function(incident) {
+  return NFIRS.Export.toXML(incident);
+};
+
+window.convertToNFIRSCSV = function(incident) {
+  return NFIRS.Export.toCSV(incident);
+};
+
+window.convertToNFIRSJSON = function(incident) {
+  return NFIRS.Export.toJSON(incident);
+};
+
 // Log when bundle is loaded
 console.log('NFIRS bundle loaded successfully');
