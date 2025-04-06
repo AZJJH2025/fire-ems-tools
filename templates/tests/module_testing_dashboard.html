@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ES6 Module Testing Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 30px;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        header {
+            margin-bottom: 30px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        h2 {
+            color: #3498db;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 40px;
+        }
+        .dashboard-summary {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .test-card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            background-color: white;
+        }
+        .test-card h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .test-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background-color: #2980b9;
+        }
+        .test-button.secondary {
+            background-color: #95a5a6;
+        }
+        .test-button.secondary:hover {
+            background-color: #7f8c8d;
+        }
+        .test-button.success {
+            background-color: #2ecc71;
+        }
+        .test-button.success:hover {
+            background-color: #27ae60;
+        }
+        .test-button.warning {
+            background-color: #f39c12;
+        }
+        .test-button.warning:hover {
+            background-color: #e67e22;
+        }
+        .test-status {
+            margin-top: 10px;
+            font-size: 14px;
+            padding: 5px;
+            border-radius: 3px;
+            text-align: center;
+        }
+        .test-status.success {
+            background-color: #e8f8f5;
+            color: #27ae60;
+        }
+        .test-status.failure {
+            background-color: #fdedeb;
+            color: #e74c3c;
+        }
+        .test-status.pending {
+            background-color: #fef9e7;
+            color: #f39c12;
+        }
+        .log-container {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            margin-bottom: 20px;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 3px;
+            border-bottom: 1px solid #34495e;
+        }
+        .log-entry.success {
+            color: #2ecc71;
+        }
+        .log-entry.error {
+            color: #e74c3c;
+        }
+        .log-entry.warning {
+            color: #f39c12;
+        }
+        .log-entry.info {
+            color: #3498db;
+        }
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 14px;
+            color: #7f8c8d;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .action-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .action-bar button {
+            flex: 1;
+        }
+        .bundle-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .bundle-stat {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            margin: 0 5px;
+        }
+        .bundle-stat h4 {
+            margin-top: 0;
+            color: #7f8c8d;
+        }
+        .bundle-stat .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .dependency-check {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .dependency-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .dependency-name {
+            font-weight: bold;
+        }
+        .dependency-status {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .dependency-status.loaded {
+            background-color: #e8f8f5;
+            color: #27ae60;
+        }
+        .dependency-status.missing {
+            background-color: #fdedeb;
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ES6 Module Testing Dashboard</h1>
+            <p>Test and verify the ES6 module architecture implementation for the Fire-EMS Tools application</p>
+        </header>
+
+        <div class="dashboard-summary">
+            <h2>Module Status</h2>
+            <div class="bundle-stats">
+                <div class="bundle-stat">
+                    <h4>Components Bundle</h4>
+                    <div class="value" id="components-status">-</div>
+                </div>
+                <div class="bundle-stat">
+                    <h4>NFIRS Bundle</h4>
+                    <div class="value" id="nfirs-status">-</div>
+                </div>
+                <div class="bundle-stat">
+                    <h4>Incident Logger Bundle</h4>
+                    <div class="value" id="logger-status">-</div>
+                </div>
+            </div>
+
+            <h2>External Dependencies</h2>
+            <div class="dependency-check" id="dependencies-container">
+                <div class="dependency-item">
+                    <span class="dependency-name">jQuery</span>
+                    <span class="dependency-status" id="jquery-status">Checking...</span>
+                </div>
+                <div class="dependency-item">
+                    <span class="dependency-name">Select2</span>
+                    <span class="dependency-status" id="select2-status">Checking...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button id="load-all-bundles-btn" class="test-button success">Load All Bundles</button>
+            <button id="run-all-tests-btn" class="test-button warning">Run All Tests</button>
+            <button id="clear-log-btn" class="test-button secondary">Clear Log</button>
+        </div>
+
+        <div class="log-container" id="log-container">
+            <div class="log-entry">Module Testing Dashboard initialized...</div>
+        </div>
+
+        <h2>Test Modules</h2>
+        <div class="test-grid">
+            <div class="test-card">
+                <h3>Components Bundle</h3>
+                <button id="load-components-btn" class="test-button">Load Components Bundle</button>
+                <button id="test-medical-btn" class="test-button">Test Medical Sections</button>
+                <button id="test-hipaa-btn" class="test-button">Test HIPAA Component</button>
+                <div class="test-status" id="components-test-status">Not tested</div>
+            </div>
+
+            <div class="test-card">
+                <h3>NFIRS Bundle</h3>
+                <button id="load-nfirs-btn" class="test-button">Load NFIRS Bundle</button>
+                <button id="test-nfirs-codes-btn" class="test-button">Test NFIRS Codes</button>
+                <button id="test-nfirs-export-btn" class="test-button">Test NFIRS Export</button>
+                <div class="test-status" id="nfirs-test-status">Not tested</div>
+            </div>
+
+            <div class="test-card">
+                <h3>Incident Logger Bundle</h3>
+                <button id="load-logger-btn" class="test-button">Load Incident Logger Bundle</button>
+                <button id="test-logger-app-btn" class="test-button">Test Logger App</button>
+                <button id="test-backward-compat-btn" class="test-button">Test Backward Compatibility</button>
+                <div class="test-status" id="logger-test-status">Not tested</div>
+            </div>
+
+            <div class="test-card">
+                <h3>Integration Tests</h3>
+                <button id="test-module-interaction-btn" class="test-button">Test Module Interaction</button>
+                <button id="test-namespace-pollution-btn" class="test-button">Test Namespace Pollution</button>
+                <button id="test-event-handling-btn" class="test-button">Test Event Handling</button>
+                <div class="test-status" id="integration-test-status">Not tested</div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>Fire-EMS Tools ES6 Module Testing Dashboard | Built by the Fire-EMS Development Team</p>
+        </footer>
+    </div>
+
+    <script>
+        // Logging utility
+        const logger = {
+            log(message, type = 'default') {
+                console.log(message);
+                const logContainer = document.getElementById('log-container');
+                const logEntry = document.createElement('div');
+                logEntry.className = `log-entry ${type}`;
+                logEntry.textContent = message;
+                logContainer.appendChild(logEntry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+            },
+            success(message) {
+                this.log(`✅ ${message}`, 'success');
+            },
+            error(message) {
+                this.log(`❌ ${message}`, 'error');
+            },
+            warning(message) {
+                this.log(`⚠️ ${message}`, 'warning');
+            },
+            info(message) {
+                this.log(`ℹ️ ${message}`, 'info');
+            }
+        };
+
+        // Bundle loaders
+        const bundleLoader = {
+            loadedBundles: {
+                components: false,
+                nfirs: false,
+                logger: false
+            },
+
+            loadScript(src, callback) {
+                logger.info(`Loading script: ${src}`);
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = () => {
+                    logger.success(`Script loaded successfully: ${src}`);
+                    if (callback) callback();
+                };
+                script.onerror = () => {
+                    logger.error(`Failed to load script: ${src}`);
+                };
+                document.body.appendChild(script);
+            },
+
+            loadComponentsBundle(callback) {
+                this.loadScript('../static/dist/components-bundle.bundle.js', () => {
+                    this.loadedBundles.components = true;
+                    document.getElementById('components-status').textContent = 'Loaded';
+                    document.getElementById('components-status').style.color = '#27ae60';
+                    if (callback) callback();
+                });
+            },
+
+            loadNFIRSBundle(callback) {
+                this.loadScript('../static/dist/nfirs-bundle.bundle.js', () => {
+                    this.loadedBundles.nfirs = true;
+                    document.getElementById('nfirs-status').textContent = 'Loaded';
+                    document.getElementById('nfirs-status').style.color = '#27ae60';
+                    if (callback) callback();
+                });
+            },
+
+            loadLoggerBundle(callback) {
+                this.loadScript('../static/dist/incident-logger.bundle.js', () => {
+                    this.loadedBundles.logger = true;
+                    document.getElementById('logger-status').textContent = 'Loaded';
+                    document.getElementById('logger-status').style.color = '#27ae60';
+                    if (callback) callback();
+                });
+            },
+
+            loadAllBundles(callback) {
+                logger.info('Loading all bundles...');
+                this.loadComponentsBundle(() => {
+                    this.loadNFIRSBundle(() => {
+                        this.loadLoggerBundle(() => {
+                            logger.success('All bundles loaded successfully');
+                            if (callback) callback();
+                        });
+                    });
+                });
+            }
+        };
+
+        // Test functions
+        const testRunner = {
+            testMedicalSections() {
+                logger.info('Testing Medical Sections component...');
+                
+                // Check if component exists
+                if (!window.FireEMS || !window.FireEMS.Components || !window.FireEMS.Components.Medical) {
+                    logger.error('Medical Sections component not found');
+                    document.getElementById('components-test-status').textContent = 'Failed: Medical component not found';
+                    document.getElementById('components-test-status').className = 'test-status failure';
+                    return false;
+                }
+                
+                logger.success('Medical Sections component found');
+                
+                // Check methods
+                const medicalComponent = window.FireEMS.Components.Medical;
+                const methods = ['initialize', 'checkAndFixMedicalSections', 'addMedicalSectionsToPatient', 'getMedicalData', 'setMedicalData'];
+                
+                let allMethodsPresent = true;
+                methods.forEach(method => {
+                    if (typeof medicalComponent[method] !== 'function') {
+                        logger.error(`Medical Sections component missing method: ${method}`);
+                        allMethodsPresent = false;
+                    } else {
+                        logger.success(`Medical Sections component has method: ${method}`);
+                    }
+                });
+                
+                // Update status
+                if (allMethodsPresent) {
+                    document.getElementById('components-test-status').textContent = 'Passed: Medical component validated';
+                    document.getElementById('components-test-status').className = 'test-status success';
+                    return true;
+                } else {
+                    document.getElementById('components-test-status').textContent = 'Failed: Medical component missing methods';
+                    document.getElementById('components-test-status').className = 'test-status failure';
+                    return false;
+                }
+            },
+            
+            testHIPAAComponent() {
+                logger.info('Testing HIPAA component...');
+                
+                // Check if component exists
+                if (!window.FireEMS || !window.FireEMS.Components || !window.FireEMS.Components.HIPAA) {
+                    logger.error('HIPAA component not found');
+                    document.getElementById('components-test-status').textContent = 'Failed: HIPAA component not found';
+                    document.getElementById('components-test-status').className = 'test-status failure';
+                    return false;
+                }
+                
+                logger.success('HIPAA component found');
+                
+                // Check methods
+                const hipaaComponent = window.FireEMS.Components.HIPAA;
+                const methods = ['validateData', 'sanitizeData', 'hasConsent', 'getPatientConsent'];
+                
+                let allMethodsPresent = true;
+                methods.forEach(method => {
+                    if (typeof hipaaComponent[method] !== 'function') {
+                        logger.error(`HIPAA component missing method: ${method}`);
+                        allMethodsPresent = false;
+                    } else {
+                        logger.success(`HIPAA component has method: ${method}`);
+                    }
+                });
+                
+                // Update status
+                if (allMethodsPresent) {
+                    document.getElementById('components-test-status').textContent = 'Passed: HIPAA component validated';
+                    document.getElementById('components-test-status').className = 'test-status success';
+                    return true;
+                } else {
+                    document.getElementById('components-test-status').textContent = 'Failed: HIPAA component missing methods';
+                    document.getElementById('components-test-status').className = 'test-status failure';
+                    return false;
+                }
+            },
+            
+            testNFIRSCodes() {
+                logger.info('Testing NFIRS Codes component...');
+                
+                // Check if component exists
+                if (!window.NFIRS || !window.NFIRS.Codes) {
+                    logger.error('NFIRS Codes component not found');
+                    document.getElementById('nfirs-test-status').textContent = 'Failed: NFIRS Codes not found';
+                    document.getElementById('nfirs-test-status').className = 'test-status failure';
+                    return false;
+                }
+                
+                logger.success('NFIRS Codes component found');
+                
+                // Check methods and properties
+                const codesComponent = window.NFIRS.Codes;
+                const methods = ['getIncidentTypeDescription', 'getPropertyUseDescription', 'getFireSpreadDescription'];
+                const properties = ['incidentTypes', 'propertyUse', 'fireSpread'];
+                
+                let allMethodsPresent = true;
+                methods.forEach(method => {
+                    if (typeof codesComponent[method] !== 'function') {
+                        logger.error(`NFIRS Codes component missing method: ${method}`);
+                        allMethodsPresent = false;
+                    } else {
+                        logger.success(`NFIRS Codes component has method: ${method}`);
+                    }
+                });
+                
+                let allPropertiesPresent = true;
+                properties.forEach(prop => {
+                    if (!codesComponent[prop]) {
+                        logger.error(`NFIRS Codes component missing property: ${prop}`);
+                        allPropertiesPresent = false;
+                    } else {
+                        logger.success(`NFIRS Codes component has property: ${prop}`);
+                    }
+                });
+                
+                // Test a code lookup
+                try {
+                    const descr111 = codesComponent.getIncidentTypeDescription('111');
+                    logger.info(`Incident Type 111: ${descr111}`);
+                    
+                    if (descr111 === 'Building fire') {
+                        logger.success('NFIRS code lookup working correctly');
+                    } else {
+                        logger.warning('NFIRS code lookup returned unexpected result');
+                        allMethodsPresent = false;
+                    }
+                } catch (e) {
+                    logger.error(`NFIRS code lookup failed: ${e.message}`);
+                    allMethodsPresent = false;
+                }
+                
+                // Update status
+                if (allMethodsPresent && allPropertiesPresent) {
+                    document.getElementById('nfirs-test-status').textContent = 'Passed: NFIRS Codes validated';
+                    document.getElementById('nfirs-test-status').className = 'test-status success';
+                    return true;
+                } else {
+                    document.getElementById('nfirs-test-status').textContent = 'Failed: NFIRS Codes validation issues';
+                    document.getElementById('nfirs-test-status').className = 'test-status failure';
+                    return false;
+                }
+            },
+            
+            testNFIRSExport() {
+                logger.info('Testing NFIRS Export component...');
+                
+                // Check if component exists
+                if (!window.NFIRS || !window.NFIRS.Export) {
+                    logger.error('NFIRS Export component not found');
+                    document.getElementById('nfirs-test-status').textContent = 'Failed: NFIRS Export not found';
+                    document.getElementById('nfirs-test-status').className = 'test-status failure';
+                    return false;
+                }
+                
+                logger.success('NFIRS Export component found');
+                
+                // Check methods
+                const exportComponent = window.NFIRS.Export;
+                const methods = ['toXML', 'toCSV', 'toJSON'];
+                
+                let allMethodsPresent = true;
+                methods.forEach(method => {
+                    if (typeof exportComponent[method] !== 'function') {
+                        logger.error(`NFIRS Export component missing method: ${method}`);
+                        allMethodsPresent = false;
+                    } else {
+                        logger.success(`NFIRS Export component has method: ${method}`);
+                    }
+                });
+                
+                // Check global backward compatibility
+                const globalMethods = ['convertToNFIRSXML', 'convertToNFIRSCSV', 'convertToNFIRSJSON'];
+                let allGlobalMethodsPresent = true;
+                
+                globalMethods.forEach(method => {
+                    if (typeof window[method] !== 'function') {
+                        logger.error(`Global method not found: ${method}`);
+                        allGlobalMethodsPresent = false;
+                    } else {
+                        logger.success(`Global method available: ${method}`);
+                    }
+                });
+                
+                // Update status
+                if (allMethodsPresent && allGlobalMethodsPresent) {
+                    document.getElementById('nfirs-test-status').textContent = 'Passed: NFIRS Export validated';
+                    document.getElementById('nfirs-test-status').className = 'test-status success';
+                    return true;
+                } else {
+                    document.getElementById('nfirs-test-status').textContent = 'Failed: NFIRS Export validation issues';
+                    document.getElementById('nfirs-test-status').className = 'test-status failure';
+                    return false;
+                }
+            },
+            
+            testLoggerApp() {
+                logger.info('Testing Incident Logger App...');
+                
+                // Check if component exists
+                if (!window.IncidentLoggerApp) {
+                    logger.error('IncidentLoggerApp not found');
+                    document.getElementById('logger-test-status').textContent = 'Failed: IncidentLoggerApp not found';
+                    document.getElementById('logger-test-status').className = 'test-status failure';
+                    return false;
+                }
+                
+                logger.success('IncidentLoggerApp found');
+                
+                // Check methods
+                const loggerApp = window.IncidentLoggerApp;
+                const methods = ['initialize', 'setupEventListeners', 'initializeComponents'];
+                
+                let allMethodsPresent = true;
+                methods.forEach(method => {
+                    if (typeof loggerApp[method] !== 'function') {
+                        logger.error(`IncidentLoggerApp missing method: ${method}`);
+                        allMethodsPresent = false;
+                    } else {
+                        logger.success(`IncidentLoggerApp has method: ${method}`);
+                    }
+                });
+                
+                // Update status
+                if (allMethodsPresent) {
+                    document.getElementById('logger-test-status').textContent = 'Passed: IncidentLoggerApp validated';
+                    document.getElementById('logger-test-status').className = 'test-status success';
+                    return true;
+                } else {
+                    document.getElementById('logger-test-status').textContent = 'Failed: IncidentLoggerApp missing methods';
+                    document.getElementById('logger-test-status').className = 'test-status failure';
+                    return false;
+                }
+            },
+            
+            testBackwardCompatibility() {
+                logger.info('Testing backward compatibility...');
+                
+                // Check if legacy namespace exists
+                if (!window.IncidentLogger) {
+                    logger.error('Legacy IncidentLogger namespace not found');
+                    document.getElementById('logger-test-status').textContent = 'Failed: Legacy namespace not found';
+                    document.getElementById('logger-test-status').className = 'test-status failure';
+                    return false;
+                }
+                
+                logger.success('Legacy IncidentLogger namespace found');
+                
+                // Check components in legacy namespace
+                const components = ['HIPAA', 'CAD', 'Validator', 'Export', 'Map', 'List', 'Form', 'Medical'];
+                let allComponentsPresent = true;
+                
+                components.forEach(component => {
+                    if (!window.IncidentLogger[component]) {
+                        logger.error(`Legacy namespace missing component: ${component}`);
+                        allComponentsPresent = false;
+                    } else {
+                        logger.success(`Legacy namespace has component: ${component}`);
+                    }
+                });
+                
+                // Update status
+                if (allComponentsPresent) {
+                    document.getElementById('logger-test-status').textContent = 'Passed: Backward compatibility validated';
+                    document.getElementById('logger-test-status').className = 'test-status success';
+                    return true;
+                } else {
+                    document.getElementById('logger-test-status').textContent = 'Failed: Backward compatibility issues';
+                    document.getElementById('logger-test-status').className = 'test-status failure';
+                    return false;
+                }
+            },
+            
+            testModuleInteraction() {
+                logger.info('Testing module interaction...');
+                
+                // Check if all required components exist
+                if (!window.FireEMS || !window.FireEMS.Components || !window.NFIRS || !window.IncidentLoggerApp) {
+                    logger.error('Required components not found for interaction test');
+                    document.getElementById('integration-test-status').textContent = 'Failed: Required components missing';
+                    document.getElementById('integration-test-status').className = 'test-status failure';
+                    return false;
+                }
+                
+                // Test if IncidentLoggerApp can access FireEMS components
+                try {
+                    const hasComponents = typeof window.IncidentLoggerApp.initializeComponents === 'function';
+                    logger.success('IncidentLoggerApp can access components');
+                    
+                    // Test if IncidentLoggerApp is correctly initialized
+                    if (hasComponents) {
+                        document.getElementById('integration-test-status').textContent = 'Passed: Module interaction working';
+                        document.getElementById('integration-test-status').className = 'test-status success';
+                        return true;
+                    }
+                } catch (e) {
+                    logger.error(`Module interaction test failed: ${e.message}`);
+                }
+                
+                document.getElementById('integration-test-status').textContent = 'Failed: Module interaction issues';
+                document.getElementById('integration-test-status').className = 'test-status failure';
+                return false;
+            },
+            
+            testNamespacePollution() {
+                logger.info('Testing namespace pollution...');
+                
+                // Get all variables in the global scope
+                const globalVars = Object.keys(window);
+                
+                // Expected global namespaces
+                const expectedNamespaces = ['FireEMS', 'NFIRS', 'IncidentLogger', 'IncidentLoggerApp'];
+                
+                // Check for unexpected global variables from our modules
+                const moduleNamePattern = /^(Medical|Incident|NFIRS|Component|Bundle|CAD|HIPAA)/;
+                const unexpectedGlobals = globalVars.filter(name => 
+                    moduleNamePattern.test(name) && !expectedNamespaces.includes(name)
+                );
+                
+                if (unexpectedGlobals.length === 0) {
+                    logger.success('No namespace pollution detected');
+                    document.getElementById('integration-test-status').textContent = 'Passed: No namespace pollution';
+                    document.getElementById('integration-test-status').className = 'test-status success';
+                    return true;
+                } else {
+                    logger.error(`Namespace pollution detected: ${unexpectedGlobals.join(', ')}`);
+                    document.getElementById('integration-test-status').textContent = 'Failed: Namespace pollution detected';
+                    document.getElementById('integration-test-status').className = 'test-status failure';
+                    return false;
+                }
+            },
+            
+            testEventHandling() {
+                logger.info('Testing event handling...');
+                
+                // Check if Medical component exists
+                if (!window.FireEMS || !window.FireEMS.Components || !window.FireEMS.Components.Medical) {
+                    logger.error('Medical Sections component not found for event test');
+                    document.getElementById('integration-test-status').textContent = 'Failed: Components missing for event test';
+                    document.getElementById('integration-test-status').className = 'test-status failure';
+                    return false;
+                }
+                
+                // Test custom event handling
+                try {
+                    // Dispatch a patientAdded event
+                    const event = new CustomEvent('patientAdded', {
+                        detail: { patientIndex: 999 }
+                    });
+                    document.dispatchEvent(event);
+                    
+                    logger.success('Custom event dispatched successfully');
+                    document.getElementById('integration-test-status').textContent = 'Passed: Event handling working';
+                    document.getElementById('integration-test-status').className = 'test-status success';
+                    return true;
+                } catch (e) {
+                    logger.error(`Event handling test failed: ${e.message}`);
+                    document.getElementById('integration-test-status').textContent = 'Failed: Event handling issues';
+                    document.getElementById('integration-test-status').className = 'test-status failure';
+                    return false;
+                }
+            },
+            
+            runAllTests() {
+                logger.info('Running all tests...');
+                
+                // First check if bundles are loaded
+                if (!bundleLoader.loadedBundles.components || !bundleLoader.loadedBundles.nfirs || !bundleLoader.loadedBundles.logger) {
+                    logger.warning('Not all bundles are loaded. Loading bundles first...');
+                    bundleLoader.loadAllBundles(() => this.executeAllTests());
+                } else {
+                    this.executeAllTests();
+                }
+            },
+            
+            executeAllTests() {
+                // Run all component tests
+                this.testMedicalSections();
+                this.testHIPAAComponent();
+                
+                // Run all NFIRS tests
+                this.testNFIRSCodes();
+                this.testNFIRSExport();
+                
+                // Run all logger tests
+                this.testLoggerApp();
+                this.testBackwardCompatibility();
+                
+                // Run integration tests
+                this.testModuleInteraction();
+                this.testNamespacePollution();
+                this.testEventHandling();
+                
+                logger.success('All tests completed');
+            }
+        };
+
+        // Check dependencies
+        function checkDependencies() {
+            // Check jQuery
+            const jQueryStatus = document.getElementById('jquery-status');
+            if (typeof $ !== 'undefined') {
+                jQueryStatus.textContent = 'Loaded';
+                jQueryStatus.className = 'dependency-status loaded';
+            } else {
+                jQueryStatus.textContent = 'Missing';
+                jQueryStatus.className = 'dependency-status missing';
+            }
+            
+            // Check Select2
+            const select2Status = document.getElementById('select2-status');
+            if (typeof $ !== 'undefined' && $.fn && $.fn.select2) {
+                select2Status.textContent = 'Loaded';
+                select2Status.className = 'dependency-status loaded';
+            } else {
+                select2Status.textContent = 'Missing';
+                select2Status.className = 'dependency-status missing';
+            }
+        }
+
+        // Initialize dashboard
+        function initDashboard() {
+            // Set initial bundle status
+            document.getElementById('components-status').textContent = 'Not Loaded';
+            document.getElementById('nfirs-status').textContent = 'Not Loaded';
+            document.getElementById('logger-status').textContent = 'Not Loaded';
+            
+            // Check dependencies
+            checkDependencies();
+            
+            // Set up button event listeners
+            document.getElementById('load-all-bundles-btn').addEventListener('click', () => bundleLoader.loadAllBundles());
+            document.getElementById('run-all-tests-btn').addEventListener('click', () => testRunner.runAllTests());
+            document.getElementById('clear-log-btn').addEventListener('click', () => {
+                document.getElementById('log-container').innerHTML = '<div class="log-entry">Log cleared</div>';
+            });
+            
+            document.getElementById('load-components-btn').addEventListener('click', () => bundleLoader.loadComponentsBundle());
+            document.getElementById('load-nfirs-btn').addEventListener('click', () => bundleLoader.loadNFIRSBundle());
+            document.getElementById('load-logger-btn').addEventListener('click', () => bundleLoader.loadLoggerBundle());
+            
+            document.getElementById('test-medical-btn').addEventListener('click', () => testRunner.testMedicalSections());
+            document.getElementById('test-hipaa-btn').addEventListener('click', () => testRunner.testHIPAAComponent());
+            document.getElementById('test-nfirs-codes-btn').addEventListener('click', () => testRunner.testNFIRSCodes());
+            document.getElementById('test-nfirs-export-btn').addEventListener('click', () => testRunner.testNFIRSExport());
+            document.getElementById('test-logger-app-btn').addEventListener('click', () => testRunner.testLoggerApp());
+            document.getElementById('test-backward-compat-btn').addEventListener('click', () => testRunner.testBackwardCompatibility());
+            document.getElementById('test-module-interaction-btn').addEventListener('click', () => testRunner.testModuleInteraction());
+            document.getElementById('test-namespace-pollution-btn').addEventListener('click', () => testRunner.testNamespacePollution());
+            document.getElementById('test-event-handling-btn').addEventListener('click', () => testRunner.testEventHandling());
+            
+            logger.info('Dashboard initialized');
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+
+    <!-- jQuery and Select2 for testing -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+</body>
+</html>

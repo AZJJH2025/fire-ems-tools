@@ -77,6 +77,16 @@ def user_guide():
     """User Guide route"""
     return render_template('user-guide.html')
 
+@bp.route('/tests/module_testing_dashboard.html')
+def module_testing_dashboard():
+    """ES6 Module Testing Dashboard route"""
+    return render_template('tests/module_testing_dashboard.html')
+
+@bp.route('/admin')
+def admin_dashboard():
+    """Admin Dashboard route"""
+    return render_template('admin/dashboard.html')
+
 @bp.route('/deployment-status')
 def deployment_status():
     """Check deployment status"""
