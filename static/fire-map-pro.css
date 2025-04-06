@@ -319,6 +319,16 @@ input[type="file"] {
     background-color: rgba(244, 67, 54, 0.1);
 }
 
+.tool-btn.premium-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-dark);
+}
+
+.tool-btn.premium-btn:hover {
+    background-color: var(--primary-dark);
+}
+
 /* Button Styles */
 .primary-btn {
     background-color: var(--secondary-color);
@@ -603,8 +613,15 @@ footer {
 
 .icon-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 8px;
+    margin-bottom: 15px;
+}
+
+@media (min-width: 480px) {
+    .icon-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
 }
 
 .draggable-icon {
@@ -668,6 +685,310 @@ footer {
     cursor: crosshair;
 }
 
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: modalFadeIn 0.3s;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 500;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 24px;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.close-modal:hover {
+    opacity: 1;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    padding: 15px 20px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.modal-btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    border: 1px solid var(--border-color);
+    background-color: white;
+    color: var(--text-color);
+    transition: all 0.2s;
+}
+
+.modal-btn:hover {
+    background-color: var(--light-gray);
+}
+
+.modal-btn.primary-btn {
+    background-color: var(--secondary-color);
+    color: white;
+    border-color: var(--secondary-dark);
+}
+
+.modal-btn.primary-btn:hover {
+    background-color: var(--secondary-dark);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.form-group input, 
+.form-group select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.95rem;
+}
+
+.form-group.checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-group.checkbox input {
+    width: auto;
+}
+
+.form-group.checkbox label {
+    margin-bottom: 0;
+}
+
+/* Print Preview Modal */
+#print-preview-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
+
+.print-preview-content {
+    background-color: white;
+    width: 95%;
+    max-width: 1000px;
+    max-height: 95vh;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+}
+
+.print-preview-header {
+    padding: 15px 20px;
+    background-color: var(--secondary-color);
+    color: white;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.print-preview-header h2 {
+    margin: 0;
+    font-size: 1.3rem;
+}
+
+.print-preview-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.print-preview-close:hover {
+    opacity: 1;
+}
+
+.print-preview-body {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: auto;
+}
+
+.print-preview-canvas-container {
+    position: relative;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+.print-preview-canvas {
+    display: block;
+    max-width: 100%;
+    max-height: 70vh;
+}
+
+.print-preview-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.print-preview-info {
+    text-align: center;
+    padding: 10px;
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.print-preview-footer {
+    padding: 15px 20px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.cancel-btn, .export-btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    background-color: white;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s;
+}
+
+.export-btn {
+    background-color: var(--secondary-color);
+    color: white;
+    border-color: var(--secondary-dark);
+}
+
+.export-btn:hover {
+    background-color: var(--secondary-dark);
+}
+
+.cancel-btn:hover {
+    background-color: var(--light-gray);
+}
+
+.draggable-icon {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px 5px;
+    text-align: center;
+    cursor: grab;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    position: relative; /* For proper positioning of :after content */
+}
+
+.draggable-icon:hover {
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.draggable-icon:active,
+.draggable-icon.dragging {
+    cursor: grabbing;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    opacity: 0.8;
+    transform: scale(1.05);
+}
+
+/* Add a "drag handle" hint */
+.draggable-icon:after {
+    content: "";
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--secondary-color);
+    opacity: 0.5;
+    transition: all 0.2s;
+}
+
+.draggable-icon:hover:after {
+    opacity: 1;
+}
+
 .draggable-icon i {
     font-size: 1.2rem;
     color: var(--primary-color);
@@ -703,13 +1024,14 @@ footer {
 
 /* Map marker customization */
 .custom-marker {
-    width: 100%;
-    height: 100%;
+    width: 30px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    background-color: var(--primary-color);
 }
 
 .custom-marker i {
