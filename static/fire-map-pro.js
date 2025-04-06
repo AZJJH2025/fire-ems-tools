@@ -3407,6 +3407,11 @@ function exportAsPDF(title, includeLegend, includeScale) {
  * @param {boolean} includeScale - Whether to include the scale
  */
 function exportAsPNG(title, includeLegend, includeScale) {
+    // Show status notification
+    const statusElement = document.getElementById('upload-status');
+    statusElement.textContent = 'Preparing map for export (this may take a moment)...';
+    statusElement.className = '';
+    
     // Create a container for the export
     const exportContainer = document.createElement('div');
     exportContainer.style.position = 'absolute';
@@ -3416,6 +3421,7 @@ function exportAsPNG(title, includeLegend, includeScale) {
     exportContainer.style.height = '800px';
     exportContainer.style.backgroundColor = 'white';
     exportContainer.style.padding = '20px';
+    exportContainer.id = 'export-container';
     
     // Add title
     const titleElement = document.createElement('h2');
@@ -3432,6 +3438,7 @@ function exportAsPNG(title, includeLegend, includeScale) {
     
     // Clone map container
     const mapContainer = document.createElement('div');
+    mapContainer.id = 'export-map';
     mapContainer.style.width = '1160px';
     mapContainer.style.height = '650px';
     mapContainer.style.border = '1px solid #ddd';
@@ -3447,31 +3454,148 @@ function exportAsPNG(title, includeLegend, includeScale) {
         zoomControl: false
     });
     
+    // Track loading state of tiles
+    let tilesLoading = 0;
+    let tilesLoaded = 0;
+    
     // Add base layer
+    let baseLayerAdded = false;
     for (const name in window.baseLayers) {
         if (map.hasLayer(window.baseLayers[name])) {
-            L.tileLayer(window.baseLayers[name]._url, window.baseLayers[name].options).addTo(exportMap);
+            // Use the same URL and options to create a new tile layer
+            const baseLayerUrl = window.baseLayers[name]._url;
+            const baseLayerOptions = { ...window.baseLayers[name].options };
+            
+            const tileLayer = L.tileLayer(baseLayerUrl, baseLayerOptions);
+            
+            // Track tile loading
+            tileLayer.on('loading', function() {
+                tilesLoading++;
+                console.log('Tiles loading:', tilesLoading);
+            });
+            
+            tileLayer.on('load', function() {
+                tilesLoaded++;
+                console.log('Tiles loaded:', tilesLoaded);
+            });
+            
+            tileLayer.addTo(exportMap);
+            baseLayerAdded = true;
             break;
         }
     }
     
+    // Fallback to OpenStreetMap if no base layer was added
+    if (!baseLayerAdded) {
+        console.warn('No base layer found, using OpenStreetMap as fallback');
+        const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19
+        });
+        
+        // Track tile loading
+        osmLayer.on('loading', function() {
+            tilesLoading++;
+        });
+        
+        osmLayer.on('load', function() {
+            tilesLoaded++;
+        });
+        
+        osmLayer.addTo(exportMap);
+    }
+    
+    // Add drawn items
+    try {
+        const drawnItemsGeoJSON = drawnItems.toGeoJSON();
+        if (drawnItemsGeoJSON.features.length > 0) {
+            L.geoJSON(drawnItemsGeoJSON, {
+                style: function(feature) {
+                    // Apply styling based on feature properties or defaults
+                    return {
+                        color: feature.properties?.color || '#3388ff',
+                        weight: feature.properties?.weight || 3,
+                        opacity: feature.properties?.opacity || 0.8,
+                        fillColor: feature.properties?.fillColor || '#3388ff',
+                        fillOpacity: feature.properties?.fillOpacity || 0.2
+                    };
+                },
+                pointToLayer: function(feature, latlng) {
+                    return L.circleMarker(latlng, {
+                        radius: 8,
+                        fillColor: "#ff7800",
+                        color: "#000",
+                        weight: 1,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    });
+                }
+            }).addTo(exportMap);
+        }
+    } catch (e) {
+        console.warn('Could not add drawn items to export map:', e);
+    }
+    
+    // Add measurement layer
+    try {
+        const measurementGeoJSON = measurementLayer.toGeoJSON();
+        if (measurementGeoJSON.features.length > 0) {
+            L.geoJSON(measurementGeoJSON, {
+                style: {
+                    color: "#ff7800",
+                    weight: 3,
+                    opacity: 0.8
+                }
+            }).addTo(exportMap);
+        }
+    } catch (e) {
+        console.warn('Could not add measurement layer to export map:', e);
+    }
+    
     // Add other visible layers
-    // This is a simplified approach - a complete solution would need to handle all layer types
     for (const name in customDataLayers) {
         if (map.hasLayer(customDataLayers[name])) {
             try {
-                const clonedLayer = L.geoJSON(customDataLayers[name].toGeoJSON()).addTo(exportMap);
+                const layer = customDataLayers[name];
+                const layerGeoJSON = layer.toGeoJSON();
+                
+                if (layerGeoJSON.features && layerGeoJSON.features.length > 0) {
+                    L.geoJSON(layerGeoJSON, {
+                        style: function(feature) {
+                            // Try to match original styling
+                            return {
+                                color: feature.properties?.color || '#3388ff',
+                                weight: feature.properties?.weight || 3,
+                                opacity: feature.properties?.opacity || 0.8,
+                                fillColor: feature.properties?.fillColor || '#3388ff',
+                                fillOpacity: feature.properties?.fillOpacity || 0.2
+                            };
+                        }
+                    }).addTo(exportMap);
+                }
             } catch (e) {
-                console.warn(`Could not clone layer ${name}`, e);
+                console.warn(`Could not clone layer ${name}:`, e);
             }
         }
     }
     
-    // Add drawn items
-    L.geoJSON(drawnItems.toGeoJSON()).addTo(exportMap);
-    
-    // Add measurement layer
-    L.geoJSON(measurementLayer.toGeoJSON()).addTo(exportMap);
+    // Add custom icon markers if they exist
+    if (window.iconLayer) {
+        try {
+            window.iconLayer.eachLayer(function(layer) {
+                if (layer instanceof L.Marker) {
+                    const pos = layer.getLatLng();
+                    const icon = layer.options.icon;
+                    
+                    L.marker([pos.lat, pos.lng], {
+                        icon: icon
+                    }).addTo(exportMap);
+                }
+            });
+        } catch (e) {
+            console.warn('Could not add icon layers to export map:', e);
+        }
+    }
     
     // Add legend if requested
     if (includeLegend) {
@@ -3488,10 +3612,34 @@ function exportAsPNG(title, includeLegend, includeScale) {
         layersList.style.margin = '0';
         layersList.style.padding = '0 0 0 20px';
         
+        // Add base layer
+        const baseLayerItem = document.createElement('li');
+        baseLayerItem.textContent = 'Base Map';
+        baseLayerItem.style.marginBottom = '5px';
+        layersList.appendChild(baseLayerItem);
+        
+        // Add drawn items if they exist
+        if (drawnItems && drawnItems.getLayers().length > 0) {
+            const drawnItem = document.createElement('li');
+            drawnItem.textContent = 'Custom Shapes';
+            drawnItem.style.marginBottom = '5px';
+            layersList.appendChild(drawnItem);
+        }
+        
+        // Add custom markers if they exist
+        if (window.iconLayer && window.iconLayer.getLayers().length > 0) {
+            const iconItem = document.createElement('li');
+            iconItem.textContent = 'Custom Markers';
+            iconItem.style.marginBottom = '5px';
+            layersList.appendChild(iconItem);
+        }
+        
+        // Add custom data layers
         for (const name in customDataLayers) {
             if (map.hasLayer(customDataLayers[name])) {
                 const item = document.createElement('li');
                 item.textContent = capitalizeFirstLetter(name);
+                item.style.marginBottom = '5px';
                 layersList.appendChild(item);
             }
         }
@@ -3513,28 +3661,72 @@ function exportAsPNG(title, includeLegend, includeScale) {
         exportContainer.appendChild(scaleElement);
     }
     
-    // Wait for tiles to load
+    // Update status
+    statusElement.textContent = 'Rendering map (please wait)...';
+    
+    // Wait for the map to fully render
     setTimeout(function() {
-        // Use html2canvas to capture the export container
-        html2canvas(exportContainer, {
-            useCORS: true,
-            allowTaint: true,
-            logging: false
-        }).then(canvas => {
-            // Create download link
-            const link = document.createElement('a');
-            link.download = `${title.replace(/\s+/g, '_')}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-            
-            // Clean up
-            document.body.removeChild(exportContainer);
-            
-            // Update status
-            document.getElementById('upload-status').textContent = 'PNG export complete.';
-            document.getElementById('upload-status').className = 'success-message';
-        });
-    }, 1000); // Wait for map to render
+        // Force map to update size and redraw
+        exportMap.invalidateSize();
+        
+        // Use longer timeout to ensure all tiles and layers are loaded
+        setTimeout(function() {
+            // Capture the export container
+            html2canvas(exportContainer, {
+                useCORS: true,
+                allowTaint: true,
+                logging: false,
+                width: 1200,
+                height: 800,
+                scale: 1,
+                onclone: function(clonedDoc) {
+                    // Force visibility of the cloned container
+                    const clonedContainer = clonedDoc.getElementById('export-container');
+                    if (clonedContainer) {
+                        clonedContainer.style.position = 'fixed';
+                        clonedContainer.style.top = '0';
+                        clonedContainer.style.left = '0';
+                        clonedContainer.style.zIndex = '9999';
+                        clonedContainer.style.visibility = 'visible';
+                    }
+                }
+            }).then(canvas => {
+                try {
+                    // Create download link
+                    const link = document.createElement('a');
+                    link.download = `${title.replace(/\s+/g, '_')}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    
+                    // Update status
+                    statusElement.textContent = 'PNG export complete!';
+                    statusElement.className = 'success-message';
+                } catch (e) {
+                    console.error('Error creating download link:', e);
+                    statusElement.textContent = 'Error creating PNG: ' + e.message;
+                    statusElement.className = 'error-message';
+                } finally {
+                    // Clean up
+                    try {
+                        document.body.removeChild(exportContainer);
+                    } catch (e) {
+                        console.warn('Error removing export container:', e);
+                    }
+                }
+            }).catch(e => {
+                console.error('Error capturing map with html2canvas:', e);
+                statusElement.textContent = 'Error capturing map: ' + e.message;
+                statusElement.className = 'error-message';
+                
+                // Clean up
+                try {
+                    document.body.removeChild(exportContainer);
+                } catch (e) {
+                    console.warn('Error removing export container:', e);
+                }
+            });
+        }, 2000); // Longer delay to ensure all tiles are loaded
+    }, 1000); // Initial delay to let map initialize
 }
 
 /**
