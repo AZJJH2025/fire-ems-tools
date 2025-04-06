@@ -1165,14 +1165,18 @@ function generateHotspot() {
         map.removeLayer(hotspotLayer);
     }
     
-    // Create hotspot layer
+    // Create hotspot layer with will-read-frequently attribute to improve performance
+    const canvas = document.createElement('canvas');
+    canvas.setAttribute('willReadFrequently', 'true');
+    
     hotspotLayer = L.heatLayer(points, {
         radius: 25,
         blur: 15,
         maxZoom: 17,
         max: 1.0,
         gradient: {0.4: 'blue', 0.65: 'lime', 1: 'red'},
-        minOpacity: intensityValue
+        minOpacity: intensityValue,
+        canvas: canvas
     }).addTo(map);
     
     // Fit bounds
@@ -1193,7 +1197,7 @@ function toggleDistanceAnalysis() {
         if (!map.distanceAnalysisMode) {
             // Enable distance analysis mode
             map.distanceAnalysisMode = true;
-            document.getElementById('distance-analysis-btn').classList.add('active-tool');
+            document.getElementById('distance-analysis').classList.add('active-tool');
             showToast("Distance Analysis Mode: Click on map to set points", "info");
             
             // Create a new layer for distance analysis
@@ -1239,7 +1243,7 @@ function toggleDistanceAnalysis() {
         } else {
             // Disable distance analysis mode
             map.distanceAnalysisMode = false;
-            document.getElementById('distance-analysis-btn').classList.remove('active-tool');
+            document.getElementById('distance-analysis').classList.remove('active-tool');
             
             // Remove click handler
             map.off('click', handleDistanceAnalysisClick);
