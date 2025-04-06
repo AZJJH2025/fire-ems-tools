@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-search@3.0.2/dist/leaflet-search.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-measure@3.1.0/dist/leaflet-measure.css">
+    <!-- Removed problematic leaflet-measure library -->
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='fire-map-pro.css') }}">
     
@@ -20,8 +20,8 @@
     <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-search@3.0.2/dist/leaflet-search.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/leaflet-measure@3.1.0/dist/leaflet-measure.js"></script>
-    <script src="{{ url_for('static', filename='js/leaflet-measure-csp-fix.js') }}"></script>
+    <!-- Removed problematic leaflet-measure library -->
+    <!-- Removed leaflet-measure CSP fix since we're not using leaflet-measure anymore -->
     
     <!-- Export libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -820,55 +820,273 @@
             <div class="modal-header">
                 <h2>Export Options</h2>
                 <span class="close-modal">&times;</span>
+                <div class="modal-tabs">
+                    <button class="modal-tab active" data-tab="export-basic">Basic</button>
+                    <button class="modal-tab" data-tab="export-advanced">Advanced</button>
+                    <button class="modal-tab" data-tab="layout-designer">Layout Designer</button>
+                </div>
             </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <label for="export-title">Map Title:</label>
-                    <input type="text" id="export-title" placeholder="My Fire Department Map">
-                </div>
-                <div class="form-group">
-                    <label for="export-subtitle">Subtitle (optional):</label>
-                    <input type="text" id="export-subtitle" placeholder="Created by Fire Prevention Division">
-                </div>
-                <div class="form-group">
-                    <label for="department-logo">Department Logo:</label>
-                    <div class="logo-upload">
-                        <label for="logo-file" class="custom-file-upload">
-                            <i class="fas fa-upload"></i> Choose Logo
-                        </label>
-                        <input type="file" id="logo-file" accept="image/*" style="display: none;">
-                        <span id="logo-file-name">No file chosen</span>
+                <div class="tab-panel" id="export-basic-panel">
+                    <div class="form-group">
+                        <label for="export-title">Map Title:</label>
+                        <input type="text" id="export-title" placeholder="My Fire Department Map">
                     </div>
-                    <div id="logo-preview" class="logo-preview"></div>
+                    <div class="form-group">
+                        <label for="export-subtitle">Subtitle (optional):</label>
+                        <input type="text" id="export-subtitle" placeholder="Created by Fire Prevention Division">
+                    </div>
+                    <div class="form-group">
+                        <label for="department-logo">Department Logo:</label>
+                        <div class="logo-upload">
+                            <label for="logo-file" class="custom-file-upload">
+                                <i class="fas fa-upload"></i> Choose Logo
+                            </label>
+                            <input type="file" id="logo-file" accept="image/*" style="display: none;">
+                            <span id="logo-file-name">No file chosen</span>
+                        </div>
+                        <div id="logo-preview" class="logo-preview"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="export-format">Export Format:</label>
+                        <select id="export-format">
+                            <!-- Raster Formats -->
+                            <optgroup label="Raster Formats">
+                                <option value="png">PNG Image</option>
+                                <option value="jpg">JPEG Image</option>
+                                <option value="tiff">TIFF Image</option>
+                            </optgroup>
+                            <!-- Vector Formats -->
+                            <optgroup label="Vector Formats">
+                                <option value="pdf">PDF Document</option>
+                                <option value="svg">SVG Vector</option>
+                                <option value="eps">EPS Vector</option>
+                            </optgroup>
+                            <!-- GIS Formats -->
+                            <optgroup label="GIS Formats">
+                                <option value="geojson">GeoJSON</option>
+                                <option value="kml">KML</option>
+                                <option value="geopdf">GeoPDF</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="export-dpi">Resolution (DPI):</label>
+                        <select id="export-dpi">
+                            <option value="96">Standard (96 DPI)</option>
+                            <option value="150">Medium (150 DPI)</option>
+                            <option value="300">High (300 DPI)</option>
+                            <option value="450">Very High (450 DPI)</option>
+                            <option value="600">Ultra High (600 DPI)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="print-size">Print Size:</label>
+                        <div class="preset-sizes">
+                            <select id="paper-preset">
+                                <option value="custom">Custom Size</option>
+                                <option value="letter" selected>Letter (8.5" × 11")</option>
+                                <option value="legal">Legal (8.5" × 14")</option>
+                                <option value="tabloid">Tabloid (11" × 17")</option>
+                                <option value="a4">A4 (210mm × 297mm)</option>
+                                <option value="a3">A3 (297mm × 420mm)</option>
+                                <option value="a2">A2 (420mm × 594mm)</option>
+                                <option value="a1">A1 (594mm × 841mm)</option>
+                                <option value="a0">A0 (841mm × 1189mm)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="export-options-section">
+                        <h4>Layout Elements</h4>
+                        <div class="form-group checkbox">
+                            <input type="checkbox" id="export-legend" checked>
+                            <label for="export-legend">Include Legend</label>
+                        </div>
+                        <div class="form-group checkbox">
+                            <input type="checkbox" id="export-scale" checked>
+                            <label for="export-scale">Include Scale Bar</label>
+                        </div>
+                        <div class="form-group checkbox">
+                            <input type="checkbox" id="export-north" checked>
+                            <label for="export-north">Include North Arrow</label>
+                        </div>
+                        <div class="form-group checkbox">
+                            <input type="checkbox" id="export-title-element" checked>
+                            <label for="export-title-element">Include Title Banner</label>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="export-format">Export Format:</label>
-                    <select id="export-format">
-                        <option value="png">PNG Image</option>
-                        <option value="pdf">PDF Document</option>
-                        <option value="geojson">GeoJSON</option>
-                        <option value="kml">KML</option>
-                    </select>
+                
+                <div class="tab-panel" id="export-advanced-panel" style="display: none;">
+                    <div class="form-group">
+                        <label for="color-mode">Color Mode:</label>
+                        <select id="color-mode">
+                            <option value="rgb">RGB (Screen)</option>
+                            <option value="cmyk">CMYK (Print)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="color-profile">ICC Color Profile:</label>
+                        <select id="color-profile">
+                            <option value="srgb">sRGB (Default)</option>
+                            <option value="adobergb">Adobe RGB</option>
+                            <option value="cmyk-swop">CMYK SWOP (U.S.)</option>
+                            <option value="cmyk-fogra">CMYK FOGRA39 (Europe)</option>
+                            <option value="custom">Custom Profile...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="print-size-custom">Custom Print Size:</label>
+                        <div class="size-inputs">
+                            <div class="input-with-label">
+                                <input type="number" id="print-width" min="1" max="100" step="0.1" value="8.5">
+                                <span>×</span>
+                                <input type="number" id="print-height" min="1" max="100" step="0.1" value="11">
+                            </div>
+                            <select id="print-units">
+                                <option value="in">inches</option>
+                                <option value="cm">centimeters</option>
+                                <option value="mm">millimeters</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="export-options-section">
+                        <h4>Professional Print Options</h4>
+                        <div class="form-group checkbox">
+                            <input type="checkbox" id="export-bleed">
+                            <label for="export-bleed">Add Bleed (0.125")</label>
+                        </div>
+                        <div class="form-group checkbox">
+                            <input type="checkbox" id="export-crop-marks">
+                            <label for="export-crop-marks">Show Crop Marks</label>
+                        </div>
+                        <div class="form-group checkbox">
+                            <input type="checkbox" id="export-color-bars">
+                            <label for="export-color-bars">Include Color Calibration Bars</label>
+                        </div>
+                        <div class="form-group checkbox">
+                            <input type="checkbox" id="export-registration-marks">
+                            <label for="export-registration-marks">Add Registration Marks</label>
+                        </div>
+                        <div class="form-group checkbox">
+                            <input type="checkbox" id="export-icc">
+                            <label for="export-icc">Embed ICC Profile</label>
+                        </div>
+                    </div>
+                    
+                    <div class="export-options-section">
+                        <h4>Large Format Printing</h4>
+                        <div class="form-group checkbox">
+                            <input type="checkbox" id="export-tile-print">
+                            <label for="export-tile-print">Enable Tiled Printing</label>
+                        </div>
+                        <div class="form-group" id="tile-options" style="display: none;">
+                            <label for="tile-size">Tile Size:</label>
+                            <select id="tile-size">
+                                <option value="letter">Letter (8.5" × 11")</option>
+                                <option value="a4">A4 (210mm × 297mm)</option>
+                            </select>
+                            <label for="tile-overlap">Overlap:</label>
+                            <input type="number" id="tile-overlap" min="0" max="2" step="0.25" value="0.5"> inches
+                        </div>
+                    </div>
+                    
+                    <div class="export-options-section">
+                        <h4>Layer Controls</h4>
+                        <div class="layer-export-controls">
+                            <div id="export-layers-list" class="scrollable-list">
+                                <!-- Will be populated dynamically -->
+                            </div>
+                            <div class="form-group checkbox">
+                                <input type="checkbox" id="export-all-layers" checked>
+                                <label for="export-all-layers">Export All Visible Layers</label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="export-dpi">Resolution (DPI):</label>
-                    <select id="export-dpi">
-                        <option value="96">Standard (96 DPI)</option>
-                        <option value="150">Medium (150 DPI)</option>
-                        <option value="300">High (300 DPI)</option>
-                    </select>
-                </div>
-                <div class="form-group checkbox">
-                    <input type="checkbox" id="export-legend" checked>
-                    <label for="export-legend">Include Legend</label>
-                </div>
-                <div class="form-group checkbox">
-                    <input type="checkbox" id="export-scale" checked>
-                    <label for="export-scale">Include Scale Bar</label>
-                </div>
-                <div class="form-group checkbox">
-                    <input type="checkbox" id="export-north" checked>
-                    <label for="export-north">Include North Arrow</label>
+                
+                <div class="tab-panel" id="layout-designer-panel" style="display: none;">
+                    <div class="layout-designer-container">
+                        <div class="layout-toolbox">
+                            <h4>Page Setup</h4>
+                            <div class="form-group">
+                                <label for="layout-orientation">Orientation:</label>
+                                <select id="layout-orientation">
+                                    <option value="portrait">Portrait</option>
+                                    <option value="landscape">Landscape</option>
+                                </select>
+                            </div>
+                            
+                            <h4>Elements</h4>
+                            <div class="layout-elements">
+                                <div class="layout-element-item" draggable="true" data-element="map">
+                                    <i class="fas fa-map"></i> Map Frame
+                                </div>
+                                <div class="layout-element-item" draggable="true" data-element="title">
+                                    <i class="fas fa-heading"></i> Title
+                                </div>
+                                <div class="layout-element-item" draggable="true" data-element="legend">
+                                    <i class="fas fa-list"></i> Legend
+                                </div>
+                                <div class="layout-element-item" draggable="true" data-element="north-arrow">
+                                    <i class="fas fa-arrow-up"></i> North Arrow
+                                </div>
+                                <div class="layout-element-item" draggable="true" data-element="scale-bar">
+                                    <i class="fas fa-ruler-horizontal"></i> Scale Bar
+                                </div>
+                                <div class="layout-element-item" draggable="true" data-element="text">
+                                    <i class="fas fa-font"></i> Text Box
+                                </div>
+                                <div class="layout-element-item" draggable="true" data-element="image">
+                                    <i class="fas fa-image"></i> Image
+                                </div>
+                                <div class="layout-element-item" draggable="true" data-element="shape">
+                                    <i class="fas fa-draw-polygon"></i> Shape
+                                </div>
+                            </div>
+                            
+                            <h4>Templates</h4>
+                            <div class="layout-templates">
+                                <div class="template-item" data-template="standard">
+                                    <img src="{{ url_for('static', filename='images/template-standard.png') }}" alt="Standard Layout">
+                                    <span>Standard</span>
+                                </div>
+                                <div class="template-item" data-template="professional">
+                                    <img src="{{ url_for('static', filename='images/template-professional.png') }}" alt="Professional Layout">
+                                    <span>Professional</span>
+                                </div>
+                                <div class="template-item" data-template="presentation">
+                                    <img src="{{ url_for('static', filename='images/template-presentation.png') }}" alt="Presentation Layout">
+                                    <span>Presentation</span>
+                                </div>
+                                <div class="template-item" data-template="tactical">
+                                    <img src="{{ url_for('static', filename='images/template-tactical.png') }}" alt="Tactical Layout">
+                                    <span>Tactical</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="layout-canvas-container">
+                            <div id="layout-canvas" class="layout-canvas">
+                                <!-- Canvas will be populated with draggable elements -->
+                                <div class="paper-sheet"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="layout-properties">
+                            <h4>Properties</h4>
+                            <div id="element-properties">
+                                <p class="no-selection-message">Select an element to edit its properties</p>
+                                <!-- Properties will be dynamically populated based on selected element -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1017,19 +1235,77 @@
                 <h2>Print Preview</h2>
                 <button class="print-preview-close">&times;</button>
             </div>
+            <div class="print-preview-options">
+                <div class="print-preview-option-group">
+                    <label for="preview-view-mode">View:</label>
+                    <select id="preview-view-mode">
+                        <option value="normal">Normal</option>
+                        <option value="print-marks">With Print Marks</option>
+                        <option value="cmyk-preview">CMYK Preview</option>
+                        <option value="color-separations">Color Separations</option>
+                    </select>
+                </div>
+                <div class="print-preview-option-group">
+                    <label for="preview-zoom">Zoom:</label>
+                    <select id="preview-zoom">
+                        <option value="fit">Fit to Window</option>
+                        <option value="25">25%</option>
+                        <option value="50">50%</option>
+                        <option value="75">75%</option>
+                        <option value="100">100%</option>
+                        <option value="150">150%</option>
+                        <option value="200">200%</option>
+                    </select>
+                </div>
+            </div>
             <div class="print-preview-body">
                 <div class="print-preview-canvas-container">
                     <canvas id="preview-canvas" class="print-preview-canvas"></canvas>
                     <div id="preview-overlay" class="print-preview-overlay"></div>
+                    <!-- Crop marks will be added here dynamically -->
+                    <div class="crop-marks" id="crop-marks-container" style="display: none;">
+                        <div class="crop-mark crop-mark-top-left"></div>
+                        <div class="crop-mark crop-mark-top-right"></div>
+                        <div class="crop-mark crop-mark-bottom-left"></div>
+                        <div class="crop-mark crop-mark-bottom-right"></div>
+                    </div>
                 </div>
             </div>
             <div class="print-preview-info">
-                Previewing export at <span id="preview-dpi">96</span> DPI. 
-                Estimated file size: <span id="preview-size">0 KB</span>
+                <div class="info-group">
+                    <span class="info-label">Format:</span>
+                    <span id="preview-format">PDF</span>
+                </div>
+                <div class="info-group">
+                    <span class="info-label">Resolution:</span>
+                    <span id="preview-dpi">96</span> DPI
+                </div>
+                <div class="info-group">
+                    <span class="info-label">Color Mode:</span>
+                    <span id="preview-color-mode">RGB</span>
+                </div>
+                <div class="info-group">
+                    <span class="info-label">Dimensions:</span>
+                    <span id="preview-dimensions">8.5" × 11"</span>
+                </div>
+                <div class="info-group">
+                    <span class="info-label">File Size (est.):</span>
+                    <span id="preview-size">0 KB</span>
+                </div>
             </div>
             <div class="print-preview-footer">
-                <button class="cancel-btn">Cancel</button>
-                <button class="export-btn premium-btn">Export PDF</button>
+                <div class="print-controls">
+                    <button id="print-direct-btn" class="action-btn" title="Print directly to printer">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                    <button id="show-tiles-btn" class="action-btn" title="Show tiling for large format printing">
+                        <i class="fas fa-th-large"></i> Show Tiles
+                    </button>
+                </div>
+                <div class="export-controls">
+                    <button class="cancel-btn">Cancel</button>
+                    <button class="export-btn premium-btn">Export</button>
+                </div>
             </div>
         </div>
     </div>

@@ -2263,24 +2263,39 @@ function initMap() {
             metric: true
         }).addTo(map);
         
-        // Try to add measure tool if it exists
+        // Use a simple distance measuring tool instead of L.Control.Measure
+        // This avoids the Content Security Policy issue
+        
         try {
-            if (L.Control.Measure) {
-                const measureControl = new L.Control.Measure({
-                    position: 'bottomright',
-                    primaryLengthUnit: 'miles',
-                    secondaryLengthUnit: 'feet',
-                    primaryAreaUnit: 'acres',
-                    secondaryAreaUnit: 'sqfeet',
-                    activeColor: '#ff8800',
-                    completedColor: '#ff4400'
-                });
-                map.addControl(measureControl);
-            } else {
-                console.warn("L.Control.Measure not available - skipping measure tool");
-            }
+            // Create a custom measure button
+            const measureButton = L.easyButton({
+                states: [{
+                    stateName: 'inactive',
+                    icon: 'fa-ruler',
+                    title: 'Measure distance',
+                    onClick: function(btn, map) {
+                        startMeasuring(map);
+                        btn.state('active');
+                    }
+                }, {
+                    stateName: 'active',
+                    icon: 'fa-times',
+                    title: 'Stop measuring',
+                    onClick: function(btn, map) {
+                        stopMeasuring(map);
+                        btn.state('inactive');
+                    }
+                }]
+            });
+            
+            measureButton.addTo(map);
+            
+            // Store for later reference
+            window.firemapMeasureButton = measureButton;
+            
+            console.log("Custom measure tool initialized successfully");
         } catch (measureError) {
-            console.warn("Error initializing measure tool:", measureError);
+            console.warn("Error initializing custom measure tool:", measureError);
             // Continue without the measure tool
         }
         
@@ -2294,12 +2309,204 @@ function initMap() {
             }
         });
         
+        // Initialize draw tools
+        initializeDrawTools(map);
+        
         console.log("Map initialized successfully");
         return true;
     } catch (error) {
         console.error("Error initializing map:", error);
         return false;
     }
+}
+
+/**
+ * Start measuring distances on the map
+ */
+function startMeasuring(map) {
+    if (!map) return;
+    
+    // Create layer for the measurement line
+    const measureLayer = window.measureLayer = new L.FeatureGroup().addTo(map);
+    
+    // Create a polyline for the measurement
+    const measureLine = window.measureLine = L.polyline([], {
+        color: '#ff7800',
+        weight: 3,
+        opacity: 0.8,
+        dashArray: '5, 10',
+        lineCap: 'round'
+    }).addTo(measureLayer);
+    
+    // Array to store measurement points
+    const points = window.measurePoints = [];
+    
+    // Add markers for each point
+    const markers = window.measureMarkers = [];
+    
+    // Add total distance label
+    const distanceLabel = window.distanceLabel = L.DomUtil.create('div', 'measure-distance-label');
+    distanceLabel.style.position = 'absolute';
+    distanceLabel.style.bottom = '20px';
+    distanceLabel.style.left = '50%';
+    distanceLabel.style.transform = 'translateX(-50%)';
+    distanceLabel.style.backgroundColor = 'white';
+    distanceLabel.style.padding = '5px 10px';
+    distanceLabel.style.borderRadius = '4px';
+    distanceLabel.style.border = '2px solid #ff7800';
+    distanceLabel.style.fontWeight = 'bold';
+    distanceLabel.style.zIndex = '1000';
+    distanceLabel.innerHTML = 'Click on the map to start measuring';
+    document.querySelector('.map-container').appendChild(distanceLabel);
+    
+    // Set cursor for measurement mode
+    map.getContainer().style.cursor = 'crosshair';
+    
+    // Click handler for adding points
+    const clickHandler = function(e) {
+        // Add point to array
+        points.push(e.latlng);
+        
+        // Add marker at the clicked point
+        const marker = L.marker(e.latlng, {
+            icon: L.divIcon({
+                className: 'measure-point',
+                html: `<div style="width: 10px; height: 10px; background-color: #ff7800; border-radius: 50%; border: 2px solid white;"></div>`,
+                iconSize: [12, 12],
+                iconAnchor: [6, 6]
+            })
+        }).addTo(measureLayer);
+        
+        markers.push(marker);
+        
+        // Update the polyline
+        measureLine.setLatLngs(points);
+        
+        // Calculate total distance
+        let totalDistance = 0;
+        for (let i = 1; i < points.length; i++) {
+            totalDistance += points[i-1].distanceTo(points[i]);
+        }
+        
+        // Convert to appropriate units and update label
+        if (totalDistance > 1000) {
+            // Convert to miles if > 1000m
+            const miles = totalDistance / 1609.34;
+            distanceLabel.innerHTML = `Distance: ${miles.toFixed(2)} miles`;
+        } else {
+            // Convert to feet
+            const feet = totalDistance * 3.28084;
+            distanceLabel.innerHTML = `Distance: ${feet.toFixed(0)} feet`;
+        }
+    };
+    
+    // Store the click handler for later removal
+    window.measureClickHandler = clickHandler;
+    
+    // Add the click handler to the map
+    map.on('click', clickHandler);
+    
+    // Also show current measurement as a tooltip while moving
+    const mouseMoveHandler = function(e) {
+        if (points.length > 0) {
+            const lastPoint = points[points.length - 1];
+            const tempLine = [lastPoint, e.latlng];
+            
+            // Calculate distance for this segment
+            const segmentDistance = lastPoint.distanceTo(e.latlng);
+            
+            // Create tooltip text
+            let tooltipText;
+            if (segmentDistance > 1000) {
+                const miles = segmentDistance / 1609.34;
+                tooltipText = `${miles.toFixed(2)} miles`;
+            } else {
+                const feet = segmentDistance * 3.28084;
+                tooltipText = `${feet.toFixed(0)} feet`;
+            }
+            
+            // Update or create the tooltip
+            if (!window.measureTooltip) {
+                window.measureTooltip = L.tooltip({
+                    permanent: true,
+                    direction: 'right',
+                    className: 'measure-tooltip'
+                }).setLatLng(e.latlng).setContent(tooltipText).addTo(map);
+            } else {
+                window.measureTooltip.setLatLng(e.latlng).setContent(tooltipText);
+            }
+        }
+    };
+    
+    // Store the mousemove handler for later removal
+    window.measureMouseMoveHandler = mouseMoveHandler;
+    
+    // Add the mousemove handler to the map
+    map.on('mousemove', mouseMoveHandler);
+    
+    // Create info message
+    const infoMsg = L.DomUtil.create('div', 'measure-info');
+    infoMsg.style.position = 'absolute';
+    infoMsg.style.top = '70px';
+    infoMsg.style.left = '50%';
+    infoMsg.style.transform = 'translateX(-50%)';
+    infoMsg.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+    infoMsg.style.padding = '5px 10px';
+    infoMsg.style.borderRadius = '4px';
+    infoMsg.style.zIndex = '1000';
+    infoMsg.innerHTML = 'Click to add points, click the X button to finish';
+    document.querySelector('.map-container').appendChild(infoMsg);
+    window.measureInfoMsg = infoMsg;
+}
+
+/**
+ * Stop measuring and clean up
+ */
+function stopMeasuring(map) {
+    if (!map) return;
+    
+    // Remove event handlers
+    if (window.measureClickHandler) {
+        map.off('click', window.measureClickHandler);
+    }
+    
+    if (window.measureMouseMoveHandler) {
+        map.off('mousemove', window.measureMouseMoveHandler);
+    }
+    
+    // Remove measurement layer
+    if (window.measureLayer) {
+        map.removeLayer(window.measureLayer);
+    }
+    
+    // Remove tooltip
+    if (window.measureTooltip) {
+        map.removeLayer(window.measureTooltip);
+    }
+    
+    // Remove distance label
+    if (window.distanceLabel && window.distanceLabel.parentNode) {
+        window.distanceLabel.parentNode.removeChild(window.distanceLabel);
+    }
+    
+    // Remove info message
+    if (window.measureInfoMsg && window.measureInfoMsg.parentNode) {
+        window.measureInfoMsg.parentNode.removeChild(window.measureInfoMsg);
+    }
+    
+    // Reset cursor
+    map.getContainer().style.cursor = '';
+    
+    // Clean up global variables
+    window.measurePoints = null;
+    window.measureMarkers = null;
+    window.measureLine = null;
+    window.measureLayer = null;
+    window.measureTooltip = null;
+    window.measureClickHandler = null;
+    window.measureMouseMoveHandler = null;
+    window.distanceLabel = null;
+    window.measureInfoMsg = null;
 }
 
 /**
@@ -2436,6 +2643,146 @@ function addMapSymbol(iconType, latlng) {
 }
 
 // Initialize everything when the document is loaded
+/**
+ * Initialize draw tools
+ */
+function initializeDrawTools(map) {
+    if (!map) return;
+    
+    // Create draw control
+    const drawControl = new L.Control.Draw({
+        position: 'topright',
+        draw: {
+            polyline: {
+                shapeOptions: {
+                    color: '#1976d2',
+                    weight: 3
+                }
+            },
+            polygon: {
+                allowIntersection: false,
+                shapeOptions: {
+                    color: '#1976d2'
+                }
+            },
+            circle: {
+                shapeOptions: {
+                    color: '#1976d2'
+                }
+            },
+            rectangle: {
+                shapeOptions: {
+                    color: '#1976d2'
+                }
+            },
+            marker: true
+        },
+        edit: {
+            featureGroup: new L.FeatureGroup(),
+            remove: true
+        }
+    });
+    
+    // Create a layer for drawn items
+    const drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
+    
+    // Store for later reference
+    window.firemapDrawnItems = drawnItems;
+    
+    // Add the draw control to the map
+    map.addControl(drawControl);
+    
+    // Handle events when items are drawn
+    map.on(L.Draw.Event.CREATED, function(event) {
+        const layer = event.layer;
+        drawnItems.addLayer(layer);
+        
+        // Make the layer draggable
+        if (layer instanceof L.Marker) {
+            layer.options.draggable = true;
+            layer.dragging.enable();
+        }
+        
+        // Add popup for items
+        layer.bindPopup(`
+            <div class="draw-item-popup">
+                <button class="delete-item">Delete</button>
+            </div>
+        `);
+        
+        // Add event handler for delete button
+        layer.on('popupopen', function() {
+            const deleteBtn = document.querySelector('.delete-item');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', function() {
+                    drawnItems.removeLayer(layer);
+                });
+            }
+        });
+    });
+    
+    // Connect the draw tool button
+    const drawToolBtn = document.getElementById('draw-tool');
+    if (drawToolBtn) {
+        drawToolBtn.addEventListener('click', function() {
+            // Toggle draw controls visibility
+            const drawContainer = document.querySelector('.leaflet-draw');
+            if (drawContainer) {
+                if (drawContainer.style.display === 'none') {
+                    drawContainer.style.display = 'block';
+                    drawToolBtn.classList.add('active');
+                } else {
+                    drawContainer.style.display = 'none';
+                    drawToolBtn.classList.remove('active');
+                }
+            }
+        });
+    }
+    
+    // Connect measure tool button
+    const measureToolBtn = document.getElementById('measure-tool');
+    if (measureToolBtn) {
+        measureToolBtn.addEventListener('click', function() {
+            // Find the measure button and click it
+            if (window.firemapMeasureButton) {
+                // Get current state
+                const isActive = measureToolBtn.classList.contains('active');
+                
+                if (!isActive) {
+                    // Activate measure tool
+                    window.firemapMeasureButton.state('active');
+                    measureToolBtn.classList.add('active');
+                } else {
+                    // Deactivate measure tool
+                    window.firemapMeasureButton.state('inactive');
+                    measureToolBtn.classList.remove('active');
+                }
+            }
+        });
+    }
+    
+    // Connect clear tool button
+    const clearToolBtn = document.getElementById('clear-tool');
+    if (clearToolBtn) {
+        clearToolBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to clear all map annotations?')) {
+                // Clear drawn items
+                drawnItems.clearLayers();
+                
+                // Stop measuring if active
+                if (window.firemapMeasureButton && window.firemapMeasureButton.options.state === 'active') {
+                    window.firemapMeasureButton.state('inactive');
+                    const measureToolBtn = document.getElementById('measure-tool');
+                    if (measureToolBtn) {
+                        measureToolBtn.classList.remove('active');
+                    }
+                }
+            }
+        });
+    }
+}
+
 document.addEventListener("DOMContentLoaded", function() {
     console.log("DOM content loaded, initializing FireMapPro");
     
