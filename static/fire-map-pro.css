@@ -90,10 +90,20 @@ body {
 }
 
 /* Ensure all Leaflet controls are visible and clickable */
+.leaflet-control-container {
+    z-index: 1100; /* Ensure it's above our custom controls */
+}
+
 .leaflet-control-container .leaflet-top,
 .leaflet-control-container .leaflet-bottom {
     z-index: 4000; /* Consistent with other files */
     pointer-events: auto; /* Ensure clicks get through */
+}
+
+/* Fix for draw toolbar positioning */
+.leaflet-draw.leaflet-control {
+    margin-right: 15px; /* Add some margin to separate from other controls */
+    clear: both;
 }
 
 /* Ensure popup content is visible */
@@ -514,8 +524,8 @@ input[type="file"] {
 .map-controls {
     position: absolute;
     top: 10px;
-    right: 10px;
-    z-index: 1000;
+    right: 60px; /* Moved further right to avoid overlap with draw toolbar */
+    z-index: 1010; /* Increased z-index to ensure controls are above other elements */
     display: flex;
     flex-direction: column;
     gap: 5px;
@@ -1252,10 +1262,10 @@ footer {
 /* Map Title and Logo Styles */
 .map-title-container {
     position: absolute;
-    top: 10px;
+    top: 80px; /* Moved down to avoid overlapping with controls */
     left: 50%;
     transform: translateX(-50%);
-    z-index: 1000;
+    z-index: 999; /* Below map controls but above map */
     background-color: rgba(255, 255, 255, 0.9);
     border-radius: 8px;
     padding: 8px 15px;
