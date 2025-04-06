@@ -205,6 +205,7 @@
     <main class="container">
         <div class="form-container">
             <form action="{{ url_for('dept_edit_station', dept_code=department.code, station_id=station.id) if station else url_for('dept_add_station', dept_code=department.code) }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="form-section">
                     <h3 class="form-section-title">Station Information</h3>
                     <div class="form-row">

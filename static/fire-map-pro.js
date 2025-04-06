@@ -67,8 +67,8 @@ function initializeMap() {
             maxZoom: 19
         });
         
-        baseLayers.terrain = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.png', {
-            attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>',
+        baseLayers.terrain = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data &copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a>',
             maxZoom: 18
         });
         
@@ -1165,7 +1165,213 @@ function generateHotspot() {
  * Toggle distance analysis
  */
 function toggleDistanceAnalysis() {
-    alert('Distance analysis tool coming soon!');
+    try {
+        if (!map.distanceAnalysisMode) {
+            // Enable distance analysis mode
+            map.distanceAnalysisMode = true;
+            document.getElementById('distance-analysis-btn').classList.add('active-tool');
+            showToast("Distance Analysis Mode: Click on map to set points", "info");
+            
+            // Create a new layer for distance analysis
+            if (!map.distanceLayer) {
+                map.distanceLayer = L.layerGroup().addTo(map);
+            } else {
+                map.distanceLayer.clearLayers();
+            }
+            
+            // Initialize points array
+            map.distancePoints = [];
+            
+            // Add click handler to map
+            map.on('click', handleDistanceAnalysisClick);
+            
+            // Show the distance panel
+            const panel = document.getElementById('distance-panel');
+            if (!panel) {
+                // Create panel if it doesn't exist
+                const panel = document.createElement('div');
+                panel.id = 'distance-panel';
+                panel.className = 'control-panel';
+                panel.innerHTML = `
+                    <div class="panel-header">
+                        <h3>Distance Analysis</h3>
+                        <button class="close-btn" onclick="toggleDistanceAnalysis()">×</button>
+                    </div>
+                    <div class="panel-content">
+                        <div id="distance-results">
+                            <p>Click on the map to place points.</p>
+                            <p>Total distance: <span id="total-distance">0</span> mi</p>
+                        </div>
+                        <div class="panel-actions">
+                            <button id="clear-distance-btn" class="btn btn-sm" onclick="clearDistanceAnalysis()">Clear</button>
+                            <button id="finish-distance-btn" class="btn btn-sm" onclick="finishDistanceAnalysis()">Finish</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(panel);
+            } else {
+                panel.style.display = 'block';
+            }
+        } else {
+            // Disable distance analysis mode
+            map.distanceAnalysisMode = false;
+            document.getElementById('distance-analysis-btn').classList.remove('active-tool');
+            
+            // Remove click handler
+            map.off('click', handleDistanceAnalysisClick);
+            
+            // Hide the distance panel
+            const panel = document.getElementById('distance-panel');
+            if (panel) {
+                panel.style.display = 'none';
+            }
+            
+            // Remove the distance layer
+            if (map.distanceLayer) {
+                map.removeLayer(map.distanceLayer);
+                map.distanceLayer = null;
+            }
+            
+            map.distancePoints = [];
+        }
+    } catch (e) {
+        console.error("Error in distance analysis:", e);
+        showToast("Error in distance analysis tool", "error");
+    }
+}
+
+/**
+ * Handle map clicks in distance analysis mode
+ */
+function handleDistanceAnalysisClick(e) {
+    try {
+        const latlng = e.latlng;
+        
+        // Add point to array
+        map.distancePoints.push(latlng);
+        
+        // Add marker at click location
+        const marker = L.marker(latlng, {
+            icon: L.divIcon({
+                className: 'distance-marker',
+                html: '<div class="distance-point">' + map.distancePoints.length + '</div>',
+                iconSize: [20, 20]
+            })
+        }).addTo(map.distanceLayer);
+        
+        // If we have at least 2 points, draw a line
+        if (map.distancePoints.length > 1) {
+            const startPoint = map.distancePoints[map.distancePoints.length - 2];
+            const endPoint = latlng;
+            
+            // Calculate distance between these two points
+            const distance = startPoint.distanceTo(endPoint) / 1609.34; // Convert meters to miles
+            
+            // Draw line between points
+            const line = L.polyline([startPoint, endPoint], {
+                color: '#3388ff',
+                weight: 4,
+                opacity: 0.7,
+                dashArray: '5, 10'
+            }).addTo(map.distanceLayer);
+            
+            // Add distance label
+            const midPoint = L.latLng(
+                (startPoint.lat + endPoint.lat) / 2,
+                (startPoint.lng + endPoint.lng) / 2
+            );
+            
+            L.marker(midPoint, {
+                icon: L.divIcon({
+                    className: 'distance-label',
+                    html: '<div class="distance-text">' + distance.toFixed(2) + ' mi</div>',
+                    iconSize: [80, 20],
+                    iconAnchor: [40, 10]
+                })
+            }).addTo(map.distanceLayer);
+        }
+        
+        // Update total distance
+        updateTotalDistance();
+    } catch (e) {
+        console.error("Error handling distance analysis click:", e);
+    }
+}
+
+/**
+ * Calculate and display total distance
+ */
+function updateTotalDistance() {
+    if (!map.distancePoints || map.distancePoints.length < 2) {
+        document.getElementById('total-distance').textContent = '0';
+        return;
+    }
+    
+    let totalDistance = 0;
+    for (let i = 1; i < map.distancePoints.length; i++) {
+        const segment = map.distancePoints[i-1].distanceTo(map.distancePoints[i]);
+        totalDistance += segment;
+    }
+    
+    // Convert to miles and round to 2 decimal places
+    const miles = (totalDistance / 1609.34).toFixed(2);
+    document.getElementById('total-distance').textContent = miles;
+}
+
+/**
+ * Clear all distance analysis points and lines
+ */
+function clearDistanceAnalysis() {
+    if (map.distanceLayer) {
+        map.distanceLayer.clearLayers();
+    }
+    map.distancePoints = [];
+    updateTotalDistance();
+}
+
+/**
+ * Finish distance analysis by connecting back to start
+ */
+function finishDistanceAnalysis() {
+    if (map.distancePoints && map.distancePoints.length > 2) {
+        // Connect last point to first point
+        const startPoint = map.distancePoints[0];
+        const endPoint = map.distancePoints[map.distancePoints.length - 1];
+        
+        // Calculate distance
+        const distance = endPoint.distanceTo(startPoint) / 1609.34;
+        
+        // Draw line
+        const line = L.polyline([endPoint, startPoint], {
+            color: '#3388ff',
+            weight: 4,
+            opacity: 0.7,
+            dashArray: '5, 10'
+        }).addTo(map.distanceLayer);
+        
+        // Add distance label
+        const midPoint = L.latLng(
+            (startPoint.lat + endPoint.lat) / 2,
+            (startPoint.lng + endPoint.lng) / 2
+        );
+        
+        L.marker(midPoint, {
+            icon: L.divIcon({
+                className: 'distance-label',
+                html: '<div class="distance-text">' + distance.toFixed(2) + ' mi</div>',
+                iconSize: [80, 20],
+                iconAnchor: [40, 10]
+            })
+        }).addTo(map.distanceLayer);
+        
+        // Add closing point to array
+        map.distancePoints.push(startPoint);
+        
+        // Update total
+        updateTotalDistance();
+    } else {
+        showToast("Need at least 3 points to close the path", "warning");
+    }
 }
 
 /**
@@ -1282,8 +1488,237 @@ function importCSV() {
  * Import KML data
  */
 function importKML(kmlData) {
-    // Simple KML parser
-    alert('KML import coming soon!');
+    try {
+        showToast("Processing KML file...", "info");
+        
+        // Create a new parser
+        const parser = new DOMParser();
+        
+        // Parse the KML data
+        const kmlDoc = parser.parseFromString(kmlData, "text/xml");
+        
+        // Check for parse errors
+        if (kmlDoc.getElementsByTagName("parsererror").length > 0) {
+            throw new Error("Invalid KML file");
+        }
+        
+        // Create a layer group for the imported KML
+        const kmlLayer = L.layerGroup();
+        
+        // Process placemarks
+        const placemarks = kmlDoc.getElementsByTagName("Placemark");
+        let count = {
+            points: 0,
+            lines: 0,
+            polygons: 0
+        };
+        
+        for (let i = 0; i < placemarks.length; i++) {
+            const placemark = placemarks[i];
+            
+            // Get name and description
+            const name = placemark.getElementsByTagName("name")[0]?.textContent || "Imported feature";
+            const description = placemark.getElementsByTagName("description")[0]?.textContent || "";
+            
+            // Check for Point geometry
+            const point = placemark.getElementsByTagName("Point")[0];
+            if (point) {
+                const coordinates = point.getElementsByTagName("coordinates")[0].textContent.trim();
+                const [lng, lat] = coordinates.split(",").map(parseFloat);
+                
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    // Create marker
+                    const marker = L.marker([lat, lng], {
+                        title: name
+                    });
+                    
+                    // Add popup if there's a description
+                    if (description) {
+                        marker.bindPopup(`<strong>${name}</strong><br>${description}`);
+                    }
+                    
+                    // Add to layer
+                    marker.addTo(kmlLayer);
+                    count.points++;
+                }
+                continue;
+            }
+            
+            // Check for LineString geometry
+            const lineString = placemark.getElementsByTagName("LineString")[0];
+            if (lineString) {
+                const coordinates = lineString.getElementsByTagName("coordinates")[0].textContent.trim();
+                const points = coordinates.split(/\s+/).map(coord => {
+                    const [lng, lat] = coord.split(",").map(parseFloat);
+                    return [lat, lng];
+                }).filter(coord => !isNaN(coord[0]) && !isNaN(coord[1]));
+                
+                if (points.length >= 2) {
+                    // Create polyline
+                    const polyline = L.polyline(points, {
+                        color: '#3388ff',
+                        weight: 3
+                    });
+                    
+                    // Add popup if there's a name or description
+                    if (name || description) {
+                        polyline.bindPopup(`<strong>${name}</strong><br>${description}`);
+                    }
+                    
+                    // Add to layer
+                    polyline.addTo(kmlLayer);
+                    count.lines++;
+                }
+                continue;
+            }
+            
+            // Check for Polygon geometry
+            const polygon = placemark.getElementsByTagName("Polygon")[0];
+            if (polygon) {
+                // Get outer boundary coordinates
+                const outerBoundary = polygon.getElementsByTagName("outerBoundaryIs")[0];
+                if (outerBoundary) {
+                    const linearRing = outerBoundary.getElementsByTagName("LinearRing")[0];
+                    if (linearRing) {
+                        const coordinates = linearRing.getElementsByTagName("coordinates")[0].textContent.trim();
+                        const points = coordinates.split(/\s+/).map(coord => {
+                            const [lng, lat] = coord.split(",").map(parseFloat);
+                            return [lat, lng];
+                        }).filter(coord => !isNaN(coord[0]) && !isNaN(coord[1]));
+                        
+                        if (points.length >= 3) {
+                            // Create polygon
+                            const polygonObj = L.polygon(points, {
+                                color: '#3388ff',
+                                weight: 2,
+                                fillColor: '#3388ff',
+                                fillOpacity: 0.2
+                            });
+                            
+                            // Add popup if there's a name or description
+                            if (name || description) {
+                                polygonObj.bindPopup(`<strong>${name}</strong><br>${description}`);
+                            }
+                            
+                            // Add to layer
+                            polygonObj.addTo(kmlLayer);
+                            count.polygons++;
+                        }
+                    }
+                }
+                continue;
+            }
+        }
+        
+        // Process folders
+        const folders = kmlDoc.getElementsByTagName("Folder");
+        for (let i = 0; i < folders.length; i++) {
+            const folder = folders[i];
+            const folderName = folder.getElementsByTagName("name")[0]?.textContent || "Imported folder";
+            
+            // Create a layer name for the customer data layers object
+            const layerName = 'kml_' + folderName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            
+            // Process placemarks in this folder
+            const folderPlacemarks = folder.getElementsByTagName("Placemark");
+            
+            if (folderPlacemarks.length > 0) {
+                // Create a layer group for this folder
+                const folderLayer = L.layerGroup();
+                
+                for (let j = 0; j < folderPlacemarks.length; j++) {
+                    const placemark = folderPlacemarks[j];
+                    
+                    // Get name and description
+                    const name = placemark.getElementsByTagName("name")[0]?.textContent || "Imported feature";
+                    const description = placemark.getElementsByTagName("description")[0]?.textContent || "";
+                    
+                    // Check for Point geometry
+                    const point = placemark.getElementsByTagName("Point")[0];
+                    if (point) {
+                        const coordinates = point.getElementsByTagName("coordinates")[0].textContent.trim();
+                        const [lng, lat] = coordinates.split(",").map(parseFloat);
+                        
+                        if (!isNaN(lat) && !isNaN(lng)) {
+                            // Create marker
+                            const marker = L.marker([lat, lng], {
+                                title: name
+                            });
+                            
+                            // Add popup if there's a description
+                            if (description) {
+                                marker.bindPopup(`<strong>${name}</strong><br>${description}`);
+                            }
+                            
+                            // Add to folder layer
+                            marker.addTo(folderLayer);
+                            count.points++;
+                        }
+                    }
+                }
+                
+                // Add this folder as a custom data layer
+                if (folderLayer.getLayers().length > 0) {
+                    // Add folder layer to custom data layers
+                    customDataLayers[folderName] = folderLayer;
+                    
+                    // Add to map and control
+                    folderLayer.addTo(map);
+                    
+                    // Add to layer control if it exists
+                    if (layerControl) {
+                        layerControl.addOverlay(folderLayer, folderName);
+                    }
+                }
+            }
+        }
+        
+        // If there are features that aren't in folders, add them to the map
+        if (kmlLayer.getLayers().length > 0) {
+            // Add to map
+            kmlLayer.addTo(map);
+            
+            // Add to custom data layers
+            const layerName = "KML Import";
+            customDataLayers[layerName] = kmlLayer;
+            
+            // Add to layer control if it exists
+            if (layerControl) {
+                layerControl.addOverlay(kmlLayer, layerName);
+            }
+        }
+        
+        // Show success message
+        const totalCount = count.points + count.lines + count.polygons;
+        let message = `Imported ${totalCount} feature${totalCount !== 1 ? 's' : ''}`;
+        if (count.points > 0) message += `, ${count.points} point${count.points !== 1 ? 's' : ''}`;
+        if (count.lines > 0) message += `, ${count.lines} line${count.lines !== 1 ? 's' : ''}`;
+        if (count.polygons > 0) message += `, ${count.polygons} polygon${count.polygons !== 1 ? 's' : ''}`;
+        
+        showToast(message, "success");
+        
+        // Fit map to imported data if there are features
+        if (totalCount > 0) {
+            // Collect all layers
+            const allLayers = [];
+            for (const layerName in customDataLayers) {
+                if (layerName.startsWith("KML Import") || layerName.startsWith("kml_")) {
+                    customDataLayers[layerName].eachLayer(layer => {
+                        allLayers.push(layer);
+                    });
+                }
+            }
+            
+            // Create a feature group and fit bounds
+            if (allLayers.length > 0) {
+                const group = L.featureGroup(allLayers);
+                map.fitBounds(group.getBounds());
+            }
+        }
+    } catch (e) {
+        console.error("Error importing KML:", e);
+        showToast("Error importing KML file: " + e.message, "error");
+    }
 }
 
 /**
@@ -1338,14 +1773,126 @@ function importGeoJSON(geojsonData) {
  * Export map as PNG
  */
 function exportPNG() {
-    alert('PNG export coming soon!');
+    try {
+        // Show loading indicator
+        showToast("Generating PNG...", "info");
+        
+        // Create a temporary container to hold the map for exporting
+        const exportContainer = document.createElement('div');
+        exportContainer.style.width = map.getContainer().offsetWidth + 'px';
+        exportContainer.style.height = map.getContainer().offsetHeight + 'px';
+        exportContainer.style.position = 'absolute';
+        exportContainer.style.top = '-9999px';
+        exportContainer.style.left = '-9999px';
+        document.body.appendChild(exportContainer);
+        
+        // Clone the map for capturing
+        const clonedMap = map.getContainer().cloneNode(true);
+        exportContainer.appendChild(clonedMap);
+        
+        // Use html2canvas to capture the map
+        html2canvas(map.getContainer(), {
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            backgroundColor: null
+        }).then(function(canvas) {
+            // Add title and footer
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.fillRect(10, 10, 400, 30);
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText('FireMapPro Export - ' + new Date().toLocaleDateString(), 20, 30);
+            
+            // Create download link
+            const link = document.createElement('a');
+            link.download = 'firemap_export_' + Date.now() + '.png';
+            link.href = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Clean up
+            document.body.removeChild(exportContainer);
+            showToast("PNG export complete!", "success");
+        }).catch(function(error) {
+            console.error("PNG export failed:", error);
+            document.body.removeChild(exportContainer);
+            showToast("PNG export failed", "error");
+        });
+    } catch (e) {
+        console.error("Error in PNG export:", e);
+        showToast("Error generating PNG", "error");
+    }
 }
 
 /**
  * Export map as PDF
  */
 function exportPDF() {
-    alert('PDF export coming soon!');
+    try {
+        // Show loading indicator
+        showToast("Generating PDF...", "info");
+        
+        // Get current map dimensions
+        const width = map.getContainer().offsetWidth;
+        const height = map.getContainer().offsetHeight;
+        
+        // Capture the map using html2canvas
+        html2canvas(map.getContainer(), {
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            backgroundColor: null
+        }).then(function(canvas) {
+            // Convert canvas to image
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            
+            // Calculate PDF orientation and size
+            const orientation = width > height ? 'landscape' : 'portrait';
+            let pdfWidth, pdfHeight;
+            
+            if (orientation === 'landscape') {
+                pdfWidth = 297; // A4 landscape width in mm
+                pdfHeight = 210; // A4 landscape height in mm
+            } else {
+                pdfWidth = 210; // A4 portrait width in mm
+                pdfHeight = 297; // A4 portrait height in mm
+            }
+            
+            // Create PDF
+            const pdf = new jspdf.jsPDF(orientation, 'mm', [pdfWidth, pdfHeight]);
+            
+            // Calculate image dimensions to fit PDF
+            const aspectRatio = width / height;
+            let imgWidth = pdfWidth - 20; // 10mm margin on each side
+            let imgHeight = imgWidth / aspectRatio;
+            
+            // Add image to PDF
+            pdf.addImage(imgData, 'JPEG', 10, 20, imgWidth, imgHeight);
+            
+            // Add title
+            pdf.setFontSize(16);
+            pdf.text('FireMapPro Export', 10, 15);
+            
+            // Add metadata as footer
+            pdf.setFontSize(8);
+            const center = map.getCenter();
+            const footerText = `Date: ${new Date().toLocaleDateString()} | Map Center: ${center.lat.toFixed(5)}, ${center.lng.toFixed(5)} | Zoom: ${map.getZoom()}`;
+            pdf.text(footerText, 10, pdfHeight - 5);
+            
+            // Save PDF
+            pdf.save('firemap_export_' + Date.now() + '.pdf');
+            showToast("PDF export complete!", "success");
+        }).catch(function(error) {
+            console.error("PDF export failed:", error);
+            showToast("PDF export failed", "error");
+        });
+    } catch (e) {
+        console.error("Error in PDF export:", e);
+        showToast("Error generating PDF", "error");
+    }
 }
 
 /**
@@ -1419,5 +1966,236 @@ function exportGeoJSON() {
  * Export data as KML
  */
 function exportKML() {
-    alert('KML export coming soon!');
+    try {
+        showToast("Generating KML...", "info");
+        
+        // Initialize KML document
+        const kmlDoc = document.implementation.createDocument('', '', null);
+        
+        // Create the KML root element
+        const kmlRoot = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'kml');
+        kmlDoc.appendChild(kmlRoot);
+        
+        // Create Document element
+        const documentEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'Document');
+        kmlRoot.appendChild(documentEl);
+        
+        // Add name and description
+        const nameEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'name');
+        nameEl.textContent = 'FireMapPro Export';
+        documentEl.appendChild(nameEl);
+        
+        const descriptionEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'description');
+        descriptionEl.textContent = 'Created on ' + new Date().toLocaleString();
+        documentEl.appendChild(descriptionEl);
+        
+        // Add styles
+        const markerStyleEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'Style');
+        markerStyleEl.setAttribute('id', 'markerStyle');
+        const markerIconStyleEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'IconStyle');
+        const markerIconEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'Icon');
+        const markerHrefEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'href');
+        markerHrefEl.textContent = 'http://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png';
+        markerIconEl.appendChild(markerHrefEl);
+        markerIconStyleEl.appendChild(markerIconEl);
+        markerStyleEl.appendChild(markerIconStyleEl);
+        documentEl.appendChild(markerStyleEl);
+        
+        const lineStyleEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'Style');
+        lineStyleEl.setAttribute('id', 'lineStyle');
+        const lineLineStyleEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'LineStyle');
+        const lineColorEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'color');
+        lineColorEl.textContent = 'ff0000ff';
+        const lineWidthEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'width');
+        lineWidthEl.textContent = '3';
+        lineLineStyleEl.appendChild(lineColorEl);
+        lineLineStyleEl.appendChild(lineWidthEl);
+        lineStyleEl.appendChild(lineLineStyleEl);
+        documentEl.appendChild(lineStyleEl);
+        
+        const polygonStyleEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'Style');
+        polygonStyleEl.setAttribute('id', 'polygonStyle');
+        const polygonLineStyleEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'LineStyle');
+        const polygonLineColorEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'color');
+        polygonLineColorEl.textContent = 'ff0000ff';
+        const polygonLineWidthEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'width');
+        polygonLineWidthEl.textContent = '2';
+        polygonLineStyleEl.appendChild(polygonLineColorEl);
+        polygonLineStyleEl.appendChild(polygonLineWidthEl);
+        polygonStyleEl.appendChild(polygonLineStyleEl);
+        
+        const polyStyleEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'PolyStyle');
+        const polyColorEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'color');
+        polyColorEl.textContent = '7f0000ff';
+        polyStyleEl.appendChild(polyColorEl);
+        polygonStyleEl.appendChild(polyStyleEl);
+        documentEl.appendChild(polygonStyleEl);
+        
+        // Process drawn items
+        let drawnFeatures = 0;
+        drawnItems.eachLayer(function(layer) {
+            drawnFeatures++;
+            
+            if (layer instanceof L.Marker) {
+                // Process marker
+                const latlng = layer.getLatLng();
+                
+                const placemarkEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'Placemark');
+                
+                const nameEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'name');
+                nameEl.textContent = 'Marker ' + drawnFeatures;
+                placemarkEl.appendChild(nameEl);
+                
+                const styleUrlEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'styleUrl');
+                styleUrlEl.textContent = '#markerStyle';
+                placemarkEl.appendChild(styleUrlEl);
+                
+                if (layer.options.title) {
+                    const descriptionEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'description');
+                    descriptionEl.textContent = layer.options.title;
+                    placemarkEl.appendChild(descriptionEl);
+                }
+                
+                const pointEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'Point');
+                const coordsEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'coordinates');
+                coordsEl.textContent = latlng.lng + ',' + latlng.lat + ',0';
+                pointEl.appendChild(coordsEl);
+                placemarkEl.appendChild(pointEl);
+                
+                documentEl.appendChild(placemarkEl);
+            } else if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
+                // Process polyline
+                const placemarkEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'Placemark');
+                
+                const nameEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'name');
+                nameEl.textContent = 'Line ' + drawnFeatures;
+                placemarkEl.appendChild(nameEl);
+                
+                const styleUrlEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'styleUrl');
+                styleUrlEl.textContent = '#lineStyle';
+                placemarkEl.appendChild(styleUrlEl);
+                
+                const lineStringEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'LineString');
+                const coordsEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'coordinates');
+                
+                // Add coordinates
+                let coordsText = '';
+                const latlngs = layer.getLatLngs();
+                for (let i = 0; i < latlngs.length; i++) {
+                    coordsText += latlngs[i].lng + ',' + latlngs[i].lat + ',0 ';
+                }
+                coordsEl.textContent = coordsText.trim();
+                
+                lineStringEl.appendChild(coordsEl);
+                placemarkEl.appendChild(lineStringEl);
+                documentEl.appendChild(placemarkEl);
+            } else if (layer instanceof L.Polygon) {
+                // Process polygon
+                const placemarkEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'Placemark');
+                
+                const nameEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'name');
+                nameEl.textContent = 'Polygon ' + drawnFeatures;
+                placemarkEl.appendChild(nameEl);
+                
+                const styleUrlEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'styleUrl');
+                styleUrlEl.textContent = '#polygonStyle';
+                placemarkEl.appendChild(styleUrlEl);
+                
+                const polygonEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'Polygon');
+                const outerBoundaryEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'outerBoundaryIs');
+                const linearRingEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'LinearRing');
+                const coordsEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'coordinates');
+                
+                // Add coordinates
+                let coordsText = '';
+                const latlngs = layer.getLatLngs()[0];
+                for (let i = 0; i < latlngs.length; i++) {
+                    coordsText += latlngs[i].lng + ',' + latlngs[i].lat + ',0 ';
+                }
+                // Close the polygon by repeating the first point
+                if (latlngs.length > 0) {
+                    coordsText += latlngs[0].lng + ',' + latlngs[0].lat + ',0';
+                }
+                
+                coordsEl.textContent = coordsText.trim();
+                linearRingEl.appendChild(coordsEl);
+                outerBoundaryEl.appendChild(linearRingEl);
+                polygonEl.appendChild(outerBoundaryEl);
+                placemarkEl.appendChild(polygonEl);
+                documentEl.appendChild(placemarkEl);
+            }
+        });
+        
+        // Process data layers
+        for (const layerName in customDataLayers) {
+            if (map.hasLayer(customDataLayers[layerName])) {
+                // Create a folder for this layer
+                const folderEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'Folder');
+                const folderNameEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'name');
+                folderNameEl.textContent = layerName;
+                folderEl.appendChild(folderNameEl);
+                
+                customDataLayers[layerName].eachLayer(function(layer) {
+                    if (layer instanceof L.Marker) {
+                        const latlng = layer.getLatLng();
+                        const popupContent = layer._popup ? layer._popup.getContent() : '';
+                        
+                        const placemarkEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'Placemark');
+                        
+                        const nameEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'name');
+                        nameEl.textContent = layerName + ' Item';
+                        placemarkEl.appendChild(nameEl);
+                        
+                        if (popupContent) {
+                            const descriptionEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'description');
+                            descriptionEl.textContent = popupContent;
+                            placemarkEl.appendChild(descriptionEl);
+                        }
+                        
+                        const pointEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'Point');
+                        const coordsEl = kmlDoc.createElementNS('http://www.opengis.net/kml/2.2', 'coordinates');
+                        coordsEl.textContent = latlng.lng + ',' + latlng.lat + ',0';
+                        pointEl.appendChild(coordsEl);
+                        placemarkEl.appendChild(pointEl);
+                        
+                        folderEl.appendChild(placemarkEl);
+                    }
+                });
+                
+                documentEl.appendChild(folderEl);
+            }
+        }
+        
+        // Serialize the KML document to string
+        const serializer = new XMLSerializer();
+        const kmlString = '<?xml version="1.0" encoding="UTF-8"?>\n' + 
+                          serializer.serializeToString(kmlRoot);
+        
+        // Create download link
+        const blob = new Blob([kmlString], {type: 'application/vnd.google-earth.kml+xml'});
+        const link = document.createElement('a');
+        link.download = 'firemap_export_' + Date.now() + '.kml';
+        link.href = URL.createObjectURL(blob);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showToast("KML export complete!", "success");
+    } catch (e) {
+        console.error("Error in KML export:", e);
+        showToast("Error generating KML", "error");
+    }
+}
+
+/**
+ * Helper function to escape XML special characters
+ */
+function escapeXml(text) {
+    if (!text) return '';
+    return text.toString()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
 }

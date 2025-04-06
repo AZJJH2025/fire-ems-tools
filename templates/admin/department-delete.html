@@ -151,6 +151,7 @@
             </div>
             
             <form action="/admin/departments/{{ department.id }}/delete" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="form-group">
                     <label for="confirmation_code">To confirm, please enter the department code: <strong>{{ department.code }}</strong></label>
                     <input type="text" id="confirmation_code" name="confirmation_code" class="form-control" required>

@@ -4,13 +4,15 @@ FireEMS.ai - Fire & EMS Analytics Application
 This is the main application file that initializes the Flask app,
 registers blueprints, and sets up the database and other extensions.
 """
-from flask import Flask, jsonify, render_template, session
+from flask import Flask, jsonify, render_template, session, request
 from flask_cors import CORS
+from flask_wtf.csrf import CSRFProtect
 import os
 import logging
 import traceback
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
+import secrets
 
 # Setup logging
 logging.basicConfig(
@@ -26,6 +28,9 @@ fix_deployment.apply_fixes()
 # Now import models after fixes have been applied
 from database import db, Department, Incident, User, Station
 from config import config
+
+# Initialize Flask extensions
+csrf = CSRFProtect()
 
 # Import safe_limit decorator for rate limiting
 try:
@@ -81,16 +86,57 @@ def create_app(config_name='default'):
     # Apply configuration
     app.config.from_object(config[config_name])
     
-    # Set up CORS
-    CORS(app)
+    # Configure security headers
+    @app.after_request
+    def add_security_headers(response):
+        # Set Content Security Policy
+        response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; connect-src 'self'"
+        
+        # Set X-Content-Type-Options
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        
+        # Set X-Frame-Options
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        
+        # Set X-XSS-Protection
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+        
+        # Set Referrer-Policy
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        
+        # Set Permissions-Policy
+        response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=(self)'
+        
+        return response
+    
+    # Set up CORS with more restrictive settings
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    
+    # Set up anti-CSRF protection
+    csrf.init_app(app)
+
+    # Add exemptions for API endpoints if needed
+    @csrf.exempt
+    def csrf_exempt_api():
+        if request.path.startswith('/api/'):
+            return True
+        return False
     
     # Initialize extensions
     db.init_app(app)
     if limiter:
         limiter.init_app(app)
     
-    # Initialize session management
-    app.secret_key = os.getenv('SECRET_KEY', 'dev-key-for-development-only')
+    # Session configuration (no need to set secret_key explicitly, it comes from app.config)
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SECURE'] = app.config.get('SESSION_COOKIE_SECURE', False)
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(seconds=app.config.get('PERMANENT_SESSION_LIFETIME', 86400))
+    
+    # Check if we need to generate a session token
+    @app.before_request
+    def check_csrf_token():
+        if '_csrf_token' not in session:
+            session['_csrf_token'] = secrets.token_hex(16)
     
     # Register blueprints from modular routes
     try:

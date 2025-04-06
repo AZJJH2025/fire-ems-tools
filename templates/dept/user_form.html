@@ -217,6 +217,7 @@
     <main class="container">
         <div class="form-container">
             <form action="{{ url_for('dept_edit_user', dept_code=department.code, user_id=user_to_edit.id) if user_to_edit else url_for('dept_add_user', dept_code=department.code) }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="form-section">
                     <h3 class="form-section-title">User Information</h3>
                     <div class="form-row">

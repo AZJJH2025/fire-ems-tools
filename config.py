@@ -1,8 +1,32 @@
 import os
+import secrets
+import hashlib
+import logging
 from dotenv import load_dotenv
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 # Load environment variables from .env file in development
 load_dotenv()
+
+def generate_secure_key():
+    """
+    Generate a secure key to use when an environment variable is not provided.
+    Only used in development - production should always use an environment variable.
+    """
+    warning_message = (
+        "WARNING: Using dynamically generated SECRET_KEY. "
+        "This is acceptable for development but insecure for production. "
+        "Please set a SECRET_KEY environment variable for production deployments."
+    )
+    logger.warning(warning_message)
+    print(warning_message)
+    
+    # Create a somewhat stable key based on application path (still not secure enough for production)
+    app_path = os.path.abspath(os.path.dirname(__file__))
+    base = hashlib.sha256(app_path.encode()).digest()
+    return base + secrets.token_bytes(32)
 
 class Config:
     """Base configuration."""
@@ -11,15 +35,34 @@ class Config:
     # Fix for Render Postgres URL format - always do this for safety
     if SQLALCHEMY_DATABASE_URI and SQLALCHEMY_DATABASE_URI.startswith("postgres://"):
         SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace("postgres://", "postgresql://", 1)
-        print("Fixed DATABASE_URL format to start with postgresql://")
+        logger.info("Fixed DATABASE_URL format to start with postgresql://")
     
-    # Debug print
-    print(f"Using database URL: {SQLALCHEMY_DATABASE_URI}")
+    # Debug log only if needed
+    if os.environ.get('FLASK_DEBUG', 'False').lower() in ('true', 't', '1', 'yes'):
+        logger.info(f"Using database URL: {SQLALCHEMY_DATABASE_URI}")
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
-    # Application settings
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-key-please-change-in-production')
+    # Security settings
+    SECRET_KEY = os.environ.get('SECRET_KEY')
+    if not SECRET_KEY:
+        # In development, generate a key if none is provided
+        # In production, this should not happen
+        SECRET_KEY = generate_secure_key()
+        
+    # Session security settings    
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'False').lower() in ('true', 't', '1', 'yes')
+    PERMANENT_SESSION_LIFETIME = int(os.environ.get('PERMANENT_SESSION_LIFETIME', 86400))
+    
+    # CSRF Protection
+    WTF_CSRF_ENABLED = True
+    WTF_CSRF_SECRET_KEY = os.environ.get('WTF_CSRF_SECRET_KEY', SECRET_KEY)
+    
+    # HIPAA Compliance flag
+    HIPAA_COMPLIANCE_MODE = os.environ.get('HIPAA_COMPLIANCE_MODE', 'True').lower() in ('true', 't', '1', 'yes')
+    
+    # Application general settings
     DEBUG = os.environ.get('FLASK_DEBUG', 'False').lower() in ('true', 't', '1', 'yes')
     
     @staticmethod

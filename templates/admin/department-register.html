@@ -115,6 +115,7 @@
         
         <div class="register-form">
             <form action="/admin/departments/register" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="form-section">
                     <h3 class="section-title">Basic Information</h3>
                     <div class="form-row">

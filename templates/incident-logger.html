@@ -194,6 +194,7 @@
 
             <div id="incident-form-container" class="card">
                 <form id="incident-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="form-progress">
                         <div class="progress-step active" data-step="1">Basic Info</div>
                         <div class="progress-step" data-step="2">Location</div>
