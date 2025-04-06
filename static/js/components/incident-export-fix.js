@@ -12,6 +12,8 @@ window.IncidentLogger = window.IncidentLogger || {};
  * Generate an export based on user selections
  */
 function generateExport() {
+    console.log("Export generation started");
+    
     // Get export format
     const formatElements = document.getElementsByName("export-format");
     let format = "csv"; // Default
@@ -33,14 +35,62 @@ function generateExport() {
     }
     
     // Get date range
-    const dateFrom = document.getElementById("export-date-from").value;
-    const dateTo = document.getElementById("export-date-to").value;
+    const dateFrom = document.getElementById("export-date-from")?.value || '';
+    const dateTo = document.getElementById("export-date-to")?.value || '';
     
     // Get HIPAA compliance option
-    const hipaaCompliant = document.getElementById("export-hipaa-compliant").checked;
+    const hipaaCompliant = document.getElementById("export-hipaa-compliant")?.checked || false;
     
     // Get NFIRS compliance option
     const nfirsCompliant = document.getElementById("export-nfirs-compliant")?.checked || false;
+    
+    console.log(`Export settings: format=${format}, selection=${selection}, hipaa=${hipaaCompliant}, nfirs=${nfirsCompliant}`);
+    
+    // Load incident data from localStorage
+    // Try different ways to get the incident list
+    let incidentList = [];
+    let filteredIncidents = [];
+    
+    // Try to get from window.incidentList global if it exists
+    if (typeof window.incidentList !== 'undefined') {
+        incidentList = window.incidentList;
+        console.log(`Found ${incidentList.length} incidents in global incidentList`);
+    } else {
+        // Try to collect from localStorage directly
+        console.log("Global incidentList not found, collecting from localStorage");
+        
+        try {
+            // Look for incidents in localStorage - both drafts and submitted
+            const incidents = [];
+            
+            // Scan localStorage for incident keys
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('incident_draft_') || key.startsWith('incident_submitted_')) {
+                    try {
+                        const incident = JSON.parse(localStorage.getItem(key));
+                        incidents.push(incident);
+                    } catch (e) {
+                        console.error(`Error parsing incident from localStorage key ${key}:`, e);
+                    }
+                }
+            }
+            
+            incidentList = incidents;
+            console.log(`Found ${incidentList.length} incidents in localStorage`);
+        } catch (e) {
+            console.error("Error loading incidents from localStorage:", e);
+            showToast("Error loading incidents", "error");
+            return;
+        }
+    }
+    
+    // If there are no incidents, show message and return
+    if (incidentList.length === 0) {
+        console.log("No incidents found for export");
+        showToast("No incidents found to export", "warning");
+        return;
+    }
     
     // Filter incidents based on selection
     let incidents = [];
@@ -50,7 +100,8 @@ function generateExport() {
             incidents = [...incidentList];
             break;
         case "filtered":
-            incidents = [...filteredIncidents];
+            // If filtered list not available, use all incidents
+            incidents = filteredIncidents.length > 0 ? [...filteredIncidents] : [...incidentList];
             break;
         case "selected":
             // This would be implemented for multi-select functionality
@@ -823,6 +874,59 @@ function deidentifyIncident(incident) {
     return deidentified;
 }
 
+// Helper function to display toasts if missing
+function showToast(message, type = "info") {
+    console.log(`Toast: ${type} - ${message}`);
+    
+    // Check if showToast is globally available
+    if (typeof window.showToast === 'function') {
+        window.showToast(message, type);
+    } else {
+        // Create our own toast if not available
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML = `
+            <div class="toast-icon">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            </div>
+            <div class="toast-message">${message}</div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Show then remove after a delay
+        setTimeout(() => {
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        }, 10);
+    }
+}
+
+// Helper function to show modals if missing
+function showModal(title, content, cancelCallback, confirmCallback) {
+    console.log(`Modal: ${title}`);
+    
+    // Check if showModal is globally available
+    if (typeof window.showModal === 'function') {
+        window.showModal(title, content, cancelCallback, confirmCallback);
+    } else {
+        // Create our own modal if not available
+        alert(`${title}\n\n${content instanceof HTMLElement ? content.textContent : content}`);
+        if (confirmCallback) confirmCallback();
+    }
+}
+
+// Helper function to close modal if missing
+function closeModal() {
+    // Check if closeModal is globally available
+    if (typeof window.closeModal === 'function') {
+        window.closeModal();
+    }
+}
+
 // Add to namespace
 window.IncidentLogger.Export = {
     generate: generateExport,
@@ -832,3 +936,19 @@ window.IncidentLogger.Export = {
 };
 
 console.log("Incident Export component loaded (fixed version)");
+
+// Initialize export button event handler
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Setting up export button handler");
+    
+    const exportBtn = document.getElementById('generate-export-btn');
+    if (exportBtn) {
+        console.log("Found export button, attaching click handler");
+        exportBtn.addEventListener('click', function() {
+            console.log("Export button clicked");
+            generateExport();
+        });
+    } else {
+        console.warn("Export button not found in DOM");
+    }
+});
