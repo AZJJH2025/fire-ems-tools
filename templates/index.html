@@ -11,6 +11,53 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Favicon -->
   <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+  <style>
+    /* Developer Tools Section Styles */
+    .dev-tools {
+      background-color: #2c3e50;
+      color: #ecf0f1;
+      padding: 30px 0;
+      margin-top: 40px;
+    }
+    
+    .dev-tools h2 {
+      color: #3498db;
+      border-bottom: 1px solid #34495e;
+      padding-bottom: 10px;
+      margin-bottom: 30px;
+    }
+    
+    .dev-card {
+      background-color: #34495e;
+      border: 1px solid #2c3e50;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .dev-card .tool-icon {
+      background-color: #3498db;
+    }
+    
+    .dev-card .tool-content h3 {
+      color: #ecf0f1;
+    }
+    
+    .dev-card .tool-content p {
+      color: #bdc3c7;
+    }
+    
+    .dev-card .tool-link {
+      background-color: #2980b9;
+    }
+    
+    .dev-card .tool-link:hover {
+      background-color: #3498db;
+    }
+    
+    .dev-card .tool-status {
+      background-color: #2980b9;
+      color: #ecf0f1;
+    }
+  </style>
 </head>
 <body>
   <div class="navbar">
@@ -211,8 +258,8 @@
         <div class="tool-status">Planned</div>
       </div>
 
-      <!-- Tool 10: Data Formatter (Planned) -->
-      <div class="tool-card planned">
+      <!-- Tool 10: Data Formatter (Completed) -->
+      <div class="tool-card completed">
         <div class="tool-icon">
           <i class="fas fa-exchange-alt"></i>
         </div>
@@ -224,9 +271,9 @@
             <span class="tag">Conversion</span>
             <span class="tag">Utility</span>
           </div>
-          <span class="tool-link disabled">Coming Soon</span>
+          <a href="/data-formatter" class="tool-link">Open Tool</a>
         </div>
-        <div class="tool-status">Planned</div>
+        <div class="tool-status">Ready</div>
       </div>
       
       <!-- Tool 11: Quick Stats (Completed) -->
@@ -248,6 +295,47 @@
       </div>
     </section>
   </main>
+
+  <section class="dev-tools">
+    <div class="container">
+      <h2>Developer Tools</h2>
+      <div class="tools-grid">
+        <div class="tool-card dev-card">
+          <div class="tool-icon">
+            <i class="fas fa-code"></i>
+          </div>
+          <div class="tool-content">
+            <h3>ES6 Module Testing Dashboard</h3>
+            <p>Comprehensive testing dashboard for the ES6 module architecture. Validate components, test module interactions, and ensure backward compatibility.</p>
+            <div class="tool-tags">
+              <span class="tag">Testing</span>
+              <span class="tag">ES6 Modules</span>
+              <span class="tag">Developer</span>
+            </div>
+            <a href="/tests/module_testing_dashboard.html" class="tool-link">Open Dashboard</a>
+          </div>
+          <div class="tool-status">Developer</div>
+        </div>
+
+        <div class="tool-card dev-card">
+          <div class="tool-icon">
+            <i class="fas fa-cogs"></i>
+          </div>
+          <div class="tool-content">
+            <h3>Admin Dashboard</h3>
+            <p>Access system administration tools, user management, configuration settings, and performance monitoring for the FireEMS.ai platform.</p>
+            <div class="tool-tags">
+              <span class="tag">Admin</span>
+              <span class="tag">Settings</span>
+              <span class="tag">Configuration</span>
+            </div>
+            <a href="/admin" class="tool-link">Open Admin</a>
+          </div>
+          <div class="tool-status">Protected</div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <footer>
     <div class="container">
