@@ -2048,7 +2048,27 @@
                 
                 // Insert the HTML after the PHI section
                 console.log("Inserting medical sections after PHI section");
-                phiSection.insertAdjacentHTML('afterend', medSectionsHTML);
+                
+                // Use safe insertion method if available, otherwise try direct approach with error handling
+                if (window.phiSection && typeof window.phiSection.addMedicalSections === 'function') {
+                    window.phiSection.addMedicalSections(medSectionsHTML);
+                } else if (window.phiSection) {
+                    window.phiSection.insertAdjacentHTML('afterend', medSectionsHTML);
+                } else if (window.phiSections && window.phiSections.length > 0) {
+                    window.phiSections[0].insertAdjacentHTML('afterend', medSectionsHTML);
+                } else {
+                    const patientEntry = document.querySelector('.patient-entry');
+                    if (patientEntry) {
+                        const vitalsSection = patientEntry.querySelector('.vitals-section');
+                        if (vitalsSection) {
+                            vitalsSection.insertAdjacentHTML('beforebegin', medSectionsHTML);
+                        } else {
+                            patientEntry.insertAdjacentHTML('beforeend', medSectionsHTML);
+                        }
+                    } else {
+                        throw new Error("Cannot find patient entry to insert medical sections");
+                    }
+                }
                 
                 console.log("Successfully inserted medical sections in correct order");
             } catch (error) {

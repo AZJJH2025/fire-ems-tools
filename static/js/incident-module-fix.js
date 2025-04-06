@@ -643,18 +643,24 @@ window.IncidentLogger = {
     
     // Collect form data from the current form
     function collectFormData() {
+        // Safely get element value, returning empty string if element doesn't exist
+        const safeGetValue = (id) => {
+            const element = document.getElementById(id);
+            return element ? element.value : '';
+        };
+        
         const formData = {
-            id: document.getElementById('incident-id').value,
-            timestamp: document.getElementById('incident-timestamp').value,
-            status: document.getElementById('incident-status').value,
+            id: safeGetValue('incident-id'),
+            timestamp: safeGetValue('incident-timestamp'),
+            status: safeGetValue('incident-status'),
             location: {
-                address: document.getElementById('location-address').value,
-                city: document.getElementById('location-city').value,
-                state: document.getElementById('location-state').value,
-                zip: document.getElementById('location-zip').value
+                address: safeGetValue('location-address'),
+                city: safeGetValue('location-city'),
+                state: safeGetValue('location-state'),
+                zip: safeGetValue('location-zip')
             },
             units: [],
-            narrative: document.getElementById('incident-narrative').value
+            narrative: safeGetValue('incident-narrative')
         };
         
         // Collect unit data
@@ -671,6 +677,23 @@ window.IncidentLogger = {
                 });
             }
         });
+        
+        // Handle patient info if needed
+        try {
+            const patientEntries = document.querySelectorAll('.patient-entry');
+            if (patientEntries && patientEntries.length > 0) {
+                formData.patient_info = { details: [] };
+                patientEntries.forEach((entry, index) => {
+                    // Add basic patient structure even if we can't get all details
+                    formData.patient_info.details.push({
+                        id: index + 1,
+                        status: 'Unknown'
+                    });
+                });
+            }
+        } catch (e) {
+            console.error("Error collecting patient data:", e);
+        }
         
         return formData;
     }
