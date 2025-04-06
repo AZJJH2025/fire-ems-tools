@@ -72,6 +72,11 @@ def quick_stats():
     """Quick Stats route"""
     return render_template('quick-stats.html')
 
+@bp.route('/user-guide')
+def user_guide():
+    """User Guide route"""
+    return render_template('user-guide.html')
+
 @bp.route('/deployment-status')
 def deployment_status():
     """Check deployment status"""
