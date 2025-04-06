@@ -2123,7 +2123,9 @@ function printMap() {
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
-        modal.style.display = 'block';
+        // Force display:flex style instead of simply setting to block
+        modal.style.cssText = 'display: flex !important;';
+        
         console.log(`Opening modal: ${modalId}`);
         
         // Make sure default tab is selected for modals with tabs
@@ -2131,6 +2133,36 @@ function openModal(modalId) {
             const defaultTab = modal.querySelector('.modal-tab');
             if (defaultTab) {
                 defaultTab.click();
+            }
+            
+            // Initialize the export-modal tabs
+            document.querySelectorAll('.modal-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    console.log(`Clicked tab: ${tabId}`);
+                    
+                    // Remove active class from all tabs and hide all panels
+                    document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
+                    
+                    // Add active class to clicked tab and show its panel
+                    this.classList.add('active');
+                    const panel = document.getElementById(tabId + '-panel');
+                    if (panel) {
+                        panel.style.display = 'block';
+                        console.log(`Showing panel: ${tabId}-panel`);
+                    } else {
+                        console.warn(`Panel not found: ${tabId}-panel`);
+                    }
+                });
+            });
+            
+            // Force the basic tab to be active initially
+            const basicTab = document.querySelector('[data-tab="export-basic"]');
+            if (basicTab) {
+                setTimeout(() => {
+                    basicTab.click();
+                }, 50);
             }
         }
     }
@@ -2150,93 +2182,257 @@ function closeModal(modalId) {
  * Initialize the map and base layers
  */
 function initMap() {
-    // Create the map
-    const map = L.map('map', {
-        center: [39.8283, -98.5795], // Center of the USA
-        zoom: 4,
-        zoomControl: false, // We'll add custom zoom control
-        attributionControl: true
+    try {
+        console.log("Initializing map...");
+        
+        // Create the map
+        const map = L.map('map', {
+            center: [39.8283, -98.5795], // Center of the USA
+            zoom: 4,
+            zoomControl: false, // We'll add custom zoom control
+            attributionControl: true
+        });
+        
+        // Add base layers
+        const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+        });
+        
+        const terrainLayer = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.png', {
+            attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        });
+        
+        // Add layer controls to switch between base maps
+        const baseLayers = {
+            "Street Map": streetLayer,
+            "Satellite Imagery": satelliteLayer,
+            "Terrain Map": terrainLayer
+        };
+        
+        // Store the map in a global variable for access in other functions
+        window.firemapMap = map;
+        window.firemapLayers = baseLayers;
+        
+        // Set up base layer radio buttons
+        const streetLayerRadio = document.getElementById('street-layer');
+        if (streetLayerRadio) {
+            streetLayerRadio.addEventListener('change', function() {
+                if (this.checked) {
+                    map.removeLayer(satelliteLayer);
+                    map.removeLayer(terrainLayer);
+                    map.addLayer(streetLayer);
+                }
+            });
+        }
+        
+        const satelliteLayerRadio = document.getElementById('satellite-layer');
+        if (satelliteLayerRadio) {
+            satelliteLayerRadio.addEventListener('change', function() {
+                if (this.checked) {
+                    map.removeLayer(streetLayer);
+                    map.removeLayer(terrainLayer);
+                    map.addLayer(satelliteLayer);
+                }
+            });
+        }
+        
+        const terrainLayerRadio = document.getElementById('terrain-layer');
+        if (terrainLayerRadio) {
+            terrainLayerRadio.addEventListener('change', function() {
+                if (this.checked) {
+                    map.removeLayer(streetLayer);
+                    map.removeLayer(satelliteLayer);
+                    map.addLayer(terrainLayer);
+                }
+            });
+        }
+        
+        // Add zoom controls
+        L.control.zoom({
+            position: 'bottomright'
+        }).addTo(map);
+        
+        // Add scale control
+        L.control.scale({
+            position: 'bottomleft',
+            imperial: true,
+            metric: true
+        }).addTo(map);
+        
+        // Try to add measure tool if it exists
+        try {
+            if (L.Control.Measure) {
+                const measureControl = new L.Control.Measure({
+                    position: 'bottomright',
+                    primaryLengthUnit: 'miles',
+                    secondaryLengthUnit: 'feet',
+                    primaryAreaUnit: 'acres',
+                    secondaryAreaUnit: 'sqfeet',
+                    activeColor: '#ff8800',
+                    completedColor: '#ff4400'
+                });
+                map.addControl(measureControl);
+            } else {
+                console.warn("L.Control.Measure not available - skipping measure tool");
+            }
+        } catch (measureError) {
+            console.warn("Error initializing measure tool:", measureError);
+            // Continue without the measure tool
+        }
+        
+        // Track mouse position
+        map.on('mousemove', function(e) {
+            const mousePosition = document.getElementById('mouse-position');
+            if (mousePosition) {
+                const lat = e.latlng.lat.toFixed(5);
+                const lng = e.latlng.lng.toFixed(5);
+                mousePosition.textContent = `Coordinates: ${lat}, ${lng}`;
+            }
+        });
+        
+        console.log("Map initialized successfully");
+        return true;
+    } catch (error) {
+        console.error("Error initializing map:", error);
+        return false;
+    }
+}
+
+/**
+ * Initialize drag and drop for map symbols
+ */
+function initializeMapSymbolsDragDrop() {
+    console.log("Initializing map symbols drag and drop...");
+    
+    // Get all draggable icons
+    const draggableIcons = document.querySelectorAll('.draggable-icon');
+    console.log(`Found ${draggableIcons.length} draggable icons`);
+    
+    // Add drag start event listener to each icon
+    draggableIcons.forEach(icon => {
+        icon.addEventListener('dragstart', function(e) {
+            const iconType = this.getAttribute('data-icon');
+            console.log("Drag started for icon:", iconType);
+            e.dataTransfer.setData('text/plain', iconType);
+            e.dataTransfer.effectAllowed = 'copy';
+        });
+        
+        // Make sure the icon is actually draggable
+        icon.setAttribute('draggable', 'true');
     });
     
-    // Add base layers
-    const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    // Add drag over and drop events to the map
+    const mapElement = document.getElementById('map');
+    if (mapElement) {
+        // Allow dropping on the map
+        mapElement.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+        });
+        
+        // Handle the drop event
+        mapElement.addEventListener('drop', function(e) {
+            e.preventDefault();
+            
+            // Get the icon type from the data transfer
+            const iconType = e.dataTransfer.getData('text/plain');
+            if (!iconType) {
+                console.warn("No icon type in data transfer");
+                return;
+            }
+            
+            console.log("Icon dropped on map:", iconType);
+            
+            // Get the drop coordinates
+            const map = window.firemapMap;
+            if (!map) {
+                console.error("Map not initialized");
+                return;
+            }
+            
+            // Convert the screen coordinates to map coordinates
+            const point = map.containerPointToLatLng(
+                L.point(e.clientX - mapElement.getBoundingClientRect().left,
+                       e.clientY - mapElement.getBoundingClientRect().top)
+            );
+            
+            // Create a marker at the drop point with an icon
+            addMapSymbol(iconType, point);
+        });
+        console.log("Map drop handlers initialized");
+    } else {
+        console.error("Map element not found");
+    }
+}
+
+/**
+ * Add a symbol to the map
+ */
+function addMapSymbol(iconType, latlng) {
+    const map = window.firemapMap;
+    if (!map) return;
+    
+    // Get the selected color and size
+    const colorSelect = document.getElementById('icon-color');
+    const sizeSelect = document.getElementById('icon-size');
+    
+    const color = colorSelect ? colorSelect.value : '#d32f2f';
+    const size = sizeSelect ? sizeSelect.value : 'medium';
+    
+    // Determine icon size based on selected size
+    let iconSize;
+    switch (size) {
+        case 'small':
+            iconSize = [24, 24];
+            break;
+        case 'large':
+            iconSize = [40, 40];
+            break;
+        case 'medium':
+        default:
+            iconSize = [32, 32];
+            break;
+    }
+    
+    // Create a div icon with Font Awesome
+    const divIcon = L.divIcon({
+        html: `<i class="fas ${iconType}" style="color: ${color};"></i>`,
+        iconSize: iconSize,
+        className: `map-icon map-icon-${size}`
+    });
+    
+    // Add the marker to the map
+    const marker = L.marker(latlng, {
+        icon: divIcon,
+        draggable: true
     }).addTo(map);
     
-    const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-    });
+    // Add a popup with the icon information
+    const iconName = document.querySelector(`.draggable-icon[data-icon="${iconType}"] span`);
+    const name = iconName ? iconName.textContent : 'Map Symbol';
     
-    const terrainLayer = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.png', {
-        attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    });
+    marker.bindPopup(`
+        <div class="icon-popup">
+            <h4>${name}</h4>
+            <button class="delete-icon">Delete</button>
+        </div>
+    `);
     
-    // Add layer controls to switch between base maps
-    const baseLayers = {
-        "Street Map": streetLayer,
-        "Satellite Imagery": satelliteLayer,
-        "Terrain Map": terrainLayer
-    };
-    
-    // Store the map in a global variable for access in other functions
-    window.firemapMap = map;
-    window.firemapLayers = baseLayers;
-    
-    // Set up base layer radio buttons
-    document.getElementById('street-layer').addEventListener('change', function() {
-        if (this.checked) {
-            map.removeLayer(satelliteLayer);
-            map.removeLayer(terrainLayer);
-            map.addLayer(streetLayer);
+    // Add event listener for the delete button
+    marker.on('popupopen', function() {
+        const deleteBtn = document.querySelector('.delete-icon');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', function() {
+                map.removeLayer(marker);
+            });
         }
     });
     
-    document.getElementById('satellite-layer').addEventListener('change', function() {
-        if (this.checked) {
-            map.removeLayer(streetLayer);
-            map.removeLayer(terrainLayer);
-            map.addLayer(satelliteLayer);
-        }
-    });
-    
-    document.getElementById('terrain-layer').addEventListener('change', function() {
-        if (this.checked) {
-            map.removeLayer(streetLayer);
-            map.removeLayer(satelliteLayer);
-            map.addLayer(terrainLayer);
-        }
-    });
-    
-    // Add zoom controls
-    L.control.zoom({
-        position: 'bottomright'
-    }).addTo(map);
-    
-    // Add scale control
-    L.control.scale({
-        position: 'bottomleft',
-        imperial: true,
-        metric: true
-    }).addTo(map);
-    
-    // Add measure tool
-    const measureControl = new L.Control.Measure({
-        position: 'bottomright',
-        primaryLengthUnit: 'miles',
-        secondaryLengthUnit: 'feet',
-        primaryAreaUnit: 'acres',
-        secondaryAreaUnit: 'sqfeet',
-        activeColor: '#ff8800',
-        completedColor: '#ff4400'
-    });
-    map.addControl(measureControl);
-    
-    // Track mouse position
-    map.on('mousemove', function(e) {
-        const lat = e.latlng.lat.toFixed(5);
-        const lng = e.latlng.lng.toFixed(5);
-        document.getElementById('mouse-position').textContent = `Coordinates: ${lat}, ${lng}`;
-    });
+    return marker;
 }
 
 // Initialize everything when the document is loaded
@@ -2348,4 +2544,10 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     });
+    
+    // Initialize map symbols drag and drop after a short delay
+    // This allows the DOM to fully initialize
+    setTimeout(function() {
+        initializeMapSymbolsDragDrop();
+    }, 500);
 });
