@@ -5943,6 +5943,102 @@ def export_forecast_image(forecast_data):
         "imageUrl": "/static/sample-forecast-chart.png"  # This would be a real image URL in production
     })
 
+# Quick Stats Routes
+@app.route('/quick-stats')
+def quick_stats():
+    """Render the Quick Stats page"""
+    return render_template('quick-stats.html')
+
+@app.route('/api/quick-stats/upload', methods=['POST'])
+def quick_stats_upload():
+    """API endpoint to upload and process incident data for quick stats generation"""
+    try:
+        # Check if file was uploaded
+        if 'file' not in request.files:
+            return jsonify({"error": "No file uploaded"}), 400
+            
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({"error": "No file selected"}), 400
+            
+        # Process the uploaded file
+        filename = secure_filename(file.filename)
+        file_extension = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
+        
+        # Process CSV or Excel files
+        try:
+            if file_extension == 'csv':
+                df = pd.read_csv(file)
+            elif file_extension in ['xlsx', 'xls']:
+                df = pd.read_excel(file)
+            else:
+                return jsonify({"error": "Unsupported file format. Please upload a CSV or Excel file."}), 400
+        except Exception as e:
+            return jsonify({"error": f"Error reading file: {str(e)}"}), 400
+            
+        # Store the data in the session
+        session['quick_stats_data'] = df.to_json(orient='records', date_format='iso')
+        
+        # Convert data to JSON format expected by frontend
+        incidents = json.loads(df.to_json(orient='records', date_format='iso'))
+        
+        # Return processed data
+        return jsonify({
+            "message": "Data uploaded successfully",
+            "file_name": filename,
+            "record_count": len(df),
+            "incidents": incidents
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in quick_stats_upload: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/quick-stats/sample/<dataset>', methods=['GET'])
+def quick_stats_sample(dataset):
+    """API endpoint to get sample incident data for quick stats demonstration"""
+    try:
+        # Define dataset files and paths
+        sample_datasets = {
+            'phoenix': 'phoenix_incidents.csv',
+            'seattle': 'seattle_incidents.csv',
+            'chicago': 'chicago_incidents.csv'
+        }
+        
+        if dataset not in sample_datasets:
+            return jsonify({"error": f"Unknown sample dataset: {dataset}"}), 400
+            
+        # Get file path
+        file_path = os.path.join('sample_data', sample_datasets[dataset])
+        
+        # Check if file exists
+        if not os.path.exists(file_path):
+            logger.warning(f"Sample dataset file not found: {file_path}")
+            # Return empty data for demo purposes
+            return jsonify({
+                "message": "Sample data file not found. Returning empty dataset.",
+                "incidents": []
+            })
+        
+        # Read sample data file
+        try:
+            df = pd.read_csv(file_path)
+            incidents = json.loads(df.to_json(orient='records', date_format='iso'))
+            
+            return jsonify({
+                "message": "Sample data loaded successfully",
+                "dataset": dataset,
+                "record_count": len(df),
+                "incidents": incidents
+            })
+        except Exception as e:
+            logger.error(f"Error reading sample data file: {str(e)}")
+            return jsonify({"error": f"Error processing sample data: {str(e)}"}), 500
+            
+    except Exception as e:
+        logger.error(f"Error in quick_stats_sample: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
 # Create app instance for running directly
 try:
     # Ensure fixes are applied
