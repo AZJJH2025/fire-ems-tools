@@ -824,6 +824,15 @@ function initializeModals() {
             }
         });
     });
+    
+    // Initialize export modal tabs
+    initializeExportModalTabs();
+    
+    // Initialize print preview modal
+    initializePrintPreview();
+    
+    // Initialize layout designer drag and drop
+    initializeLayoutDesigner();
 }
 
 /**
@@ -1812,6 +1821,1140 @@ function importGeoJSON(geojsonData) {
 /**
  * Export map as PNG
  */
+/**
+ * Initialize export modal tab functionality
+ */
+function initializeExportModalTabs() {
+    const tabButtons = document.querySelectorAll('.modal-tab');
+    
+    // Add click event listeners to tab buttons
+    tabButtons.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Get the tab panel ID this tab should show
+            const tabPanelId = this.getAttribute('data-tab') + '-panel';
+            
+            // Remove active class from all tabs
+            tabButtons.forEach(t => t.classList.remove('active'));
+            
+            // Add active class to clicked tab
+            this.classList.add('active');
+            
+            // Hide all tab panels
+            const tabPanels = document.querySelectorAll('.tab-panel');
+            tabPanels.forEach(panel => {
+                panel.style.display = 'none';
+            });
+            
+            // Show the selected tab panel
+            const activePanel = document.getElementById(tabPanelId);
+            if (activePanel) {
+                activePanel.style.display = 'block';
+            }
+        });
+    });
+    
+    // Set up interaction between paper size presets and custom size inputs
+    const paperPreset = document.getElementById('paper-preset');
+    const printWidth = document.getElementById('print-width');
+    const printHeight = document.getElementById('print-height');
+    const printUnits = document.getElementById('print-units');
+    
+    // Paper preset change handler
+    if (paperPreset) {
+        paperPreset.addEventListener('change', function() {
+            const preset = this.value;
+            let width, height;
+            
+            switch(preset) {
+                case 'letter':
+                    width = 8.5;
+                    height = 11;
+                    printUnits.value = 'in';
+                    break;
+                case 'legal':
+                    width = 8.5;
+                    height = 14;
+                    printUnits.value = 'in';
+                    break;
+                case 'tabloid':
+                    width = 11;
+                    height = 17;
+                    printUnits.value = 'in';
+                    break;
+                case 'a4':
+                    width = 210;
+                    height = 297;
+                    printUnits.value = 'mm';
+                    break;
+                case 'a3':
+                    width = 297;
+                    height = 420;
+                    printUnits.value = 'mm';
+                    break;
+                case 'a2':
+                    width = 420;
+                    height = 594;
+                    printUnits.value = 'mm';
+                    break;
+                case 'a1':
+                    width = 594;
+                    height = 841;
+                    printUnits.value = 'mm';
+                    break;
+                case 'a0':
+                    width = 841;
+                    height = 1189;
+                    printUnits.value = 'mm';
+                    break;
+                case 'custom':
+                    // Do nothing, let user input custom values
+                    return;
+            }
+            
+            printWidth.value = width;
+            printHeight.value = height;
+        });
+    }
+    
+    // Enable tiled printing options toggle
+    const tilePrintCheckbox = document.getElementById('export-tile-print');
+    const tileOptions = document.getElementById('tile-options');
+    
+    if (tilePrintCheckbox && tileOptions) {
+        tilePrintCheckbox.addEventListener('change', function() {
+            tileOptions.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+    
+    // Update preview dimensions when size changes
+    if (printWidth && printHeight) {
+        [printWidth, printHeight].forEach(input => {
+            input.addEventListener('change', updatePrintDimensions);
+        });
+    }
+    
+    // Color mode change handler
+    const colorMode = document.getElementById('color-mode');
+    const colorProfile = document.getElementById('color-profile');
+    
+    if (colorMode && colorProfile) {
+        colorMode.addEventListener('change', function() {
+            // Update available profiles based on color mode
+            const mode = this.value;
+            
+            if (mode === 'rgb') {
+                // Clear existing options
+                colorProfile.innerHTML = '';
+                
+                // Add RGB profiles
+                const rgbProfiles = [
+                    { value: 'srgb', text: 'sRGB (Default)' },
+                    { value: 'adobergb', text: 'Adobe RGB' },
+                    { value: 'custom', text: 'Custom Profile...' }
+                ];
+                
+                rgbProfiles.forEach(profile => {
+                    const option = document.createElement('option');
+                    option.value = profile.value;
+                    option.textContent = profile.text;
+                    colorProfile.appendChild(option);
+                });
+            } else if (mode === 'cmyk') {
+                // Clear existing options
+                colorProfile.innerHTML = '';
+                
+                // Add CMYK profiles
+                const cmykProfiles = [
+                    { value: 'cmyk-swop', text: 'CMYK SWOP (U.S.)' },
+                    { value: 'cmyk-fogra', text: 'CMYK FOGRA39 (Europe)' },
+                    { value: 'cmyk-japan', text: 'CMYK Japan Color 2001' },
+                    { value: 'custom', text: 'Custom Profile...' }
+                ];
+                
+                cmykProfiles.forEach(profile => {
+                    const option = document.createElement('option');
+                    option.value = profile.value;
+                    option.textContent = profile.text;
+                    colorProfile.appendChild(option);
+                });
+            }
+        });
+    }
+    
+    // Populate visible layers in export panel
+    function populateExportLayers() {
+        const layersList = document.getElementById('export-layers-list');
+        if (layersList) {
+            layersList.innerHTML = '';
+            
+            // Add available map layers
+            if (customDataLayers.stations) {
+                addLayerCheckbox(layersList, 'stations', 'Fire Stations', '#d32f2f');
+            }
+            
+            if (customDataLayers.incidents) {
+                addLayerCheckbox(layersList, 'incidents', 'Recent Incidents', '#2196f3');
+            }
+            
+            if (customDataLayers.responseZones) {
+                addLayerCheckbox(layersList, 'response-zones', 'Response Zones', '#1976d2');
+            }
+            
+            if (customDataLayers.hydrants) {
+                addLayerCheckbox(layersList, 'hydrants', 'Hydrants', '#1976d2');
+            }
+            
+            if (customDataLayers.hospitals) {
+                addLayerCheckbox(layersList, 'hospitals', 'Hospitals', '#4caf50');
+            }
+            
+            // Add drawn items
+            if (drawnItems && drawnItems.getLayers().length > 0) {
+                addLayerCheckbox(layersList, 'drawn-items', 'Drawn Items', '#795548');
+            }
+        }
+    }
+    
+    function addLayerCheckbox(container, id, name, color) {
+        const item = document.createElement('div');
+        item.className = 'layer-item-export';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = 'export-layer-' + id;
+        checkbox.checked = true;
+        
+        const label = document.createElement('label');
+        label.htmlFor = 'export-layer-' + id;
+        label.textContent = name;
+        
+        const colorIndicator = document.createElement('span');
+        colorIndicator.className = 'layer-color-indicator';
+        colorIndicator.style.backgroundColor = color;
+        
+        item.appendChild(checkbox);
+        item.appendChild(label);
+        item.appendChild(colorIndicator);
+        container.appendChild(item);
+    }
+    
+    // Update preview dimensions when print settings change
+    function updatePrintDimensions() {
+        const previewDimensions = document.getElementById('preview-dimensions');
+        if (!previewDimensions) return;
+        
+        const width = printWidth.value;
+        const height = printHeight.value;
+        const units = printUnits.value;
+        
+        let displayUnits = units;
+        if (units === 'in') displayUnits = '"';
+        
+        previewDimensions.textContent = `${width}${displayUnits} × ${height}${displayUnits}`;
+    }
+    
+    // Populate initial export layers when modal is opened
+    document.getElementById('export-png').addEventListener('click', function() {
+        // Set Basic tab as active
+        const basicTab = document.querySelector('.modal-tab[data-tab="export-basic"]');
+        if (basicTab) {
+            basicTab.click();
+        }
+        
+        populateExportLayers();
+        openModal('export-modal');
+    });
+    
+    document.getElementById('export-pdf').addEventListener('click', function() {
+        // Set Basic tab as active
+        const basicTab = document.querySelector('.modal-tab[data-tab="export-basic"]');
+        if (basicTab) {
+            basicTab.click();
+        }
+        
+        populateExportLayers();
+        openModal('export-modal');
+    });
+}
+
+/**
+ * Initialize print preview modal functionality
+ */
+function initializePrintPreview() {
+    const previewModal = document.getElementById('print-preview-modal');
+    const closeBtn = document.querySelector('.print-preview-close');
+    const cancelBtn = document.querySelector('.print-preview-footer .cancel-btn');
+    const exportBtn = document.querySelector('.print-preview-footer .export-btn');
+    const printDirectBtn = document.getElementById('print-direct-btn');
+    const showTilesBtn = document.getElementById('show-tiles-btn');
+    const previewViewMode = document.getElementById('preview-view-mode');
+    const previewZoom = document.getElementById('preview-zoom');
+    
+    // Close modal handlers
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            previewModal.style.display = 'none';
+        });
+    }
+    
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+            previewModal.style.display = 'none';
+        });
+    }
+    
+    // Export from preview
+    if (exportBtn) {
+        exportBtn.addEventListener('click', function() {
+            // Get current settings from preview
+            const format = document.getElementById('preview-format').textContent;
+            
+            // Close preview
+            previewModal.style.display = 'none';
+            
+            // Based on format, call appropriate export function
+            if (format === 'PNG') {
+                exportPNG();
+            } else if (format === 'PDF') {
+                exportPDF();
+            } else if (format === 'SVG') {
+                exportSVG();
+            }
+        });
+    }
+    
+    // Direct print handler
+    if (printDirectBtn) {
+        printDirectBtn.addEventListener('click', function() {
+            window.print();
+        });
+    }
+    
+    // Show tiles handler
+    if (showTilesBtn) {
+        showTilesBtn.addEventListener('click', function() {
+            toggleTileOverlay();
+        });
+    }
+    
+    // View mode change handler
+    if (previewViewMode) {
+        previewViewMode.addEventListener('change', function() {
+            updatePreviewView(this.value);
+        });
+    }
+    
+    // Zoom change handler
+    if (previewZoom) {
+        previewZoom.addEventListener('change', function() {
+            updatePreviewZoom(this.value);
+        });
+    }
+    
+    // Toggle tile overlay for large format printing
+    function toggleTileOverlay() {
+        const overlay = document.getElementById('preview-overlay');
+        if (!overlay) return;
+        
+        if (overlay.classList.contains('showing-tiles')) {
+            overlay.classList.remove('showing-tiles');
+            overlay.innerHTML = '';
+        } else {
+            overlay.classList.add('showing-tiles');
+            
+            // Get print dimensions
+            const width = parseFloat(document.getElementById('print-width').value);
+            const height = parseFloat(document.getElementById('print-height').value);
+            const units = document.getElementById('print-units').value;
+            
+            // Get tile size
+            const tileSize = document.getElementById('tile-size').value;
+            const tileWidth = tileSize === 'letter' ? 8.5 : 8.27; // inches (letter or A4)
+            const tileHeight = tileSize === 'letter' ? 11 : 11.7; // inches (letter or A4)
+            
+            // Get overlap
+            const overlap = parseFloat(document.getElementById('tile-overlap').value);
+            
+            // Convert everything to inches for calculation
+            let widthInches = width;
+            let heightInches = height;
+            
+            if (units === 'mm') {
+                widthInches = width / 25.4;
+                heightInches = height / 25.4;
+            } else if (units === 'cm') {
+                widthInches = width / 2.54;
+                heightInches = height / 2.54;
+            }
+            
+            // Calculate number of tiles needed
+            const cols = Math.ceil(widthInches / (tileWidth - overlap));
+            const rows = Math.ceil(heightInches / (tileHeight - overlap));
+            
+            // Create tile grid
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'print-tile';
+                    tile.style.position = 'absolute';
+                    tile.style.border = '1px dashed rgba(0, 0, 0, 0.5)';
+                    tile.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
+                    
+                    // Calculate position (accounting for overlap)
+                    const top = r * (tileHeight - overlap) / heightInches * 100;
+                    const left = c * (tileWidth - overlap) / widthInches * 100;
+                    const tileWidthPct = tileWidth / widthInches * 100;
+                    const tileHeightPct = tileHeight / heightInches * 100;
+                    
+                    tile.style.top = top + '%';
+                    tile.style.left = left + '%';
+                    tile.style.width = tileWidthPct + '%';
+                    tile.style.height = tileHeightPct + '%';
+                    
+                    // Add tile number
+                    const tileNum = document.createElement('div');
+                    tileNum.className = 'tile-number';
+                    tileNum.style.position = 'absolute';
+                    tileNum.style.top = '50%';
+                    tileNum.style.left = '50%';
+                    tileNum.style.transform = 'translate(-50%, -50%)';
+                    tileNum.style.fontSize = '20px';
+                    tileNum.style.fontWeight = 'bold';
+                    tileNum.style.color = 'rgba(0, 0, 0, 0.5)';
+                    tileNum.textContent = (r * cols + c + 1);
+                    
+                    tile.appendChild(tileNum);
+                    overlay.appendChild(tile);
+                }
+            }
+        }
+    }
+    
+    // Update preview based on view mode
+    function updatePreviewView(mode) {
+        const canvas = document.getElementById('preview-canvas');
+        const cropMarks = document.getElementById('crop-marks-container');
+        
+        switch(mode) {
+            case 'normal':
+                canvas.style.filter = 'none';
+                if (cropMarks) cropMarks.style.display = 'none';
+                break;
+                
+            case 'print-marks':
+                canvas.style.filter = 'none';
+                if (cropMarks) cropMarks.style.display = 'block';
+                break;
+                
+            case 'cmyk-preview':
+                // Apply CMYK-like filter for preview
+                canvas.style.filter = 'saturate(0.9) contrast(1.1)';
+                if (cropMarks) cropMarks.style.display = 'block';
+                break;
+                
+            case 'color-separations':
+                // TODO: Implement proper color separation preview
+                // This is a simplified version for demonstration
+                canvas.style.filter = 'grayscale(1)';
+                if (cropMarks) cropMarks.style.display = 'block';
+                break;
+        }
+    }
+    
+    // Update zoom level of preview
+    function updatePreviewZoom(zoom) {
+        const container = document.querySelector('.print-preview-canvas-container');
+        
+        if (zoom === 'fit') {
+            container.style.transform = 'scale(1)';
+            container.style.transformOrigin = 'center';
+        } else {
+            const scale = parseInt(zoom) / 100;
+            container.style.transform = `scale(${scale})`;
+            container.style.transformOrigin = 'center';
+        }
+    }
+}
+
+/**
+ * Initialize layout designer functionality
+ */
+function initializeLayoutDesigner() {
+    // Get layout designer elements
+    const layoutCanvas = document.getElementById('layout-canvas');
+    const paperSheet = document.querySelector('.paper-sheet');
+    const layoutElements = document.querySelectorAll('.layout-element-item');
+    const templateItems = document.querySelectorAll('.template-item');
+    const orientationSelect = document.getElementById('layout-orientation');
+    
+    // Setup drag and drop for layout elements
+    if (layoutElements) {
+        layoutElements.forEach(element => {
+            element.addEventListener('dragstart', function(e) {
+                e.dataTransfer.setData('text/plain', this.getAttribute('data-element'));
+                this.classList.add('dragging');
+            });
+            
+            element.addEventListener('dragend', function() {
+                this.classList.remove('dragging');
+            });
+        });
+    }
+    
+    // Setup paper sheet as drop target
+    if (paperSheet) {
+        paperSheet.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('drag-over');
+        });
+        
+        paperSheet.addEventListener('dragleave', function() {
+            this.classList.remove('drag-over');
+        });
+        
+        paperSheet.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            
+            const elementType = e.dataTransfer.getData('text/plain');
+            if (!elementType) return;
+            
+            // Calculate position relative to paper sheet
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Create element
+            addLayoutElement(elementType, x, y);
+        });
+    }
+    
+    // Listen for layout orientation changes
+    if (orientationSelect) {
+        orientationSelect.addEventListener('change', function() {
+            updateLayoutOrientation(this.value);
+        });
+    }
+    
+    // Setup template selection
+    if (templateItems) {
+        templateItems.forEach(template => {
+            template.addEventListener('click', function() {
+                applyTemplate(this.getAttribute('data-template'));
+            });
+        });
+    }
+    
+    // Add element to layout canvas
+    function addLayoutElement(type, x, y) {
+        const element = document.createElement('div');
+        element.className = 'layout-element';
+        element.setAttribute('data-type', type);
+        element.style.position = 'absolute';
+        element.style.left = x + 'px';
+        element.style.top = y + 'px';
+        element.style.cursor = 'move';
+        
+        // Make element draggable for repositioning
+        element.setAttribute('draggable', 'true');
+        
+        // Add different contents based on type
+        switch(type) {
+            case 'map':
+                element.classList.add('map-element');
+                element.style.width = '300px';
+                element.style.height = '200px';
+                element.style.backgroundColor = '#f0f0f0';
+                element.style.border = '1px solid #ccc';
+                element.innerHTML = '<div class="element-label">Map Frame</div>';
+                break;
+                
+            case 'title':
+                element.classList.add('title-element');
+                element.style.padding = '10px';
+                element.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                element.style.border = '1px dashed #ccc';
+                element.innerHTML = '<h2 style="margin:0;">Map Title</h2>';
+                break;
+                
+            case 'legend':
+                element.classList.add('legend-element');
+                element.style.width = '100px';
+                element.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                element.style.border = '1px solid #ccc';
+                element.style.padding = '5px';
+                element.innerHTML = `
+                    <div class="element-label">Legend</div>
+                    <div style="margin-top:5px;">
+                        <div style="display:flex;align-items:center;margin:3px 0;">
+                            <div style="width:10px;height:10px;background:#d32f2f;margin-right:5px;"></div>
+                            <span style="font-size:10px;">Stations</span>
+                        </div>
+                        <div style="display:flex;align-items:center;margin:3px 0;">
+                            <div style="width:10px;height:10px;background:#1976d2;margin-right:5px;"></div>
+                            <span style="font-size:10px;">Hydrants</span>
+                        </div>
+                    </div>
+                `;
+                break;
+                
+            case 'north-arrow':
+                element.classList.add('north-arrow-element');
+                element.style.width = '30px';
+                element.style.height = '30px';
+                element.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                element.style.borderRadius = '50%';
+                element.style.display = 'flex';
+                element.style.alignItems = 'center';
+                element.style.justifyContent = 'center';
+                element.innerHTML = '<i class="fas fa-arrow-up" style="color:#d32f2f;"></i>';
+                break;
+                
+            case 'scale-bar':
+                element.classList.add('scale-bar-element');
+                element.style.width = '100px';
+                element.style.padding = '5px';
+                element.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                element.style.border = '1px solid #ccc';
+                element.innerHTML = `
+                    <div style="width:100%;height:5px;border-bottom:2px solid #333;border-left:2px solid #333;border-right:2px solid #333;"></div>
+                    <div style="font-size:8px;text-align:center;">0 1 2 3 km</div>
+                `;
+                break;
+                
+            case 'text':
+                element.classList.add('text-element');
+                element.style.minWidth = '100px';
+                element.style.padding = '5px';
+                element.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                element.style.border = '1px dashed #ccc';
+                element.innerHTML = '<p style="margin:0;font-size:12px;">Text box</p>';
+                break;
+                
+            case 'image':
+                element.classList.add('image-element');
+                element.style.width = '100px';
+                element.style.height = '70px';
+                element.style.backgroundColor = '#f0f0f0';
+                element.style.border = '1px solid #ccc';
+                element.style.display = 'flex';
+                element.style.alignItems = 'center';
+                element.style.justifyContent = 'center';
+                element.innerHTML = '<i class="fas fa-image"></i>';
+                break;
+                
+            case 'shape':
+                element.classList.add('shape-element');
+                element.style.width = '80px';
+                element.style.height = '80px';
+                element.style.backgroundColor = 'rgba(25, 118, 210, 0.2)';
+                element.style.border = '1px solid #1976d2';
+                break;
+        }
+        
+        // Add delete button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'element-delete-btn';
+        deleteBtn.innerHTML = '×';
+        deleteBtn.style.position = 'absolute';
+        deleteBtn.style.top = '-10px';
+        deleteBtn.style.right = '-10px';
+        deleteBtn.style.width = '20px';
+        deleteBtn.style.height = '20px';
+        deleteBtn.style.borderRadius = '50%';
+        deleteBtn.style.backgroundColor = '#f44336';
+        deleteBtn.style.color = 'white';
+        deleteBtn.style.border = 'none';
+        deleteBtn.style.display = 'none';
+        deleteBtn.style.cursor = 'pointer';
+        
+        element.appendChild(deleteBtn);
+        
+        // Show delete button on hover
+        element.addEventListener('mouseover', function() {
+            deleteBtn.style.display = 'block';
+        });
+        
+        element.addEventListener('mouseout', function() {
+            deleteBtn.style.display = 'none';
+        });
+        
+        // Delete element when delete button is clicked
+        deleteBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            paperSheet.removeChild(element);
+        });
+        
+        // Add click handler to select element
+        element.addEventListener('click', function() {
+            // Remove selected class from all elements
+            document.querySelectorAll('.layout-element').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Add selected class to this element
+            this.classList.add('selected');
+            
+            // Update properties panel
+            showElementProperties(this);
+        });
+        
+        // Make element draggable for repositioning
+        element.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData('text/plain', 'move');
+            e.dataTransfer.setData('element-id', this.id);
+            this.style.opacity = '0.4';
+        });
+        
+        element.addEventListener('dragend', function() {
+            this.style.opacity = '1';
+        });
+        
+        // Add element to paper
+        paperSheet.appendChild(element);
+        
+        // Select the newly added element
+        element.click();
+    }
+    
+    // Update properties panel based on selected element
+    function showElementProperties(element) {
+        const propertiesPanel = document.getElementById('element-properties');
+        if (!propertiesPanel) return;
+        
+        // Clear previous content
+        propertiesPanel.innerHTML = '';
+        
+        // Get element type
+        const type = element.getAttribute('data-type');
+        
+        // Create properties form based on element type
+        const form = document.createElement('form');
+        form.className = 'properties-form';
+        
+        // Add common properties
+        form.innerHTML = `
+            <div class="form-group">
+                <label>Position</label>
+                <div style="display:flex;gap:10px;">
+                    <div style="flex:1;">
+                        <label for="element-left">X</label>
+                        <input type="number" id="element-left" value="${parseInt(element.style.left)}" style="width:100%;">
+                    </div>
+                    <div style="flex:1;">
+                        <label for="element-top">Y</label>
+                        <input type="number" id="element-top" value="${parseInt(element.style.top)}" style="width:100%;">
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add type-specific properties
+        switch(type) {
+            case 'map':
+                form.innerHTML += `
+                    <div class="form-group">
+                        <label>Size</label>
+                        <div style="display:flex;gap:10px;">
+                            <div style="flex:1;">
+                                <label for="element-width">Width</label>
+                                <input type="number" id="element-width" value="${parseInt(element.style.width)}" style="width:100%;">
+                            </div>
+                            <div style="flex:1;">
+                                <label for="element-height">Height</label>
+                                <input type="number" id="element-height" value="${parseInt(element.style.height)}" style="width:100%;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="map-visibility">Layer Visibility</label>
+                        <select id="map-visibility" style="width:100%;">
+                            <option value="all">All Visible Layers</option>
+                            <option value="selected">Selected Layers Only</option>
+                        </select>
+                    </div>
+                `;
+                break;
+                
+            case 'title':
+                const titleText = element.querySelector('h2').textContent;
+                form.innerHTML += `
+                    <div class="form-group">
+                        <label for="title-text">Title Text</label>
+                        <input type="text" id="title-text" value="${titleText}" style="width:100%;">
+                    </div>
+                    <div class="form-group">
+                        <label for="title-font-size">Font Size</label>
+                        <input type="number" id="title-font-size" value="18" style="width:100%;">
+                    </div>
+                    <div class="form-group">
+                        <label for="title-color">Color</label>
+                        <input type="color" id="title-color" value="#d32f2f" style="width:100%;">
+                    </div>
+                `;
+                break;
+                
+            case 'text':
+                const textContent = element.querySelector('p').textContent;
+                form.innerHTML += `
+                    <div class="form-group">
+                        <label for="text-content">Text Content</label>
+                        <textarea id="text-content" style="width:100%;height:60px;">${textContent}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="text-font-size">Font Size</label>
+                        <input type="number" id="text-font-size" value="12" style="width:100%;">
+                    </div>
+                    <div class="form-group">
+                        <label for="text-color">Color</label>
+                        <input type="color" id="text-color" value="#000000" style="width:100%;">
+                    </div>
+                `;
+                break;
+                
+            case 'shape':
+                form.innerHTML += `
+                    <div class="form-group">
+                        <label>Size</label>
+                        <div style="display:flex;gap:10px;">
+                            <div style="flex:1;">
+                                <label for="shape-width">Width</label>
+                                <input type="number" id="shape-width" value="${parseInt(element.style.width)}" style="width:100%;">
+                            </div>
+                            <div style="flex:1;">
+                                <label for="shape-height">Height</label>
+                                <input type="number" id="shape-height" value="${parseInt(element.style.height)}" style="width:100%;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="shape-color">Fill Color</label>
+                        <input type="color" id="shape-color" value="#1976d2" style="width:100%;">
+                    </div>
+                    <div class="form-group">
+                        <label for="shape-opacity">Opacity</label>
+                        <input type="range" id="shape-opacity" min="0" max="1" step="0.1" value="0.2" style="width:100%;">
+                    </div>
+                    <div class="form-group">
+                        <label for="shape-border">Border Color</label>
+                        <input type="color" id="shape-border" value="#1976d2" style="width:100%;">
+                    </div>
+                `;
+                break;
+                
+            case 'legend':
+            case 'scale-bar':
+            case 'north-arrow':
+            case 'image':
+                form.innerHTML += `
+                    <div class="form-group">
+                        <label>Size</label>
+                        <div style="display:flex;gap:10px;">
+                            <div style="flex:1;">
+                                <label for="element-width">Width</label>
+                                <input type="number" id="element-width" value="${parseInt(element.style.width || '100')}" style="width:100%;">
+                            </div>
+                            <div style="flex:1;">
+                                <label for="element-height">Height</label>
+                                <input type="number" id="element-height" value="${parseInt(element.style.height || '100')}" style="width:100%;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="element-bg">Background</label>
+                        <select id="element-bg" style="width:100%;">
+                            <option value="transparent">Transparent</option>
+                            <option value="white" selected>White</option>
+                            <option value="light">Light Gray</option>
+                            <option value="dark">Dark</option>
+                        </select>
+                    </div>
+                `;
+                break;
+        }
+        
+        // Add form to properties panel
+        propertiesPanel.appendChild(form);
+        
+        // Add event listeners to update element
+        setupPropertyEventListeners(element, form);
+    }
+    
+    // Add event listeners to property form inputs
+    function setupPropertyEventListeners(element, form) {
+        // Position inputs
+        const leftInput = form.querySelector('#element-left');
+        const topInput = form.querySelector('#element-top');
+        
+        if (leftInput) {
+            leftInput.addEventListener('change', function() {
+                element.style.left = this.value + 'px';
+            });
+        }
+        
+        if (topInput) {
+            topInput.addEventListener('change', function() {
+                element.style.top = this.value + 'px';
+            });
+        }
+        
+        // Size inputs
+        const widthInput = form.querySelector('#element-width');
+        const heightInput = form.querySelector('#element-height');
+        
+        if (widthInput) {
+            widthInput.addEventListener('change', function() {
+                element.style.width = this.value + 'px';
+            });
+        }
+        
+        if (heightInput) {
+            heightInput.addEventListener('change', function() {
+                element.style.height = this.value + 'px';
+            });
+        }
+        
+        // Element type specific inputs
+        const type = element.getAttribute('data-type');
+        
+        switch(type) {
+            case 'title':
+                const titleText = form.querySelector('#title-text');
+                const titleFontSize = form.querySelector('#title-font-size');
+                const titleColor = form.querySelector('#title-color');
+                
+                if (titleText) {
+                    titleText.addEventListener('input', function() {
+                        element.querySelector('h2').textContent = this.value;
+                    });
+                }
+                
+                if (titleFontSize) {
+                    titleFontSize.addEventListener('change', function() {
+                        element.querySelector('h2').style.fontSize = this.value + 'px';
+                    });
+                }
+                
+                if (titleColor) {
+                    titleColor.addEventListener('input', function() {
+                        element.querySelector('h2').style.color = this.value;
+                    });
+                }
+                break;
+                
+            case 'text':
+                const textContent = form.querySelector('#text-content');
+                const textFontSize = form.querySelector('#text-font-size');
+                const textColor = form.querySelector('#text-color');
+                
+                if (textContent) {
+                    textContent.addEventListener('input', function() {
+                        element.querySelector('p').textContent = this.value;
+                    });
+                }
+                
+                if (textFontSize) {
+                    textFontSize.addEventListener('change', function() {
+                        element.querySelector('p').style.fontSize = this.value + 'px';
+                    });
+                }
+                
+                if (textColor) {
+                    textColor.addEventListener('input', function() {
+                        element.querySelector('p').style.color = this.value;
+                    });
+                }
+                break;
+                
+            case 'shape':
+                const shapeColor = form.querySelector('#shape-color');
+                const shapeOpacity = form.querySelector('#shape-opacity');
+                const shapeBorder = form.querySelector('#shape-border');
+                
+                if (shapeColor) {
+                    shapeColor.addEventListener('input', function() {
+                        element.style.backgroundColor = this.value;
+                    });
+                }
+                
+                if (shapeOpacity) {
+                    shapeOpacity.addEventListener('input', function() {
+                        element.style.opacity = this.value;
+                    });
+                }
+                
+                if (shapeBorder) {
+                    shapeBorder.addEventListener('input', function() {
+                        element.style.borderColor = this.value;
+                    });
+                }
+                break;
+                
+            case 'legend':
+            case 'scale-bar':
+            case 'north-arrow':
+            case 'image':
+                const elementBg = form.querySelector('#element-bg');
+                
+                if (elementBg) {
+                    elementBg.addEventListener('change', function() {
+                        switch(this.value) {
+                            case 'transparent':
+                                element.style.backgroundColor = 'transparent';
+                                break;
+                            case 'white':
+                                element.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                                break;
+                            case 'light':
+                                element.style.backgroundColor = 'rgba(240, 240, 240, 0.8)';
+                                break;
+                            case 'dark':
+                                element.style.backgroundColor = 'rgba(60, 60, 60, 0.8)';
+                                element.style.color = 'white';
+                                break;
+                        }
+                    });
+                }
+                break;
+        }
+    }
+    
+    // Update layout orientation
+    function updateLayoutOrientation(orientation) {
+        if (!paperSheet) return;
+        
+        if (orientation === 'landscape') {
+            paperSheet.style.width = '400px';
+            paperSheet.style.height = '300px';
+        } else {
+            paperSheet.style.width = '300px';
+            paperSheet.style.height = '400px';
+        }
+    }
+    
+    // Apply a template layout
+    function applyTemplate(template) {
+        if (!paperSheet) return;
+        
+        // Clear existing elements
+        paperSheet.innerHTML = '';
+        
+        // Apply template
+        switch(template) {
+            case 'standard':
+                // Set orientation to landscape
+                if (orientationSelect) {
+                    orientationSelect.value = 'landscape';
+                    updateLayoutOrientation('landscape');
+                }
+                
+                // Add map frame
+                addLayoutElement('map', 50, 50);
+                
+                // Add title
+                const titleElement = addLayoutElement('title', 50, 10);
+                
+                // Add legend
+                addLayoutElement('legend', 50, 250);
+                
+                // Add north arrow
+                addLayoutElement('north-arrow', 340, 60);
+                
+                // Add scale bar
+                addLayoutElement('scale-bar', 290, 250);
+                break;
+                
+            case 'professional':
+                // Set orientation to landscape
+                if (orientationSelect) {
+                    orientationSelect.value = 'landscape';
+                    updateLayoutOrientation('landscape');
+                }
+                
+                // Add map frame
+                addLayoutElement('map', 100, 70);
+                
+                // Add title
+                addLayoutElement('title', 150, 20);
+                
+                // Add legend
+                addLayoutElement('legend', 20, 100);
+                
+                // Add north arrow
+                addLayoutElement('north-arrow', 30, 30);
+                
+                // Add scale bar
+                addLayoutElement('scale-bar', 290, 250);
+                
+                // Add shape for border
+                const borderShape = addLayoutElement('shape', 10, 10);
+                borderShape.style.width = '380px';
+                borderShape.style.height = '280px';
+                borderShape.style.backgroundColor = 'transparent';
+                borderShape.style.border = '2px solid #1976d2';
+                borderShape.style.zIndex = '-1';
+                break;
+                
+            case 'presentation':
+                // Set orientation to landscape
+                if (orientationSelect) {
+                    orientationSelect.value = 'landscape';
+                    updateLayoutOrientation('landscape');
+                }
+                
+                // Add map frame
+                addLayoutElement('map', 120, 70);
+                
+                // Add title
+                addLayoutElement('title', 120, 20);
+                
+                // Add text for description
+                const textElement = addLayoutElement('text', 20, 70);
+                textElement.style.width = '80px';
+                textElement.style.height = '200px';
+                textElement.querySelector('p').textContent = 'This map shows the distribution of fire stations and recent incidents in the coverage area.';
+                
+                // Add north arrow
+                addLayoutElement('north-arrow', 340, 30);
+                
+                // Add scale bar
+                addLayoutElement('scale-bar', 290, 250);
+                break;
+                
+            case 'tactical':
+                // Set orientation to portrait
+                if (orientationSelect) {
+                    orientationSelect.value = 'portrait';
+                    updateLayoutOrientation('portrait');
+                }
+                
+                // Add map frame
+                addLayoutElement('map', 20, 100);
+                
+                // Add title
+                addLayoutElement('title', 20, 20);
+                
+                // Add legend
+                addLayoutElement('legend', 20, 310);
+                
+                // Add north arrow
+                addLayoutElement('north-arrow', 250, 30);
+                
+                // Add scale bar
+                addLayoutElement('scale-bar', 180, 310);
+                
+                // Add text for incident notes
+                const notesElement = addLayoutElement('text', 20, 360);
+                notesElement.style.width = '260px';
+                notesElement.querySelector('p').textContent = 'Incident Notes: Structure fire reported at 13:45. Three engines responding.';
+                break;
+        }
+    }
+    
+    // Initialize with default orientation
+    updateLayoutOrientation('portrait');
+}
+
 function exportPNG() {
     try {
         // Show loading indicator
@@ -2430,6 +3573,308 @@ function exportGeoJSON() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+}
+
+/**
+ * Export map as SVG
+ */
+function exportSVG() {
+    try {
+        // Show loading indicator
+        showToast("Generating SVG...", "info");
+        
+        // Get export options from modal
+        const mapTitle = document.getElementById('export-title').value || 'Fire Department Map';
+        const includeLegend = document.getElementById('export-legend').checked;
+        const includeScale = document.getElementById('export-scale').checked;
+        const includeNorth = document.getElementById('export-north').checked;
+        
+        // Create an SVG container
+        const svgNamespace = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(svgNamespace, "svg");
+        
+        // Get map dimensions
+        const width = map.getContainer().offsetWidth;
+        const height = map.getContainer().offsetHeight;
+        
+        // Set SVG attributes
+        svg.setAttribute("width", width);
+        svg.setAttribute("height", height);
+        svg.setAttribute("xmlns", svgNamespace);
+        svg.setAttribute("version", "1.1");
+        
+        // Add background
+        const background = document.createElementNS(svgNamespace, "rect");
+        background.setAttribute("width", width);
+        background.setAttribute("height", height);
+        background.setAttribute("fill", "white");
+        svg.appendChild(background);
+        
+        // Capture map container as SVG
+        try {
+            // Try to get map tiles as SVG
+            const mapPane = map.getContainer().querySelector('.leaflet-map-pane');
+            
+            // Convert tile images to SVG elements
+            if (mapPane) {
+                const tiles = mapPane.querySelectorAll('.leaflet-tile-container img');
+                tiles.forEach((tile, index) => {
+                    // For each tile, create an SVG image element
+                    const tileImage = document.createElementNS(svgNamespace, "image");
+                    const bounds = tile.getBoundingClientRect();
+                    const mapBounds = mapPane.getBoundingClientRect();
+                    
+                    // Calculate position relative to map pane
+                    const x = bounds.left - mapBounds.left;
+                    const y = bounds.top - mapBounds.top;
+                    
+                    tileImage.setAttribute("x", x);
+                    tileImage.setAttribute("y", y);
+                    tileImage.setAttribute("width", bounds.width);
+                    tileImage.setAttribute("height", bounds.height);
+                    tileImage.setAttribute("href", tile.src);
+                    
+                    svg.appendChild(tileImage);
+                });
+                
+                // Add vector layers if available
+                const vectorLayers = mapPane.querySelectorAll('.leaflet-overlay-pane path, .leaflet-overlay-pane circle, .leaflet-overlay-pane polygon');
+                vectorLayers.forEach((vector) => {
+                    // Clone the vector element into SVG
+                    const vectorClone = vector.cloneNode(true);
+                    svg.appendChild(vectorClone);
+                });
+            }
+        } catch (e) {
+            console.warn("Could not directly convert map to SVG:", e);
+            
+            // Fallback: Add a note in the SVG
+            const fallbackText = document.createElementNS(svgNamespace, "text");
+            fallbackText.setAttribute("x", 50);
+            fallbackText.setAttribute("y", 50);
+            fallbackText.setAttribute("font-family", "Arial");
+            fallbackText.setAttribute("font-size", "12");
+            fallbackText.textContent = "Map content requires rasterization - vector export is limited";
+            svg.appendChild(fallbackText);
+        }
+        
+        // Add title banner
+        if (document.getElementById('export-title-element').checked) {
+            const titleBanner = document.createElementNS(svgNamespace, "g");
+            
+            // Title background
+            const titleBackground = document.createElementNS(svgNamespace, "rect");
+            titleBackground.setAttribute("x", 10);
+            titleBackground.setAttribute("y", 10);
+            titleBackground.setAttribute("width", 300);
+            titleBackground.setAttribute("height", 50);
+            titleBackground.setAttribute("rx", 4);
+            titleBackground.setAttribute("fill", "rgba(255, 255, 255, 0.9)");
+            titleBackground.setAttribute("stroke", "#ccc");
+            titleBackground.setAttribute("stroke-width", "1");
+            titleBanner.appendChild(titleBackground);
+            
+            // Title text
+            const titleText = document.createElementNS(svgNamespace, "text");
+            titleText.setAttribute("x", 20);
+            titleText.setAttribute("y", 35);
+            titleText.setAttribute("font-family", "Arial");
+            titleText.setAttribute("font-size", "18");
+            titleText.setAttribute("fill", "#d32f2f");
+            titleText.setAttribute("font-weight", "bold");
+            titleText.textContent = mapTitle;
+            titleBanner.appendChild(titleText);
+            
+            // Subtitle
+            const subtitleText = document.createElementNS(svgNamespace, "text");
+            subtitleText.setAttribute("x", 20);
+            subtitleText.setAttribute("y", 50);
+            subtitleText.setAttribute("font-family", "Arial");
+            subtitleText.setAttribute("font-size", "11");
+            subtitleText.setAttribute("fill", "#666");
+            subtitleText.textContent = 'Generated on ' + new Date().toLocaleDateString();
+            titleBanner.appendChild(subtitleText);
+            
+            svg.appendChild(titleBanner);
+        }
+        
+        // Add north arrow if selected
+        if (includeNorth) {
+            const northArrow = document.createElementNS(svgNamespace, "g");
+            
+            // North arrow background
+            const arrowBackground = document.createElementNS(svgNamespace, "circle");
+            arrowBackground.setAttribute("cx", width - 30);
+            arrowBackground.setAttribute("cy", 30);
+            arrowBackground.setAttribute("r", 20);
+            arrowBackground.setAttribute("fill", "rgba(255, 255, 255, 0.9)");
+            arrowBackground.setAttribute("stroke", "#ccc");
+            arrowBackground.setAttribute("stroke-width", "1");
+            northArrow.appendChild(arrowBackground);
+            
+            // North arrow
+            const arrow = document.createElementNS(svgNamespace, "path");
+            arrow.setAttribute("d", `M ${width - 30} 15 L ${width - 35} 35 L ${width - 30} 30 L ${width - 25} 35 Z`);
+            arrow.setAttribute("fill", "#d32f2f");
+            northArrow.appendChild(arrow);
+            
+            // North label
+            const northLabel = document.createElementNS(svgNamespace, "text");
+            northLabel.setAttribute("x", width - 30);
+            northLabel.setAttribute("y", 45);
+            northLabel.setAttribute("font-family", "Arial");
+            northLabel.setAttribute("font-size", "10");
+            northLabel.setAttribute("text-anchor", "middle");
+            northLabel.setAttribute("font-weight", "bold");
+            northLabel.textContent = "N";
+            northArrow.appendChild(northLabel);
+            
+            svg.appendChild(northArrow);
+        }
+        
+        // Add scale bar if selected
+        if (includeScale) {
+            const scaleBar = document.createElementNS(svgNamespace, "g");
+            
+            // Scale background
+            const scaleBackground = document.createElementNS(svgNamespace, "rect");
+            scaleBackground.setAttribute("x", width - 120);
+            scaleBackground.setAttribute("y", height - 40);
+            scaleBackground.setAttribute("width", 110);
+            scaleBackground.setAttribute("height", 30);
+            scaleBackground.setAttribute("rx", 4);
+            scaleBackground.setAttribute("fill", "rgba(255, 255, 255, 0.9)");
+            scaleBackground.setAttribute("stroke", "#ccc");
+            scaleBackground.setAttribute("stroke-width", "1");
+            scaleBar.appendChild(scaleBackground);
+            
+            // Calculate scale based on current zoom
+            const zoom = map.getZoom();
+            const mapScale = Math.round(40075 / Math.pow(2, zoom + 8)) / 1000; // Approx. scale in km
+            
+            // Scale line
+            const scaleLine = document.createElementNS(svgNamespace, "line");
+            scaleLine.setAttribute("x1", width - 110);
+            scaleLine.setAttribute("y1", height - 20);
+            scaleLine.setAttribute("x2", width - 10);
+            scaleLine.setAttribute("y2", height - 20);
+            scaleLine.setAttribute("stroke", "#333");
+            scaleLine.setAttribute("stroke-width", "2");
+            scaleBar.appendChild(scaleLine);
+            
+            // Scale ticks
+            const leftTick = document.createElementNS(svgNamespace, "line");
+            leftTick.setAttribute("x1", width - 110);
+            leftTick.setAttribute("y1", height - 25);
+            leftTick.setAttribute("x2", width - 110);
+            leftTick.setAttribute("y2", height - 15);
+            leftTick.setAttribute("stroke", "#333");
+            leftTick.setAttribute("stroke-width", "2");
+            scaleBar.appendChild(leftTick);
+            
+            const rightTick = document.createElementNS(svgNamespace, "line");
+            rightTick.setAttribute("x1", width - 10);
+            rightTick.setAttribute("y1", height - 25);
+            rightTick.setAttribute("x2", width - 10);
+            rightTick.setAttribute("y2", height - 15);
+            rightTick.setAttribute("stroke", "#333");
+            rightTick.setAttribute("stroke-width", "2");
+            scaleBar.appendChild(rightTick);
+            
+            // Scale text
+            const scaleText = document.createElementNS(svgNamespace, "text");
+            scaleText.setAttribute("x", width - 60);
+            scaleText.setAttribute("y", height - 10);
+            scaleText.setAttribute("font-family", "Arial");
+            scaleText.setAttribute("font-size", "10");
+            scaleText.setAttribute("text-anchor", "middle");
+            scaleText.textContent = `~${mapScale} km`;
+            scaleBar.appendChild(scaleText);
+            
+            svg.appendChild(scaleBar);
+        }
+        
+        // Add legend if selected
+        if (includeLegend) {
+            const legend = document.createElementNS(svgNamespace, "g");
+            
+            // Legend background
+            const legendBackground = document.createElementNS(svgNamespace, "rect");
+            legendBackground.setAttribute("x", 10);
+            legendBackground.setAttribute("y", height - 120);
+            legendBackground.setAttribute("width", 150);
+            legendBackground.setAttribute("height", 110);
+            legendBackground.setAttribute("rx", 4);
+            legendBackground.setAttribute("fill", "rgba(255, 255, 255, 0.9)");
+            legendBackground.setAttribute("stroke", "#ccc");
+            legendBackground.setAttribute("stroke-width", "1");
+            legend.appendChild(legendBackground);
+            
+            // Legend title
+            const legendTitle = document.createElementNS(svgNamespace, "text");
+            legendTitle.setAttribute("x", 20);
+            legendTitle.setAttribute("y", height - 100);
+            legendTitle.setAttribute("font-family", "Arial");
+            legendTitle.setAttribute("font-size", "13");
+            legendTitle.setAttribute("font-weight", "bold");
+            legendTitle.textContent = "Legend";
+            legend.appendChild(legendTitle);
+            
+            // Legend items
+            let yOffset = height - 85;
+            
+            // Add hardcoded legend items - in real use would be based on active layers
+            const legendItems = [
+                { color: '#d32f2f', label: 'Fire Stations' },
+                { color: '#2196f3', label: 'Incidents' },
+                { color: '#1976d2', label: 'Hydrants' },
+                { color: '#4caf50', label: 'Hospitals' }
+            ];
+            
+            legendItems.forEach(item => {
+                // Item dot
+                const itemDot = document.createElementNS(svgNamespace, "circle");
+                itemDot.setAttribute("cx", 25);
+                itemDot.setAttribute("cy", yOffset);
+                itemDot.setAttribute("r", 6);
+                itemDot.setAttribute("fill", item.color);
+                legend.appendChild(itemDot);
+                
+                // Item label
+                const itemLabel = document.createElementNS(svgNamespace, "text");
+                itemLabel.setAttribute("x", 40);
+                itemLabel.setAttribute("y", yOffset + 4);
+                itemLabel.setAttribute("font-family", "Arial");
+                itemLabel.setAttribute("font-size", "12");
+                itemLabel.textContent = item.label;
+                legend.appendChild(itemLabel);
+                
+                yOffset += 20;
+            });
+            
+            svg.appendChild(legend);
+        }
+        
+        // Convert SVG to a blob
+        const svgString = new XMLSerializer().serializeToString(svg);
+        const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+        
+        // Create download link
+        const link = document.createElement('a');
+        link.download = mapTitle.replace(/\s+/g, '_') + '_' + Date.now() + '.svg';
+        link.href = URL.createObjectURL(blob);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Cleanup
+        URL.revokeObjectURL(link.href);
+        
+        showToast("SVG export complete!", "success");
+    } catch (error) {
+        console.error("Error exporting SVG:", error);
+        showToast("SVG export failed", "error");
+    }
 }
 
 /**
