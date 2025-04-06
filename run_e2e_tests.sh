@@ -115,8 +115,10 @@ if [ "$TEST_TYPE" = "accessibility" ]; then
   CMD="$CMD --grep=\"Accessibility Testing\""
 elif [ "$TEST_TYPE" = "security" ]; then
   CMD="$CMD --grep=\"Security Testing\""
+elif [ "$TEST_TYPE" = "responsive" ]; then
+  CMD="$CMD --grep=\"Responsive Design Testing\""
 elif [ "$TEST_TYPE" = "feature" ]; then
-  CMD="$CMD --grep-invert=\"Security Testing|Accessibility Testing\""
+  CMD="$CMD --grep-invert=\"Security Testing|Accessibility Testing|Responsive Design Testing\""
 fi
 
 # Run the tests

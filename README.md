@@ -111,6 +111,16 @@ Validates application compliance with WCAG accessibility standards:
 
 Documentation: [ACCESSIBILITY_TESTING.md](ACCESSIBILITY_TESTING.md)
 
+### Responsive Design Testing
+
+Ensures the application works well across different device sizes:
+
+```
+./run_e2e_tests.sh --test-type=responsive
+```
+
+Documentation: [RESPONSIVE_TESTING.md](RESPONSIVE_TESTING.md)
+
 ## CI/CD Integration
 
 The project includes GitHub Actions workflows for continuous integration and deployment:

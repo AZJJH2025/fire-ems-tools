@@ -218,6 +218,28 @@ Accessibility tests ensure the application is usable by people with disabilities
 
 **Documentation:** [ACCESSIBILITY_TESTING.md](ACCESSIBILITY_TESTING.md)
 
+## Responsive Design Testing
+
+Responsive design tests ensure the application works well across different device sizes:
+
+**Key Features:**
+- Automated testing on multiple device sizes
+- Mobile, tablet, and desktop viewport testing
+- Layout validation across breakpoints
+- Touch interaction verification
+- Visual regression capturing (screenshots)
+- Orientation change testing
+
+**Test Files:**
+- `e2e/tests/responsive.spec.js`: Responsive design tests
+
+**Running Responsive Tests:**
+```
+./run_e2e_tests.sh --test-type=responsive
+```
+
+**Documentation:** [RESPONSIVE_TESTING.md](RESPONSIVE_TESTING.md)
+
 ## Test Execution and Reporting
 
 Test execution and reporting is streamlined through various scripts:

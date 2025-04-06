@@ -56,6 +56,7 @@ Examples:
 ./run_e2e_tests.sh --debug
 ./run_e2e_tests.sh --ui
 ./run_e2e_tests.sh --test-type=accessibility
+./run_e2e_tests.sh --test-type=responsive
 ./run_e2e_tests.sh --test-match="auth.spec.js"
 ```
 
@@ -72,6 +73,7 @@ E2E tests are located in the `e2e/tests` directory and are organized by feature:
 - `data-formatter.spec.js`: Data Formatter feature tests
 - `security.spec.js`: Security and vulnerability tests
 - `accessibility.spec.js`: Accessibility and WCAG compliance tests
+- `responsive.spec.js`: Responsive design and mobile compatibility tests
 
 ## Fixtures and Utilities
 
