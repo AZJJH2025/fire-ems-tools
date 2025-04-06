@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-search@3.0.2/dist/leaflet-search.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-measure@3.1.0/dist/leaflet-measure.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='fire-map-pro.css') }}">
     
@@ -19,6 +20,7 @@
     <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-search@3.0.2/dist/leaflet-search.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-measure@3.1.0/dist/leaflet-measure.js"></script>
     
     <!-- Export libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -164,19 +166,19 @@
                     <div class="icon-category">
                         <h4>Emergency Services</h4>
                         <div class="icon-grid">
-                            <div class="draggable-icon" data-icon="fa-fire-extinguisher">
+                            <div class="draggable-icon" data-icon="fa-fire-extinguisher" draggable="true">
                                 <i class="fas fa-fire-extinguisher"></i>
                                 <span>Extinguisher</span>
                             </div>
-                            <div class="draggable-icon" data-icon="fa-ambulance">
+                            <div class="draggable-icon" data-icon="fa-ambulance" draggable="true">
                                 <i class="fas fa-ambulance"></i>
                                 <span>Ambulance</span>
                             </div>
-                            <div class="draggable-icon" data-icon="fa-truck">
+                            <div class="draggable-icon" data-icon="fa-truck" draggable="true">
                                 <i class="fas fa-truck"></i>
                                 <span>Fire Engine</span>
                             </div>
-                            <div class="draggable-icon" data-icon="fa-hospital">
+                            <div class="draggable-icon" data-icon="fa-hospital" draggable="true">
                                 <i class="fas fa-hospital"></i>
                                 <span>Hospital</span>
                             </div>
@@ -185,22 +187,35 @@
                     <div class="icon-category">
                         <h4>Hazards</h4>
                         <div class="icon-grid">
-                            <div class="draggable-icon" data-icon="fa-skull-crossbones">
+                            <div class="draggable-icon" data-icon="fa-skull-crossbones" draggable="true">
                                 <i class="fas fa-skull-crossbones"></i>
                                 <span>Hazard</span>
                             </div>
-                            <div class="draggable-icon" data-icon="fa-radiation">
+                            <div class="draggable-icon" data-icon="fa-radiation" draggable="true">
                                 <i class="fas fa-radiation"></i>
                                 <span>Radiation</span>
                             </div>
-                            <div class="draggable-icon" data-icon="fa-biohazard">
+                            <div class="draggable-icon" data-icon="fa-biohazard" draggable="true">
                                 <i class="fas fa-biohazard"></i>
                                 <span>Biohazard</span>
                             </div>
-                            <div class="draggable-icon" data-icon="fa-bolt">
+                            <div class="draggable-icon" data-icon="fa-bolt" draggable="true">
                                 <i class="fas fa-bolt"></i>
                                 <span>Electrical</span>
                             </div>
+                        </div>
+                    </div>
+                    <div class="icon-options">
+                        <div class="color-selector">
+                            <label for="icon-color">Icon Color:</label>
+                            <select id="icon-color">
+                                <option value="#d32f2f">Red</option>
+                                <option value="#1976d2">Blue</option>
+                                <option value="#4caf50">Green</option>
+                                <option value="#ff9800">Orange</option>
+                                <option value="#9c27b0">Purple</option>
+                                <option value="#607d8b">Gray</option>
+                            </select>
                         </div>
                     </div>
                 </div>
