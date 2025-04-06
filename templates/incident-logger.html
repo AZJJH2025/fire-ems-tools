@@ -2121,20 +2121,59 @@
         // Resolve references between modules
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize the NFIRS integration
-            if (window.IncidentLogger.NFIRS) {
-                // Connect validator and export modules that previously used imports
-                console.log("Connecting NFIRS modules in namespace pattern...");
-                
-                // Backwards compatibility for code expecting the old import/export pattern
-                window.validateNFIRSCompliance = window.IncidentLogger.NFIRS.Validator.validate;
-                window.isNFIRSReadyForExport = window.IncidentLogger.NFIRS.Validator.isReadyForExport;
-                window.getMissingNFIRSFields = window.IncidentLogger.NFIRS.Validator.getMissingFields;
-                window.convertToNFIRSXML = window.IncidentLogger.NFIRS.Export.toXML;
-                window.convertToNFIRSCSV = window.IncidentLogger.NFIRS.Export.toCSV;
-                window.convertToNFIRSJSON = window.IncidentLogger.NFIRS.Export.toJSON;
-                
-                console.log("NFIRS module integration completed successfully");
-            }
+            console.log("Connecting NFIRS modules in namespace pattern...");
+            
+            // Create the namespace structure if it doesn't exist
+            window.IncidentLogger = window.IncidentLogger || {};
+            window.IncidentLogger.NFIRS = window.IncidentLogger.NFIRS || {};
+            window.IncidentLogger.NFIRS.Validator = window.IncidentLogger.NFIRS.Validator || {};
+            window.IncidentLogger.NFIRS.Export = window.IncidentLogger.NFIRS.Export || {};
+            
+            // Backwards compatibility for code expecting the old import/export pattern
+            window.validateNFIRSCompliance = function(incident) {
+                if (window.IncidentLogger.NFIRS.Validator && window.IncidentLogger.NFIRS.Validator.validate) {
+                    return window.IncidentLogger.NFIRS.Validator.validate(incident);
+                }
+                console.error("NFIRS Validator not found in namespace");
+                return { isValid: false, errors: [{ field: "system", message: "NFIRS validation not available" }] };
+            };
+            
+            window.isNFIRSReadyForExport = function(incident) {
+                if (window.IncidentLogger.NFIRS.Validator && window.IncidentLogger.NFIRS.Validator.isReadyForExport) {
+                    return window.IncidentLogger.NFIRS.Validator.isReadyForExport(incident);
+                }
+                return false;
+            };
+            
+            window.getMissingNFIRSFields = function(incident) {
+                if (window.IncidentLogger.NFIRS.Validator && window.IncidentLogger.NFIRS.Validator.getMissingFields) {
+                    return window.IncidentLogger.NFIRS.Validator.getMissingFields(incident);
+                }
+                return [];
+            };
+            
+            window.convertToNFIRSXML = function(incident) {
+                if (window.IncidentLogger.NFIRS.Export && window.IncidentLogger.NFIRS.Export.toXML) {
+                    return window.IncidentLogger.NFIRS.Export.toXML(incident);
+                }
+                return "<error>NFIRS Export not available</error>";
+            };
+            
+            window.convertToNFIRSCSV = function(incident) {
+                if (window.IncidentLogger.NFIRS.Export && window.IncidentLogger.NFIRS.Export.toCSV) {
+                    return window.IncidentLogger.NFIRS.Export.toCSV(incident);
+                }
+                return "error,NFIRS Export not available";
+            };
+            
+            window.convertToNFIRSJSON = function(incident) {
+                if (window.IncidentLogger.NFIRS.Export && window.IncidentLogger.NFIRS.Export.toJSON) {
+                    return window.IncidentLogger.NFIRS.Export.toJSON(incident);
+                }
+                return JSON.stringify({ error: "NFIRS Export not available" });
+            };
+            
+            console.log("NFIRS module integration completed successfully");
         });
     </script>
     <script>

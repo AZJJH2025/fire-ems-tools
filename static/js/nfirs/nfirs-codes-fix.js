@@ -84,7 +84,7 @@ window.NFIRS_CODES = {
     },
     
     // Action taken codes
-    actionsTaken: {
+    actionTaken: {
         "00": "Action taken, other",
         "10": "Fire, other",
         "11": "Extinguish",
