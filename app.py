@@ -1,10 +1,11 @@
-from flask import Flask, request, jsonify, send_from_directory, render_template, redirect, url_for, abort, flash, session
+from flask import Flask, request, jsonify, send_from_directory, render_template, redirect, url_for, abort, flash, session, make_response
 from flask_cors import CORS
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import jinja2
 import pandas as pd
+import numpy as np
 import os
 import traceback
 from datetime import datetime, timedelta
@@ -12,6 +13,9 @@ from werkzeug.utils import secure_filename
 import requests
 import time
 import json
+import csv
+import io
+from collections import Counter
 from functools import wraps
 import logging
 
@@ -3885,6 +3889,1015 @@ def register_routes(app):
     def station_overview():
         """Serve the Station Overview tool"""
         return render_template('station-overview.html')
+    
+    # Station Overview helper functions
+    def calculate_station_metrics(stations, incidents):
+        """
+        Calculate metrics for all stations based on incident data
+        
+        Args:
+            stations (list): List of station dictionaries
+            incidents (list): List of incident dictionaries
+            
+        Returns:
+            dict: Calculated metrics
+        """
+        # Initialize metrics structure
+        metrics = {
+            'response_times': {
+                'average': 0,
+                'percentile_90': 0
+            },
+            'call_volume': {
+                'total': len(incidents),
+                'by_type': {}
+            },
+            'unit_utilization': {
+                'average': 0,
+                'max': 0,
+                'min': 0
+            }
+        }
+        
+        # Calculate call volume by type
+        call_types = [inc.get('incident_type') for inc in incidents if inc.get('incident_type')]
+        type_counts = Counter(call_types)
+        metrics['call_volume']['by_type'] = dict(type_counts)
+        
+        # Calculate response times
+        response_times = []
+        
+        for incident in incidents:
+            if incident.get('dispatch_time') and incident.get('arrival_time'):
+                try:
+                    dispatch_time = datetime.fromisoformat(incident['dispatch_time'])
+                    arrival_time = datetime.fromisoformat(incident['arrival_time'])
+                    
+                    # Response time in seconds
+                    response_time = (arrival_time - dispatch_time).total_seconds()
+                    if response_time > 0:  # Avoid negative times due to data errors
+                        response_times.append(response_time)
+                except (ValueError, TypeError):
+                    continue
+        
+        if response_times:
+            metrics['response_times']['average'] = sum(response_times) / len(response_times)
+            metrics['response_times']['percentile_90'] = np.percentile(response_times, 90) if len(response_times) >= 10 else 0
+        
+        # Calculate unit utilization
+        unit_times = defaultdict(float)
+        unit_counts = defaultdict(int)
+        
+        for incident in incidents:
+            if incident.get('unit_id') and incident.get('dispatch_time') and incident.get('clear_time'):
+                try:
+                    unit_id = incident['unit_id']
+                    dispatch_time = datetime.fromisoformat(incident['dispatch_time'])
+                    clear_time = datetime.fromisoformat(incident['clear_time'])
+                    
+                    # Incident duration in hours
+                    duration = (clear_time - dispatch_time).total_seconds() / 3600.0
+                    if duration > 0:  # Avoid negative times due to data errors
+                        unit_times[unit_id] += duration
+                        unit_counts[unit_id] += 1
+                except (ValueError, TypeError):
+                    continue
+        
+        # Calculate utilization percentages (based on 24-hour day)
+        utilization_percentages = []
+        for unit_id, total_time in unit_times.items():
+            # Calculate percentage based on a 24-hour day over the period
+            # Here we simplify and just calculate percentage of a full day
+            utilization_percentage = (total_time / 24.0) * 100
+            utilization_percentages.append(utilization_percentage)
+        
+        if utilization_percentages:
+            metrics['unit_utilization']['average'] = sum(utilization_percentages) / len(utilization_percentages)
+            metrics['unit_utilization']['max'] = max(utilization_percentages)
+            metrics['unit_utilization']['min'] = min(utilization_percentages)
+        
+        return metrics
+
+    def calculate_single_station_metrics(station, incidents):
+        """
+        Calculate metrics for a single station
+        
+        Args:
+            station (dict): Station dictionary
+            incidents (list): List of incident dictionaries for this station
+            
+        Returns:
+            dict: Calculated metrics for this station
+        """
+        # Initialize metrics structure
+        metrics = {
+            'response_times': {
+                'average': 0,
+                'percentile_90': 0,
+                'turnout_time': 0,
+                'travel_time': 0
+            },
+            'call_volume': {
+                'total': len(incidents),
+                'by_type': {},
+                'primary_type': 'N/A'
+            },
+            'busiest_times': {
+                'hour': 0,
+                'day': 'N/A',
+                'month': 'N/A'
+            }
+        }
+        
+        # Calculate call volume by type
+        call_types = [inc.get('incident_type') for inc in incidents if inc.get('incident_type')]
+        type_counts = Counter(call_types)
+        metrics['call_volume']['by_type'] = dict(type_counts)
+        
+        # Determine primary incident type
+        if type_counts:
+            metrics['call_volume']['primary_type'] = type_counts.most_common(1)[0][0]
+        
+        # Calculate response times
+        response_times = []
+        turnout_times = []
+        travel_times = []
+        
+        for incident in incidents:
+            # Calculate response time (dispatch to arrival)
+            if incident.get('dispatch_time') and incident.get('arrival_time'):
+                try:
+                    dispatch_time = datetime.fromisoformat(incident['dispatch_time'])
+                    arrival_time = datetime.fromisoformat(incident['arrival_time'])
+                    
+                    # Response time in seconds
+                    response_time = (arrival_time - dispatch_time).total_seconds()
+                    if response_time > 0:  # Avoid negative times due to data errors
+                        response_times.append(response_time)
+                except (ValueError, TypeError):
+                    pass
+            
+            # Calculate turnout time (dispatch to en route)
+            if incident.get('dispatch_time') and incident.get('en_route_time'):
+                try:
+                    dispatch_time = datetime.fromisoformat(incident['dispatch_time'])
+                    en_route_time = datetime.fromisoformat(incident['en_route_time'])
+                    
+                    # Turnout time in seconds
+                    turnout_time = (en_route_time - dispatch_time).total_seconds()
+                    if turnout_time > 0:  # Avoid negative times due to data errors
+                        turnout_times.append(turnout_time)
+                except (ValueError, TypeError):
+                    pass
+            
+            # Calculate travel time (en route to arrival)
+            if incident.get('en_route_time') and incident.get('arrival_time'):
+                try:
+                    en_route_time = datetime.fromisoformat(incident['en_route_time'])
+                    arrival_time = datetime.fromisoformat(incident['arrival_time'])
+                    
+                    # Travel time in seconds
+                    travel_time = (arrival_time - en_route_time).total_seconds()
+                    if travel_time > 0:  # Avoid negative times due to data errors
+                        travel_times.append(travel_time)
+                except (ValueError, TypeError):
+                    pass
+        
+        if response_times:
+            metrics['response_times']['average'] = sum(response_times) / len(response_times)
+            metrics['response_times']['percentile_90'] = np.percentile(response_times, 90) if len(response_times) >= 10 else 0
+        
+        if turnout_times:
+            metrics['response_times']['turnout_time'] = sum(turnout_times) / len(turnout_times)
+        
+        if travel_times:
+            metrics['response_times']['travel_time'] = sum(travel_times) / len(travel_times)
+        
+        # Calculate busiest times
+        hours = []
+        days = []
+        months = []
+        
+        for incident in incidents:
+            if incident.get('dispatch_time'):
+                try:
+                    dispatch_time = datetime.fromisoformat(incident['dispatch_time'])
+                    hours.append(dispatch_time.hour)
+                    days.append(dispatch_time.strftime('%A'))  # Day name
+                    months.append(dispatch_time.strftime('%B'))  # Month name
+                except (ValueError, TypeError):
+                    pass
+        
+        if hours:
+            hour_counts = Counter(hours)
+            metrics['busiest_times']['hour'] = hour_counts.most_common(1)[0][0]
+        
+        if days:
+            day_counts = Counter(days)
+            metrics['busiest_times']['day'] = day_counts.most_common(1)[0][0]
+        
+        if months:
+            month_counts = Counter(months)
+            metrics['busiest_times']['month'] = month_counts.most_common(1)[0][0]
+        
+        return metrics
+
+    def calculate_unit_utilization(stations, incidents):
+        """
+        Calculate unit utilization metrics
+        
+        Args:
+            stations (list): List of station dictionaries
+            incidents (list): List of incident dictionaries
+            
+        Returns:
+            list: Unit utilization data
+        """
+        # Get all unique units
+        all_units = set()
+        station_units = {}
+        
+        for station in stations:
+            station_id = station.get('station_id')
+            units = station.get('units', [])
+            
+            for unit in units:
+                all_units.add(unit)
+                station_units[unit] = station_id
+        
+        # Calculate utilization for each unit
+        unit_data = []
+        
+        for unit_id in all_units:
+            # Get incidents for this unit
+            unit_incidents = [inc for inc in incidents if inc.get('unit_id') == unit_id]
+            total_incidents = len(unit_incidents)
+            
+            # Calculate total time spent on incidents
+            total_time = 0
+            valid_incidents = 0
+            
+            for incident in unit_incidents:
+                if incident.get('dispatch_time') and incident.get('clear_time'):
+                    try:
+                        dispatch_time = datetime.fromisoformat(incident['dispatch_time'])
+                        clear_time = datetime.fromisoformat(incident['clear_time'])
+                        
+                        # Incident duration in hours
+                        duration = (clear_time - dispatch_time).total_seconds() / 3600.0
+                        if duration > 0:  # Avoid negative times due to data errors
+                            total_time += duration
+                            valid_incidents += 1
+                    except (ValueError, TypeError):
+                        continue
+            
+            # Calculate utilization percentage (based on 24-hour day)
+            utilization_percentage = (total_time / 24.0) * 100 if total_time > 0 else 0
+            
+            # Add unit data
+            unit_data.append({
+                'unit_id': unit_id,
+                'station_id': station_units.get(unit_id, 'Unknown'),
+                'utilization_percentage': round(utilization_percentage, 1),
+                'total_time': round(total_time, 1),
+                'total_incidents': total_incidents,
+                'valid_incidents': valid_incidents
+            })
+        
+        # Sort by utilization percentage (descending)
+        unit_data.sort(key=lambda x: x['utilization_percentage'], reverse=True)
+        
+        return unit_data
+
+    def calculate_response_times(stations, incidents):
+        """
+        Calculate detailed response time analysis
+        
+        Args:
+            stations (list): List of station dictionaries
+            incidents (list): List of incident dictionaries
+            
+        Returns:
+            dict: Response time analysis
+        """
+        # Initialize response times structure
+        response_time_data = {
+            'average': 0,
+            'by_station': [],
+            'by_priority': [],
+            'by_call_type': []
+        }
+        
+        # Calculate overall average response time
+        all_response_times = []
+        
+        for incident in incidents:
+            if incident.get('dispatch_time') and incident.get('arrival_time'):
+                try:
+                    dispatch_time = datetime.fromisoformat(incident['dispatch_time'])
+                    arrival_time = datetime.fromisoformat(incident['arrival_time'])
+                    
+                    # Response time in seconds
+                    response_time = (arrival_time - dispatch_time).total_seconds()
+                    if response_time > 0:  # Avoid negative times due to data errors
+                        all_response_times.append(response_time)
+                except (ValueError, TypeError):
+                    continue
+        
+        if all_response_times:
+            response_time_data['average'] = sum(all_response_times) / len(all_response_times)
+        
+        # Calculate response times by station
+        station_ids = [station.get('station_id') for station in stations]
+        
+        for station_id in station_ids:
+            # Get incidents for this station
+            station_incidents = [inc for inc in incidents if inc.get('station_id') == station_id]
+            
+            if not station_incidents:
+                continue
+            
+            # Calculate response time components
+            turnout_times = []
+            travel_times = []
+            total_times = []
+            
+            for incident in station_incidents:
+                # Calculate turnout time (dispatch to en route)
+                if incident.get('dispatch_time') and incident.get('en_route_time'):
+                    try:
+                        dispatch_time = datetime.fromisoformat(incident['dispatch_time'])
+                        en_route_time = datetime.fromisoformat(incident['en_route_time'])
+                        
+                        # Turnout time in seconds
+                        turnout_time = (en_route_time - dispatch_time).total_seconds()
+                        if turnout_time > 0:  # Avoid negative times due to data errors
+                            turnout_times.append(turnout_time)
+                    except (ValueError, TypeError):
+                        pass
+                
+                # Calculate travel time (en route to arrival)
+                if incident.get('en_route_time') and incident.get('arrival_time'):
+                    try:
+                        en_route_time = datetime.fromisoformat(incident['en_route_time'])
+                        arrival_time = datetime.fromisoformat(incident['arrival_time'])
+                        
+                        # Travel time in seconds
+                        travel_time = (arrival_time - en_route_time).total_seconds()
+                        if travel_time > 0:  # Avoid negative times due to data errors
+                            travel_times.append(travel_time)
+                    except (ValueError, TypeError):
+                        pass
+                
+                # Calculate total response time (dispatch to arrival)
+                if incident.get('dispatch_time') and incident.get('arrival_time'):
+                    try:
+                        dispatch_time = datetime.fromisoformat(incident['dispatch_time'])
+                        arrival_time = datetime.fromisoformat(incident['arrival_time'])
+                        
+                        # Total response time in seconds
+                        total_time = (arrival_time - dispatch_time).total_seconds()
+                        if total_time > 0:  # Avoid negative times due to data errors
+                            total_times.append(total_time)
+                    except (ValueError, TypeError):
+                        pass
+            
+            # Calculate averages
+            avg_turnout = sum(turnout_times) / len(turnout_times) if turnout_times else 0
+            avg_travel = sum(travel_times) / len(travel_times) if travel_times else 0
+            avg_total = sum(total_times) / len(total_times) if total_times else 0
+            
+            # Add to response times by station
+            response_time_data['by_station'].append({
+                'station_id': station_id,
+                'turnout_time': avg_turnout,
+                'travel_time': avg_travel,
+                'total_response_time': avg_total
+            })
+        
+        # Calculate response times by priority
+        priorities = set(inc.get('priority') for inc in incidents if inc.get('priority'))
+        
+        for priority in priorities:
+            # Get incidents for this priority
+            priority_incidents = [inc for inc in incidents if inc.get('priority') == priority]
+            
+            if not priority_incidents:
+                continue
+            
+            # Calculate average response time
+            priority_times = []
+            
+            for incident in priority_incidents:
+                if incident.get('dispatch_time') and incident.get('arrival_time'):
+                    try:
+                        dispatch_time = datetime.fromisoformat(incident['dispatch_time'])
+                        arrival_time = datetime.fromisoformat(incident['arrival_time'])
+                        
+                        # Response time in seconds
+                        response_time = (arrival_time - dispatch_time).total_seconds()
+                        if response_time > 0:  # Avoid negative times due to data errors
+                            priority_times.append(response_time)
+                    except (ValueError, TypeError):
+                        pass
+            
+            if priority_times:
+                avg_time = sum(priority_times) / len(priority_times)
+                
+                # Add to response times by priority
+                response_time_data['by_priority'].append({
+                    'priority': priority,
+                    'average_response_time': avg_time
+                })
+        
+        # Calculate response times by call type
+        call_types = set(inc.get('incident_type') for inc in incidents if inc.get('incident_type'))
+        
+        for call_type in call_types:
+            # Get incidents for this call type
+            type_incidents = [inc for inc in incidents if inc.get('incident_type') == call_type]
+            
+            if not type_incidents:
+                continue
+            
+            # Calculate average response time
+            type_times = []
+            
+            for incident in type_incidents:
+                if incident.get('dispatch_time') and incident.get('arrival_time'):
+                    try:
+                        dispatch_time = datetime.fromisoformat(incident['dispatch_time'])
+                        arrival_time = datetime.fromisoformat(incident['arrival_time'])
+                        
+                        # Response time in seconds
+                        response_time = (arrival_time - dispatch_time).total_seconds()
+                        if response_time > 0:  # Avoid negative times due to data errors
+                            type_times.append(response_time)
+                    except (ValueError, TypeError):
+                        pass
+            
+            if type_times:
+                avg_time = sum(type_times) / len(type_times)
+                
+                # Add to response times by call type
+                response_time_data['by_call_type'].append({
+                    'type': call_type,
+                    'average_response_time': avg_time
+                })
+        
+        # Sort results
+        response_time_data['by_station'].sort(key=lambda x: x['total_response_time'])
+        response_time_data['by_priority'].sort(key=lambda x: x['average_response_time'])
+        response_time_data['by_call_type'].sort(key=lambda x: x['average_response_time'])
+        
+        return response_time_data
+    
+    # Station Overview API endpoints
+    @app.route('/api/station-overview/upload', methods=['POST'])
+    def station_overview_upload():
+        """Handle file upload for station data"""
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'}), 400
+            
+        uploaded_file = request.files['file']
+        if uploaded_file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+            
+        if uploaded_file and '.' in uploaded_file.filename:
+            file_ext = uploaded_file.filename.rsplit('.', 1)[1].lower()
+            
+            if file_ext == 'csv':
+                # Process CSV file
+                try:
+                    data = []
+                    csv_content = uploaded_file.read().decode('utf-8')
+                    csv_reader = csv.DictReader(io.StringIO(csv_content))
+                    for row in csv_reader:
+                        # Handle units list which is comma-separated in CSV
+                        if 'units' in row and isinstance(row['units'], str):
+                            row['units'] = [unit.strip() for unit in row['units'].split(',')]
+                        data.append(row)
+                    
+                    return jsonify({
+                        'success': True,
+                        'message': f'Successfully uploaded and processed {len(data)} station records',
+                        'stations': data
+                    })
+                except Exception as e:
+                    return jsonify({'error': f'Error processing CSV file: {str(e)}'}), 400
+            
+            elif file_ext in ['xls', 'xlsx']:
+                # Process Excel file
+                try:
+                    data = []
+                    df = pd.read_excel(uploaded_file)
+                    data = df.to_dict('records')
+                    
+                    # Ensure units are properly formatted as lists
+                    for row in data:
+                        if 'units' in row and isinstance(row['units'], str):
+                            row['units'] = [unit.strip() for unit in row['units'].split(',')]
+                    
+                    return jsonify({
+                        'success': True,
+                        'message': f'Successfully uploaded and processed {len(data)} station records',
+                        'stations': data
+                    })
+                except Exception as e:
+                    return jsonify({'error': f'Error processing Excel file: {str(e)}'}), 400
+            
+            else:
+                return jsonify({'error': 'Unsupported file format. Please upload CSV or Excel files.'}), 400
+        
+        return jsonify({'error': 'Invalid file'}), 400
+
+    @app.route('/api/station-overview/data', methods=['POST'])
+    def station_overview_submit_data():
+        """Submit station and incident data"""
+        data = request.json
+        
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        # Validate data structure
+        if 'stations' not in data or not isinstance(data['stations'], list):
+            return jsonify({'error': 'Missing or invalid stations data'}), 400
+        
+        if 'incidents' not in data or not isinstance(data['incidents'], list):
+            return jsonify({'error': 'Missing or invalid incidents data'}), 400
+        
+        # Store data in session for now (in a real app, this would go to a database)
+        session['station_data'] = data['stations']
+        session['incident_data'] = data['incidents']
+        
+        return jsonify({
+            'success': True,
+            'message': 'Data successfully uploaded',
+            'station_count': len(data['stations']),
+            'incident_count': len(data['incidents'])
+        })
+
+    @app.route('/api/station-overview/stations', methods=['GET'])
+    def station_overview_get_stations():
+        """Get all stations"""
+        # Check if we have data in session
+        if 'station_data' not in session or not session['station_data']:
+            # Return sample data if no actual data exists
+            return jsonify({
+                'stations': [
+                    {
+                        "station_id": "STA-001",
+                        "name": "Main Street Fire Station",
+                        "address": "123 Main Street",
+                        "city": "Phoenix",
+                        "state": "AZ",
+                        "latitude": 33.4484,
+                        "longitude": -112.0740,
+                        "units": ["E1", "L1", "BC1"],
+                        "personnel": 12
+                    },
+                    {
+                        "station_id": "STA-002",
+                        "name": "Westside Fire Station",
+                        "address": "456 West Avenue",
+                        "city": "Phoenix",
+                        "state": "AZ",
+                        "latitude": 33.4584,
+                        "longitude": -112.0840,
+                        "units": ["E2", "A2"],
+                        "personnel": 8
+                    },
+                    {
+                        "station_id": "STA-003",
+                        "name": "Eastside Fire Station",
+                        "address": "789 East Boulevard",
+                        "city": "Phoenix",
+                        "state": "AZ",
+                        "latitude": 33.4684,
+                        "longitude": -112.0640,
+                        "units": ["E3", "A3", "HM3"],
+                        "personnel": 10
+                    }
+                ]
+            })
+        
+        return jsonify({'stations': session['station_data']})
+
+    @app.route('/api/station-overview/stations/<station_id>', methods=['GET'])
+    def station_overview_get_station(station_id):
+        """Get a specific station by ID"""
+        # Check if we have data in session
+        if 'station_data' not in session or not session['station_data']:
+            return jsonify({'error': 'No station data available'}), 404
+        
+        # Find the requested station
+        station = next((s for s in session['station_data'] if s.get('station_id') == station_id), None)
+        
+        if not station:
+            return jsonify({'error': f'Station with ID {station_id} not found'}), 404
+        
+        return jsonify({'station': station})
+
+    @app.route('/api/station-overview/metrics', methods=['GET'])
+    def station_overview_get_metrics():
+        """Get metrics for all stations"""
+        # Check if we have data in session
+        if 'station_data' not in session or not session['station_data'] or 'incident_data' not in session or not session['incident_data']:
+            # Return sample metrics if no data
+            return jsonify({
+                'metrics': {
+                    'response_times': {
+                        'average': 325.5,
+                        'percentile_90': 450.2
+                    },
+                    'call_volume': {
+                        'total': 187,
+                        'by_type': {
+                            'FIRE': 35,
+                            'EMS': 120,
+                            'HAZMAT': 12,
+                            'RESCUE': 15,
+                            'SERVICE': 5
+                        }
+                    },
+                    'unit_utilization': {
+                        'average': 14.2,
+                        'max': 24.8,
+                        'min': 3.6
+                    }
+                }
+            })
+        
+        # Calculate actual metrics
+        metrics = calculate_station_metrics(session['station_data'], session['incident_data'])
+        
+        return jsonify({'metrics': metrics})
+
+    @app.route('/api/station-overview/metrics/<station_id>', methods=['GET'])
+    def station_overview_get_station_metrics(station_id):
+        """Get metrics for a specific station"""
+        # Check if we have data in session
+        if 'station_data' not in session or not session['station_data'] or 'incident_data' not in session or not session['incident_data']:
+            return jsonify({'error': 'No data available'}), 404
+        
+        # Find the requested station
+        station = next((s for s in session['station_data'] if s.get('station_id') == station_id), None)
+        
+        if not station:
+            return jsonify({'error': f'Station with ID {station_id} not found'}), 404
+        
+        # Get incidents for this station
+        station_incidents = [inc for inc in session['incident_data'] if inc.get('station_id') == station_id]
+        
+        # Calculate station-specific metrics
+        station_metrics = calculate_single_station_metrics(station, station_incidents)
+        
+        return jsonify({
+            'station_id': station_id,
+            'metrics': station_metrics
+        })
+
+    @app.route('/api/station-overview/filter', methods=['POST'])
+    def station_overview_filter_data():
+        """Filter station data by various criteria"""
+        # Get filter parameters
+        filters = request.json
+        
+        if not filters:
+            return jsonify({'error': 'No filter parameters provided'}), 400
+        
+        # Check if we have data in session
+        if 'incident_data' not in session or not session['incident_data']:
+            return jsonify({'error': 'No data available to filter'}), 404
+        
+        # Extract filter parameters
+        date_from = filters.get('dateFrom')
+        date_to = filters.get('dateTo')
+        station_id = filters.get('station')
+        call_type = filters.get('callType')
+        
+        # Apply filters
+        filtered_incidents = session['incident_data']
+        
+        # Filter by date range
+        if date_from and date_to:
+            try:
+                date_from_dt = datetime.fromisoformat(date_from)
+                date_to_dt = datetime.fromisoformat(date_to)
+                
+                # Add one day to make the end date inclusive
+                date_to_dt = date_to_dt + timedelta(days=1)
+                
+                filtered_incidents = [
+                    inc for inc in filtered_incidents
+                    if inc.get('dispatch_time') and datetime.fromisoformat(inc['dispatch_time']) >= date_from_dt
+                    and datetime.fromisoformat(inc['dispatch_time']) <= date_to_dt
+                ]
+            except ValueError:
+                return jsonify({'error': 'Invalid date format'}), 400
+        
+        # Filter by station
+        if station_id and station_id != 'all':
+            filtered_incidents = [inc for inc in filtered_incidents if inc.get('station_id') == station_id]
+        
+        # Filter by call type
+        if call_type and call_type != 'all':
+            filtered_incidents = [inc for inc in filtered_incidents if inc.get('incident_type') == call_type]
+        
+        return jsonify({
+            'success': True,
+            'filter_params': filters,
+            'incidents': filtered_incidents,
+            'total_count': len(filtered_incidents)
+        })
+
+    @app.route('/api/station-overview/utilization', methods=['GET'])
+    def station_overview_unit_utilization():
+        """Get unit utilization data"""
+        # Check if we have data in session
+        if 'station_data' not in session or not session['station_data'] or 'incident_data' not in session or not session['incident_data']:
+            # Return sample unit utilization data
+            return jsonify({
+                'units': [
+                    {
+                        'unit_id': 'E1',
+                        'station_id': 'STA-001',
+                        'utilization_percentage': 18.7,
+                        'total_time': 45.5,
+                        'total_incidents': 65
+                    },
+                    {
+                        'unit_id': 'L1',
+                        'station_id': 'STA-001',
+                        'utilization_percentage': 12.3,
+                        'total_time': 30.2,
+                        'total_incidents': 42
+                    },
+                    {
+                        'unit_id': 'BC1',
+                        'station_id': 'STA-001',
+                        'utilization_percentage': 8.1,
+                        'total_time': 19.8,
+                        'total_incidents': 28
+                    },
+                    {
+                        'unit_id': 'E2',
+                        'station_id': 'STA-002',
+                        'utilization_percentage': 21.5,
+                        'total_time': 52.4,
+                        'total_incidents': 72
+                    },
+                    {
+                        'unit_id': 'A2',
+                        'station_id': 'STA-002',
+                        'utilization_percentage': 24.8,
+                        'total_time': 60.6,
+                        'total_incidents': 98
+                    }
+                ]
+            })
+        
+        # Calculate actual unit utilization
+        unit_utilization = calculate_unit_utilization(session['station_data'], session['incident_data'])
+        
+        return jsonify({'units': unit_utilization})
+
+    @app.route('/api/station-overview/response-times', methods=['GET'])
+    def station_overview_response_times():
+        """Get response time analysis data"""
+        # Check if we have data in session
+        if 'station_data' not in session or not session['station_data'] or 'incident_data' not in session or not session['incident_data']:
+            # Return sample response time data
+            return jsonify({
+                'response_times': {
+                    'average': 325.5,
+                    'by_station': [
+                        {
+                            'station_id': 'STA-001',
+                            'turnout_time': 95.2,
+                            'travel_time': 230.3,
+                            'total_response_time': 325.5
+                        },
+                        {
+                            'station_id': 'STA-002',
+                            'turnout_time': 78.5,
+                            'travel_time': 245.8,
+                            'total_response_time': 324.3
+                        },
+                        {
+                            'station_id': 'STA-003',
+                            'turnout_time': 90.1,
+                            'travel_time': 250.2,
+                            'total_response_time': 340.3
+                        }
+                    ],
+                    'by_priority': [
+                        {
+                            'priority': 'HIGH',
+                            'average_response_time': 315.2
+                        },
+                        {
+                            'priority': 'MEDIUM',
+                            'average_response_time': 335.8
+                        },
+                        {
+                            'priority': 'LOW',
+                            'average_response_time': 385.3
+                        }
+                    ],
+                    'by_call_type': [
+                        {
+                            'type': 'FIRE',
+                            'average_response_time': 305.6
+                        },
+                        {
+                            'type': 'EMS',
+                            'average_response_time': 328.9
+                        },
+                        {
+                            'type': 'HAZMAT',
+                            'average_response_time': 340.5
+                        },
+                        {
+                            'type': 'RESCUE',
+                            'average_response_time': 312.7
+                        },
+                        {
+                            'type': 'SERVICE',
+                            'average_response_time': 380.2
+                        }
+                    ]
+                }
+            })
+        
+        # Calculate actual response times
+        response_times = calculate_response_times(session['station_data'], session['incident_data'])
+        
+        return jsonify({'response_times': response_times})
+
+    @app.route('/api/station-overview/map-data', methods=['GET'])
+    def station_overview_map_data():
+        """Get data for the station coverage map"""
+        # Check if we have data in session
+        if 'station_data' not in session or not session['station_data'] or 'incident_data' not in session or not session['incident_data']:
+            # Return sample map data
+            return jsonify({
+                'stations': [
+                    {
+                        'station_id': 'STA-001',
+                        'name': 'Main Street Fire Station',
+                        'latitude': 33.4484,
+                        'longitude': -112.0740,
+                        'units': ['E1', 'L1', 'BC1']
+                    },
+                    {
+                        'station_id': 'STA-002',
+                        'name': 'Westside Fire Station',
+                        'latitude': 33.4584,
+                        'longitude': -112.0840,
+                        'units': ['E2', 'A2']
+                    },
+                    {
+                        'station_id': 'STA-003',
+                        'name': 'Eastside Fire Station',
+                        'latitude': 33.4684,
+                        'longitude': -112.0640,
+                        'units': ['E3', 'A3', 'HM3']
+                    }
+                ],
+                'incidents': [
+                    {
+                        'incident_id': 'INC-001',
+                        'station_id': 'STA-001',
+                        'latitude': 33.4494,
+                        'longitude': -112.0750,
+                        'incident_type': 'FIRE'
+                    },
+                    {
+                        'incident_id': 'INC-002',
+                        'station_id': 'STA-002',
+                        'latitude': 33.4594,
+                        'longitude': -112.0850,
+                        'incident_type': 'EMS'
+                    },
+                    {
+                        'incident_id': 'INC-003',
+                        'station_id': 'STA-003',
+                        'latitude': 33.4694,
+                        'longitude': -112.0650,
+                        'incident_type': 'HAZMAT'
+                    }
+                ]
+            })
+        
+        # Prepare map data
+        stations = session['station_data']
+        
+        # Filter incident data to just include necessary fields for map
+        incident_map_data = []
+        for incident in session['incident_data']:
+            if 'latitude' in incident and 'longitude' in incident:
+                incident_map_data.append({
+                    'incident_id': incident.get('incident_id'),
+                    'station_id': incident.get('station_id'),
+                    'latitude': incident.get('latitude'),
+                    'longitude': incident.get('longitude'),
+                    'incident_type': incident.get('incident_type')
+                })
+        
+        return jsonify({
+            'stations': stations,
+            'incidents': incident_map_data
+        })
+
+    @app.route('/api/station-overview/export', methods=['GET'])
+    def station_overview_export_data():
+        """Export station data in various formats"""
+        # Get export parameters
+        export_format = request.args.get('format', 'csv')
+        export_type = request.args.get('type', 'metrics')
+        
+        # Check if we have data in session
+        if (export_type == 'metrics' and 
+            ('station_data' not in session or not session['station_data'] or 
+             'incident_data' not in session or not session['incident_data'])):
+            return jsonify({'error': 'No data available to export'}), 404
+        
+        if export_type == 'metrics':
+            # For metrics export, calculate metrics
+            all_metrics = []
+            for station in session['station_data']:
+                station_id = station.get('station_id')
+                station_incidents = [inc for inc in session['incident_data'] if inc.get('station_id') == station_id]
+                metrics = calculate_single_station_metrics(station, station_incidents)
+                
+                all_metrics.append({
+                    'station_id': station_id,
+                    'name': station.get('name'),
+                    'address': station.get('address'),
+                    'city': station.get('city'),
+                    'state': station.get('state'),
+                    'total_incidents': metrics['call_volume']['total'],
+                    'average_response_time': metrics['response_times']['average'],
+                    'percentile_90': metrics['response_times']['percentile_90'],
+                    'primary_incident_type': metrics['call_volume']['primary_type'],
+                    'busiest_hour': metrics['busiest_times']['hour'],
+                    'busiest_day': metrics['busiest_times']['day']
+                })
+            
+            if export_format == 'csv':
+                # Create CSV
+                csvfile = io.StringIO()
+                fieldnames = all_metrics[0].keys()
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                writer.writeheader()
+                for metric in all_metrics:
+                    writer.writerow(metric)
+                
+                response = make_response(csvfile.getvalue())
+                response.headers["Content-Disposition"] = "attachment; filename=station_metrics.csv"
+                response.headers["Content-Type"] = "text/csv"
+                return response
+            
+            elif export_format == 'excel':
+                # Create Excel
+                df = pd.DataFrame(all_metrics)
+                excel_file = io.BytesIO()
+                
+                # Create a workbook with xlsxwriter
+                with pd.ExcelWriter(excel_file, engine='xlsxwriter') as writer:
+                    df.to_excel(writer, sheet_name='Station Metrics', index=False)
+                    
+                    # Get the worksheet
+                    worksheet = writer.sheets['Station Metrics']
+                    
+                    # Add some formatting
+                    workbook = writer.book
+                    header_format = workbook.add_format({
+                        'bold': True,
+                        'text_wrap': True,
+                        'valign': 'top',
+                        'fg_color': '#D7E4BC',
+                        'border': 1
+                    })
+                    
+                    # Write the column headers with the defined format
+                    for col_num, value in enumerate(df.columns.values):
+                        worksheet.write(0, col_num, value, header_format)
+                        worksheet.set_column(col_num, col_num, 15)
+                
+                excel_file.seek(0)
+                
+                response = make_response(excel_file.getvalue())
+                response.headers["Content-Disposition"] = "attachment; filename=station_metrics.xlsx"
+                response.headers["Content-Type"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                return response
+            
+            else:
+                return jsonify({'error': f'Unsupported export format: {export_format}'}), 400
+        
+        else:
+            return jsonify({'error': f'Unsupported export type: {export_type}'}), 400
     
     # Test Dashboard routes
     @app.route('/test-dashboard')
