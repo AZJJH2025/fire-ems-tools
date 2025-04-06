@@ -326,25 +326,57 @@ def load_fixture_to_database(
         if dataset.category in datasets_by_category:
             datasets_by_category[dataset.category].append(dataset)
     
+    # Track inserted items to avoid duplicates
+    inserted_ids = {
+        "departments": set(),
+        "stations": set(),
+        "users": set(),
+        "incidents": set()
+    }
+    
     # Insert departments first
     for dataset in datasets_by_category["departments"]:
         for department in dataset.data:
-            insert_department(conn, department)
+            if department["id"] not in inserted_ids["departments"]:
+                try:
+                    insert_department(conn, department)
+                    inserted_ids["departments"].add(department["id"])
+                except sqlite3.IntegrityError:
+                    # Already exists, skip
+                    pass
     
     # Then insert stations
     for dataset in datasets_by_category["stations"]:
         for station in dataset.data:
-            insert_station(conn, station)
+            if station["id"] not in inserted_ids["stations"]:
+                try:
+                    insert_station(conn, station)
+                    inserted_ids["stations"].add(station["id"])
+                except sqlite3.IntegrityError:
+                    # Already exists, skip
+                    pass
     
     # Then insert users
     for dataset in datasets_by_category["users"]:
         for user in dataset.data:
-            insert_user(conn, user)
+            if user["id"] not in inserted_ids["users"]:
+                try:
+                    insert_user(conn, user)
+                    inserted_ids["users"].add(user["id"])
+                except sqlite3.IntegrityError:
+                    # Already exists, skip
+                    pass
     
     # Finally insert incidents
     for dataset in datasets_by_category["incidents"]:
         for incident in dataset.data:
-            insert_incident(conn, incident)
+            if incident["id"] not in inserted_ids["incidents"]:
+                try:
+                    insert_incident(conn, incident)
+                    inserted_ids["incidents"].add(incident["id"])
+                except sqlite3.IntegrityError:
+                    # Already exists, skip
+                    pass
     
     # Commit the changes
     conn.commit()
