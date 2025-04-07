@@ -964,6 +964,445 @@
           </div>
         </section>
         
+        <!-- Data Formatter Section -->
+        <section class="guide-section" id="data-formatter">
+          <h2>Data Formatter</h2>
+          
+          <div class="guide-topic">
+            <h3>Overview</h3>
+            <p>The Data Formatter is a powerful tool that helps you transform, standardize, and prepare your data files for use with any FireEMS.ai tool. It automatically maps fields, converts formats, and ensures your data is ready for analysis without the need for manual preprocessing.</p>
+            
+            <div class="callout">
+              <p><strong>Note:</strong> Data Formatter supports a wide range of input formats including CSV, Excel, JSON, XML, and KML/KMZ files, and can recognize data from most common CAD/RMS systems used in the fire and EMS service.</p>
+            </div>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Key Features</h3>
+            <p>The Data Formatter includes the following capabilities:</p>
+            <ul>
+              <li><strong>File Format Conversion</strong> - Convert between different file formats (CSV, Excel, JSON, etc.)</li>
+              <li><strong>Automatic Field Mapping</strong> - Smart detection of field names and data types</li>
+              <li><strong>CAD/RMS System Detection</strong> - Automatic recognition of common fire service software exports</li>
+              <li><strong>Data Cleaning</strong> - Standardization of dates, times, addresses, and coordinates</li>
+              <li><strong>Missing Value Handling</strong> - Options to remove, fill, or interpolate missing data</li>
+              <li><strong>Data Reduction</strong> - Compression options to reduce file size while preserving important information</li>
+              <li><strong>Tool-Specific Formatting</strong> - Tailored data preparation for each FireEMS.ai tool</li>
+              <li><strong>Direct Tool Integration</strong> - Send formatted data directly to your selected tool</li>
+            </ul>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Using the Data Formatter</h3>
+            <p>Follow these steps to format your data:</p>
+            <ol>
+              <li><strong>Upload your file</strong>:
+                <ul>
+                  <li>Click "Choose File" in the Input Data panel</li>
+                  <li>Select a CSV, Excel, JSON, XML, or KML/KMZ file from your computer</li>
+                  <li>If uploading an Excel file, select the specific sheet to use</li>
+                </ul>
+              </li>
+              <li><strong>Select your target tool</strong>:
+                <ul>
+                  <li>Choose which FireEMS.ai tool you want to prepare the data for</li>
+                  <li>Required fields for the selected tool will be automatically highlighted</li>
+                </ul>
+              </li>
+              <li><strong>Set transformation options (optional)</strong>:
+                <ul>
+                  <li>Expand the "Advanced Options" section</li>
+                  <li>Configure date formats, compression level, and how to handle missing values</li>
+                  <li>Enable/disable duplicate removal and address standardization</li>
+                </ul>
+              </li>
+              <li><strong>Transform the data</strong>:
+                <ul>
+                  <li>Click the "Transform Data" button</li>
+                  <li>Watch the transformation log for progress updates</li>
+                </ul>
+              </li>
+              <li><strong>Review the output</strong>:
+                <ul>
+                  <li>Check the output preview to ensure data looks correct</li>
+                  <li>Select your preferred output format (CSV, Excel, or JSON)</li>
+                </ul>
+              </li>
+              <li><strong>Use the formatted data</strong>:
+                <ul>
+                  <li>Click "Download" to save the formatted data to your computer</li>
+                  <li>Or click "Send to Tool" to directly open your selected tool with the formatted data</li>
+                </ul>
+              </li>
+            </ol>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Supported Data Sources</h3>
+            <p>The Data Formatter can automatically detect and properly format data from these common fire service systems:</p>
+            <ul>
+              <li><strong>Emergency Reporting</strong> - NFIRS-compliant format</li>
+              <li><strong>ESO FireRMS</strong> - Medical/Fire hybrid format</li>
+              <li><strong>ImageTrend</strong> - EMS/Fire Records Management System</li>
+              <li><strong>Spillman Flex (Motorola)</strong> - Law enforcement integration</li>
+              <li><strong>CentralSquare Small Agency</strong> - Simplified exports</li>
+              <li><strong>Alpine Software/RedNMX</strong> - Rural department focused</li>
+              <li><strong>Regional Shared Systems</strong> - Standardized formats</li>
+              <li><strong>Central Square CAD</strong> - Standard format</li>
+              <li><strong>Motorola/PremierOne CAD</strong></li>
+              <li><strong>Tyler New World CAD</strong></li>
+              <li><strong>Hexagon/Intergraph CAD</strong></li>
+            </ul>
+            
+            <div class="callout tip">
+              <p><strong>Tip:</strong> If your CAD/RMS system isn't listed, you can still use the Data Formatter. The tool will attempt to map fields based on common naming patterns and data structures.</p>
+            </div>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Tool-Specific Data Requirements</h3>
+            <p>Each FireEMS.ai tool has specific data requirements. Here are the key fields needed for major tools:</p>
+            
+            <h4>Response Time Analyzer</h4>
+            <ul>
+              <li>Incident ID</li>
+              <li>Incident Date</li>
+              <li>Incident Time</li>
+              <li>Dispatch Time</li>
+              <li>En Route Time</li>
+              <li>On Scene Time</li>
+              <li>Incident Type</li>
+              <li>Latitude</li>
+              <li>Longitude</li>
+            </ul>
+            
+            <h4>Call Density Heatmap</h4>
+            <ul>
+              <li>Incident ID</li>
+              <li>Incident Date</li>
+              <li>Incident Time</li>
+              <li>Latitude</li>
+              <li>Longitude</li>
+              <li>Incident Type (optional)</li>
+            </ul>
+            
+            <h4>Isochrone Map</h4>
+            <ul>
+              <li>Station ID</li>
+              <li>Station Name</li>
+              <li>Station Address</li>
+              <li>Latitude</li>
+              <li>Longitude</li>
+              <li>Unit Types</li>
+            </ul>
+            
+            <div class="callout">
+              <p><strong>Note:</strong> When you select a target tool, the Data Formatter will highlight which required fields have been identified in your data and which ones are missing.</p>
+            </div>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Advanced Options</h3>
+            <p>The Data Formatter provides several advanced options for customizing the transformation process:</p>
+            
+            <h4>Date Format</h4>
+            <p>Specify how dates in your source data are formatted:</p>
+            <ul>
+              <li><strong>Auto-detect</strong> - The tool will try to determine date formats automatically</li>
+              <li><strong>MM/DD/YYYY</strong> - U.S. format (e.g., 01/31/2025)</li>
+              <li><strong>DD/MM/YYYY</strong> - European format (e.g., 31/01/2025)</li>
+              <li><strong>YYYY-MM-DD</strong> - ISO format (e.g., 2025-01-31)</li>
+              <li><strong>Custom</strong> - Define your own date format pattern</li>
+            </ul>
+            
+            <h4>Compression</h4>
+            <p>Reduce file size while preserving important information:</p>
+            <ul>
+              <li><strong>None</strong> - No compression, preserve all data</li>
+              <li><strong>Light</strong> - Remove unnecessary columns and reduce precision slightly</li>
+              <li><strong>Medium</strong> - Combine similar entries and reduce precision</li>
+              <li><strong>High</strong> - Maximum compression, may lose some detail</li>
+            </ul>
+            
+            <h4>Missing Value Handling</h4>
+            <p>Choose how to handle missing data:</p>
+            <ul>
+              <li><strong>Remove rows</strong> - Delete entries with missing required fields</li>
+              <li><strong>Fill with defaults</strong> - Insert placeholder values</li>
+              <li><strong>Interpolate</strong> - Calculate missing values based on surrounding data when possible</li>
+            </ul>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Transformation Examples</h3>
+            
+            <h4>Example 1: Preparing Incident Data for Response Time Analyzer</h4>
+            <p><strong>Input:</strong> CAD export with incident details and timestamps</p>
+            <p><strong>Transformations:</strong></p>
+            <ul>
+              <li>Converts timestamps to a consistent format</li>
+              <li>Breaks down single datetime fields into separate date/time fields</li>
+              <li>Geocodes addresses to latitude/longitude if coordinates are missing</li>
+              <li>Standardizes incident types to match system categories</li>
+            </ul>
+            
+            <h4>Example 2: Formatting Data for Call Density Heatmap</h4>
+            <p><strong>Input:</strong> Excel file with call history</p>
+            <p><strong>Transformations:</strong></p>
+            <ul>
+              <li>Extracts location data from address fields</li>
+              <li>Converts addresses to coordinates if needed</li>
+              <li>Normalizes incident types for filtering</li>
+              <li>Removes duplicate entries for the same incident</li>
+            </ul>
+            
+            <h4>Example 3: Preparing Station Data for Isochrone Map</h4>
+            <p><strong>Input:</strong> Department station roster in CSV format</p>
+            <p><strong>Transformations:</strong></p>
+            <ul>
+              <li>Standardizes station addresses</li>
+              <li>Converts addresses to precise coordinates</li>
+              <li>Categorizes apparatus types by standard classes</li>
+              <li>Creates a properly structured station dataset</li>
+            </ul>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Tips for Best Results</h3>
+            <ul>
+              <li>Use files with column headers/field names when possible</li>
+              <li>Review the transformation log to understand what changes were made</li>
+              <li>For Excel files with multiple sheets, choose the specific sheet containing your data</li>
+              <li>Try different compression levels if you have very large datasets</li>
+              <li>Save your formatted data for reuse with different tools</li>
+              <li>For address data, ensure the original addresses are as complete as possible</li>
+              <li>When possible, include explicit latitude/longitude data rather than relying on geocoding</li>
+            </ul>
+            
+            <div class="callout tip">
+              <p><strong>Tip:</strong> For very large datasets (over 100,000 records), consider breaking the data into smaller chunks or using the high compression setting.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Coverage Gap Finder Section -->
+        <section class="guide-section" id="coverage-gap">
+          <h2>Coverage Gap Finder</h2>
+          
+          <div class="guide-topic">
+            <h3>Overview</h3>
+            <p>The Coverage Gap Finder is a sophisticated analytical tool designed to help fire and EMS agencies identify underserved areas within their jurisdiction. This tool combines geospatial analysis with incident data to optimize station locations and resource deployment, ensuring faster response times and better service delivery.</p>
+            
+            <div class="callout">
+              <p><strong>Note:</strong> The Coverage Gap Finder uses advanced spatial algorithms to analyze response capabilities based on your existing station locations, incident patterns, and population distribution.</p>
+            </div>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Key Features</h3>
+            <p>The Coverage Gap Finder includes the following capabilities:</p>
+            <ul>
+              <li><strong>Interactive Coverage Maps</strong> - Visualize response time coverage based on existing stations</li>
+              <li><strong>Gap Analysis</strong> - Identify areas with inadequate emergency service coverage</li>
+              <li><strong>Location Optimization</strong> - Receive data-driven suggestions for optimal new station locations</li>
+              <li><strong>Response Standard Integration</strong> - Analyze coverage based on NFPA 1710/1720 standards</li>
+              <li><strong>Population Weighting</strong> - Factor population density into coverage analysis</li>
+              <li><strong>Incident Density Analysis</strong> - Incorporate historical incident data for demand-based planning</li>
+              <li><strong>Station Management</strong> - Add, modify, or remove stations to test different scenarios</li>
+              <li><strong>Customizable Parameters</strong> - Set response time targets, travel speeds, and turnout times</li>
+              <li><strong>Export Capabilities</strong> - Save results in multiple formats for reports and presentations</li>
+            </ul>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Getting Started</h3>
+            <p>To begin using the Coverage Gap Finder:</p>
+            <ol>
+              <li>Navigate to the Coverage Gap Finder from the main menu</li>
+              <li>Set your jurisdiction boundary using one of these methods:
+                <ul>
+                  <li>Click "Draw Boundary" to manually outline your service area</li>
+                  <li>Click "Upload Boundary" to import a GeoJSON file of your jurisdiction</li>
+                </ul>
+              </li>
+              <li>Add station locations using one of these methods:
+                <ul>
+                  <li>Upload a CSV or Excel file containing station data</li>
+                  <li>Manually add stations by entering coordinates or addresses</li>
+                  <li>Click directly on the map to place stations</li>
+                </ul>
+              </li>
+              <li>Set coverage parameters (response times, travel speeds, etc.)</li>
+              <li>Click "Calculate Coverage" to generate the analysis</li>
+            </ol>
+            
+            <div class="callout tip">
+              <p><strong>Tip:</strong> For the most accurate results, use actual station locations and real response data from your jurisdiction. The system will automatically geocode addresses if you don't have coordinates.</p>
+            </div>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Data Requirements</h3>
+            <p>For optimal analysis, you should provide:</p>
+            <ul>
+              <li><strong>Station Data (Required)</strong> - Include at minimum:
+                <ul>
+                  <li>Station name or ID</li>
+                  <li>Location (address or latitude/longitude coordinates)</li>
+                </ul>
+              </li>
+              <li><strong>Incident Data (Optional but Recommended)</strong> - Historical emergency calls including:
+                <ul>
+                  <li>Incident location (address or coordinates)</li>
+                  <li>Incident date and time</li>
+                  <li>Incident type (optional but useful for filtering)</li>
+                </ul>
+              </li>
+              <li><strong>Jurisdiction Boundary (Recommended)</strong> - The specific area your agency is responsible for serving</li>
+            </ul>
+            
+            <div class="callout">
+              <p><strong>Note:</strong> If you don't have incident data, the tool will still function but will rely more heavily on population distribution for gap analysis. For the most accurate results, use at least 6-12 months of incident data.</p>
+            </div>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Setting Coverage Parameters</h3>
+            <p>The Coverage Gap Finder allows you to customize various parameters to match your agency's operational characteristics:</p>
+            
+            <h4>Response Standards</h4>
+            <p>Select from predefined standards or set custom values:</p>
+            <ul>
+              <li><strong>NFPA 1710</strong> - Urban career departments (4-minute travel time)</li>
+              <li><strong>NFPA 1720 Urban</strong> - Population density >1000 people/mi² (9-minute response time)</li>
+              <li><strong>NFPA 1720 Suburban</strong> - 500-1000 people/mi² (10-minute response time)</li>
+              <li><strong>NFPA 1720 Rural</strong> - <500 people/mi² (14-minute response time)</li>
+              <li><strong>NFPA 1720 Remote</strong> - Travel distance >8 miles (80% within 4-minute travel)</li>
+              <li><strong>Custom</strong> - Set your own response time targets</li>
+            </ul>
+            
+            <h4>Travel Speeds</h4>
+            <p>Choose from preset travel speed options or set custom values:</p>
+            <ul>
+              <li><strong>Urban (Slow)</strong> - 20 mph average</li>
+              <li><strong>Urban (Medium)</strong> - 25 mph average</li>
+              <li><strong>Urban (Fast)</strong> - 30 mph average</li>
+              <li><strong>Suburban</strong> - 35 mph average</li>
+              <li><strong>Rural</strong> - 45 mph average</li>
+              <li><strong>Highway</strong> - 55+ mph average</li>
+              <li><strong>Custom</strong> - Set your own speed value</li>
+            </ul>
+            
+            <h4>Turnout Times</h4>
+            <p>Set the time from alarm to when units begin travel:</p>
+            <ul>
+              <li><strong>0.5 minutes</strong> - 30 seconds</li>
+              <li><strong>1.0 minutes</strong> - 60 seconds (default)</li>
+              <li><strong>1.5 minutes</strong> - 90 seconds</li>
+              <li><strong>2.0 minutes</strong> - 120 seconds</li>
+              <li><strong>Custom</strong> - Set your own turnout time</li>
+            </ul>
+            
+            <div class="callout tip">
+              <p><strong>Tip:</strong> Different incident types may have different turnout time requirements. For example, NFPA 1710 recommends 60 seconds for EMS calls and 80 seconds for fire calls. Choose the value most appropriate for your analysis.</p>
+            </div>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Understanding the Results</h3>
+            <p>After analyzing your data, the Coverage Gap Finder displays several key metrics:</p>
+            
+            <h4>Coverage Metrics</h4>
+            <ul>
+              <li><strong>Area Coverage</strong> - Percentage of your jurisdiction reachable within the target response time</li>
+              <li><strong>Population Coverage</strong> - Percentage of population served within the target response time</li>
+              <li><strong>Incident Coverage</strong> - Percentage of historical incidents that would have been reachable within the target time</li>
+              <li><strong>Average Response Time</strong> - The calculated average response time across your jurisdiction</li>
+            </ul>
+            
+            <h4>Map Visualization</h4>
+            <p>The map display shows:</p>
+            <ul>
+              <li><strong>Green Areas</strong> - Locations reachable within your target response time</li>
+              <li><strong>Red Areas</strong> - Coverage gaps (locations not reachable within your target response time)</li>
+              <li><strong>Blue Markers</strong> - Existing station locations</li>
+              <li><strong>Orange Markers</strong> - Suggested optimized station locations</li>
+              <li><strong>Intensity Overlay</strong> - Optional heat maps showing population density or incident concentration</li>
+            </ul>
+            
+            <h4>Station List</h4>
+            <p>The station list table shows detailed statistics for each station, including:</p>
+            <ul>
+              <li>Station name and location</li>
+              <li>Coverage area in square miles/kilometers</li>
+              <li>Population covered by each station</li>
+              <li>Incidents covered (if incident data was provided)</li>
+            </ul>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Optimization Features</h3>
+            <p>The Coverage Gap Finder can suggest optimal locations for new stations based on your coverage gaps:</p>
+            
+            <ol>
+              <li><strong>Set Optimization Target</strong>:
+                <ul>
+                  <li><strong>Population Coverage</strong> - Prioritize areas with high population density</li>
+                  <li><strong>Area Coverage</strong> - Prioritize maximizing geographical coverage</li>
+                  <li><strong>Incident Coverage</strong> - Prioritize areas with high incident frequency</li>
+                  <li><strong>Balanced Approach</strong> - Consider all factors equally</li>
+                </ul>
+              </li>
+              <li><strong>Set Number of New Stations</strong> - Specify how many new station locations to suggest</li>
+              <li><strong>Run Optimization</strong> - Click "Suggest New Locations" to generate recommendations</li>
+              <li><strong>Review Results</strong> - Examine how the suggested locations would improve your coverage metrics</li>
+              <li><strong>Apply Suggestions</strong> - Add the suggested stations to your map for further analysis</li>
+            </ol>
+            
+            <div class="callout">
+              <p><strong>Note:</strong> The optimization algorithm uses a complex analysis of uncovered areas, call density, population distribution, and travel networks to determine the most effective new station placements.</p>
+            </div>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Exporting Results</h3>
+            <p>You can export your analysis results in several formats:</p>
+            <ul>
+              <li><strong>PDF Report</strong> - Complete analysis with maps, statistics, and recommendations</li>
+              <li><strong>Image Export</strong> - High-resolution map image for presentations</li>
+              <li><strong>Data Export</strong> - CSV or Excel file with all metrics and station data</li>
+            </ul>
+            
+            <p>To export your results:</p>
+            <ol>
+              <li>Run your coverage analysis</li>
+              <li>Select the desired export format from the Export Results section</li>
+              <li>For PDF exports, you can customize the report title and included content</li>
+              <li>For image exports, you can select the desired resolution and format</li>
+              <li>For data exports, you can choose which metrics to include</li>
+            </ol>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Best Practices</h3>
+            <p>Follow these recommendations for the most effective use of the Coverage Gap Finder:</p>
+            <ul>
+              <li><strong>Use Real Data</strong> - Whenever possible, use actual incident data rather than estimates</li>
+              <li><strong>Consider Time Patterns</strong> - Analyze different time periods separately (e.g., day vs. night, weekday vs. weekend)</li>
+              <li><strong>Start Simple</strong> - Begin with your existing stations before adding optimization scenarios</li>
+              <li><strong>Test Multiple Scenarios</strong> - Try different parameter settings to see how they affect coverage</li>
+              <li><strong>Include Traffic Patterns</strong> - Adjust travel speeds to reflect actual traffic conditions</li>
+              <li><strong>Focus on Critical Infrastructure</strong> - Pay special attention to coverage for hospitals, schools, senior centers, and industrial facilities</li>
+              <li><strong>Combine with Other Tools</strong> - Use results alongside the Isochrone Map and Call Density Heatmap for comprehensive planning</li>
+              <li><strong>Update Regularly</strong> - Re-run analyses as new incident data becomes available or community demographics change</li>
+            </ul>
+            
+            <div class="callout tip">
+              <p><strong>Tip:</strong> When planning new stations, consider running analyses for different types of equipment separately. For example, you might need different coverage patterns for EMS units versus specialized apparatus like ladder trucks.</p>
+            </div>
+          </div>
+        </section>
+        
         <!-- FAQ Section -->
         <section class="guide-section" id="faq">
           <h2>Frequently Asked Questions</h2>
