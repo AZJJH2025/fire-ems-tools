@@ -1,0 +1,30 @@
+{
+  "description": "Get department by ID",
+  "query": "query GetDepartment($id: ID!) { department(id: $id) { id name code department_type num_stations features_enabled } }",
+  "variables": {
+    "id": "1"
+  },
+  "auth_required": true,
+  "role": "user",
+  "expected_status": 200,
+  "validation_rules": [
+    {
+      "type": "no_errors"
+    },
+    {
+      "type": "has_data"
+    },
+    {
+      "type": "field_exists",
+      "path": "data.department"
+    },
+    {
+      "type": "field_exists",
+      "path": "data.department.id"
+    },
+    {
+      "type": "field_exists",
+      "path": "data.department.features_enabled"
+    }
+  ]
+}

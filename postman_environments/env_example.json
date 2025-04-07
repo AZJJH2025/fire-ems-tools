@@ -1,0 +1,57 @@
+{
+  "id": "fire-ems-api-env-example",
+  "name": "Fire-EMS API Test Environment (Example)",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "enabled": true
+    },
+    {
+      "key": "apiKey",
+      "value": "YOUR_API_KEY",
+      "enabled": true
+    },
+    {
+      "key": "apiPath",
+      "value": "/api/v1",
+      "enabled": true
+    },
+    {
+      "key": "departmentCode",
+      "value": "test_department",
+      "enabled": true
+    },
+    {
+      "key": "adminEmail",
+      "value": "test_admin@example.com",
+      "enabled": true
+    },
+    {
+      "key": "adminPassword",
+      "value": "test_password",
+      "enabled": true
+    },
+    {
+      "key": "incidentId",
+      "value": "1",
+      "enabled": true
+    },
+    {
+      "key": "stationId",
+      "value": "1",
+      "enabled": true
+    },
+    {
+      "key": "newIncidentId",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "newStationId",
+      "value": "",
+      "enabled": true
+    }
+  ],
+  "timestamp": 1712368072000
+}

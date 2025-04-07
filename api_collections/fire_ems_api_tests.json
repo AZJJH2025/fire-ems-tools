@@ -1,0 +1,1037 @@
+{
+  "info": {
+    "name": "Fire-EMS API Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication Tests",
+      "item": [
+        {
+          "name": "Valid API Key - Header",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/department",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiPath}}",
+                "department"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has success flag\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains department data\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.department).to.exist;",
+                  "    pm.expect(jsonData.department.code).to.exist;",
+                  "    pm.expect(jsonData.department.name).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Valid API Key - Query Param",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/department?api_key={{apiKey}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiPath}}",
+                "department"
+              ],
+              "query": [
+                {
+                  "key": "api_key",
+                  "value": "{{apiKey}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has success flag\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "No API Key",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/department",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiPath}}",
+                "department"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 401 (Unauthorized)\", function() {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test(\"Error message indicates API key is required\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error).to.exist;",
+                  "    pm.expect(jsonData.error).to.include('API key');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid API Key",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "invalid_api_key_12345",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/department",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiPath}}",
+                "department"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 401 (Unauthorized)\", function() {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test(\"Error message indicates invalid API key\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error).to.exist;",
+                  "    pm.expect(jsonData.error).to.include('Invalid');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Department API",
+      "item": [
+        {
+          "name": "Get Department Info",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/department",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiPath}}",
+                "department"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains expected department fields\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.department).to.exist;",
+                  "    ",
+                  "    // Validate required fields",
+                  "    var department = jsonData.department;",
+                  "    pm.expect(department.id).to.exist;",
+                  "    pm.expect(department.code).to.exist;",
+                  "    pm.expect(department.name).to.exist;",
+                  "    pm.expect(department.department_type).to.exist;",
+                  "    pm.expect(department.features_enabled).to.exist;",
+                  "    ",
+                  "    // Store department ID for later use",
+                  "    pm.environment.set('departmentId', department.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Incidents API",
+      "item": [
+        {
+          "name": "Get All Incidents",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/incidents",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiPath}}",
+                "incidents"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains incidents array\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.incidents).to.be.an('array');",
+                  "});",
+                  "",
+                  "// Save first incident ID for later tests if available",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.incidents && jsonData.incidents.length > 0) {",
+                  "    pm.environment.set('incidentId', jsonData.incidents[0].id);",
+                  "    console.log('Saved incident ID: ' + jsonData.incidents[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Incident By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/incidents/{{incidentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiPath}}",
+                "incidents",
+                "{{incidentId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains incident details\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.incident).to.exist;",
+                  "    pm.expect(jsonData.incident.id).to.eql(parseInt(pm.environment.get('incidentId')));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Incident",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"incident_title\": \"API Test Incident\",\n    \"incident_number\": \"API-TEST-{{$timestamp}}\",\n    \"incident_date\": \"{{$isoTimestamp}}\",\n    \"incident_type\": \"EMS\",\n    \"location\": \"123 API Test St\",\n    \"latitude\": 37.7749,\n    \"longitude\": -122.4194,\n    \"additional_data\": {\n        \"severity\": \"medium\",\n        \"units_dispatched\": [\"Engine 1\", \"Medic 3\"],\n        \"patient_count\": 1\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/incidents",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiPath}}",
+                "incidents"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Incident created successfully\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.incident_id).to.exist;",
+                  "    ",
+                  "    // Store new incident ID for verification",
+                  "    pm.environment.set('newIncidentId', jsonData.incident_id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify Created Incident",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/incidents/{{newIncidentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiPath}}",
+                "incidents",
+                "{{newIncidentId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Created incident details are correct\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.incident).to.exist;",
+                  "    ",
+                  "    var incident = jsonData.incident;",
+                  "    pm.expect(incident.id).to.eql(parseInt(pm.environment.get('newIncidentId')));",
+                  "    pm.expect(incident.title).to.eql('API Test Incident');",
+                  "    pm.expect(incident.incident_type).to.eql('EMS');",
+                  "    pm.expect(incident.location).to.eql('123 API Test St');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Incidents with Date Filter",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/incidents?start_date={{$isoTimestamp}}&end_date={{$isoTimestamp}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiPath}}",
+                "incidents"
+              ],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "{{$isoTimestamp}}"
+                },
+                {
+                  "key": "end_date",
+                  "value": "{{$isoTimestamp}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains filtered incidents\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.incidents).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Incident Missing Fields",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"location\": \"123 Incomplete St\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/incidents",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiPath}}",
+                "incidents"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 for missing fields\", function() {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test(\"Response indicates missing required fields\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error).to.exist;",
+                  "    pm.expect(jsonData.required_fields).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Incident Invalid Coordinates",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"incident_title\": \"Invalid Coordinates Test\",\n    \"incident_number\": \"INVALID-COORD-{{$timestamp}}\",\n    \"incident_date\": \"{{$isoTimestamp}}\",\n    \"incident_type\": \"Test\",\n    \"location\": \"456 Invalid Coordinates St\",\n    \"latitude\": 100,\n    \"longitude\": -122.4194\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/incidents",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiPath}}",
+                "incidents"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 for invalid coordinates\", function() {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test(\"Response indicates invalid latitude\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error).to.exist;",
+                  "    pm.expect(jsonData.error).to.include('atitude');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Nonexistent Incident",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/incidents/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiPath}}",
+                "incidents",
+                "999999"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404 for nonexistent incident\", function() {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains error message\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stations API",
+      "item": [
+        {
+          "name": "Get All Stations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/stations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiPath}}",
+                "stations"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains stations array\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.stations).to.be.an('array');",
+                  "});",
+                  "",
+                  "// Save first station ID for later tests if available",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.stations && jsonData.stations.length > 0) {",
+                  "    pm.environment.set('stationId', jsonData.stations[0].id);",
+                  "    console.log('Saved station ID: ' + jsonData.stations[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Station By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/stations/{{stationId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiPath}}",
+                "stations",
+                "{{stationId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains station details\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.station).to.exist;",
+                  "    pm.expect(jsonData.station.id).to.eql(parseInt(pm.environment.get('stationId')));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Station",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"API Test Station\",\n    \"station_number\": \"API-{{$timestamp}}\",\n    \"address\": \"456 API Test Ave\",\n    \"city\": \"Testville\",\n    \"state\": \"TS\",\n    \"zip_code\": \"12345\",\n    \"latitude\": 35.1234,\n    \"longitude\": -115.5678,\n    \"personnel_count\": 15,\n    \"apparatus\": {\n        \"engine\": 1,\n        \"ambulance\": 2,\n        \"ladder\": 1\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/stations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiPath}}",
+                "stations"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Station created successfully\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.station_id).to.exist;",
+                  "    ",
+                  "    // Store new station ID for verification",
+                  "    pm.environment.set('newStationId', jsonData.station_id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify Created Station",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/stations/{{newStationId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiPath}}",
+                "stations",
+                "{{newStationId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Created station details are correct\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.station).to.exist;",
+                  "    ",
+                  "    var station = jsonData.station;",
+                  "    pm.expect(station.id).to.eql(parseInt(pm.environment.get('newStationId')));",
+                  "    pm.expect(station.name).to.eql('API Test Station');",
+                  "    pm.expect(station.address).to.eql('456 API Test Ave');",
+                  "    pm.expect(station.city).to.eql('Testville');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Station Duplicate Number",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Duplicate Station\",\n    \"station_number\": \"API-{{$timestamp}}\",\n    \"address\": \"789 Duplicate Ave\",\n    \"city\": \"Testville\",\n    \"state\": \"TS\",\n    \"zip_code\": \"12345\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/stations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiPath}}",
+                "stations"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 for duplicate station number\", function() {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test(\"Response indicates duplicate station number\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error).to.exist;",
+                  "    pm.expect(jsonData.error).to.include('already exists');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Station Missing Fields",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"address\": \"123 Incomplete Ave\",\n    \"city\": \"Testville\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/stations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiPath}}",
+                "stations"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 for missing fields\", function() {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test(\"Response indicates missing required fields\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error).to.exist;",
+                  "    pm.expect(jsonData.required_fields).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Nonexistent Station",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/stations/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiPath}}",
+                "stations",
+                "999999"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404 for nonexistent station\", function() {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains error message\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rate Limiting",
+      "item": [
+        {
+          "name": "Check Rate Limit Headers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPath}}/department",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "{{apiPath}}",
+                "department"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response includes rate limit headers\", function() {",
+                  "    pm.expect(pm.response.headers.has('X-RateLimit-Limit')).to.be.true;",
+                  "    pm.expect(pm.response.headers.has('X-RateLimit-Remaining')).to.be.true;",
+                  "    pm.expect(pm.response.headers.has('X-RateLimit-Reset')).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test(\"Rate limit values are valid\", function() {",
+                  "    var limit = parseInt(pm.response.headers.get('X-RateLimit-Limit'));",
+                  "    var remaining = parseInt(pm.response.headers.get('X-RateLimit-Remaining'));",
+                  "    var reset = parseInt(pm.response.headers.get('X-RateLimit-Reset'));",
+                  "    ",
+                  "    pm.expect(limit).to.be.above(0);",
+                  "    pm.expect(remaining).to.be.at.least(0);",
+                  "    pm.expect(reset).to.be.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1018,7 +1018,9 @@ function toggleTileOverlay() {
 /**
  * Export map to the selected format
  */
-function exportMap(format) {
+function exportMap(format, useLayout = false) {
+    console.log("Exporting map with format:", format, "useLayout:", useLayout);
+    
     // Get export settings
     const title = document.getElementById('export-title');
     const subtitle = document.getElementById('export-subtitle');
@@ -1030,15 +1032,25 @@ function exportMap(format) {
     
     // Get the map element
     const map = document.getElementById('map');
-    if (!map) return;
+    if (!map) {
+        console.error("Map element not found for export");
+        return;
+    }
+    
+    // If using layout from designer, apply that configuration
+    let layoutConfig = null;
+    if (useLayout && window.currentLayoutConfig) {
+        console.log("Using captured layout configuration for export");
+        layoutConfig = window.currentLayoutConfig;
+    }
     
     // Export based on format
     if (format === 'png' || format === 'jpg' || format === 'tiff') {
-        exportRaster(map, format, exportTitle, dpi);
+        exportRaster(map, format, exportTitle, dpi, layoutConfig);
     } else if (format === 'pdf' || format === 'eps') {
-        exportPDF(map, exportTitle, exportSubtitle, dpi);
+        exportPDF(map, exportTitle, exportSubtitle, dpi, layoutConfig);
     } else if (format === 'svg') {
-        exportSVG(map, exportTitle, exportSubtitle);
+        exportSVG(map, exportTitle, exportSubtitle, layoutConfig);
     } else if (format === 'geojson' || format === 'kml') {
         exportData(format);
     }
@@ -1047,7 +1059,7 @@ function exportMap(format) {
 /**
  * Export map as raster image (PNG/JPG/TIFF)
  */
-function exportRaster(mapElement, format, title, dpi) {
+function exportRaster(mapElement, format, title, dpi, layoutConfig = null) {
     const scale = dpi / 96; // Standard screen DPI is 96
     
     const options = {
@@ -1508,6 +1520,209 @@ window.applyMapTemplate = function(templateName) {
 };
 
 /**
+ * Setup file upload functionality for the entire application
+ * This handles all image uploads in the layout designer and export screens
+ */
+function setupFileUploads() {
+    console.log("Setting up file upload handlers...");
+    
+    // Handle logo file uploads in export modal
+    const logoFileInput = document.getElementById('logo-file');
+    const logoFileName = document.getElementById('logo-file-name');
+    const logoPreview = document.getElementById('logo-preview');
+    
+    if (logoFileInput) {
+        logoFileInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                const reader = new FileReader();
+                
+                // Update file name display
+                if (logoFileName) {
+                    logoFileName.textContent = file.name;
+                }
+                
+                // Create preview
+                reader.onload = function(e) {
+                    console.log("Logo loaded successfully");
+                    
+                    // Update preview if it exists
+                    if (logoPreview) {
+                        logoPreview.innerHTML = `<img src="${e.target.result}" style="max-width:100%;max-height:80px;">`;
+                    }
+                    
+                    // Store the logo data for export
+                    window.exportLogoSrc = e.target.result;
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        });
+    } else {
+        console.warn("Logo file input not found");
+    }
+    
+    // Handle map logo file uploads
+    const mapLogoFile = document.getElementById('map-logo-file');
+    const mapLogoFileName = document.getElementById('map-logo-file-name');
+    const mapLogoPreview = document.getElementById('map-logo-preview');
+    
+    if (mapLogoFile) {
+        mapLogoFile.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                const reader = new FileReader();
+                
+                // Update file name display
+                if (mapLogoFileName) {
+                    mapLogoFileName.textContent = file.name;
+                }
+                
+                // Create preview
+                reader.onload = function(e) {
+                    console.log("Map logo loaded successfully");
+                    
+                    // Update preview if it exists
+                    if (mapLogoPreview) {
+                        mapLogoPreview.innerHTML = `<img src="${e.target.result}" style="max-width:100%;max-height:80px;">`;
+                    }
+                    
+                    // Store the logo data for the map
+                    window.mapLogoSrc = e.target.result;
+                    
+                    // Also update the map logo if it exists
+                    const mapLogo = document.getElementById('map-logo');
+                    if (mapLogo) {
+                        mapLogo.innerHTML = `<img src="${e.target.result}" style="max-height:40px;">`;
+                    }
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    // Add event listeners for layout designer image uploads
+    document.addEventListener('click', function(e) {
+        // Check if this is an image upload button in the layout designer
+        if (e.target.classList.contains('layout-image-upload-btn') || 
+            (e.target.parentElement && e.target.parentElement.classList.contains('layout-image-upload-btn'))) {
+            
+            // Create a file input
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            fileInput.style.display = 'none';
+            document.body.appendChild(fileInput);
+            
+            // Open file dialog
+            fileInput.click();
+            
+            // Handle file selection
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const file = this.files[0];
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        console.log("Layout image loaded");
+                        
+                        // Find the selected element
+                        const selectedElement = document.querySelector('.layout-element.selected');
+                        if (selectedElement && selectedElement.getAttribute('data-element-type') === 'image') {
+                            // Update the image content
+                            const placeholder = selectedElement.querySelector('.image-placeholder');
+                            if (placeholder) {
+                                placeholder.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:contain;">`;
+                            }
+                            
+                            // Store the image src on the element
+                            selectedElement.setAttribute('data-image-src', e.target.result);
+                        }
+                    };
+                    
+                    reader.readAsDataURL(file);
+                }
+                
+                // Clean up the temporary input
+                document.body.removeChild(fileInput);
+            });
+        }
+    });
+    
+    console.log("File upload handlers set up successfully");
+}
+
+/**
+ * Capture the current layout for export
+ * This function captures the current state of the layout designer
+ * and prepares it for use in the export functions
+ */
+function captureLayoutForExport() {
+    console.log("Capturing layout for export");
+    
+    // Find the paper sheet and all layout elements
+    const paperSheet = document.getElementById('layout-paper-sheet') || document.querySelector('.paper-sheet');
+    if (!paperSheet) {
+        console.error("Could not find paper sheet for layout capture");
+        return false;
+    }
+    
+    // Store the layout configuration for use in export
+    const layoutElements = paperSheet.querySelectorAll('.layout-element');
+    console.log(`Found ${layoutElements.length} layout elements to capture`);
+    
+    // Create an object describing the current layout
+    const layoutConfig = {
+        elements: [],
+        orientation: paperSheet.classList.contains('landscape') ? 'landscape' : 'portrait'
+    };
+    
+    // Capture each element's position, size, type and content
+    layoutElements.forEach(element => {
+        const elementType = element.getAttribute('data-element-type');
+        
+        // Get element position and size
+        const styles = {
+            left: element.style.left,
+            top: element.style.top,
+            width: element.style.width, 
+            height: element.style.height
+        };
+        
+        // Capture additional data depending on element type
+        let content = null;
+        if (elementType === 'title') {
+            const title = element.querySelector('h3');
+            const subtitle = element.querySelector('p');
+            content = {
+                title: title ? title.textContent : 'Map Title',
+                subtitle: subtitle ? subtitle.textContent : ''
+            };
+        } else if (elementType === 'text') {
+            const textContent = element.querySelector('.text-content');
+            content = textContent ? textContent.textContent : '';
+        } else if (elementType === 'image') {
+            // Get the image source if present
+            const img = element.querySelector('img');
+            content = img ? img.src : null;
+        }
+        
+        // Add to config
+        layoutConfig.elements.push({
+            type: elementType,
+            styles,
+            content
+        });
+    });
+    
+    // Store the layout configuration for use in export functions
+    window.currentLayoutConfig = layoutConfig;
+    console.log("Layout captured successfully:", layoutConfig);
+    return true;
+}
+
+/**
  * Create a layout element with specified styles
  */
 function createLayoutElement(type, styles) {
@@ -1538,7 +1753,12 @@ function createLayoutElement(type, styles) {
     } else if (type === 'scale-bar') {
         element.innerHTML = '<div class="scale-bar-graphic"></div>';
     } else if (type === 'image') {
-        element.innerHTML = '<div class="image-placeholder"><i class="fas fa-image"></i></div>';
+        element.innerHTML = `
+            <div class="image-placeholder"><i class="fas fa-image"></i></div>
+            <button class="layout-image-upload-btn" title="Select Image">
+                <i class="fas fa-upload"></i>
+            </button>
+        `;
     } else if (type === 'shape') {
         element.innerHTML = '<div class="shape-placeholder"></div>';
     }
@@ -2824,6 +3044,35 @@ document.addEventListener("DOMContentLoaded", function() {
     
     // Initialize map
     initMap();
+    
+    // Setup file upload handlers
+    setupFileUploads();
+    
+    // Update export confirm button to check for layout designer
+    const exportConfirmBtn = document.getElementById('export-confirm');
+    if (exportConfirmBtn) {
+        exportConfirmBtn.addEventListener('click', function() {
+            const formatSelect = document.getElementById('export-format');
+            const selectedFormat = formatSelect ? formatSelect.value : 'png';
+            
+            // Check if layout designer tab is active
+            const layoutDesignerTab = document.querySelector('.modal-tab[data-tab="layout-designer"].active');
+            const isLayoutDesignerActive = !!layoutDesignerTab;
+            
+            console.log("Export confirmation clicked, format:", selectedFormat, "layout active:", isLayoutDesignerActive);
+            
+            // If using layout designer, capture the layout configuration
+            if (isLayoutDesignerActive) {
+                captureLayoutForExport();
+            }
+            
+            // Export the map using the layout if applicable
+            exportMap(selectedFormat, isLayoutDesignerActive);
+            
+            // Close the modal
+            closeModal('export-modal');
+        });
+    }
     
     // Initialize export buttons
     const exportPngBtn = document.getElementById('export-png');

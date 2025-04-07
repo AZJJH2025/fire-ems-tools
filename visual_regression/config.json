@@ -1,0 +1,91 @@
+{
+  "viewport_sizes": [
+    {
+      "width": 1920,
+      "height": 1080,
+      "name": "desktop"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "name": "tablet"
+    },
+    {
+      "width": 375,
+      "height": 812,
+      "name": "mobile"
+    }
+  ],
+  "pages_to_test": [
+    {
+      "route": "/",
+      "name": "home"
+    },
+    {
+      "route": "/fire-ems-dashboard",
+      "name": "dashboard",
+      "auth": "user"
+    },
+    {
+      "route": "/incident-logger",
+      "name": "incident-logger",
+      "auth": "user"
+    },
+    {
+      "route": "/call-density-heatmap",
+      "name": "call-density-heatmap",
+      "auth": "user"
+    },
+    {
+      "route": "/isochrone-map",
+      "name": "isochrone-map",
+      "auth": "user"
+    },
+    {
+      "route": "/login",
+      "name": "login"
+    }
+  ],
+  "ignore_regions": {
+    "dashboard_desktop": [
+      {
+        "x": 800,
+        "y": 100,
+        "width": 400,
+        "height": 100
+      }
+    ],
+    "home_desktop": [
+      {
+        "x": 800,
+        "y": 10,
+        "width": 200,
+        "height": 50
+      }
+    ],
+    "incident-logger_desktop": [
+      {
+        "x": 550,
+        "y": 80,
+        "width": 300,
+        "height": 50
+      },
+      {
+        "x": 100,
+        "y": 300,
+        "width": 600,
+        "height": 300
+      }
+    ]
+  },
+  "credentials": {
+    "admin": {
+      "email": "admin@example.com",
+      "password": "admin_password"
+    },
+    "user": {
+      "email": "user@example.com",
+      "password": "user_password"
+    }
+  }
+}

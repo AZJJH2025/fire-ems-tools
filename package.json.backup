@@ -1,0 +1,27 @@
+{
+  "name": "fire-ems-tools",
+  "version": "1.0.0",
+  "description": "A comprehensive suite of tools for Fire and EMS departments to manage incidents, visualize response data, and improve operational efficiency.",
+  "main": "test-incident-logger.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --config webpack.config.js",
+    "watch": "webpack --watch --config webpack.config.js",
+    "dev": "webpack --mode development",
+    "prod": "webpack --mode production"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AZJJH2025/fire-ems-tools.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AZJJH2025/fire-ems-tools/issues"
+  },
+  "homepage": "https://github.com/AZJJH2025/fire-ems-tools#readme"
+}

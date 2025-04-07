@@ -1,0 +1,155 @@
+<\!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Section Tester</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .patient-entry { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; }
+        h3 { margin-top: 0; }
+        button { padding: 10px; background: #4CAF50; color: white; border: none; cursor: pointer; margin: 10px 0; }
+        .medical-section-added { border-left: 4px solid #4CAF50; padding-left: 10px; margin: 10px 0; }
+        .log { background: #f5f5f5; padding: 10px; border: 1px solid #ddd; height: 200px; overflow: auto; margin-top: 20px; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Medical Section Tester</h1>
+    <p>This page tests the fix-missing-medical.js script to ensure it properly adds missing medical sections to patient entries.</p>
+    
+    <div id="test-area">
+        <div class="patient-entry">
+            <h3>Patient #1</h3>
+            <div class="patient-basic-info">
+                <div class="form-group">
+                    <label for="patient-name-1">Name</label>
+                    <input type="text" id="patient-name-1" name="patient-name-1" value="Test Patient">
+                </div>
+                <div class="form-group">
+                    <label for="patient-dob-1">Date of Birth</label>
+                    <input type="date" id="patient-dob-1" name="patient-dob-1">
+                </div>
+            </div>
+            <\!-- Medical sections will be added here -->
+            <div class="vitals-section">
+                <h5>Vitals</h5>
+                <div class="vitals-container">
+                    <div class="form-group">
+                        <label for="vital-bp-1">Blood Pressure</label>
+                        <input type="text" id="vital-bp-1" name="vital-bp-1">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <button id="add-patient-btn">Add New Patient</button>
+    <button id="test-manual-fix">Test Manual Fix</button>
+    <button id="clear-log">Clear Log</button>
+    
+    <div class="log" id="log"></div>
+    
+    <script>
+        // Console redirection to visible log
+        (function() {
+            const log = document.getElementById('log');
+            const originalConsoleLog = console.log;
+            const originalConsoleError = console.error;
+            
+            console.log = function() {
+                const message = Array.from(arguments).join(' ');
+                const logEntry = document.createElement('div');
+                logEntry.textContent = '[LOG] ' + message;
+                log.appendChild(logEntry);
+                log.scrollTop = log.scrollHeight;
+                originalConsoleLog.apply(console, arguments);
+            };
+            
+            console.error = function() {
+                const message = Array.from(arguments).join(' ');
+                const logEntry = document.createElement('div');
+                logEntry.textContent = '[ERROR] ' + message;
+                logEntry.className = 'error';
+                log.appendChild(logEntry);
+                log.scrollTop = log.scrollHeight;
+                originalConsoleError.apply(console, arguments);
+            };
+        })();
+        
+        // Add patient button
+        document.getElementById('add-patient-btn').addEventListener('click', function() {
+            const testArea = document.getElementById('test-area');
+            const patientCount = testArea.querySelectorAll('.patient-entry').length + 1;
+            
+            const newPatient = document.createElement('div');
+            newPatient.className = 'patient-entry';
+            newPatient.innerHTML = `
+                <h3>Patient #${patientCount}</h3>
+                <div class="patient-basic-info">
+                    <div class="form-group">
+                        <label for="patient-name-${patientCount}">Name</label>
+                        <input type="text" id="patient-name-${patientCount}" name="patient-name-${patientCount}" value="New Test Patient">
+                    </div>
+                    <div class="form-group">
+                        <label for="patient-dob-${patientCount}">Date of Birth</label>
+                        <input type="date" id="patient-dob-${patientCount}" name="patient-dob-${patientCount}">
+                    </div>
+                </div>
+                <\!-- Medical sections will be added here -->
+                <div class="vitals-section">
+                    <h5>Vitals</h5>
+                    <div class="vitals-container">
+                        <div class="form-group">
+                            <label for="vital-bp-${patientCount}">Blood Pressure</label>
+                            <input type="text" id="vital-bp-${patientCount}" name="vital-bp-${patientCount}">
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            testArea.appendChild(newPatient);
+            console.log(`Added new Patient #${patientCount}`);
+        });
+        
+        // Manual fix test button
+        document.getElementById('test-manual-fix').addEventListener('click', function() {
+            console.log('Manually triggering fixMissingMedicalSections()');
+            if (window.fixMissingMedicalSections) {
+                window.fixMissingMedicalSections();
+                console.log('Manual fix completed');
+            } else {
+                console.error('fixMissingMedicalSections function not found\! Is the script loaded?');
+            }
+        });
+        
+        // Clear log button
+        document.getElementById('clear-log').addEventListener('click', function() {
+            document.getElementById('log').innerHTML = '';
+        });
+        
+        // Console initial message
+        console.log('Medical Section Tester loaded');
+    </script>
+    
+    <\!-- Load the script being tested -->
+    <script src="/static/fix-missing-medical.js"></script>
+    <script src="/static/debug-medical-sections.js"></script>
+    
+    <!-- For ES6 module testing -->
+    <script>
+        // Create a script tag dynamically to load the webpack bundle when ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add the module bundle to test both approaches
+            const script = document.createElement('script');
+            script.src = '/static/dist/test-bundle.bundle.js';
+            script.async = true;
+            script.onerror = function() {
+                console.log('Failed to load webpack bundle - this is expected if webpack build has not been done');
+            };
+            document.body.appendChild(script);
+        });
+    </script>
+</body>
+</html>

@@ -816,6 +816,68 @@ input[type="file"] {
     padding: 20px 0;
 }
 
+/* Layout image upload button */
+.layout-image-upload-btn {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.8rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    opacity: 0.7;
+    transition: all 0.2s ease;
+    z-index: 30;
+}
+
+.layout-image-upload-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.element-handle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: move;
+    z-index: 5;
+}
+
+.delete-element {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: #ff5252;
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    opacity: 0.8;
+    transition: opacity 0.2s;
+    z-index: 30;
+}
+
+.delete-element:hover {
+    opacity: 1;
+}
+
 .properties-form {
     font-size: 0.85rem;
 }

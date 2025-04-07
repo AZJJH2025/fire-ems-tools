@@ -1,0 +1,9 @@
+{
+  "description": "Load test for incidents query",
+  "query": "query GetIncidents($departmentId: ID!) { incidents(departmentId: $departmentId) { id title incident_number incident_date incident_type } }",
+  "variables": {
+    "departmentId": "1"
+  },
+  "auth_required": true,
+  "role": "user"
+}

@@ -1,0 +1,941 @@
+{
+  "config": {
+    "configFile": "/Users/josephhester/Documents/fire-ems-tools/e2e/playwright.config.js",
+    "rootDir": "/Users/josephhester/Documents/fire-ems-tools/e2e/tests",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 5
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "test-results/html-report"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/test-results.json"
+        }
+      ],
+      [
+        "list",
+        null
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/Users/josephhester/Documents/fire-ems-tools/e2e/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/josephhester/Documents/fire-ems-tools/e2e/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/josephhester/Documents/fire-ems-tools/e2e/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "/Users/josephhester/Documents/fire-ems-tools/e2e/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/josephhester/Documents/fire-ems-tools/e2e/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "/Users/josephhester/Documents/fire-ems-tools/e2e/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.51.1",
+    "workers": 5,
+    "webServer": {
+      "command": "cd .. && python app.py",
+      "url": "http://localhost:5000",
+      "reuseExistingServer": true,
+      "stdout": "pipe",
+      "stderr": "pipe"
+    }
+  },
+  "suites": [
+    {
+      "title": "auth.spec.js",
+      "file": "auth.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Authentication",
+          "file": "auth.spec.js",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should show login page",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 2259,
+                      "error": {
+                        "message": "Error: page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at http://localhost:5000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5000/login\", waiting until \"load\"\u001b[22m\n",
+                        "stack": "Error: page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at http://localhost:5000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5000/login\", waiting until \"load\"\u001b[22m\n\n    at /Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js:5:16",
+                        "location": {
+                          "file": "/Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js",
+                          "column": 16,
+                          "line": 5
+                        },
+                        "snippet": "  3 | test.describe('Authentication', () => {\n  4 |   test('should show login page', async ({ page }) => {\n> 5 |     await page.goto('/login');\n    |                ^\n  6 |     \n  7 |     // Verify login page elements\n  8 |     await expect(page.getByRole('heading', { name: 'Login' })).toBeVisible();"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js",
+                            "column": 16,
+                            "line": 5
+                          },
+                          "message": "Error: page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at http://localhost:5000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5000/login\", waiting until \"load\"\u001b[22m\n\n\n  3 | test.describe('Authentication', () => {\n  4 |   test('should show login page', async ({ page }) => {\n> 5 |     await page.goto('/login');\n    |                ^\n  6 |     \n  7 |     // Verify login page elements\n  8 |     await expect(page.getByRole('heading', { name: 'Login' })).toBeVisible();\n    at /Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js:5:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-04-06T03:49:54.240Z",
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/josephhester/Documents/fire-ems-tools/e2e/test-results/auth-Authentication-should-show-login-page-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "_prompt-0",
+                          "contentType": "text/markdown",
+                          "body": "IyBJbnN0cnVjdGlvbnMKCi0gRm9sbG93aW5nIFBsYXl3cmlnaHQgdGVzdCBmYWlsZWQuCi0gRXhwbGFpbiB3aHksIGJlIGNvbmNpc2UsIHJlc3BlY3QgUGxheXdyaWdodCBiZXN0IHByYWN0aWNlcy4KLSBQcm92aWRlIGEgc25pcHBldCBvZiBjb2RlIHdpdGggdGhlIGZpeCwgaWYgcG9zc2libGUuCgojIFRlc3QgaW5mbwoKLSBOYW1lOiBBdXRoZW50aWNhdGlvbiA+PiBzaG91bGQgc2hvdyBsb2dpbiBwYWdlCi0gTG9jYXRpb246IC9Vc2Vycy9qb3NlcGhoZXN0ZXIvRG9jdW1lbnRzL2ZpcmUtZW1zLXRvb2xzL2UyZS90ZXN0cy9hdXRoLnNwZWMuanM6NDozCgojIEVycm9yIGRldGFpbHMKCmBgYApFcnJvcjogcGFnZS5nb3RvOiBuZXQ6OkVSUl9IVFRQX1JFU1BPTlNFX0NPREVfRkFJTFVSRSBhdCBodHRwOi8vbG9jYWxob3N0OjUwMDAvbG9naW4KQ2FsbCBsb2c6CiAgLSBuYXZpZ2F0aW5nIHRvICJodHRwOi8vbG9jYWxob3N0OjUwMDAvbG9naW4iLCB3YWl0aW5nIHVudGlsICJsb2FkIgoKICAgIGF0IC9Vc2Vycy9qb3NlcGhoZXN0ZXIvRG9jdW1lbnRzL2ZpcmUtZW1zLXRvb2xzL2UyZS90ZXN0cy9hdXRoLnNwZWMuanM6NToxNgpgYGAKCiMgUGFnZSBzbmFwc2hvdAoKYGBgeWFtbAotIGhlYWRpbmcgIkFjY2VzcyB0byBsb2NhbGhvc3Qgd2FzIGRlbmllZCIgW2xldmVsPTFdCi0gcGFyYWdyYXBoOiBZb3UgZG9uJ3QgaGF2ZSBhdXRob3JpemF0aW9uIHRvIHZpZXcgdGhpcyBwYWdlLgotIHRleHQ6IEhUVFAgRVJST1IgNDAzCi0gYnV0dG9uICJSZWxvYWQiCmBgYAoKIyBUZXN0IHNvdXJjZQoKYGBgdHMKICAgMSB8IGNvbnN0IHsgdGVzdCwgZXhwZWN0IH0gPSByZXF1aXJlKCdAcGxheXdyaWdodC90ZXN0Jyk7CiAgIDIgfAogICAzIHwgdGVzdC5kZXNjcmliZSgnQXV0aGVudGljYXRpb24nLCAoKSA9PiB7CiAgIDQgfCAgIHRlc3QoJ3Nob3VsZCBzaG93IGxvZ2luIHBhZ2UnLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKPiAgNSB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9sb2dpbicpOwogICAgIHwgICAgICAgICAgICAgICAgXiBFcnJvcjogcGFnZS5nb3RvOiBuZXQ6OkVSUl9IVFRQX1JFU1BPTlNFX0NPREVfRkFJTFVSRSBhdCBodHRwOi8vbG9jYWxob3N0OjUwMDAvbG9naW4KICAgNiB8ICAgICAKICAgNyB8ICAgICAvLyBWZXJpZnkgbG9naW4gcGFnZSBlbGVtZW50cwogICA4IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5Um9sZSgnaGVhZGluZycsIHsgbmFtZTogJ0xvZ2luJyB9KSkudG9CZVZpc2libGUoKTsKICAgOSB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeUxhYmVsKCdVc2VybmFtZScpKS50b0JlVmlzaWJsZSgpOwogIDEwIHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5TGFiZWwoJ1Bhc3N3b3JkJykpLnRvQmVWaXNpYmxlKCk7CiAgMTEgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6ICdMb2dpbicgfSkpLnRvQmVWaXNpYmxlKCk7CiAgMTIgfCAgIH0pOwogIDEzIHwKICAxNCB8ICAgdGVzdCgnc2hvdWxkIGxvZ2luIHN1Y2Nlc3NmdWxseSB3aXRoIHZhbGlkIGNyZWRlbnRpYWxzJywgYXN5bmMgKHsgcGFnZSB9KSA9PiB7CiAgMTUgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvbG9naW4nKTsKICAxNiB8ICAgICAKICAxNyB8ICAgICAvLyBGaWxsIGluIGxvZ2luIGZvcm0KICAxOCB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICAxOSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1Bhc3N3b3JkJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICAyMCB8ICAgICAKICAyMSB8ICAgICAvLyBTZWxlY3QgZGVwYXJ0bWVudCBpZiB0aGUgZmllbGQgZXhpc3RzCiAgMjIgfCAgICAgY29uc3QgZGVwYXJ0bWVudFNlbGVjdG9yID0gcGFnZS5nZXRCeUxhYmVsKCdEZXBhcnRtZW50Jyk7CiAgMjMgfCAgICAgaWYgKGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5pc1Zpc2libGUoKSkgewogIDI0IHwgICAgICAgYXdhaXQgZGVwYXJ0bWVudFNlbGVjdG9yLnNlbGVjdE9wdGlvbigncnVyYWwnKTsKICAyNSB8ICAgICB9CiAgMjYgfCAgICAgCiAgMjcgfCAgICAgLy8gQ2xpY2sgbG9naW4gYnV0dG9uCiAgMjggfCAgICAgYXdhaXQgcGFnZS5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogJ0xvZ2luJyB9KS5jbGljaygpOwogIDI5IHwgICAgIAogIDMwIHwgICAgIC8vIFZlcmlmeSBzdWNjZXNzZnVsIGxvZ2luCiAgMzEgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2Rhc2hib2FyZC8pOwogIDMyIHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5VGV4dCgnV2VsY29tZScpKS50b0JlVmlzaWJsZSgpOwogIDMzIHwgICB9KTsKICAzNCB8CiAgMzUgfCAgIHRlc3QoJ3Nob3VsZCBzaG93IGVycm9yIHdpdGggaW52YWxpZCBjcmVkZW50aWFscycsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogIDM2IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2xvZ2luJyk7CiAgMzcgfCAgICAgCiAgMzggfCAgICAgLy8gRmlsbCBpbiBsb2dpbiBmb3JtIHdpdGggaW52YWxpZCBjcmVkZW50aWFscwogIDM5IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlMYWJlbCgnVXNlcm5hbWUnKS5maWxsKCdpbnZhbGlkX3VzZXInKTsKICA0MCB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1Bhc3N3b3JkJykuZmlsbCgnaW52YWxpZF9wYXNzd29yZCcpOwogIDQxIHwgICAgIAogIDQyIHwgICAgIC8vIENsaWNrIGxvZ2luIGJ1dHRvbgogIDQzIHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6ICdMb2dpbicgfSkuY2xpY2soKTsKICA0NCB8ICAgICAKICA0NSB8ICAgICAvLyBWZXJpZnkgZXJyb3IgbWVzc2FnZQogIDQ2IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5VGV4dCgnSW52YWxpZCB1c2VybmFtZSBvciBwYXNzd29yZCcpKS50b0JlVmlzaWJsZSgpOwogIDQ3IHwgICAgIAogIDQ4IHwgICAgIC8vIFZlcmlmeSB3ZSdyZSBzdGlsbCBvbiB0aGUgbG9naW4gcGFnZQogIDQ5IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9sb2dpbi8pOwogIDUwIHwgICB9KTsKICA1MSB8CiAgNTIgfCAgIHRlc3QoJ3Nob3VsZCByZWRpcmVjdCB0byBsb2dpbiBwYWdlIGZvciBwcm90ZWN0ZWQgcm91dGVzJywgYXN5bmMgKHsgcGFnZSB9KSA9PiB7CiAgNTMgfCAgICAgLy8gVHJ5IHRvIGFjY2VzcyBhIHByb3RlY3RlZCBwYWdlIGRpcmVjdGx5CiAgNTQgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvaW5jaWRlbnQtbG9nZ2VyJyk7CiAgNTUgfCAgICAgCiAgNTYgfCAgICAgLy8gVmVyaWZ5IHJlZGlyZWN0IHRvIGxvZ2luIHBhZ2UKICA1NyB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA1OCB8ICAgfSk7CiAgNTkgfAogIDYwIHwgICB0ZXN0KCdzaG91bGQgbG9nb3V0IHN1Y2Nlc3NmdWxseScsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogIDYxIHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2xvZ2luJyk7CiAgNjIgfCAgICAgCiAgNjMgfCAgICAgLy8gTG9naW4gZmlyc3QKICA2NCB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICA2NSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1Bhc3N3b3JkJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICA2NiB8ICAgICAKICA2NyB8ICAgICAvLyBTZWxlY3QgZGVwYXJ0bWVudCBpZiB0aGUgZmllbGQgZXhpc3RzCiAgNjggfCAgICAgY29uc3QgZGVwYXJ0bWVudFNlbGVjdG9yID0gcGFnZS5nZXRCeUxhYmVsKCdEZXBhcnRtZW50Jyk7CiAgNjkgfCAgICAgaWYgKGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5pc1Zpc2libGUoKSkgewogIDcwIHwgICAgICAgYXdhaXQgZGVwYXJ0bWVudFNlbGVjdG9yLnNlbGVjdE9wdGlvbigncnVyYWwnKTsKICA3MSB8ICAgICB9CiAgNzIgfCAgICAgCiAgNzMgfCAgICAgYXdhaXQgcGFnZS5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogJ0xvZ2luJyB9KS5jbGljaygpOwogIDc0IHwgICAgIAogIDc1IHwgICAgIC8vIFZlcmlmeSBzdWNjZXNzZnVsIGxvZ2luCiAgNzYgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2Rhc2hib2FyZC8pOwogIDc3IHwgICAgIAogIDc4IHwgICAgIC8vIExvZ291dAogIDc5IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlSb2xlKCdsaW5rJywgeyBuYW1lOiAnTG9nb3V0JyB9KS5jbGljaygpOwogIDgwIHwgICAgIAogIDgxIHwgICAgIC8vIFZlcmlmeSBsb2dvdXQgLSBiYWNrIHRvIGxvZ2luIHBhZ2UKICA4MiB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA4MyB8ICAgICAKICA4NCB8ICAgICAvLyBWZXJpZnkgY2FuJ3QgYWNjZXNzIHByb3RlY3RlZCByb3V0ZXMgYW55bW9yZQogIDg1IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2luY2lkZW50LWxvZ2dlcicpOwogIDg2IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9sb2dpbi8pOwogIDg3IHwgICB9KTsKICA4OCB8IH0pOwpgYGA="
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js",
+                        "column": 16,
+                        "line": 5
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d5ed79a6b333c2ba7209-ea7d16adb10d73d3b573",
+              "file": "auth.spec.js",
+              "line": 4,
+              "column": 3
+            },
+            {
+              "title": "should login successfully with valid credentials",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 2275,
+                      "error": {
+                        "message": "Error: page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at http://localhost:5000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5000/login\", waiting until \"load\"\u001b[22m\n",
+                        "stack": "Error: page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at http://localhost:5000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5000/login\", waiting until \"load\"\u001b[22m\n\n    at /Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js:15:16",
+                        "location": {
+                          "file": "/Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js",
+                          "column": 16,
+                          "line": 15
+                        },
+                        "snippet": "  13 |\n  14 |   test('should login successfully with valid credentials', async ({ page }) => {\n> 15 |     await page.goto('/login');\n     |                ^\n  16 |     \n  17 |     // Fill in login form\n  18 |     await page.getByLabel('Username').fill('rural_admin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js",
+                            "column": 16,
+                            "line": 15
+                          },
+                          "message": "Error: page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at http://localhost:5000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5000/login\", waiting until \"load\"\u001b[22m\n\n\n  13 |\n  14 |   test('should login successfully with valid credentials', async ({ page }) => {\n> 15 |     await page.goto('/login');\n     |                ^\n  16 |     \n  17 |     // Fill in login form\n  18 |     await page.getByLabel('Username').fill('rural_admin');\n    at /Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js:15:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-04-06T03:49:54.249Z",
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/josephhester/Documents/fire-ems-tools/e2e/test-results/auth-Authentication-should-3852b-ully-with-valid-credentials-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "_prompt-0",
+                          "contentType": "text/markdown",
+                          "body": "IyBJbnN0cnVjdGlvbnMKCi0gRm9sbG93aW5nIFBsYXl3cmlnaHQgdGVzdCBmYWlsZWQuCi0gRXhwbGFpbiB3aHksIGJlIGNvbmNpc2UsIHJlc3BlY3QgUGxheXdyaWdodCBiZXN0IHByYWN0aWNlcy4KLSBQcm92aWRlIGEgc25pcHBldCBvZiBjb2RlIHdpdGggdGhlIGZpeCwgaWYgcG9zc2libGUuCgojIFRlc3QgaW5mbwoKLSBOYW1lOiBBdXRoZW50aWNhdGlvbiA+PiBzaG91bGQgbG9naW4gc3VjY2Vzc2Z1bGx5IHdpdGggdmFsaWQgY3JlZGVudGlhbHMKLSBMb2NhdGlvbjogL1VzZXJzL2pvc2VwaGhlc3Rlci9Eb2N1bWVudHMvZmlyZS1lbXMtdG9vbHMvZTJlL3Rlc3RzL2F1dGguc3BlYy5qczoxNDozCgojIEVycm9yIGRldGFpbHMKCmBgYApFcnJvcjogcGFnZS5nb3RvOiBuZXQ6OkVSUl9IVFRQX1JFU1BPTlNFX0NPREVfRkFJTFVSRSBhdCBodHRwOi8vbG9jYWxob3N0OjUwMDAvbG9naW4KQ2FsbCBsb2c6CiAgLSBuYXZpZ2F0aW5nIHRvICJodHRwOi8vbG9jYWxob3N0OjUwMDAvbG9naW4iLCB3YWl0aW5nIHVudGlsICJsb2FkIgoKICAgIGF0IC9Vc2Vycy9qb3NlcGhoZXN0ZXIvRG9jdW1lbnRzL2ZpcmUtZW1zLXRvb2xzL2UyZS90ZXN0cy9hdXRoLnNwZWMuanM6MTU6MTYKYGBgCgojIFBhZ2Ugc25hcHNob3QKCmBgYHlhbWwKLSBoZWFkaW5nICJBY2Nlc3MgdG8gbG9jYWxob3N0IHdhcyBkZW5pZWQiIFtsZXZlbD0xXQotIHBhcmFncmFwaDogWW91IGRvbid0IGhhdmUgYXV0aG9yaXphdGlvbiB0byB2aWV3IHRoaXMgcGFnZS4KLSB0ZXh0OiBIVFRQIEVSUk9SIDQwMwotIGJ1dHRvbiAiUmVsb2FkIgpgYGAKCiMgVGVzdCBzb3VyY2UKCmBgYHRzCiAgIDEgfCBjb25zdCB7IHRlc3QsIGV4cGVjdCB9ID0gcmVxdWlyZSgnQHBsYXl3cmlnaHQvdGVzdCcpOwogICAyIHwKICAgMyB8IHRlc3QuZGVzY3JpYmUoJ0F1dGhlbnRpY2F0aW9uJywgKCkgPT4gewogICA0IHwgICB0ZXN0KCdzaG91bGQgc2hvdyBsb2dpbiBwYWdlJywgYXN5bmMgKHsgcGFnZSB9KSA9PiB7CiAgIDUgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvbG9naW4nKTsKICAgNiB8ICAgICAKICAgNyB8ICAgICAvLyBWZXJpZnkgbG9naW4gcGFnZSBlbGVtZW50cwogICA4IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5Um9sZSgnaGVhZGluZycsIHsgbmFtZTogJ0xvZ2luJyB9KSkudG9CZVZpc2libGUoKTsKICAgOSB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeUxhYmVsKCdVc2VybmFtZScpKS50b0JlVmlzaWJsZSgpOwogIDEwIHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5TGFiZWwoJ1Bhc3N3b3JkJykpLnRvQmVWaXNpYmxlKCk7CiAgMTEgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6ICdMb2dpbicgfSkpLnRvQmVWaXNpYmxlKCk7CiAgMTIgfCAgIH0pOwogIDEzIHwKICAxNCB8ICAgdGVzdCgnc2hvdWxkIGxvZ2luIHN1Y2Nlc3NmdWxseSB3aXRoIHZhbGlkIGNyZWRlbnRpYWxzJywgYXN5bmMgKHsgcGFnZSB9KSA9PiB7Cj4gMTUgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvbG9naW4nKTsKICAgICB8ICAgICAgICAgICAgICAgIF4gRXJyb3I6IHBhZ2UuZ290bzogbmV0OjpFUlJfSFRUUF9SRVNQT05TRV9DT0RFX0ZBSUxVUkUgYXQgaHR0cDovL2xvY2FsaG9zdDo1MDAwL2xvZ2luCiAgMTYgfCAgICAgCiAgMTcgfCAgICAgLy8gRmlsbCBpbiBsb2dpbiBmb3JtCiAgMTggfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdVc2VybmFtZScpLmZpbGwoJ3J1cmFsX2FkbWluJyk7CiAgMTkgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdQYXNzd29yZCcpLmZpbGwoJ3J1cmFsX2FkbWluJyk7CiAgMjAgfCAgICAgCiAgMjEgfCAgICAgLy8gU2VsZWN0IGRlcGFydG1lbnQgaWYgdGhlIGZpZWxkIGV4aXN0cwogIDIyIHwgICAgIGNvbnN0IGRlcGFydG1lbnRTZWxlY3RvciA9IHBhZ2UuZ2V0QnlMYWJlbCgnRGVwYXJ0bWVudCcpOwogIDIzIHwgICAgIGlmIChhd2FpdCBkZXBhcnRtZW50U2VsZWN0b3IuaXNWaXNpYmxlKCkpIHsKICAyNCB8ICAgICAgIGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5zZWxlY3RPcHRpb24oJ3J1cmFsJyk7CiAgMjUgfCAgICAgfQogIDI2IHwgICAgIAogIDI3IHwgICAgIC8vIENsaWNrIGxvZ2luIGJ1dHRvbgogIDI4IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6ICdMb2dpbicgfSkuY2xpY2soKTsKICAyOSB8ICAgICAKICAzMCB8ICAgICAvLyBWZXJpZnkgc3VjY2Vzc2Z1bCBsb2dpbgogIDMxIHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9kYXNoYm9hcmQvKTsKICAzMiB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeVRleHQoJ1dlbGNvbWUnKSkudG9CZVZpc2libGUoKTsKICAzMyB8ICAgfSk7CiAgMzQgfAogIDM1IHwgICB0ZXN0KCdzaG91bGQgc2hvdyBlcnJvciB3aXRoIGludmFsaWQgY3JlZGVudGlhbHMnLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICAzNiB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9sb2dpbicpOwogIDM3IHwgICAgIAogIDM4IHwgICAgIC8vIEZpbGwgaW4gbG9naW4gZm9ybSB3aXRoIGludmFsaWQgY3JlZGVudGlhbHMKICAzOSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykuZmlsbCgnaW52YWxpZF91c2VyJyk7CiAgNDAgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdQYXNzd29yZCcpLmZpbGwoJ2ludmFsaWRfcGFzc3dvcmQnKTsKICA0MSB8ICAgICAKICA0MiB8ICAgICAvLyBDbGljayBsb2dpbiBidXR0b24KICA0MyB8ICAgICBhd2FpdCBwYWdlLmdldEJ5Um9sZSgnYnV0dG9uJywgeyBuYW1lOiAnTG9naW4nIH0pLmNsaWNrKCk7CiAgNDQgfCAgICAgCiAgNDUgfCAgICAgLy8gVmVyaWZ5IGVycm9yIG1lc3NhZ2UKICA0NiB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeVRleHQoJ0ludmFsaWQgdXNlcm5hbWUgb3IgcGFzc3dvcmQnKSkudG9CZVZpc2libGUoKTsKICA0NyB8ICAgICAKICA0OCB8ICAgICAvLyBWZXJpZnkgd2UncmUgc3RpbGwgb24gdGhlIGxvZ2luIHBhZ2UKICA0OSB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA1MCB8ICAgfSk7CiAgNTEgfAogIDUyIHwgICB0ZXN0KCdzaG91bGQgcmVkaXJlY3QgdG8gbG9naW4gcGFnZSBmb3IgcHJvdGVjdGVkIHJvdXRlcycsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogIDUzIHwgICAgIC8vIFRyeSB0byBhY2Nlc3MgYSBwcm90ZWN0ZWQgcGFnZSBkaXJlY3RseQogIDU0IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2luY2lkZW50LWxvZ2dlcicpOwogIDU1IHwgICAgIAogIDU2IHwgICAgIC8vIFZlcmlmeSByZWRpcmVjdCB0byBsb2dpbiBwYWdlCiAgNTcgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2xvZ2luLyk7CiAgNTggfCAgIH0pOwogIDU5IHwKICA2MCB8ICAgdGVzdCgnc2hvdWxkIGxvZ291dCBzdWNjZXNzZnVsbHknLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICA2MSB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9sb2dpbicpOwogIDYyIHwgICAgIAogIDYzIHwgICAgIC8vIExvZ2luIGZpcnN0CiAgNjQgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdVc2VybmFtZScpLmZpbGwoJ3J1cmFsX2FkbWluJyk7CiAgNjUgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdQYXNzd29yZCcpLmZpbGwoJ3J1cmFsX2FkbWluJyk7CiAgNjYgfCAgICAgCiAgNjcgfCAgICAgLy8gU2VsZWN0IGRlcGFydG1lbnQgaWYgdGhlIGZpZWxkIGV4aXN0cwogIDY4IHwgICAgIGNvbnN0IGRlcGFydG1lbnRTZWxlY3RvciA9IHBhZ2UuZ2V0QnlMYWJlbCgnRGVwYXJ0bWVudCcpOwogIDY5IHwgICAgIGlmIChhd2FpdCBkZXBhcnRtZW50U2VsZWN0b3IuaXNWaXNpYmxlKCkpIHsKICA3MCB8ICAgICAgIGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5zZWxlY3RPcHRpb24oJ3J1cmFsJyk7CiAgNzEgfCAgICAgfQogIDcyIHwgICAgIAogIDczIHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6ICdMb2dpbicgfSkuY2xpY2soKTsKICA3NCB8ICAgICAKICA3NSB8ICAgICAvLyBWZXJpZnkgc3VjY2Vzc2Z1bCBsb2dpbgogIDc2IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9kYXNoYm9hcmQvKTsKICA3NyB8ICAgICAKICA3OCB8ICAgICAvLyBMb2dvdXQKICA3OSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5Um9sZSgnbGluaycsIHsgbmFtZTogJ0xvZ291dCcgfSkuY2xpY2soKTsKICA4MCB8ICAgICAKICA4MSB8ICAgICAvLyBWZXJpZnkgbG9nb3V0IC0gYmFjayB0byBsb2dpbiBwYWdlCiAgODIgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2xvZ2luLyk7CiAgODMgfCAgICAgCiAgODQgfCAgICAgLy8gVmVyaWZ5IGNhbid0IGFjY2VzcyBwcm90ZWN0ZWQgcm91dGVzIGFueW1vcmUKICA4NSB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9pbmNpZGVudC1sb2dnZXInKTsKICA4NiB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA4NyB8ICAgfSk7CiAgODggfCB9KTsKYGBg"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js",
+                        "column": 16,
+                        "line": 15
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d5ed79a6b333c2ba7209-57bf2c262055ea91f704",
+              "file": "auth.spec.js",
+              "line": 14,
+              "column": 3
+            },
+            {
+              "title": "should show error with invalid credentials",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 2240,
+                      "error": {
+                        "message": "Error: page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at http://localhost:5000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5000/login\", waiting until \"load\"\u001b[22m\n",
+                        "stack": "Error: page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at http://localhost:5000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5000/login\", waiting until \"load\"\u001b[22m\n\n    at /Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js:36:16",
+                        "location": {
+                          "file": "/Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js",
+                          "column": 16,
+                          "line": 36
+                        },
+                        "snippet": "  34 |\n  35 |   test('should show error with invalid credentials', async ({ page }) => {\n> 36 |     await page.goto('/login');\n     |                ^\n  37 |     \n  38 |     // Fill in login form with invalid credentials\n  39 |     await page.getByLabel('Username').fill('invalid_user');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js",
+                            "column": 16,
+                            "line": 36
+                          },
+                          "message": "Error: page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at http://localhost:5000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5000/login\", waiting until \"load\"\u001b[22m\n\n\n  34 |\n  35 |   test('should show error with invalid credentials', async ({ page }) => {\n> 36 |     await page.goto('/login');\n     |                ^\n  37 |     \n  38 |     // Fill in login form with invalid credentials\n  39 |     await page.getByLabel('Username').fill('invalid_user');\n    at /Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js:36:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-04-06T03:49:54.251Z",
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/josephhester/Documents/fire-ems-tools/e2e/test-results/auth-Authentication-should-ef91f-or-with-invalid-credentials-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "_prompt-0",
+                          "contentType": "text/markdown",
+                          "body": "IyBJbnN0cnVjdGlvbnMKCi0gRm9sbG93aW5nIFBsYXl3cmlnaHQgdGVzdCBmYWlsZWQuCi0gRXhwbGFpbiB3aHksIGJlIGNvbmNpc2UsIHJlc3BlY3QgUGxheXdyaWdodCBiZXN0IHByYWN0aWNlcy4KLSBQcm92aWRlIGEgc25pcHBldCBvZiBjb2RlIHdpdGggdGhlIGZpeCwgaWYgcG9zc2libGUuCgojIFRlc3QgaW5mbwoKLSBOYW1lOiBBdXRoZW50aWNhdGlvbiA+PiBzaG91bGQgc2hvdyBlcnJvciB3aXRoIGludmFsaWQgY3JlZGVudGlhbHMKLSBMb2NhdGlvbjogL1VzZXJzL2pvc2VwaGhlc3Rlci9Eb2N1bWVudHMvZmlyZS1lbXMtdG9vbHMvZTJlL3Rlc3RzL2F1dGguc3BlYy5qczozNTozCgojIEVycm9yIGRldGFpbHMKCmBgYApFcnJvcjogcGFnZS5nb3RvOiBuZXQ6OkVSUl9IVFRQX1JFU1BPTlNFX0NPREVfRkFJTFVSRSBhdCBodHRwOi8vbG9jYWxob3N0OjUwMDAvbG9naW4KQ2FsbCBsb2c6CiAgLSBuYXZpZ2F0aW5nIHRvICJodHRwOi8vbG9jYWxob3N0OjUwMDAvbG9naW4iLCB3YWl0aW5nIHVudGlsICJsb2FkIgoKICAgIGF0IC9Vc2Vycy9qb3NlcGhoZXN0ZXIvRG9jdW1lbnRzL2ZpcmUtZW1zLXRvb2xzL2UyZS90ZXN0cy9hdXRoLnNwZWMuanM6MzY6MTYKYGBgCgojIFBhZ2Ugc25hcHNob3QKCmBgYHlhbWwKLSBoZWFkaW5nICJBY2Nlc3MgdG8gbG9jYWxob3N0IHdhcyBkZW5pZWQiIFtsZXZlbD0xXQotIHBhcmFncmFwaDogWW91IGRvbid0IGhhdmUgYXV0aG9yaXphdGlvbiB0byB2aWV3IHRoaXMgcGFnZS4KLSB0ZXh0OiBIVFRQIEVSUk9SIDQwMwotIGJ1dHRvbiAiUmVsb2FkIgpgYGAKCiMgVGVzdCBzb3VyY2UKCmBgYHRzCiAgIDEgfCBjb25zdCB7IHRlc3QsIGV4cGVjdCB9ID0gcmVxdWlyZSgnQHBsYXl3cmlnaHQvdGVzdCcpOwogICAyIHwKICAgMyB8IHRlc3QuZGVzY3JpYmUoJ0F1dGhlbnRpY2F0aW9uJywgKCkgPT4gewogICA0IHwgICB0ZXN0KCdzaG91bGQgc2hvdyBsb2dpbiBwYWdlJywgYXN5bmMgKHsgcGFnZSB9KSA9PiB7CiAgIDUgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvbG9naW4nKTsKICAgNiB8ICAgICAKICAgNyB8ICAgICAvLyBWZXJpZnkgbG9naW4gcGFnZSBlbGVtZW50cwogICA4IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5Um9sZSgnaGVhZGluZycsIHsgbmFtZTogJ0xvZ2luJyB9KSkudG9CZVZpc2libGUoKTsKICAgOSB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeUxhYmVsKCdVc2VybmFtZScpKS50b0JlVmlzaWJsZSgpOwogIDEwIHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5TGFiZWwoJ1Bhc3N3b3JkJykpLnRvQmVWaXNpYmxlKCk7CiAgMTEgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6ICdMb2dpbicgfSkpLnRvQmVWaXNpYmxlKCk7CiAgMTIgfCAgIH0pOwogIDEzIHwKICAxNCB8ICAgdGVzdCgnc2hvdWxkIGxvZ2luIHN1Y2Nlc3NmdWxseSB3aXRoIHZhbGlkIGNyZWRlbnRpYWxzJywgYXN5bmMgKHsgcGFnZSB9KSA9PiB7CiAgMTUgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvbG9naW4nKTsKICAxNiB8ICAgICAKICAxNyB8ICAgICAvLyBGaWxsIGluIGxvZ2luIGZvcm0KICAxOCB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICAxOSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1Bhc3N3b3JkJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICAyMCB8ICAgICAKICAyMSB8ICAgICAvLyBTZWxlY3QgZGVwYXJ0bWVudCBpZiB0aGUgZmllbGQgZXhpc3RzCiAgMjIgfCAgICAgY29uc3QgZGVwYXJ0bWVudFNlbGVjdG9yID0gcGFnZS5nZXRCeUxhYmVsKCdEZXBhcnRtZW50Jyk7CiAgMjMgfCAgICAgaWYgKGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5pc1Zpc2libGUoKSkgewogIDI0IHwgICAgICAgYXdhaXQgZGVwYXJ0bWVudFNlbGVjdG9yLnNlbGVjdE9wdGlvbigncnVyYWwnKTsKICAyNSB8ICAgICB9CiAgMjYgfCAgICAgCiAgMjcgfCAgICAgLy8gQ2xpY2sgbG9naW4gYnV0dG9uCiAgMjggfCAgICAgYXdhaXQgcGFnZS5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogJ0xvZ2luJyB9KS5jbGljaygpOwogIDI5IHwgICAgIAogIDMwIHwgICAgIC8vIFZlcmlmeSBzdWNjZXNzZnVsIGxvZ2luCiAgMzEgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2Rhc2hib2FyZC8pOwogIDMyIHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5VGV4dCgnV2VsY29tZScpKS50b0JlVmlzaWJsZSgpOwogIDMzIHwgICB9KTsKICAzNCB8CiAgMzUgfCAgIHRlc3QoJ3Nob3VsZCBzaG93IGVycm9yIHdpdGggaW52YWxpZCBjcmVkZW50aWFscycsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewo+IDM2IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2xvZ2luJyk7CiAgICAgfCAgICAgICAgICAgICAgICBeIEVycm9yOiBwYWdlLmdvdG86IG5ldDo6RVJSX0hUVFBfUkVTUE9OU0VfQ09ERV9GQUlMVVJFIGF0IGh0dHA6Ly9sb2NhbGhvc3Q6NTAwMC9sb2dpbgogIDM3IHwgICAgIAogIDM4IHwgICAgIC8vIEZpbGwgaW4gbG9naW4gZm9ybSB3aXRoIGludmFsaWQgY3JlZGVudGlhbHMKICAzOSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykuZmlsbCgnaW52YWxpZF91c2VyJyk7CiAgNDAgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdQYXNzd29yZCcpLmZpbGwoJ2ludmFsaWRfcGFzc3dvcmQnKTsKICA0MSB8ICAgICAKICA0MiB8ICAgICAvLyBDbGljayBsb2dpbiBidXR0b24KICA0MyB8ICAgICBhd2FpdCBwYWdlLmdldEJ5Um9sZSgnYnV0dG9uJywgeyBuYW1lOiAnTG9naW4nIH0pLmNsaWNrKCk7CiAgNDQgfCAgICAgCiAgNDUgfCAgICAgLy8gVmVyaWZ5IGVycm9yIG1lc3NhZ2UKICA0NiB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeVRleHQoJ0ludmFsaWQgdXNlcm5hbWUgb3IgcGFzc3dvcmQnKSkudG9CZVZpc2libGUoKTsKICA0NyB8ICAgICAKICA0OCB8ICAgICAvLyBWZXJpZnkgd2UncmUgc3RpbGwgb24gdGhlIGxvZ2luIHBhZ2UKICA0OSB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA1MCB8ICAgfSk7CiAgNTEgfAogIDUyIHwgICB0ZXN0KCdzaG91bGQgcmVkaXJlY3QgdG8gbG9naW4gcGFnZSBmb3IgcHJvdGVjdGVkIHJvdXRlcycsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogIDUzIHwgICAgIC8vIFRyeSB0byBhY2Nlc3MgYSBwcm90ZWN0ZWQgcGFnZSBkaXJlY3RseQogIDU0IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2luY2lkZW50LWxvZ2dlcicpOwogIDU1IHwgICAgIAogIDU2IHwgICAgIC8vIFZlcmlmeSByZWRpcmVjdCB0byBsb2dpbiBwYWdlCiAgNTcgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2xvZ2luLyk7CiAgNTggfCAgIH0pOwogIDU5IHwKICA2MCB8ICAgdGVzdCgnc2hvdWxkIGxvZ291dCBzdWNjZXNzZnVsbHknLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICA2MSB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9sb2dpbicpOwogIDYyIHwgICAgIAogIDYzIHwgICAgIC8vIExvZ2luIGZpcnN0CiAgNjQgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdVc2VybmFtZScpLmZpbGwoJ3J1cmFsX2FkbWluJyk7CiAgNjUgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdQYXNzd29yZCcpLmZpbGwoJ3J1cmFsX2FkbWluJyk7CiAgNjYgfCAgICAgCiAgNjcgfCAgICAgLy8gU2VsZWN0IGRlcGFydG1lbnQgaWYgdGhlIGZpZWxkIGV4aXN0cwogIDY4IHwgICAgIGNvbnN0IGRlcGFydG1lbnRTZWxlY3RvciA9IHBhZ2UuZ2V0QnlMYWJlbCgnRGVwYXJ0bWVudCcpOwogIDY5IHwgICAgIGlmIChhd2FpdCBkZXBhcnRtZW50U2VsZWN0b3IuaXNWaXNpYmxlKCkpIHsKICA3MCB8ICAgICAgIGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5zZWxlY3RPcHRpb24oJ3J1cmFsJyk7CiAgNzEgfCAgICAgfQogIDcyIHwgICAgIAogIDczIHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6ICdMb2dpbicgfSkuY2xpY2soKTsKICA3NCB8ICAgICAKICA3NSB8ICAgICAvLyBWZXJpZnkgc3VjY2Vzc2Z1bCBsb2dpbgogIDc2IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9kYXNoYm9hcmQvKTsKICA3NyB8ICAgICAKICA3OCB8ICAgICAvLyBMb2dvdXQKICA3OSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5Um9sZSgnbGluaycsIHsgbmFtZTogJ0xvZ291dCcgfSkuY2xpY2soKTsKICA4MCB8ICAgICAKICA4MSB8ICAgICAvLyBWZXJpZnkgbG9nb3V0IC0gYmFjayB0byBsb2dpbiBwYWdlCiAgODIgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2xvZ2luLyk7CiAgODMgfCAgICAgCiAgODQgfCAgICAgLy8gVmVyaWZ5IGNhbid0IGFjY2VzcyBwcm90ZWN0ZWQgcm91dGVzIGFueW1vcmUKICA4NSB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9pbmNpZGVudC1sb2dnZXInKTsKICA4NiB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA4NyB8ICAgfSk7CiAgODggfCB9KTsKYGBg"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js",
+                        "column": 16,
+                        "line": 36
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d5ed79a6b333c2ba7209-8df1b38c23816d553ae3",
+              "file": "auth.spec.js",
+              "line": 35,
+              "column": 3
+            },
+            {
+              "title": "should redirect to login page for protected routes",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 2460,
+                      "error": {
+                        "message": "Error: page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at http://localhost:5000/incident-logger\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5000/incident-logger\", waiting until \"load\"\u001b[22m\n",
+                        "stack": "Error: page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at http://localhost:5000/incident-logger\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5000/incident-logger\", waiting until \"load\"\u001b[22m\n\n    at /Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js:54:16",
+                        "location": {
+                          "file": "/Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js",
+                          "column": 16,
+                          "line": 54
+                        },
+                        "snippet": "  52 |   test('should redirect to login page for protected routes', async ({ page }) => {\n  53 |     // Try to access a protected page directly\n> 54 |     await page.goto('/incident-logger');\n     |                ^\n  55 |     \n  56 |     // Verify redirect to login page\n  57 |     await expect(page).toHaveURL(/.*\\/login/);"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js",
+                            "column": 16,
+                            "line": 54
+                          },
+                          "message": "Error: page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at http://localhost:5000/incident-logger\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5000/incident-logger\", waiting until \"load\"\u001b[22m\n\n\n  52 |   test('should redirect to login page for protected routes', async ({ page }) => {\n  53 |     // Try to access a protected page directly\n> 54 |     await page.goto('/incident-logger');\n     |                ^\n  55 |     \n  56 |     // Verify redirect to login page\n  57 |     await expect(page).toHaveURL(/.*\\/login/);\n    at /Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js:54:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-04-06T03:49:54.243Z",
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/josephhester/Documents/fire-ems-tools/e2e/test-results/auth-Authentication-should-782c0-n-page-for-protected-routes-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "_prompt-0",
+                          "contentType": "text/markdown",
+                          "body": "IyBJbnN0cnVjdGlvbnMKCi0gRm9sbG93aW5nIFBsYXl3cmlnaHQgdGVzdCBmYWlsZWQuCi0gRXhwbGFpbiB3aHksIGJlIGNvbmNpc2UsIHJlc3BlY3QgUGxheXdyaWdodCBiZXN0IHByYWN0aWNlcy4KLSBQcm92aWRlIGEgc25pcHBldCBvZiBjb2RlIHdpdGggdGhlIGZpeCwgaWYgcG9zc2libGUuCgojIFRlc3QgaW5mbwoKLSBOYW1lOiBBdXRoZW50aWNhdGlvbiA+PiBzaG91bGQgcmVkaXJlY3QgdG8gbG9naW4gcGFnZSBmb3IgcHJvdGVjdGVkIHJvdXRlcwotIExvY2F0aW9uOiAvVXNlcnMvam9zZXBoaGVzdGVyL0RvY3VtZW50cy9maXJlLWVtcy10b29scy9lMmUvdGVzdHMvYXV0aC5zcGVjLmpzOjUyOjMKCiMgRXJyb3IgZGV0YWlscwoKYGBgCkVycm9yOiBwYWdlLmdvdG86IG5ldDo6RVJSX0hUVFBfUkVTUE9OU0VfQ09ERV9GQUlMVVJFIGF0IGh0dHA6Ly9sb2NhbGhvc3Q6NTAwMC9pbmNpZGVudC1sb2dnZXIKQ2FsbCBsb2c6CiAgLSBuYXZpZ2F0aW5nIHRvICJodHRwOi8vbG9jYWxob3N0OjUwMDAvaW5jaWRlbnQtbG9nZ2VyIiwgd2FpdGluZyB1bnRpbCAibG9hZCIKCiAgICBhdCAvVXNlcnMvam9zZXBoaGVzdGVyL0RvY3VtZW50cy9maXJlLWVtcy10b29scy9lMmUvdGVzdHMvYXV0aC5zcGVjLmpzOjU0OjE2CmBgYAoKIyBQYWdlIHNuYXBzaG90CgpgYGB5YW1sCi0gaGVhZGluZyAiQWNjZXNzIHRvIGxvY2FsaG9zdCB3YXMgZGVuaWVkIiBbbGV2ZWw9MV0KLSBwYXJhZ3JhcGg6IFlvdSBkb24ndCBoYXZlIGF1dGhvcml6YXRpb24gdG8gdmlldyB0aGlzIHBhZ2UuCi0gdGV4dDogSFRUUCBFUlJPUiA0MDMKLSBidXR0b24gIlJlbG9hZCIKYGBgCgojIFRlc3Qgc291cmNlCgpgYGB0cwogICAxIHwgY29uc3QgeyB0ZXN0LCBleHBlY3QgfSA9IHJlcXVpcmUoJ0BwbGF5d3JpZ2h0L3Rlc3QnKTsKICAgMiB8CiAgIDMgfCB0ZXN0LmRlc2NyaWJlKCdBdXRoZW50aWNhdGlvbicsICgpID0+IHsKICAgNCB8ICAgdGVzdCgnc2hvdWxkIHNob3cgbG9naW4gcGFnZScsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogICA1IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2xvZ2luJyk7CiAgIDYgfCAgICAgCiAgIDcgfCAgICAgLy8gVmVyaWZ5IGxvZ2luIHBhZ2UgZWxlbWVudHMKICAgOCB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeVJvbGUoJ2hlYWRpbmcnLCB7IG5hbWU6ICdMb2dpbicgfSkpLnRvQmVWaXNpYmxlKCk7CiAgIDkgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlMYWJlbCgnVXNlcm5hbWUnKSkudG9CZVZpc2libGUoKTsKICAxMCB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeUxhYmVsKCdQYXNzd29yZCcpKS50b0JlVmlzaWJsZSgpOwogIDExIHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5Um9sZSgnYnV0dG9uJywgeyBuYW1lOiAnTG9naW4nIH0pKS50b0JlVmlzaWJsZSgpOwogIDEyIHwgICB9KTsKICAxMyB8CiAgMTQgfCAgIHRlc3QoJ3Nob3VsZCBsb2dpbiBzdWNjZXNzZnVsbHkgd2l0aCB2YWxpZCBjcmVkZW50aWFscycsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogIDE1IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2xvZ2luJyk7CiAgMTYgfCAgICAgCiAgMTcgfCAgICAgLy8gRmlsbCBpbiBsb2dpbiBmb3JtCiAgMTggfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdVc2VybmFtZScpLmZpbGwoJ3J1cmFsX2FkbWluJyk7CiAgMTkgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdQYXNzd29yZCcpLmZpbGwoJ3J1cmFsX2FkbWluJyk7CiAgMjAgfCAgICAgCiAgMjEgfCAgICAgLy8gU2VsZWN0IGRlcGFydG1lbnQgaWYgdGhlIGZpZWxkIGV4aXN0cwogIDIyIHwgICAgIGNvbnN0IGRlcGFydG1lbnRTZWxlY3RvciA9IHBhZ2UuZ2V0QnlMYWJlbCgnRGVwYXJ0bWVudCcpOwogIDIzIHwgICAgIGlmIChhd2FpdCBkZXBhcnRtZW50U2VsZWN0b3IuaXNWaXNpYmxlKCkpIHsKICAyNCB8ICAgICAgIGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5zZWxlY3RPcHRpb24oJ3J1cmFsJyk7CiAgMjUgfCAgICAgfQogIDI2IHwgICAgIAogIDI3IHwgICAgIC8vIENsaWNrIGxvZ2luIGJ1dHRvbgogIDI4IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6ICdMb2dpbicgfSkuY2xpY2soKTsKICAyOSB8ICAgICAKICAzMCB8ICAgICAvLyBWZXJpZnkgc3VjY2Vzc2Z1bCBsb2dpbgogIDMxIHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9kYXNoYm9hcmQvKTsKICAzMiB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeVRleHQoJ1dlbGNvbWUnKSkudG9CZVZpc2libGUoKTsKICAzMyB8ICAgfSk7CiAgMzQgfAogIDM1IHwgICB0ZXN0KCdzaG91bGQgc2hvdyBlcnJvciB3aXRoIGludmFsaWQgY3JlZGVudGlhbHMnLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICAzNiB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9sb2dpbicpOwogIDM3IHwgICAgIAogIDM4IHwgICAgIC8vIEZpbGwgaW4gbG9naW4gZm9ybSB3aXRoIGludmFsaWQgY3JlZGVudGlhbHMKICAzOSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykuZmlsbCgnaW52YWxpZF91c2VyJyk7CiAgNDAgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdQYXNzd29yZCcpLmZpbGwoJ2ludmFsaWRfcGFzc3dvcmQnKTsKICA0MSB8ICAgICAKICA0MiB8ICAgICAvLyBDbGljayBsb2dpbiBidXR0b24KICA0MyB8ICAgICBhd2FpdCBwYWdlLmdldEJ5Um9sZSgnYnV0dG9uJywgeyBuYW1lOiAnTG9naW4nIH0pLmNsaWNrKCk7CiAgNDQgfCAgICAgCiAgNDUgfCAgICAgLy8gVmVyaWZ5IGVycm9yIG1lc3NhZ2UKICA0NiB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeVRleHQoJ0ludmFsaWQgdXNlcm5hbWUgb3IgcGFzc3dvcmQnKSkudG9CZVZpc2libGUoKTsKICA0NyB8ICAgICAKICA0OCB8ICAgICAvLyBWZXJpZnkgd2UncmUgc3RpbGwgb24gdGhlIGxvZ2luIHBhZ2UKICA0OSB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA1MCB8ICAgfSk7CiAgNTEgfAogIDUyIHwgICB0ZXN0KCdzaG91bGQgcmVkaXJlY3QgdG8gbG9naW4gcGFnZSBmb3IgcHJvdGVjdGVkIHJvdXRlcycsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogIDUzIHwgICAgIC8vIFRyeSB0byBhY2Nlc3MgYSBwcm90ZWN0ZWQgcGFnZSBkaXJlY3RseQo+IDU0IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2luY2lkZW50LWxvZ2dlcicpOwogICAgIHwgICAgICAgICAgICAgICAgXiBFcnJvcjogcGFnZS5nb3RvOiBuZXQ6OkVSUl9IVFRQX1JFU1BPTlNFX0NPREVfRkFJTFVSRSBhdCBodHRwOi8vbG9jYWxob3N0OjUwMDAvaW5jaWRlbnQtbG9nZ2VyCiAgNTUgfCAgICAgCiAgNTYgfCAgICAgLy8gVmVyaWZ5IHJlZGlyZWN0IHRvIGxvZ2luIHBhZ2UKICA1NyB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA1OCB8ICAgfSk7CiAgNTkgfAogIDYwIHwgICB0ZXN0KCdzaG91bGQgbG9nb3V0IHN1Y2Nlc3NmdWxseScsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogIDYxIHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2xvZ2luJyk7CiAgNjIgfCAgICAgCiAgNjMgfCAgICAgLy8gTG9naW4gZmlyc3QKICA2NCB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICA2NSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1Bhc3N3b3JkJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICA2NiB8ICAgICAKICA2NyB8ICAgICAvLyBTZWxlY3QgZGVwYXJ0bWVudCBpZiB0aGUgZmllbGQgZXhpc3RzCiAgNjggfCAgICAgY29uc3QgZGVwYXJ0bWVudFNlbGVjdG9yID0gcGFnZS5nZXRCeUxhYmVsKCdEZXBhcnRtZW50Jyk7CiAgNjkgfCAgICAgaWYgKGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5pc1Zpc2libGUoKSkgewogIDcwIHwgICAgICAgYXdhaXQgZGVwYXJ0bWVudFNlbGVjdG9yLnNlbGVjdE9wdGlvbigncnVyYWwnKTsKICA3MSB8ICAgICB9CiAgNzIgfCAgICAgCiAgNzMgfCAgICAgYXdhaXQgcGFnZS5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogJ0xvZ2luJyB9KS5jbGljaygpOwogIDc0IHwgICAgIAogIDc1IHwgICAgIC8vIFZlcmlmeSBzdWNjZXNzZnVsIGxvZ2luCiAgNzYgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2Rhc2hib2FyZC8pOwogIDc3IHwgICAgIAogIDc4IHwgICAgIC8vIExvZ291dAogIDc5IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlSb2xlKCdsaW5rJywgeyBuYW1lOiAnTG9nb3V0JyB9KS5jbGljaygpOwogIDgwIHwgICAgIAogIDgxIHwgICAgIC8vIFZlcmlmeSBsb2dvdXQgLSBiYWNrIHRvIGxvZ2luIHBhZ2UKICA4MiB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA4MyB8ICAgICAKICA4NCB8ICAgICAvLyBWZXJpZnkgY2FuJ3QgYWNjZXNzIHByb3RlY3RlZCByb3V0ZXMgYW55bW9yZQogIDg1IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2luY2lkZW50LWxvZ2dlcicpOwogIDg2IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9sb2dpbi8pOwogIDg3IHwgICB9KTsKICA4OCB8IH0pOwpgYGA="
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js",
+                        "column": 16,
+                        "line": 54
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d5ed79a6b333c2ba7209-10d72342fe15ec8e5023",
+              "file": "auth.spec.js",
+              "line": 52,
+              "column": 3
+            },
+            {
+              "title": "should logout successfully",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 2197,
+                      "error": {
+                        "message": "Error: page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at http://localhost:5000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5000/login\", waiting until \"load\"\u001b[22m\n",
+                        "stack": "Error: page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at http://localhost:5000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5000/login\", waiting until \"load\"\u001b[22m\n\n    at /Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js:61:16",
+                        "location": {
+                          "file": "/Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js",
+                          "column": 16,
+                          "line": 61
+                        },
+                        "snippet": "  59 |\n  60 |   test('should logout successfully', async ({ page }) => {\n> 61 |     await page.goto('/login');\n     |                ^\n  62 |     \n  63 |     // Login first\n  64 |     await page.getByLabel('Username').fill('rural_admin');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js",
+                            "column": 16,
+                            "line": 61
+                          },
+                          "message": "Error: page.goto: net::ERR_HTTP_RESPONSE_CODE_FAILURE at http://localhost:5000/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5000/login\", waiting until \"load\"\u001b[22m\n\n\n  59 |\n  60 |   test('should logout successfully', async ({ page }) => {\n> 61 |     await page.goto('/login');\n     |                ^\n  62 |     \n  63 |     // Login first\n  64 |     await page.getByLabel('Username').fill('rural_admin');\n    at /Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js:61:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-04-06T03:49:54.241Z",
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/josephhester/Documents/fire-ems-tools/e2e/test-results/auth-Authentication-should-logout-successfully-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "_prompt-0",
+                          "contentType": "text/markdown",
+                          "body": "IyBJbnN0cnVjdGlvbnMKCi0gRm9sbG93aW5nIFBsYXl3cmlnaHQgdGVzdCBmYWlsZWQuCi0gRXhwbGFpbiB3aHksIGJlIGNvbmNpc2UsIHJlc3BlY3QgUGxheXdyaWdodCBiZXN0IHByYWN0aWNlcy4KLSBQcm92aWRlIGEgc25pcHBldCBvZiBjb2RlIHdpdGggdGhlIGZpeCwgaWYgcG9zc2libGUuCgojIFRlc3QgaW5mbwoKLSBOYW1lOiBBdXRoZW50aWNhdGlvbiA+PiBzaG91bGQgbG9nb3V0IHN1Y2Nlc3NmdWxseQotIExvY2F0aW9uOiAvVXNlcnMvam9zZXBoaGVzdGVyL0RvY3VtZW50cy9maXJlLWVtcy10b29scy9lMmUvdGVzdHMvYXV0aC5zcGVjLmpzOjYwOjMKCiMgRXJyb3IgZGV0YWlscwoKYGBgCkVycm9yOiBwYWdlLmdvdG86IG5ldDo6RVJSX0hUVFBfUkVTUE9OU0VfQ09ERV9GQUlMVVJFIGF0IGh0dHA6Ly9sb2NhbGhvc3Q6NTAwMC9sb2dpbgpDYWxsIGxvZzoKICAtIG5hdmlnYXRpbmcgdG8gImh0dHA6Ly9sb2NhbGhvc3Q6NTAwMC9sb2dpbiIsIHdhaXRpbmcgdW50aWwgImxvYWQiCgogICAgYXQgL1VzZXJzL2pvc2VwaGhlc3Rlci9Eb2N1bWVudHMvZmlyZS1lbXMtdG9vbHMvZTJlL3Rlc3RzL2F1dGguc3BlYy5qczo2MToxNgpgYGAKCiMgUGFnZSBzbmFwc2hvdAoKYGBgeWFtbAotIGhlYWRpbmcgIkFjY2VzcyB0byBsb2NhbGhvc3Qgd2FzIGRlbmllZCIgW2xldmVsPTFdCi0gcGFyYWdyYXBoOiBZb3UgZG9uJ3QgaGF2ZSBhdXRob3JpemF0aW9uIHRvIHZpZXcgdGhpcyBwYWdlLgotIHRleHQ6IEhUVFAgRVJST1IgNDAzCi0gYnV0dG9uICJSZWxvYWQiCmBgYAoKIyBUZXN0IHNvdXJjZQoKYGBgdHMKICAgMSB8IGNvbnN0IHsgdGVzdCwgZXhwZWN0IH0gPSByZXF1aXJlKCdAcGxheXdyaWdodC90ZXN0Jyk7CiAgIDIgfAogICAzIHwgdGVzdC5kZXNjcmliZSgnQXV0aGVudGljYXRpb24nLCAoKSA9PiB7CiAgIDQgfCAgIHRlc3QoJ3Nob3VsZCBzaG93IGxvZ2luIHBhZ2UnLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICAgNSB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9sb2dpbicpOwogICA2IHwgICAgIAogICA3IHwgICAgIC8vIFZlcmlmeSBsb2dpbiBwYWdlIGVsZW1lbnRzCiAgIDggfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlSb2xlKCdoZWFkaW5nJywgeyBuYW1lOiAnTG9naW4nIH0pKS50b0JlVmlzaWJsZSgpOwogICA5IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykpLnRvQmVWaXNpYmxlKCk7CiAgMTAgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlMYWJlbCgnUGFzc3dvcmQnKSkudG9CZVZpc2libGUoKTsKICAxMSB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogJ0xvZ2luJyB9KSkudG9CZVZpc2libGUoKTsKICAxMiB8ICAgfSk7CiAgMTMgfAogIDE0IHwgICB0ZXN0KCdzaG91bGQgbG9naW4gc3VjY2Vzc2Z1bGx5IHdpdGggdmFsaWQgY3JlZGVudGlhbHMnLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICAxNSB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9sb2dpbicpOwogIDE2IHwgICAgIAogIDE3IHwgICAgIC8vIEZpbGwgaW4gbG9naW4gZm9ybQogIDE4IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlMYWJlbCgnVXNlcm5hbWUnKS5maWxsKCdydXJhbF9hZG1pbicpOwogIDE5IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlMYWJlbCgnUGFzc3dvcmQnKS5maWxsKCdydXJhbF9hZG1pbicpOwogIDIwIHwgICAgIAogIDIxIHwgICAgIC8vIFNlbGVjdCBkZXBhcnRtZW50IGlmIHRoZSBmaWVsZCBleGlzdHMKICAyMiB8ICAgICBjb25zdCBkZXBhcnRtZW50U2VsZWN0b3IgPSBwYWdlLmdldEJ5TGFiZWwoJ0RlcGFydG1lbnQnKTsKICAyMyB8ICAgICBpZiAoYXdhaXQgZGVwYXJ0bWVudFNlbGVjdG9yLmlzVmlzaWJsZSgpKSB7CiAgMjQgfCAgICAgICBhd2FpdCBkZXBhcnRtZW50U2VsZWN0b3Iuc2VsZWN0T3B0aW9uKCdydXJhbCcpOwogIDI1IHwgICAgIH0KICAyNiB8ICAgICAKICAyNyB8ICAgICAvLyBDbGljayBsb2dpbiBidXR0b24KICAyOCB8ICAgICBhd2FpdCBwYWdlLmdldEJ5Um9sZSgnYnV0dG9uJywgeyBuYW1lOiAnTG9naW4nIH0pLmNsaWNrKCk7CiAgMjkgfCAgICAgCiAgMzAgfCAgICAgLy8gVmVyaWZ5IHN1Y2Nlc3NmdWwgbG9naW4KICAzMSB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvZGFzaGJvYXJkLyk7CiAgMzIgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlUZXh0KCdXZWxjb21lJykpLnRvQmVWaXNpYmxlKCk7CiAgMzMgfCAgIH0pOwogIDM0IHwKICAzNSB8ICAgdGVzdCgnc2hvdWxkIHNob3cgZXJyb3Igd2l0aCBpbnZhbGlkIGNyZWRlbnRpYWxzJywgYXN5bmMgKHsgcGFnZSB9KSA9PiB7CiAgMzYgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvbG9naW4nKTsKICAzNyB8ICAgICAKICAzOCB8ICAgICAvLyBGaWxsIGluIGxvZ2luIGZvcm0gd2l0aCBpbnZhbGlkIGNyZWRlbnRpYWxzCiAgMzkgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdVc2VybmFtZScpLmZpbGwoJ2ludmFsaWRfdXNlcicpOwogIDQwIHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlMYWJlbCgnUGFzc3dvcmQnKS5maWxsKCdpbnZhbGlkX3Bhc3N3b3JkJyk7CiAgNDEgfCAgICAgCiAgNDIgfCAgICAgLy8gQ2xpY2sgbG9naW4gYnV0dG9uCiAgNDMgfCAgICAgYXdhaXQgcGFnZS5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogJ0xvZ2luJyB9KS5jbGljaygpOwogIDQ0IHwgICAgIAogIDQ1IHwgICAgIC8vIFZlcmlmeSBlcnJvciBtZXNzYWdlCiAgNDYgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlUZXh0KCdJbnZhbGlkIHVzZXJuYW1lIG9yIHBhc3N3b3JkJykpLnRvQmVWaXNpYmxlKCk7CiAgNDcgfCAgICAgCiAgNDggfCAgICAgLy8gVmVyaWZ5IHdlJ3JlIHN0aWxsIG9uIHRoZSBsb2dpbiBwYWdlCiAgNDkgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2xvZ2luLyk7CiAgNTAgfCAgIH0pOwogIDUxIHwKICA1MiB8ICAgdGVzdCgnc2hvdWxkIHJlZGlyZWN0IHRvIGxvZ2luIHBhZ2UgZm9yIHByb3RlY3RlZCByb3V0ZXMnLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICA1MyB8ICAgICAvLyBUcnkgdG8gYWNjZXNzIGEgcHJvdGVjdGVkIHBhZ2UgZGlyZWN0bHkKICA1NCB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9pbmNpZGVudC1sb2dnZXInKTsKICA1NSB8ICAgICAKICA1NiB8ICAgICAvLyBWZXJpZnkgcmVkaXJlY3QgdG8gbG9naW4gcGFnZQogIDU3IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9sb2dpbi8pOwogIDU4IHwgICB9KTsKICA1OSB8CiAgNjAgfCAgIHRlc3QoJ3Nob3VsZCBsb2dvdXQgc3VjY2Vzc2Z1bGx5JywgYXN5bmMgKHsgcGFnZSB9KSA9PiB7Cj4gNjEgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvbG9naW4nKTsKICAgICB8ICAgICAgICAgICAgICAgIF4gRXJyb3I6IHBhZ2UuZ290bzogbmV0OjpFUlJfSFRUUF9SRVNQT05TRV9DT0RFX0ZBSUxVUkUgYXQgaHR0cDovL2xvY2FsaG9zdDo1MDAwL2xvZ2luCiAgNjIgfCAgICAgCiAgNjMgfCAgICAgLy8gTG9naW4gZmlyc3QKICA2NCB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICA2NSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1Bhc3N3b3JkJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICA2NiB8ICAgICAKICA2NyB8ICAgICAvLyBTZWxlY3QgZGVwYXJ0bWVudCBpZiB0aGUgZmllbGQgZXhpc3RzCiAgNjggfCAgICAgY29uc3QgZGVwYXJ0bWVudFNlbGVjdG9yID0gcGFnZS5nZXRCeUxhYmVsKCdEZXBhcnRtZW50Jyk7CiAgNjkgfCAgICAgaWYgKGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5pc1Zpc2libGUoKSkgewogIDcwIHwgICAgICAgYXdhaXQgZGVwYXJ0bWVudFNlbGVjdG9yLnNlbGVjdE9wdGlvbigncnVyYWwnKTsKICA3MSB8ICAgICB9CiAgNzIgfCAgICAgCiAgNzMgfCAgICAgYXdhaXQgcGFnZS5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogJ0xvZ2luJyB9KS5jbGljaygpOwogIDc0IHwgICAgIAogIDc1IHwgICAgIC8vIFZlcmlmeSBzdWNjZXNzZnVsIGxvZ2luCiAgNzYgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2Rhc2hib2FyZC8pOwogIDc3IHwgICAgIAogIDc4IHwgICAgIC8vIExvZ291dAogIDc5IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlSb2xlKCdsaW5rJywgeyBuYW1lOiAnTG9nb3V0JyB9KS5jbGljaygpOwogIDgwIHwgICAgIAogIDgxIHwgICAgIC8vIFZlcmlmeSBsb2dvdXQgLSBiYWNrIHRvIGxvZ2luIHBhZ2UKICA4MiB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA4MyB8ICAgICAKICA4NCB8ICAgICAvLyBWZXJpZnkgY2FuJ3QgYWNjZXNzIHByb3RlY3RlZCByb3V0ZXMgYW55bW9yZQogIDg1IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2luY2lkZW50LWxvZ2dlcicpOwogIDg2IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9sb2dpbi8pOwogIDg3IHwgICB9KTsKICA4OCB8IH0pOwpgYGA="
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/josephhester/Documents/fire-ems-tools/e2e/tests/auth.spec.js",
+                        "column": 16,
+                        "line": 61
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d5ed79a6b333c2ba7209-71e7b41608970573c898",
+              "file": "auth.spec.js",
+              "line": 60,
+              "column": 3
+            },
+            {
+              "title": "should show login page",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 9,
+                      "error": {
+                        "message": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/firefox-1475/firefox/Nightly.app/Contents/MacOS/firefox\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝",
+                        "stack": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/firefox-1475/firefox/Nightly.app/Contents/MacOS/firefox\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/firefox-1475/firefox/Nightly.app/Contents/MacOS/firefox\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-04-06T03:50:04.583Z",
+                      "attachments": [
+                        {
+                          "name": "_prompt-0",
+                          "contentType": "text/markdown",
+                          "body": "IyBJbnN0cnVjdGlvbnMKCi0gRm9sbG93aW5nIFBsYXl3cmlnaHQgdGVzdCBmYWlsZWQuCi0gRXhwbGFpbiB3aHksIGJlIGNvbmNpc2UsIHJlc3BlY3QgUGxheXdyaWdodCBiZXN0IHByYWN0aWNlcy4KLSBQcm92aWRlIGEgc25pcHBldCBvZiBjb2RlIHdpdGggdGhlIGZpeCwgaWYgcG9zc2libGUuCgojIFRlc3QgaW5mbwoKLSBOYW1lOiBBdXRoZW50aWNhdGlvbiA+PiBzaG91bGQgc2hvdyBsb2dpbiBwYWdlCi0gTG9jYXRpb246IC9Vc2Vycy9qb3NlcGhoZXN0ZXIvRG9jdW1lbnRzL2ZpcmUtZW1zLXRvb2xzL2UyZS90ZXN0cy9hdXRoLnNwZWMuanM6NDozCgojIEVycm9yIGRldGFpbHMKCmBgYApFcnJvcjogYnJvd3NlclR5cGUubGF1bmNoOiBFeGVjdXRhYmxlIGRvZXNuJ3QgZXhpc3QgYXQgL1VzZXJzL2pvc2VwaGhlc3Rlci9MaWJyYXJ5L0NhY2hlcy9tcy1wbGF5d3JpZ2h0L2ZpcmVmb3gtMTQ3NS9maXJlZm94L05pZ2h0bHkuYXBwL0NvbnRlbnRzL01hY09TL2ZpcmVmb3gK4pWU4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWXCuKVkSBMb29rcyBsaWtlIFBsYXl3cmlnaHQgVGVzdCBvciBQbGF5d3JpZ2h0IHdhcyBqdXN0IGluc3RhbGxlZCBvciB1cGRhdGVkLiDilZEK4pWRIFBsZWFzZSBydW4gdGhlIGZvbGxvd2luZyBjb21tYW5kIHRvIGRvd25sb2FkIG5ldyBicm93c2VyczogICAgICAgICAgICAgIOKVkQrilZEgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg4pWRCuKVkSAgICAgbnB4IHBsYXl3cmlnaHQgaW5zdGFsbCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDilZEK4pWRICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKVkQrilZEgPDMgUGxheXdyaWdodCBUZWFtICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg4pWRCuKVmuKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVnQpgYGAKCiMgVGVzdCBzb3VyY2UKCmBgYHRzCiAgIDEgfCBjb25zdCB7IHRlc3QsIGV4cGVjdCB9ID0gcmVxdWlyZSgnQHBsYXl3cmlnaHQvdGVzdCcpOwogICAyIHwKICAgMyB8IHRlc3QuZGVzY3JpYmUoJ0F1dGhlbnRpY2F0aW9uJywgKCkgPT4gewo+ICA0IHwgICB0ZXN0KCdzaG91bGQgc2hvdyBsb2dpbiBwYWdlJywgYXN5bmMgKHsgcGFnZSB9KSA9PiB7CiAgICAgfCAgIF4gRXJyb3I6IGJyb3dzZXJUeXBlLmxhdW5jaDogRXhlY3V0YWJsZSBkb2Vzbid0IGV4aXN0IGF0IC9Vc2Vycy9qb3NlcGhoZXN0ZXIvTGlicmFyeS9DYWNoZXMvbXMtcGxheXdyaWdodC9maXJlZm94LTE0NzUvZmlyZWZveC9OaWdodGx5LmFwcC9Db250ZW50cy9NYWNPUy9maXJlZm94CiAgIDUgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvbG9naW4nKTsKICAgNiB8ICAgICAKICAgNyB8ICAgICAvLyBWZXJpZnkgbG9naW4gcGFnZSBlbGVtZW50cwogICA4IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5Um9sZSgnaGVhZGluZycsIHsgbmFtZTogJ0xvZ2luJyB9KSkudG9CZVZpc2libGUoKTsKICAgOSB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeUxhYmVsKCdVc2VybmFtZScpKS50b0JlVmlzaWJsZSgpOwogIDEwIHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5TGFiZWwoJ1Bhc3N3b3JkJykpLnRvQmVWaXNpYmxlKCk7CiAgMTEgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6ICdMb2dpbicgfSkpLnRvQmVWaXNpYmxlKCk7CiAgMTIgfCAgIH0pOwogIDEzIHwKICAxNCB8ICAgdGVzdCgnc2hvdWxkIGxvZ2luIHN1Y2Nlc3NmdWxseSB3aXRoIHZhbGlkIGNyZWRlbnRpYWxzJywgYXN5bmMgKHsgcGFnZSB9KSA9PiB7CiAgMTUgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvbG9naW4nKTsKICAxNiB8ICAgICAKICAxNyB8ICAgICAvLyBGaWxsIGluIGxvZ2luIGZvcm0KICAxOCB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICAxOSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1Bhc3N3b3JkJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICAyMCB8ICAgICAKICAyMSB8ICAgICAvLyBTZWxlY3QgZGVwYXJ0bWVudCBpZiB0aGUgZmllbGQgZXhpc3RzCiAgMjIgfCAgICAgY29uc3QgZGVwYXJ0bWVudFNlbGVjdG9yID0gcGFnZS5nZXRCeUxhYmVsKCdEZXBhcnRtZW50Jyk7CiAgMjMgfCAgICAgaWYgKGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5pc1Zpc2libGUoKSkgewogIDI0IHwgICAgICAgYXdhaXQgZGVwYXJ0bWVudFNlbGVjdG9yLnNlbGVjdE9wdGlvbigncnVyYWwnKTsKICAyNSB8ICAgICB9CiAgMjYgfCAgICAgCiAgMjcgfCAgICAgLy8gQ2xpY2sgbG9naW4gYnV0dG9uCiAgMjggfCAgICAgYXdhaXQgcGFnZS5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogJ0xvZ2luJyB9KS5jbGljaygpOwogIDI5IHwgICAgIAogIDMwIHwgICAgIC8vIFZlcmlmeSBzdWNjZXNzZnVsIGxvZ2luCiAgMzEgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2Rhc2hib2FyZC8pOwogIDMyIHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5VGV4dCgnV2VsY29tZScpKS50b0JlVmlzaWJsZSgpOwogIDMzIHwgICB9KTsKICAzNCB8CiAgMzUgfCAgIHRlc3QoJ3Nob3VsZCBzaG93IGVycm9yIHdpdGggaW52YWxpZCBjcmVkZW50aWFscycsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogIDM2IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2xvZ2luJyk7CiAgMzcgfCAgICAgCiAgMzggfCAgICAgLy8gRmlsbCBpbiBsb2dpbiBmb3JtIHdpdGggaW52YWxpZCBjcmVkZW50aWFscwogIDM5IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlMYWJlbCgnVXNlcm5hbWUnKS5maWxsKCdpbnZhbGlkX3VzZXInKTsKICA0MCB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1Bhc3N3b3JkJykuZmlsbCgnaW52YWxpZF9wYXNzd29yZCcpOwogIDQxIHwgICAgIAogIDQyIHwgICAgIC8vIENsaWNrIGxvZ2luIGJ1dHRvbgogIDQzIHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6ICdMb2dpbicgfSkuY2xpY2soKTsKICA0NCB8ICAgICAKICA0NSB8ICAgICAvLyBWZXJpZnkgZXJyb3IgbWVzc2FnZQogIDQ2IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5VGV4dCgnSW52YWxpZCB1c2VybmFtZSBvciBwYXNzd29yZCcpKS50b0JlVmlzaWJsZSgpOwogIDQ3IHwgICAgIAogIDQ4IHwgICAgIC8vIFZlcmlmeSB3ZSdyZSBzdGlsbCBvbiB0aGUgbG9naW4gcGFnZQogIDQ5IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9sb2dpbi8pOwogIDUwIHwgICB9KTsKICA1MSB8CiAgNTIgfCAgIHRlc3QoJ3Nob3VsZCByZWRpcmVjdCB0byBsb2dpbiBwYWdlIGZvciBwcm90ZWN0ZWQgcm91dGVzJywgYXN5bmMgKHsgcGFnZSB9KSA9PiB7CiAgNTMgfCAgICAgLy8gVHJ5IHRvIGFjY2VzcyBhIHByb3RlY3RlZCBwYWdlIGRpcmVjdGx5CiAgNTQgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvaW5jaWRlbnQtbG9nZ2VyJyk7CiAgNTUgfCAgICAgCiAgNTYgfCAgICAgLy8gVmVyaWZ5IHJlZGlyZWN0IHRvIGxvZ2luIHBhZ2UKICA1NyB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA1OCB8ICAgfSk7CiAgNTkgfAogIDYwIHwgICB0ZXN0KCdzaG91bGQgbG9nb3V0IHN1Y2Nlc3NmdWxseScsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogIDYxIHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2xvZ2luJyk7CiAgNjIgfCAgICAgCiAgNjMgfCAgICAgLy8gTG9naW4gZmlyc3QKICA2NCB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICA2NSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1Bhc3N3b3JkJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICA2NiB8ICAgICAKICA2NyB8ICAgICAvLyBTZWxlY3QgZGVwYXJ0bWVudCBpZiB0aGUgZmllbGQgZXhpc3RzCiAgNjggfCAgICAgY29uc3QgZGVwYXJ0bWVudFNlbGVjdG9yID0gcGFnZS5nZXRCeUxhYmVsKCdEZXBhcnRtZW50Jyk7CiAgNjkgfCAgICAgaWYgKGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5pc1Zpc2libGUoKSkgewogIDcwIHwgICAgICAgYXdhaXQgZGVwYXJ0bWVudFNlbGVjdG9yLnNlbGVjdE9wdGlvbigncnVyYWwnKTsKICA3MSB8ICAgICB9CiAgNzIgfCAgICAgCiAgNzMgfCAgICAgYXdhaXQgcGFnZS5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogJ0xvZ2luJyB9KS5jbGljaygpOwogIDc0IHwgICAgIAogIDc1IHwgICAgIC8vIFZlcmlmeSBzdWNjZXNzZnVsIGxvZ2luCiAgNzYgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2Rhc2hib2FyZC8pOwogIDc3IHwgICAgIAogIDc4IHwgICAgIC8vIExvZ291dAogIDc5IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlSb2xlKCdsaW5rJywgeyBuYW1lOiAnTG9nb3V0JyB9KS5jbGljaygpOwogIDgwIHwgICAgIAogIDgxIHwgICAgIC8vIFZlcmlmeSBsb2dvdXQgLSBiYWNrIHRvIGxvZ2luIHBhZ2UKICA4MiB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA4MyB8ICAgICAKICA4NCB8ICAgICAvLyBWZXJpZnkgY2FuJ3QgYWNjZXNzIHByb3RlY3RlZCByb3V0ZXMgYW55bW9yZQogIDg1IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2luY2lkZW50LWxvZ2dlcicpOwogIDg2IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9sb2dpbi8pOwogIDg3IHwgICB9KTsKICA4OCB8IH0pOwpgYGA="
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d5ed79a6b333c2ba7209-3cc102d5edaa9d17d087",
+              "file": "auth.spec.js",
+              "line": 4,
+              "column": 3
+            },
+            {
+              "title": "should login successfully with valid credentials",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 3,
+                      "error": {
+                        "message": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/firefox-1475/firefox/Nightly.app/Contents/MacOS/firefox\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝",
+                        "stack": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/firefox-1475/firefox/Nightly.app/Contents/MacOS/firefox\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/firefox-1475/firefox/Nightly.app/Contents/MacOS/firefox\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-04-06T03:50:04.611Z",
+                      "attachments": [
+                        {
+                          "name": "_prompt-0",
+                          "contentType": "text/markdown",
+                          "body": "IyBJbnN0cnVjdGlvbnMKCi0gRm9sbG93aW5nIFBsYXl3cmlnaHQgdGVzdCBmYWlsZWQuCi0gRXhwbGFpbiB3aHksIGJlIGNvbmNpc2UsIHJlc3BlY3QgUGxheXdyaWdodCBiZXN0IHByYWN0aWNlcy4KLSBQcm92aWRlIGEgc25pcHBldCBvZiBjb2RlIHdpdGggdGhlIGZpeCwgaWYgcG9zc2libGUuCgojIFRlc3QgaW5mbwoKLSBOYW1lOiBBdXRoZW50aWNhdGlvbiA+PiBzaG91bGQgbG9naW4gc3VjY2Vzc2Z1bGx5IHdpdGggdmFsaWQgY3JlZGVudGlhbHMKLSBMb2NhdGlvbjogL1VzZXJzL2pvc2VwaGhlc3Rlci9Eb2N1bWVudHMvZmlyZS1lbXMtdG9vbHMvZTJlL3Rlc3RzL2F1dGguc3BlYy5qczoxNDozCgojIEVycm9yIGRldGFpbHMKCmBgYApFcnJvcjogYnJvd3NlclR5cGUubGF1bmNoOiBFeGVjdXRhYmxlIGRvZXNuJ3QgZXhpc3QgYXQgL1VzZXJzL2pvc2VwaGhlc3Rlci9MaWJyYXJ5L0NhY2hlcy9tcy1wbGF5d3JpZ2h0L2ZpcmVmb3gtMTQ3NS9maXJlZm94L05pZ2h0bHkuYXBwL0NvbnRlbnRzL01hY09TL2ZpcmVmb3gK4pWU4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWXCuKVkSBMb29rcyBsaWtlIFBsYXl3cmlnaHQgVGVzdCBvciBQbGF5d3JpZ2h0IHdhcyBqdXN0IGluc3RhbGxlZCBvciB1cGRhdGVkLiDilZEK4pWRIFBsZWFzZSBydW4gdGhlIGZvbGxvd2luZyBjb21tYW5kIHRvIGRvd25sb2FkIG5ldyBicm93c2VyczogICAgICAgICAgICAgIOKVkQrilZEgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg4pWRCuKVkSAgICAgbnB4IHBsYXl3cmlnaHQgaW5zdGFsbCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDilZEK4pWRICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKVkQrilZEgPDMgUGxheXdyaWdodCBUZWFtICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg4pWRCuKVmuKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVnQpgYGAKCiMgVGVzdCBzb3VyY2UKCmBgYHRzCiAgIDEgfCBjb25zdCB7IHRlc3QsIGV4cGVjdCB9ID0gcmVxdWlyZSgnQHBsYXl3cmlnaHQvdGVzdCcpOwogICAyIHwKICAgMyB8IHRlc3QuZGVzY3JpYmUoJ0F1dGhlbnRpY2F0aW9uJywgKCkgPT4gewogICA0IHwgICB0ZXN0KCdzaG91bGQgc2hvdyBsb2dpbiBwYWdlJywgYXN5bmMgKHsgcGFnZSB9KSA9PiB7CiAgIDUgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvbG9naW4nKTsKICAgNiB8ICAgICAKICAgNyB8ICAgICAvLyBWZXJpZnkgbG9naW4gcGFnZSBlbGVtZW50cwogICA4IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5Um9sZSgnaGVhZGluZycsIHsgbmFtZTogJ0xvZ2luJyB9KSkudG9CZVZpc2libGUoKTsKICAgOSB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeUxhYmVsKCdVc2VybmFtZScpKS50b0JlVmlzaWJsZSgpOwogIDEwIHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5TGFiZWwoJ1Bhc3N3b3JkJykpLnRvQmVWaXNpYmxlKCk7CiAgMTEgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6ICdMb2dpbicgfSkpLnRvQmVWaXNpYmxlKCk7CiAgMTIgfCAgIH0pOwogIDEzIHwKPiAxNCB8ICAgdGVzdCgnc2hvdWxkIGxvZ2luIHN1Y2Nlc3NmdWxseSB3aXRoIHZhbGlkIGNyZWRlbnRpYWxzJywgYXN5bmMgKHsgcGFnZSB9KSA9PiB7CiAgICAgfCAgIF4gRXJyb3I6IGJyb3dzZXJUeXBlLmxhdW5jaDogRXhlY3V0YWJsZSBkb2Vzbid0IGV4aXN0IGF0IC9Vc2Vycy9qb3NlcGhoZXN0ZXIvTGlicmFyeS9DYWNoZXMvbXMtcGxheXdyaWdodC9maXJlZm94LTE0NzUvZmlyZWZveC9OaWdodGx5LmFwcC9Db250ZW50cy9NYWNPUy9maXJlZm94CiAgMTUgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvbG9naW4nKTsKICAxNiB8ICAgICAKICAxNyB8ICAgICAvLyBGaWxsIGluIGxvZ2luIGZvcm0KICAxOCB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICAxOSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1Bhc3N3b3JkJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICAyMCB8ICAgICAKICAyMSB8ICAgICAvLyBTZWxlY3QgZGVwYXJ0bWVudCBpZiB0aGUgZmllbGQgZXhpc3RzCiAgMjIgfCAgICAgY29uc3QgZGVwYXJ0bWVudFNlbGVjdG9yID0gcGFnZS5nZXRCeUxhYmVsKCdEZXBhcnRtZW50Jyk7CiAgMjMgfCAgICAgaWYgKGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5pc1Zpc2libGUoKSkgewogIDI0IHwgICAgICAgYXdhaXQgZGVwYXJ0bWVudFNlbGVjdG9yLnNlbGVjdE9wdGlvbigncnVyYWwnKTsKICAyNSB8ICAgICB9CiAgMjYgfCAgICAgCiAgMjcgfCAgICAgLy8gQ2xpY2sgbG9naW4gYnV0dG9uCiAgMjggfCAgICAgYXdhaXQgcGFnZS5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogJ0xvZ2luJyB9KS5jbGljaygpOwogIDI5IHwgICAgIAogIDMwIHwgICAgIC8vIFZlcmlmeSBzdWNjZXNzZnVsIGxvZ2luCiAgMzEgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2Rhc2hib2FyZC8pOwogIDMyIHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5VGV4dCgnV2VsY29tZScpKS50b0JlVmlzaWJsZSgpOwogIDMzIHwgICB9KTsKICAzNCB8CiAgMzUgfCAgIHRlc3QoJ3Nob3VsZCBzaG93IGVycm9yIHdpdGggaW52YWxpZCBjcmVkZW50aWFscycsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogIDM2IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2xvZ2luJyk7CiAgMzcgfCAgICAgCiAgMzggfCAgICAgLy8gRmlsbCBpbiBsb2dpbiBmb3JtIHdpdGggaW52YWxpZCBjcmVkZW50aWFscwogIDM5IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlMYWJlbCgnVXNlcm5hbWUnKS5maWxsKCdpbnZhbGlkX3VzZXInKTsKICA0MCB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1Bhc3N3b3JkJykuZmlsbCgnaW52YWxpZF9wYXNzd29yZCcpOwogIDQxIHwgICAgIAogIDQyIHwgICAgIC8vIENsaWNrIGxvZ2luIGJ1dHRvbgogIDQzIHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6ICdMb2dpbicgfSkuY2xpY2soKTsKICA0NCB8ICAgICAKICA0NSB8ICAgICAvLyBWZXJpZnkgZXJyb3IgbWVzc2FnZQogIDQ2IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5VGV4dCgnSW52YWxpZCB1c2VybmFtZSBvciBwYXNzd29yZCcpKS50b0JlVmlzaWJsZSgpOwogIDQ3IHwgICAgIAogIDQ4IHwgICAgIC8vIFZlcmlmeSB3ZSdyZSBzdGlsbCBvbiB0aGUgbG9naW4gcGFnZQogIDQ5IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9sb2dpbi8pOwogIDUwIHwgICB9KTsKICA1MSB8CiAgNTIgfCAgIHRlc3QoJ3Nob3VsZCByZWRpcmVjdCB0byBsb2dpbiBwYWdlIGZvciBwcm90ZWN0ZWQgcm91dGVzJywgYXN5bmMgKHsgcGFnZSB9KSA9PiB7CiAgNTMgfCAgICAgLy8gVHJ5IHRvIGFjY2VzcyBhIHByb3RlY3RlZCBwYWdlIGRpcmVjdGx5CiAgNTQgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvaW5jaWRlbnQtbG9nZ2VyJyk7CiAgNTUgfCAgICAgCiAgNTYgfCAgICAgLy8gVmVyaWZ5IHJlZGlyZWN0IHRvIGxvZ2luIHBhZ2UKICA1NyB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA1OCB8ICAgfSk7CiAgNTkgfAogIDYwIHwgICB0ZXN0KCdzaG91bGQgbG9nb3V0IHN1Y2Nlc3NmdWxseScsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogIDYxIHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2xvZ2luJyk7CiAgNjIgfCAgICAgCiAgNjMgfCAgICAgLy8gTG9naW4gZmlyc3QKICA2NCB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICA2NSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1Bhc3N3b3JkJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICA2NiB8ICAgICAKICA2NyB8ICAgICAvLyBTZWxlY3QgZGVwYXJ0bWVudCBpZiB0aGUgZmllbGQgZXhpc3RzCiAgNjggfCAgICAgY29uc3QgZGVwYXJ0bWVudFNlbGVjdG9yID0gcGFnZS5nZXRCeUxhYmVsKCdEZXBhcnRtZW50Jyk7CiAgNjkgfCAgICAgaWYgKGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5pc1Zpc2libGUoKSkgewogIDcwIHwgICAgICAgYXdhaXQgZGVwYXJ0bWVudFNlbGVjdG9yLnNlbGVjdE9wdGlvbigncnVyYWwnKTsKICA3MSB8ICAgICB9CiAgNzIgfCAgICAgCiAgNzMgfCAgICAgYXdhaXQgcGFnZS5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogJ0xvZ2luJyB9KS5jbGljaygpOwogIDc0IHwgICAgIAogIDc1IHwgICAgIC8vIFZlcmlmeSBzdWNjZXNzZnVsIGxvZ2luCiAgNzYgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2Rhc2hib2FyZC8pOwogIDc3IHwgICAgIAogIDc4IHwgICAgIC8vIExvZ291dAogIDc5IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlSb2xlKCdsaW5rJywgeyBuYW1lOiAnTG9nb3V0JyB9KS5jbGljaygpOwogIDgwIHwgICAgIAogIDgxIHwgICAgIC8vIFZlcmlmeSBsb2dvdXQgLSBiYWNrIHRvIGxvZ2luIHBhZ2UKICA4MiB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA4MyB8ICAgICAKICA4NCB8ICAgICAvLyBWZXJpZnkgY2FuJ3QgYWNjZXNzIHByb3RlY3RlZCByb3V0ZXMgYW55bW9yZQogIDg1IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2luY2lkZW50LWxvZ2dlcicpOwogIDg2IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9sb2dpbi8pOwogIDg3IHwgICB9KTsKICA4OCB8IH0pOwpgYGA="
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d5ed79a6b333c2ba7209-985ed383ec6ae1291a8a",
+              "file": "auth.spec.js",
+              "line": 14,
+              "column": 3
+            },
+            {
+              "title": "should show error with invalid credentials",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 5,
+                      "error": {
+                        "message": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/firefox-1475/firefox/Nightly.app/Contents/MacOS/firefox\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝",
+                        "stack": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/firefox-1475/firefox/Nightly.app/Contents/MacOS/firefox\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/firefox-1475/firefox/Nightly.app/Contents/MacOS/firefox\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-04-06T03:50:04.583Z",
+                      "attachments": [
+                        {
+                          "name": "_prompt-0",
+                          "contentType": "text/markdown",
+                          "body": "IyBJbnN0cnVjdGlvbnMKCi0gRm9sbG93aW5nIFBsYXl3cmlnaHQgdGVzdCBmYWlsZWQuCi0gRXhwbGFpbiB3aHksIGJlIGNvbmNpc2UsIHJlc3BlY3QgUGxheXdyaWdodCBiZXN0IHByYWN0aWNlcy4KLSBQcm92aWRlIGEgc25pcHBldCBvZiBjb2RlIHdpdGggdGhlIGZpeCwgaWYgcG9zc2libGUuCgojIFRlc3QgaW5mbwoKLSBOYW1lOiBBdXRoZW50aWNhdGlvbiA+PiBzaG91bGQgc2hvdyBlcnJvciB3aXRoIGludmFsaWQgY3JlZGVudGlhbHMKLSBMb2NhdGlvbjogL1VzZXJzL2pvc2VwaGhlc3Rlci9Eb2N1bWVudHMvZmlyZS1lbXMtdG9vbHMvZTJlL3Rlc3RzL2F1dGguc3BlYy5qczozNTozCgojIEVycm9yIGRldGFpbHMKCmBgYApFcnJvcjogYnJvd3NlclR5cGUubGF1bmNoOiBFeGVjdXRhYmxlIGRvZXNuJ3QgZXhpc3QgYXQgL1VzZXJzL2pvc2VwaGhlc3Rlci9MaWJyYXJ5L0NhY2hlcy9tcy1wbGF5d3JpZ2h0L2ZpcmVmb3gtMTQ3NS9maXJlZm94L05pZ2h0bHkuYXBwL0NvbnRlbnRzL01hY09TL2ZpcmVmb3gK4pWU4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWXCuKVkSBMb29rcyBsaWtlIFBsYXl3cmlnaHQgVGVzdCBvciBQbGF5d3JpZ2h0IHdhcyBqdXN0IGluc3RhbGxlZCBvciB1cGRhdGVkLiDilZEK4pWRIFBsZWFzZSBydW4gdGhlIGZvbGxvd2luZyBjb21tYW5kIHRvIGRvd25sb2FkIG5ldyBicm93c2VyczogICAgICAgICAgICAgIOKVkQrilZEgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg4pWRCuKVkSAgICAgbnB4IHBsYXl3cmlnaHQgaW5zdGFsbCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDilZEK4pWRICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKVkQrilZEgPDMgUGxheXdyaWdodCBUZWFtICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg4pWRCuKVmuKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVnQpgYGAKCiMgVGVzdCBzb3VyY2UKCmBgYHRzCiAgIDEgfCBjb25zdCB7IHRlc3QsIGV4cGVjdCB9ID0gcmVxdWlyZSgnQHBsYXl3cmlnaHQvdGVzdCcpOwogICAyIHwKICAgMyB8IHRlc3QuZGVzY3JpYmUoJ0F1dGhlbnRpY2F0aW9uJywgKCkgPT4gewogICA0IHwgICB0ZXN0KCdzaG91bGQgc2hvdyBsb2dpbiBwYWdlJywgYXN5bmMgKHsgcGFnZSB9KSA9PiB7CiAgIDUgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvbG9naW4nKTsKICAgNiB8ICAgICAKICAgNyB8ICAgICAvLyBWZXJpZnkgbG9naW4gcGFnZSBlbGVtZW50cwogICA4IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5Um9sZSgnaGVhZGluZycsIHsgbmFtZTogJ0xvZ2luJyB9KSkudG9CZVZpc2libGUoKTsKICAgOSB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeUxhYmVsKCdVc2VybmFtZScpKS50b0JlVmlzaWJsZSgpOwogIDEwIHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5TGFiZWwoJ1Bhc3N3b3JkJykpLnRvQmVWaXNpYmxlKCk7CiAgMTEgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6ICdMb2dpbicgfSkpLnRvQmVWaXNpYmxlKCk7CiAgMTIgfCAgIH0pOwogIDEzIHwKICAxNCB8ICAgdGVzdCgnc2hvdWxkIGxvZ2luIHN1Y2Nlc3NmdWxseSB3aXRoIHZhbGlkIGNyZWRlbnRpYWxzJywgYXN5bmMgKHsgcGFnZSB9KSA9PiB7CiAgMTUgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvbG9naW4nKTsKICAxNiB8ICAgICAKICAxNyB8ICAgICAvLyBGaWxsIGluIGxvZ2luIGZvcm0KICAxOCB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICAxOSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1Bhc3N3b3JkJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICAyMCB8ICAgICAKICAyMSB8ICAgICAvLyBTZWxlY3QgZGVwYXJ0bWVudCBpZiB0aGUgZmllbGQgZXhpc3RzCiAgMjIgfCAgICAgY29uc3QgZGVwYXJ0bWVudFNlbGVjdG9yID0gcGFnZS5nZXRCeUxhYmVsKCdEZXBhcnRtZW50Jyk7CiAgMjMgfCAgICAgaWYgKGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5pc1Zpc2libGUoKSkgewogIDI0IHwgICAgICAgYXdhaXQgZGVwYXJ0bWVudFNlbGVjdG9yLnNlbGVjdE9wdGlvbigncnVyYWwnKTsKICAyNSB8ICAgICB9CiAgMjYgfCAgICAgCiAgMjcgfCAgICAgLy8gQ2xpY2sgbG9naW4gYnV0dG9uCiAgMjggfCAgICAgYXdhaXQgcGFnZS5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogJ0xvZ2luJyB9KS5jbGljaygpOwogIDI5IHwgICAgIAogIDMwIHwgICAgIC8vIFZlcmlmeSBzdWNjZXNzZnVsIGxvZ2luCiAgMzEgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2Rhc2hib2FyZC8pOwogIDMyIHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5VGV4dCgnV2VsY29tZScpKS50b0JlVmlzaWJsZSgpOwogIDMzIHwgICB9KTsKICAzNCB8Cj4gMzUgfCAgIHRlc3QoJ3Nob3VsZCBzaG93IGVycm9yIHdpdGggaW52YWxpZCBjcmVkZW50aWFscycsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogICAgIHwgICBeIEVycm9yOiBicm93c2VyVHlwZS5sYXVuY2g6IEV4ZWN1dGFibGUgZG9lc24ndCBleGlzdCBhdCAvVXNlcnMvam9zZXBoaGVzdGVyL0xpYnJhcnkvQ2FjaGVzL21zLXBsYXl3cmlnaHQvZmlyZWZveC0xNDc1L2ZpcmVmb3gvTmlnaHRseS5hcHAvQ29udGVudHMvTWFjT1MvZmlyZWZveAogIDM2IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2xvZ2luJyk7CiAgMzcgfCAgICAgCiAgMzggfCAgICAgLy8gRmlsbCBpbiBsb2dpbiBmb3JtIHdpdGggaW52YWxpZCBjcmVkZW50aWFscwogIDM5IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlMYWJlbCgnVXNlcm5hbWUnKS5maWxsKCdpbnZhbGlkX3VzZXInKTsKICA0MCB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1Bhc3N3b3JkJykuZmlsbCgnaW52YWxpZF9wYXNzd29yZCcpOwogIDQxIHwgICAgIAogIDQyIHwgICAgIC8vIENsaWNrIGxvZ2luIGJ1dHRvbgogIDQzIHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6ICdMb2dpbicgfSkuY2xpY2soKTsKICA0NCB8ICAgICAKICA0NSB8ICAgICAvLyBWZXJpZnkgZXJyb3IgbWVzc2FnZQogIDQ2IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5VGV4dCgnSW52YWxpZCB1c2VybmFtZSBvciBwYXNzd29yZCcpKS50b0JlVmlzaWJsZSgpOwogIDQ3IHwgICAgIAogIDQ4IHwgICAgIC8vIFZlcmlmeSB3ZSdyZSBzdGlsbCBvbiB0aGUgbG9naW4gcGFnZQogIDQ5IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9sb2dpbi8pOwogIDUwIHwgICB9KTsKICA1MSB8CiAgNTIgfCAgIHRlc3QoJ3Nob3VsZCByZWRpcmVjdCB0byBsb2dpbiBwYWdlIGZvciBwcm90ZWN0ZWQgcm91dGVzJywgYXN5bmMgKHsgcGFnZSB9KSA9PiB7CiAgNTMgfCAgICAgLy8gVHJ5IHRvIGFjY2VzcyBhIHByb3RlY3RlZCBwYWdlIGRpcmVjdGx5CiAgNTQgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvaW5jaWRlbnQtbG9nZ2VyJyk7CiAgNTUgfCAgICAgCiAgNTYgfCAgICAgLy8gVmVyaWZ5IHJlZGlyZWN0IHRvIGxvZ2luIHBhZ2UKICA1NyB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA1OCB8ICAgfSk7CiAgNTkgfAogIDYwIHwgICB0ZXN0KCdzaG91bGQgbG9nb3V0IHN1Y2Nlc3NmdWxseScsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogIDYxIHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2xvZ2luJyk7CiAgNjIgfCAgICAgCiAgNjMgfCAgICAgLy8gTG9naW4gZmlyc3QKICA2NCB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICA2NSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1Bhc3N3b3JkJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICA2NiB8ICAgICAKICA2NyB8ICAgICAvLyBTZWxlY3QgZGVwYXJ0bWVudCBpZiB0aGUgZmllbGQgZXhpc3RzCiAgNjggfCAgICAgY29uc3QgZGVwYXJ0bWVudFNlbGVjdG9yID0gcGFnZS5nZXRCeUxhYmVsKCdEZXBhcnRtZW50Jyk7CiAgNjkgfCAgICAgaWYgKGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5pc1Zpc2libGUoKSkgewogIDcwIHwgICAgICAgYXdhaXQgZGVwYXJ0bWVudFNlbGVjdG9yLnNlbGVjdE9wdGlvbigncnVyYWwnKTsKICA3MSB8ICAgICB9CiAgNzIgfCAgICAgCiAgNzMgfCAgICAgYXdhaXQgcGFnZS5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogJ0xvZ2luJyB9KS5jbGljaygpOwogIDc0IHwgICAgIAogIDc1IHwgICAgIC8vIFZlcmlmeSBzdWNjZXNzZnVsIGxvZ2luCiAgNzYgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2Rhc2hib2FyZC8pOwogIDc3IHwgICAgIAogIDc4IHwgICAgIC8vIExvZ291dAogIDc5IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlSb2xlKCdsaW5rJywgeyBuYW1lOiAnTG9nb3V0JyB9KS5jbGljaygpOwogIDgwIHwgICAgIAogIDgxIHwgICAgIC8vIFZlcmlmeSBsb2dvdXQgLSBiYWNrIHRvIGxvZ2luIHBhZ2UKICA4MiB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA4MyB8ICAgICAKICA4NCB8ICAgICAvLyBWZXJpZnkgY2FuJ3QgYWNjZXNzIHByb3RlY3RlZCByb3V0ZXMgYW55bW9yZQogIDg1IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2luY2lkZW50LWxvZ2dlcicpOwogIDg2IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9sb2dpbi8pOwogIDg3IHwgICB9KTsKICA4OCB8IH0pOwpgYGA="
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d5ed79a6b333c2ba7209-767f91112cfbb76f881b",
+              "file": "auth.spec.js",
+              "line": 35,
+              "column": 3
+            },
+            {
+              "title": "should redirect to login page for protected routes",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 2,
+                      "error": {
+                        "message": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/firefox-1475/firefox/Nightly.app/Contents/MacOS/firefox\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝",
+                        "stack": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/firefox-1475/firefox/Nightly.app/Contents/MacOS/firefox\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/firefox-1475/firefox/Nightly.app/Contents/MacOS/firefox\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-04-06T03:50:04.798Z",
+                      "attachments": [
+                        {
+                          "name": "_prompt-0",
+                          "contentType": "text/markdown",
+                          "body": "IyBJbnN0cnVjdGlvbnMKCi0gRm9sbG93aW5nIFBsYXl3cmlnaHQgdGVzdCBmYWlsZWQuCi0gRXhwbGFpbiB3aHksIGJlIGNvbmNpc2UsIHJlc3BlY3QgUGxheXdyaWdodCBiZXN0IHByYWN0aWNlcy4KLSBQcm92aWRlIGEgc25pcHBldCBvZiBjb2RlIHdpdGggdGhlIGZpeCwgaWYgcG9zc2libGUuCgojIFRlc3QgaW5mbwoKLSBOYW1lOiBBdXRoZW50aWNhdGlvbiA+PiBzaG91bGQgcmVkaXJlY3QgdG8gbG9naW4gcGFnZSBmb3IgcHJvdGVjdGVkIHJvdXRlcwotIExvY2F0aW9uOiAvVXNlcnMvam9zZXBoaGVzdGVyL0RvY3VtZW50cy9maXJlLWVtcy10b29scy9lMmUvdGVzdHMvYXV0aC5zcGVjLmpzOjUyOjMKCiMgRXJyb3IgZGV0YWlscwoKYGBgCkVycm9yOiBicm93c2VyVHlwZS5sYXVuY2g6IEV4ZWN1dGFibGUgZG9lc24ndCBleGlzdCBhdCAvVXNlcnMvam9zZXBoaGVzdGVyL0xpYnJhcnkvQ2FjaGVzL21zLXBsYXl3cmlnaHQvZmlyZWZveC0xNDc1L2ZpcmVmb3gvTmlnaHRseS5hcHAvQ29udGVudHMvTWFjT1MvZmlyZWZveArilZTilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZcK4pWRIExvb2tzIGxpa2UgUGxheXdyaWdodCBUZXN0IG9yIFBsYXl3cmlnaHQgd2FzIGp1c3QgaW5zdGFsbGVkIG9yIHVwZGF0ZWQuIOKVkQrilZEgUGxlYXNlIHJ1biB0aGUgZm9sbG93aW5nIGNvbW1hbmQgdG8gZG93bmxvYWQgbmV3IGJyb3dzZXJzOiAgICAgICAgICAgICAg4pWRCuKVkSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDilZEK4pWRICAgICBucHggcGxheXdyaWdodCBpbnN0YWxsICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKVkQrilZEgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg4pWRCuKVkSA8MyBQbGF5d3JpZ2h0IFRlYW0gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDilZEK4pWa4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWdCmBgYAoKIyBUZXN0IHNvdXJjZQoKYGBgdHMKICAgMSB8IGNvbnN0IHsgdGVzdCwgZXhwZWN0IH0gPSByZXF1aXJlKCdAcGxheXdyaWdodC90ZXN0Jyk7CiAgIDIgfAogICAzIHwgdGVzdC5kZXNjcmliZSgnQXV0aGVudGljYXRpb24nLCAoKSA9PiB7CiAgIDQgfCAgIHRlc3QoJ3Nob3VsZCBzaG93IGxvZ2luIHBhZ2UnLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICAgNSB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9sb2dpbicpOwogICA2IHwgICAgIAogICA3IHwgICAgIC8vIFZlcmlmeSBsb2dpbiBwYWdlIGVsZW1lbnRzCiAgIDggfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlSb2xlKCdoZWFkaW5nJywgeyBuYW1lOiAnTG9naW4nIH0pKS50b0JlVmlzaWJsZSgpOwogICA5IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykpLnRvQmVWaXNpYmxlKCk7CiAgMTAgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlMYWJlbCgnUGFzc3dvcmQnKSkudG9CZVZpc2libGUoKTsKICAxMSB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogJ0xvZ2luJyB9KSkudG9CZVZpc2libGUoKTsKICAxMiB8ICAgfSk7CiAgMTMgfAogIDE0IHwgICB0ZXN0KCdzaG91bGQgbG9naW4gc3VjY2Vzc2Z1bGx5IHdpdGggdmFsaWQgY3JlZGVudGlhbHMnLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICAxNSB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9sb2dpbicpOwogIDE2IHwgICAgIAogIDE3IHwgICAgIC8vIEZpbGwgaW4gbG9naW4gZm9ybQogIDE4IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlMYWJlbCgnVXNlcm5hbWUnKS5maWxsKCdydXJhbF9hZG1pbicpOwogIDE5IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlMYWJlbCgnUGFzc3dvcmQnKS5maWxsKCdydXJhbF9hZG1pbicpOwogIDIwIHwgICAgIAogIDIxIHwgICAgIC8vIFNlbGVjdCBkZXBhcnRtZW50IGlmIHRoZSBmaWVsZCBleGlzdHMKICAyMiB8ICAgICBjb25zdCBkZXBhcnRtZW50U2VsZWN0b3IgPSBwYWdlLmdldEJ5TGFiZWwoJ0RlcGFydG1lbnQnKTsKICAyMyB8ICAgICBpZiAoYXdhaXQgZGVwYXJ0bWVudFNlbGVjdG9yLmlzVmlzaWJsZSgpKSB7CiAgMjQgfCAgICAgICBhd2FpdCBkZXBhcnRtZW50U2VsZWN0b3Iuc2VsZWN0T3B0aW9uKCdydXJhbCcpOwogIDI1IHwgICAgIH0KICAyNiB8ICAgICAKICAyNyB8ICAgICAvLyBDbGljayBsb2dpbiBidXR0b24KICAyOCB8ICAgICBhd2FpdCBwYWdlLmdldEJ5Um9sZSgnYnV0dG9uJywgeyBuYW1lOiAnTG9naW4nIH0pLmNsaWNrKCk7CiAgMjkgfCAgICAgCiAgMzAgfCAgICAgLy8gVmVyaWZ5IHN1Y2Nlc3NmdWwgbG9naW4KICAzMSB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvZGFzaGJvYXJkLyk7CiAgMzIgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlUZXh0KCdXZWxjb21lJykpLnRvQmVWaXNpYmxlKCk7CiAgMzMgfCAgIH0pOwogIDM0IHwKICAzNSB8ICAgdGVzdCgnc2hvdWxkIHNob3cgZXJyb3Igd2l0aCBpbnZhbGlkIGNyZWRlbnRpYWxzJywgYXN5bmMgKHsgcGFnZSB9KSA9PiB7CiAgMzYgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvbG9naW4nKTsKICAzNyB8ICAgICAKICAzOCB8ICAgICAvLyBGaWxsIGluIGxvZ2luIGZvcm0gd2l0aCBpbnZhbGlkIGNyZWRlbnRpYWxzCiAgMzkgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdVc2VybmFtZScpLmZpbGwoJ2ludmFsaWRfdXNlcicpOwogIDQwIHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlMYWJlbCgnUGFzc3dvcmQnKS5maWxsKCdpbnZhbGlkX3Bhc3N3b3JkJyk7CiAgNDEgfCAgICAgCiAgNDIgfCAgICAgLy8gQ2xpY2sgbG9naW4gYnV0dG9uCiAgNDMgfCAgICAgYXdhaXQgcGFnZS5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogJ0xvZ2luJyB9KS5jbGljaygpOwogIDQ0IHwgICAgIAogIDQ1IHwgICAgIC8vIFZlcmlmeSBlcnJvciBtZXNzYWdlCiAgNDYgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlUZXh0KCdJbnZhbGlkIHVzZXJuYW1lIG9yIHBhc3N3b3JkJykpLnRvQmVWaXNpYmxlKCk7CiAgNDcgfCAgICAgCiAgNDggfCAgICAgLy8gVmVyaWZ5IHdlJ3JlIHN0aWxsIG9uIHRoZSBsb2dpbiBwYWdlCiAgNDkgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2xvZ2luLyk7CiAgNTAgfCAgIH0pOwogIDUxIHwKPiA1MiB8ICAgdGVzdCgnc2hvdWxkIHJlZGlyZWN0IHRvIGxvZ2luIHBhZ2UgZm9yIHByb3RlY3RlZCByb3V0ZXMnLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICAgICB8ICAgXiBFcnJvcjogYnJvd3NlclR5cGUubGF1bmNoOiBFeGVjdXRhYmxlIGRvZXNuJ3QgZXhpc3QgYXQgL1VzZXJzL2pvc2VwaGhlc3Rlci9MaWJyYXJ5L0NhY2hlcy9tcy1wbGF5d3JpZ2h0L2ZpcmVmb3gtMTQ3NS9maXJlZm94L05pZ2h0bHkuYXBwL0NvbnRlbnRzL01hY09TL2ZpcmVmb3gKICA1MyB8ICAgICAvLyBUcnkgdG8gYWNjZXNzIGEgcHJvdGVjdGVkIHBhZ2UgZGlyZWN0bHkKICA1NCB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9pbmNpZGVudC1sb2dnZXInKTsKICA1NSB8ICAgICAKICA1NiB8ICAgICAvLyBWZXJpZnkgcmVkaXJlY3QgdG8gbG9naW4gcGFnZQogIDU3IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9sb2dpbi8pOwogIDU4IHwgICB9KTsKICA1OSB8CiAgNjAgfCAgIHRlc3QoJ3Nob3VsZCBsb2dvdXQgc3VjY2Vzc2Z1bGx5JywgYXN5bmMgKHsgcGFnZSB9KSA9PiB7CiAgNjEgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvbG9naW4nKTsKICA2MiB8ICAgICAKICA2MyB8ICAgICAvLyBMb2dpbiBmaXJzdAogIDY0IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlMYWJlbCgnVXNlcm5hbWUnKS5maWxsKCdydXJhbF9hZG1pbicpOwogIDY1IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlMYWJlbCgnUGFzc3dvcmQnKS5maWxsKCdydXJhbF9hZG1pbicpOwogIDY2IHwgICAgIAogIDY3IHwgICAgIC8vIFNlbGVjdCBkZXBhcnRtZW50IGlmIHRoZSBmaWVsZCBleGlzdHMKICA2OCB8ICAgICBjb25zdCBkZXBhcnRtZW50U2VsZWN0b3IgPSBwYWdlLmdldEJ5TGFiZWwoJ0RlcGFydG1lbnQnKTsKICA2OSB8ICAgICBpZiAoYXdhaXQgZGVwYXJ0bWVudFNlbGVjdG9yLmlzVmlzaWJsZSgpKSB7CiAgNzAgfCAgICAgICBhd2FpdCBkZXBhcnRtZW50U2VsZWN0b3Iuc2VsZWN0T3B0aW9uKCdydXJhbCcpOwogIDcxIHwgICAgIH0KICA3MiB8ICAgICAKICA3MyB8ICAgICBhd2FpdCBwYWdlLmdldEJ5Um9sZSgnYnV0dG9uJywgeyBuYW1lOiAnTG9naW4nIH0pLmNsaWNrKCk7CiAgNzQgfCAgICAgCiAgNzUgfCAgICAgLy8gVmVyaWZ5IHN1Y2Nlc3NmdWwgbG9naW4KICA3NiB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvZGFzaGJvYXJkLyk7CiAgNzcgfCAgICAgCiAgNzggfCAgICAgLy8gTG9nb3V0CiAgNzkgfCAgICAgYXdhaXQgcGFnZS5nZXRCeVJvbGUoJ2xpbmsnLCB7IG5hbWU6ICdMb2dvdXQnIH0pLmNsaWNrKCk7CiAgODAgfCAgICAgCiAgODEgfCAgICAgLy8gVmVyaWZ5IGxvZ291dCAtIGJhY2sgdG8gbG9naW4gcGFnZQogIDgyIHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9sb2dpbi8pOwogIDgzIHwgICAgIAogIDg0IHwgICAgIC8vIFZlcmlmeSBjYW4ndCBhY2Nlc3MgcHJvdGVjdGVkIHJvdXRlcyBhbnltb3JlCiAgODUgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvaW5jaWRlbnQtbG9nZ2VyJyk7CiAgODYgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2xvZ2luLyk7CiAgODcgfCAgIH0pOwogIDg4IHwgfSk7CmBgYA=="
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d5ed79a6b333c2ba7209-9346ef3e19456807a008",
+              "file": "auth.spec.js",
+              "line": 52,
+              "column": 3
+            },
+            {
+              "title": "should logout successfully",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 2,
+                      "error": {
+                        "message": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/firefox-1475/firefox/Nightly.app/Contents/MacOS/firefox\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝",
+                        "stack": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/firefox-1475/firefox/Nightly.app/Contents/MacOS/firefox\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/firefox-1475/firefox/Nightly.app/Contents/MacOS/firefox\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-04-06T03:50:04.798Z",
+                      "attachments": [
+                        {
+                          "name": "_prompt-0",
+                          "contentType": "text/markdown",
+                          "body": "IyBJbnN0cnVjdGlvbnMKCi0gRm9sbG93aW5nIFBsYXl3cmlnaHQgdGVzdCBmYWlsZWQuCi0gRXhwbGFpbiB3aHksIGJlIGNvbmNpc2UsIHJlc3BlY3QgUGxheXdyaWdodCBiZXN0IHByYWN0aWNlcy4KLSBQcm92aWRlIGEgc25pcHBldCBvZiBjb2RlIHdpdGggdGhlIGZpeCwgaWYgcG9zc2libGUuCgojIFRlc3QgaW5mbwoKLSBOYW1lOiBBdXRoZW50aWNhdGlvbiA+PiBzaG91bGQgbG9nb3V0IHN1Y2Nlc3NmdWxseQotIExvY2F0aW9uOiAvVXNlcnMvam9zZXBoaGVzdGVyL0RvY3VtZW50cy9maXJlLWVtcy10b29scy9lMmUvdGVzdHMvYXV0aC5zcGVjLmpzOjYwOjMKCiMgRXJyb3IgZGV0YWlscwoKYGBgCkVycm9yOiBicm93c2VyVHlwZS5sYXVuY2g6IEV4ZWN1dGFibGUgZG9lc24ndCBleGlzdCBhdCAvVXNlcnMvam9zZXBoaGVzdGVyL0xpYnJhcnkvQ2FjaGVzL21zLXBsYXl3cmlnaHQvZmlyZWZveC0xNDc1L2ZpcmVmb3gvTmlnaHRseS5hcHAvQ29udGVudHMvTWFjT1MvZmlyZWZveArilZTilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZcK4pWRIExvb2tzIGxpa2UgUGxheXdyaWdodCBUZXN0IG9yIFBsYXl3cmlnaHQgd2FzIGp1c3QgaW5zdGFsbGVkIG9yIHVwZGF0ZWQuIOKVkQrilZEgUGxlYXNlIHJ1biB0aGUgZm9sbG93aW5nIGNvbW1hbmQgdG8gZG93bmxvYWQgbmV3IGJyb3dzZXJzOiAgICAgICAgICAgICAg4pWRCuKVkSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDilZEK4pWRICAgICBucHggcGxheXdyaWdodCBpbnN0YWxsICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKVkQrilZEgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg4pWRCuKVkSA8MyBQbGF5d3JpZ2h0IFRlYW0gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDilZEK4pWa4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWdCmBgYAoKIyBUZXN0IHNvdXJjZQoKYGBgdHMKICAgMSB8IGNvbnN0IHsgdGVzdCwgZXhwZWN0IH0gPSByZXF1aXJlKCdAcGxheXdyaWdodC90ZXN0Jyk7CiAgIDIgfAogICAzIHwgdGVzdC5kZXNjcmliZSgnQXV0aGVudGljYXRpb24nLCAoKSA9PiB7CiAgIDQgfCAgIHRlc3QoJ3Nob3VsZCBzaG93IGxvZ2luIHBhZ2UnLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICAgNSB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9sb2dpbicpOwogICA2IHwgICAgIAogICA3IHwgICAgIC8vIFZlcmlmeSBsb2dpbiBwYWdlIGVsZW1lbnRzCiAgIDggfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlSb2xlKCdoZWFkaW5nJywgeyBuYW1lOiAnTG9naW4nIH0pKS50b0JlVmlzaWJsZSgpOwogICA5IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykpLnRvQmVWaXNpYmxlKCk7CiAgMTAgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlMYWJlbCgnUGFzc3dvcmQnKSkudG9CZVZpc2libGUoKTsKICAxMSB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogJ0xvZ2luJyB9KSkudG9CZVZpc2libGUoKTsKICAxMiB8ICAgfSk7CiAgMTMgfAogIDE0IHwgICB0ZXN0KCdzaG91bGQgbG9naW4gc3VjY2Vzc2Z1bGx5IHdpdGggdmFsaWQgY3JlZGVudGlhbHMnLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICAxNSB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9sb2dpbicpOwogIDE2IHwgICAgIAogIDE3IHwgICAgIC8vIEZpbGwgaW4gbG9naW4gZm9ybQogIDE4IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlMYWJlbCgnVXNlcm5hbWUnKS5maWxsKCdydXJhbF9hZG1pbicpOwogIDE5IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlMYWJlbCgnUGFzc3dvcmQnKS5maWxsKCdydXJhbF9hZG1pbicpOwogIDIwIHwgICAgIAogIDIxIHwgICAgIC8vIFNlbGVjdCBkZXBhcnRtZW50IGlmIHRoZSBmaWVsZCBleGlzdHMKICAyMiB8ICAgICBjb25zdCBkZXBhcnRtZW50U2VsZWN0b3IgPSBwYWdlLmdldEJ5TGFiZWwoJ0RlcGFydG1lbnQnKTsKICAyMyB8ICAgICBpZiAoYXdhaXQgZGVwYXJ0bWVudFNlbGVjdG9yLmlzVmlzaWJsZSgpKSB7CiAgMjQgfCAgICAgICBhd2FpdCBkZXBhcnRtZW50U2VsZWN0b3Iuc2VsZWN0T3B0aW9uKCdydXJhbCcpOwogIDI1IHwgICAgIH0KICAyNiB8ICAgICAKICAyNyB8ICAgICAvLyBDbGljayBsb2dpbiBidXR0b24KICAyOCB8ICAgICBhd2FpdCBwYWdlLmdldEJ5Um9sZSgnYnV0dG9uJywgeyBuYW1lOiAnTG9naW4nIH0pLmNsaWNrKCk7CiAgMjkgfCAgICAgCiAgMzAgfCAgICAgLy8gVmVyaWZ5IHN1Y2Nlc3NmdWwgbG9naW4KICAzMSB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvZGFzaGJvYXJkLyk7CiAgMzIgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlUZXh0KCdXZWxjb21lJykpLnRvQmVWaXNpYmxlKCk7CiAgMzMgfCAgIH0pOwogIDM0IHwKICAzNSB8ICAgdGVzdCgnc2hvdWxkIHNob3cgZXJyb3Igd2l0aCBpbnZhbGlkIGNyZWRlbnRpYWxzJywgYXN5bmMgKHsgcGFnZSB9KSA9PiB7CiAgMzYgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvbG9naW4nKTsKICAzNyB8ICAgICAKICAzOCB8ICAgICAvLyBGaWxsIGluIGxvZ2luIGZvcm0gd2l0aCBpbnZhbGlkIGNyZWRlbnRpYWxzCiAgMzkgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdVc2VybmFtZScpLmZpbGwoJ2ludmFsaWRfdXNlcicpOwogIDQwIHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlMYWJlbCgnUGFzc3dvcmQnKS5maWxsKCdpbnZhbGlkX3Bhc3N3b3JkJyk7CiAgNDEgfCAgICAgCiAgNDIgfCAgICAgLy8gQ2xpY2sgbG9naW4gYnV0dG9uCiAgNDMgfCAgICAgYXdhaXQgcGFnZS5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogJ0xvZ2luJyB9KS5jbGljaygpOwogIDQ0IHwgICAgIAogIDQ1IHwgICAgIC8vIFZlcmlmeSBlcnJvciBtZXNzYWdlCiAgNDYgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlUZXh0KCdJbnZhbGlkIHVzZXJuYW1lIG9yIHBhc3N3b3JkJykpLnRvQmVWaXNpYmxlKCk7CiAgNDcgfCAgICAgCiAgNDggfCAgICAgLy8gVmVyaWZ5IHdlJ3JlIHN0aWxsIG9uIHRoZSBsb2dpbiBwYWdlCiAgNDkgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2xvZ2luLyk7CiAgNTAgfCAgIH0pOwogIDUxIHwKICA1MiB8ICAgdGVzdCgnc2hvdWxkIHJlZGlyZWN0IHRvIGxvZ2luIHBhZ2UgZm9yIHByb3RlY3RlZCByb3V0ZXMnLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICA1MyB8ICAgICAvLyBUcnkgdG8gYWNjZXNzIGEgcHJvdGVjdGVkIHBhZ2UgZGlyZWN0bHkKICA1NCB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9pbmNpZGVudC1sb2dnZXInKTsKICA1NSB8ICAgICAKICA1NiB8ICAgICAvLyBWZXJpZnkgcmVkaXJlY3QgdG8gbG9naW4gcGFnZQogIDU3IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9sb2dpbi8pOwogIDU4IHwgICB9KTsKICA1OSB8Cj4gNjAgfCAgIHRlc3QoJ3Nob3VsZCBsb2dvdXQgc3VjY2Vzc2Z1bGx5JywgYXN5bmMgKHsgcGFnZSB9KSA9PiB7CiAgICAgfCAgIF4gRXJyb3I6IGJyb3dzZXJUeXBlLmxhdW5jaDogRXhlY3V0YWJsZSBkb2Vzbid0IGV4aXN0IGF0IC9Vc2Vycy9qb3NlcGhoZXN0ZXIvTGlicmFyeS9DYWNoZXMvbXMtcGxheXdyaWdodC9maXJlZm94LTE0NzUvZmlyZWZveC9OaWdodGx5LmFwcC9Db250ZW50cy9NYWNPUy9maXJlZm94CiAgNjEgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvbG9naW4nKTsKICA2MiB8ICAgICAKICA2MyB8ICAgICAvLyBMb2dpbiBmaXJzdAogIDY0IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlMYWJlbCgnVXNlcm5hbWUnKS5maWxsKCdydXJhbF9hZG1pbicpOwogIDY1IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlMYWJlbCgnUGFzc3dvcmQnKS5maWxsKCdydXJhbF9hZG1pbicpOwogIDY2IHwgICAgIAogIDY3IHwgICAgIC8vIFNlbGVjdCBkZXBhcnRtZW50IGlmIHRoZSBmaWVsZCBleGlzdHMKICA2OCB8ICAgICBjb25zdCBkZXBhcnRtZW50U2VsZWN0b3IgPSBwYWdlLmdldEJ5TGFiZWwoJ0RlcGFydG1lbnQnKTsKICA2OSB8ICAgICBpZiAoYXdhaXQgZGVwYXJ0bWVudFNlbGVjdG9yLmlzVmlzaWJsZSgpKSB7CiAgNzAgfCAgICAgICBhd2FpdCBkZXBhcnRtZW50U2VsZWN0b3Iuc2VsZWN0T3B0aW9uKCdydXJhbCcpOwogIDcxIHwgICAgIH0KICA3MiB8ICAgICAKICA3MyB8ICAgICBhd2FpdCBwYWdlLmdldEJ5Um9sZSgnYnV0dG9uJywgeyBuYW1lOiAnTG9naW4nIH0pLmNsaWNrKCk7CiAgNzQgfCAgICAgCiAgNzUgfCAgICAgLy8gVmVyaWZ5IHN1Y2Nlc3NmdWwgbG9naW4KICA3NiB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvZGFzaGJvYXJkLyk7CiAgNzcgfCAgICAgCiAgNzggfCAgICAgLy8gTG9nb3V0CiAgNzkgfCAgICAgYXdhaXQgcGFnZS5nZXRCeVJvbGUoJ2xpbmsnLCB7IG5hbWU6ICdMb2dvdXQnIH0pLmNsaWNrKCk7CiAgODAgfCAgICAgCiAgODEgfCAgICAgLy8gVmVyaWZ5IGxvZ291dCAtIGJhY2sgdG8gbG9naW4gcGFnZQogIDgyIHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9sb2dpbi8pOwogIDgzIHwgICAgIAogIDg0IHwgICAgIC8vIFZlcmlmeSBjYW4ndCBhY2Nlc3MgcHJvdGVjdGVkIHJvdXRlcyBhbnltb3JlCiAgODUgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvaW5jaWRlbnQtbG9nZ2VyJyk7CiAgODYgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2xvZ2luLyk7CiAgODcgfCAgIH0pOwogIDg4IHwgfSk7CmBgYA=="
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d5ed79a6b333c2ba7209-8c53dbfcb1ccb29719bf",
+              "file": "auth.spec.js",
+              "line": 60,
+              "column": 3
+            },
+            {
+              "title": "should show login page",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 2,
+                      "error": {
+                        "message": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/webkit-2140/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝",
+                        "stack": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/webkit-2140/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/webkit-2140/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-04-06T03:50:05.005Z",
+                      "attachments": [
+                        {
+                          "name": "_prompt-0",
+                          "contentType": "text/markdown",
+                          "body": "IyBJbnN0cnVjdGlvbnMKCi0gRm9sbG93aW5nIFBsYXl3cmlnaHQgdGVzdCBmYWlsZWQuCi0gRXhwbGFpbiB3aHksIGJlIGNvbmNpc2UsIHJlc3BlY3QgUGxheXdyaWdodCBiZXN0IHByYWN0aWNlcy4KLSBQcm92aWRlIGEgc25pcHBldCBvZiBjb2RlIHdpdGggdGhlIGZpeCwgaWYgcG9zc2libGUuCgojIFRlc3QgaW5mbwoKLSBOYW1lOiBBdXRoZW50aWNhdGlvbiA+PiBzaG91bGQgc2hvdyBsb2dpbiBwYWdlCi0gTG9jYXRpb246IC9Vc2Vycy9qb3NlcGhoZXN0ZXIvRG9jdW1lbnRzL2ZpcmUtZW1zLXRvb2xzL2UyZS90ZXN0cy9hdXRoLnNwZWMuanM6NDozCgojIEVycm9yIGRldGFpbHMKCmBgYApFcnJvcjogYnJvd3NlclR5cGUubGF1bmNoOiBFeGVjdXRhYmxlIGRvZXNuJ3QgZXhpc3QgYXQgL1VzZXJzL2pvc2VwaGhlc3Rlci9MaWJyYXJ5L0NhY2hlcy9tcy1wbGF5d3JpZ2h0L3dlYmtpdC0yMTQwL3B3X3J1bi5zaArilZTilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZcK4pWRIExvb2tzIGxpa2UgUGxheXdyaWdodCBUZXN0IG9yIFBsYXl3cmlnaHQgd2FzIGp1c3QgaW5zdGFsbGVkIG9yIHVwZGF0ZWQuIOKVkQrilZEgUGxlYXNlIHJ1biB0aGUgZm9sbG93aW5nIGNvbW1hbmQgdG8gZG93bmxvYWQgbmV3IGJyb3dzZXJzOiAgICAgICAgICAgICAg4pWRCuKVkSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDilZEK4pWRICAgICBucHggcGxheXdyaWdodCBpbnN0YWxsICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKVkQrilZEgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg4pWRCuKVkSA8MyBQbGF5d3JpZ2h0IFRlYW0gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDilZEK4pWa4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWdCmBgYAoKIyBUZXN0IHNvdXJjZQoKYGBgdHMKICAgMSB8IGNvbnN0IHsgdGVzdCwgZXhwZWN0IH0gPSByZXF1aXJlKCdAcGxheXdyaWdodC90ZXN0Jyk7CiAgIDIgfAogICAzIHwgdGVzdC5kZXNjcmliZSgnQXV0aGVudGljYXRpb24nLCAoKSA9PiB7Cj4gIDQgfCAgIHRlc3QoJ3Nob3VsZCBzaG93IGxvZ2luIHBhZ2UnLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICAgICB8ICAgXiBFcnJvcjogYnJvd3NlclR5cGUubGF1bmNoOiBFeGVjdXRhYmxlIGRvZXNuJ3QgZXhpc3QgYXQgL1VzZXJzL2pvc2VwaGhlc3Rlci9MaWJyYXJ5L0NhY2hlcy9tcy1wbGF5d3JpZ2h0L3dlYmtpdC0yMTQwL3B3X3J1bi5zaAogICA1IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2xvZ2luJyk7CiAgIDYgfCAgICAgCiAgIDcgfCAgICAgLy8gVmVyaWZ5IGxvZ2luIHBhZ2UgZWxlbWVudHMKICAgOCB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeVJvbGUoJ2hlYWRpbmcnLCB7IG5hbWU6ICdMb2dpbicgfSkpLnRvQmVWaXNpYmxlKCk7CiAgIDkgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlMYWJlbCgnVXNlcm5hbWUnKSkudG9CZVZpc2libGUoKTsKICAxMCB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeUxhYmVsKCdQYXNzd29yZCcpKS50b0JlVmlzaWJsZSgpOwogIDExIHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5Um9sZSgnYnV0dG9uJywgeyBuYW1lOiAnTG9naW4nIH0pKS50b0JlVmlzaWJsZSgpOwogIDEyIHwgICB9KTsKICAxMyB8CiAgMTQgfCAgIHRlc3QoJ3Nob3VsZCBsb2dpbiBzdWNjZXNzZnVsbHkgd2l0aCB2YWxpZCBjcmVkZW50aWFscycsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogIDE1IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2xvZ2luJyk7CiAgMTYgfCAgICAgCiAgMTcgfCAgICAgLy8gRmlsbCBpbiBsb2dpbiBmb3JtCiAgMTggfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdVc2VybmFtZScpLmZpbGwoJ3J1cmFsX2FkbWluJyk7CiAgMTkgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdQYXNzd29yZCcpLmZpbGwoJ3J1cmFsX2FkbWluJyk7CiAgMjAgfCAgICAgCiAgMjEgfCAgICAgLy8gU2VsZWN0IGRlcGFydG1lbnQgaWYgdGhlIGZpZWxkIGV4aXN0cwogIDIyIHwgICAgIGNvbnN0IGRlcGFydG1lbnRTZWxlY3RvciA9IHBhZ2UuZ2V0QnlMYWJlbCgnRGVwYXJ0bWVudCcpOwogIDIzIHwgICAgIGlmIChhd2FpdCBkZXBhcnRtZW50U2VsZWN0b3IuaXNWaXNpYmxlKCkpIHsKICAyNCB8ICAgICAgIGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5zZWxlY3RPcHRpb24oJ3J1cmFsJyk7CiAgMjUgfCAgICAgfQogIDI2IHwgICAgIAogIDI3IHwgICAgIC8vIENsaWNrIGxvZ2luIGJ1dHRvbgogIDI4IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6ICdMb2dpbicgfSkuY2xpY2soKTsKICAyOSB8ICAgICAKICAzMCB8ICAgICAvLyBWZXJpZnkgc3VjY2Vzc2Z1bCBsb2dpbgogIDMxIHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9kYXNoYm9hcmQvKTsKICAzMiB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeVRleHQoJ1dlbGNvbWUnKSkudG9CZVZpc2libGUoKTsKICAzMyB8ICAgfSk7CiAgMzQgfAogIDM1IHwgICB0ZXN0KCdzaG91bGQgc2hvdyBlcnJvciB3aXRoIGludmFsaWQgY3JlZGVudGlhbHMnLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICAzNiB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9sb2dpbicpOwogIDM3IHwgICAgIAogIDM4IHwgICAgIC8vIEZpbGwgaW4gbG9naW4gZm9ybSB3aXRoIGludmFsaWQgY3JlZGVudGlhbHMKICAzOSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykuZmlsbCgnaW52YWxpZF91c2VyJyk7CiAgNDAgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdQYXNzd29yZCcpLmZpbGwoJ2ludmFsaWRfcGFzc3dvcmQnKTsKICA0MSB8ICAgICAKICA0MiB8ICAgICAvLyBDbGljayBsb2dpbiBidXR0b24KICA0MyB8ICAgICBhd2FpdCBwYWdlLmdldEJ5Um9sZSgnYnV0dG9uJywgeyBuYW1lOiAnTG9naW4nIH0pLmNsaWNrKCk7CiAgNDQgfCAgICAgCiAgNDUgfCAgICAgLy8gVmVyaWZ5IGVycm9yIG1lc3NhZ2UKICA0NiB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeVRleHQoJ0ludmFsaWQgdXNlcm5hbWUgb3IgcGFzc3dvcmQnKSkudG9CZVZpc2libGUoKTsKICA0NyB8ICAgICAKICA0OCB8ICAgICAvLyBWZXJpZnkgd2UncmUgc3RpbGwgb24gdGhlIGxvZ2luIHBhZ2UKICA0OSB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA1MCB8ICAgfSk7CiAgNTEgfAogIDUyIHwgICB0ZXN0KCdzaG91bGQgcmVkaXJlY3QgdG8gbG9naW4gcGFnZSBmb3IgcHJvdGVjdGVkIHJvdXRlcycsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogIDUzIHwgICAgIC8vIFRyeSB0byBhY2Nlc3MgYSBwcm90ZWN0ZWQgcGFnZSBkaXJlY3RseQogIDU0IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2luY2lkZW50LWxvZ2dlcicpOwogIDU1IHwgICAgIAogIDU2IHwgICAgIC8vIFZlcmlmeSByZWRpcmVjdCB0byBsb2dpbiBwYWdlCiAgNTcgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2xvZ2luLyk7CiAgNTggfCAgIH0pOwogIDU5IHwKICA2MCB8ICAgdGVzdCgnc2hvdWxkIGxvZ291dCBzdWNjZXNzZnVsbHknLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICA2MSB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9sb2dpbicpOwogIDYyIHwgICAgIAogIDYzIHwgICAgIC8vIExvZ2luIGZpcnN0CiAgNjQgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdVc2VybmFtZScpLmZpbGwoJ3J1cmFsX2FkbWluJyk7CiAgNjUgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdQYXNzd29yZCcpLmZpbGwoJ3J1cmFsX2FkbWluJyk7CiAgNjYgfCAgICAgCiAgNjcgfCAgICAgLy8gU2VsZWN0IGRlcGFydG1lbnQgaWYgdGhlIGZpZWxkIGV4aXN0cwogIDY4IHwgICAgIGNvbnN0IGRlcGFydG1lbnRTZWxlY3RvciA9IHBhZ2UuZ2V0QnlMYWJlbCgnRGVwYXJ0bWVudCcpOwogIDY5IHwgICAgIGlmIChhd2FpdCBkZXBhcnRtZW50U2VsZWN0b3IuaXNWaXNpYmxlKCkpIHsKICA3MCB8ICAgICAgIGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5zZWxlY3RPcHRpb24oJ3J1cmFsJyk7CiAgNzEgfCAgICAgfQogIDcyIHwgICAgIAogIDczIHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6ICdMb2dpbicgfSkuY2xpY2soKTsKICA3NCB8ICAgICAKICA3NSB8ICAgICAvLyBWZXJpZnkgc3VjY2Vzc2Z1bCBsb2dpbgogIDc2IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9kYXNoYm9hcmQvKTsKICA3NyB8ICAgICAKICA3OCB8ICAgICAvLyBMb2dvdXQKICA3OSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5Um9sZSgnbGluaycsIHsgbmFtZTogJ0xvZ291dCcgfSkuY2xpY2soKTsKICA4MCB8ICAgICAKICA4MSB8ICAgICAvLyBWZXJpZnkgbG9nb3V0IC0gYmFjayB0byBsb2dpbiBwYWdlCiAgODIgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2xvZ2luLyk7CiAgODMgfCAgICAgCiAgODQgfCAgICAgLy8gVmVyaWZ5IGNhbid0IGFjY2VzcyBwcm90ZWN0ZWQgcm91dGVzIGFueW1vcmUKICA4NSB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9pbmNpZGVudC1sb2dnZXInKTsKICA4NiB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA4NyB8ICAgfSk7CiAgODggfCB9KTsKYGBg"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d5ed79a6b333c2ba7209-02b9de6b8608bfe2dc5a",
+              "file": "auth.spec.js",
+              "line": 4,
+              "column": 3
+            },
+            {
+              "title": "should login successfully with valid credentials",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 2,
+                      "error": {
+                        "message": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/webkit-2140/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝",
+                        "stack": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/webkit-2140/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/webkit-2140/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-04-06T03:50:05.004Z",
+                      "attachments": [
+                        {
+                          "name": "_prompt-0",
+                          "contentType": "text/markdown",
+                          "body": "IyBJbnN0cnVjdGlvbnMKCi0gRm9sbG93aW5nIFBsYXl3cmlnaHQgdGVzdCBmYWlsZWQuCi0gRXhwbGFpbiB3aHksIGJlIGNvbmNpc2UsIHJlc3BlY3QgUGxheXdyaWdodCBiZXN0IHByYWN0aWNlcy4KLSBQcm92aWRlIGEgc25pcHBldCBvZiBjb2RlIHdpdGggdGhlIGZpeCwgaWYgcG9zc2libGUuCgojIFRlc3QgaW5mbwoKLSBOYW1lOiBBdXRoZW50aWNhdGlvbiA+PiBzaG91bGQgbG9naW4gc3VjY2Vzc2Z1bGx5IHdpdGggdmFsaWQgY3JlZGVudGlhbHMKLSBMb2NhdGlvbjogL1VzZXJzL2pvc2VwaGhlc3Rlci9Eb2N1bWVudHMvZmlyZS1lbXMtdG9vbHMvZTJlL3Rlc3RzL2F1dGguc3BlYy5qczoxNDozCgojIEVycm9yIGRldGFpbHMKCmBgYApFcnJvcjogYnJvd3NlclR5cGUubGF1bmNoOiBFeGVjdXRhYmxlIGRvZXNuJ3QgZXhpc3QgYXQgL1VzZXJzL2pvc2VwaGhlc3Rlci9MaWJyYXJ5L0NhY2hlcy9tcy1wbGF5d3JpZ2h0L3dlYmtpdC0yMTQwL3B3X3J1bi5zaArilZTilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZcK4pWRIExvb2tzIGxpa2UgUGxheXdyaWdodCBUZXN0IG9yIFBsYXl3cmlnaHQgd2FzIGp1c3QgaW5zdGFsbGVkIG9yIHVwZGF0ZWQuIOKVkQrilZEgUGxlYXNlIHJ1biB0aGUgZm9sbG93aW5nIGNvbW1hbmQgdG8gZG93bmxvYWQgbmV3IGJyb3dzZXJzOiAgICAgICAgICAgICAg4pWRCuKVkSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDilZEK4pWRICAgICBucHggcGxheXdyaWdodCBpbnN0YWxsICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKVkQrilZEgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg4pWRCuKVkSA8MyBQbGF5d3JpZ2h0IFRlYW0gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDilZEK4pWa4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWdCmBgYAoKIyBUZXN0IHNvdXJjZQoKYGBgdHMKICAgMSB8IGNvbnN0IHsgdGVzdCwgZXhwZWN0IH0gPSByZXF1aXJlKCdAcGxheXdyaWdodC90ZXN0Jyk7CiAgIDIgfAogICAzIHwgdGVzdC5kZXNjcmliZSgnQXV0aGVudGljYXRpb24nLCAoKSA9PiB7CiAgIDQgfCAgIHRlc3QoJ3Nob3VsZCBzaG93IGxvZ2luIHBhZ2UnLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICAgNSB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9sb2dpbicpOwogICA2IHwgICAgIAogICA3IHwgICAgIC8vIFZlcmlmeSBsb2dpbiBwYWdlIGVsZW1lbnRzCiAgIDggfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlSb2xlKCdoZWFkaW5nJywgeyBuYW1lOiAnTG9naW4nIH0pKS50b0JlVmlzaWJsZSgpOwogICA5IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykpLnRvQmVWaXNpYmxlKCk7CiAgMTAgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlMYWJlbCgnUGFzc3dvcmQnKSkudG9CZVZpc2libGUoKTsKICAxMSB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogJ0xvZ2luJyB9KSkudG9CZVZpc2libGUoKTsKICAxMiB8ICAgfSk7CiAgMTMgfAo+IDE0IHwgICB0ZXN0KCdzaG91bGQgbG9naW4gc3VjY2Vzc2Z1bGx5IHdpdGggdmFsaWQgY3JlZGVudGlhbHMnLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICAgICB8ICAgXiBFcnJvcjogYnJvd3NlclR5cGUubGF1bmNoOiBFeGVjdXRhYmxlIGRvZXNuJ3QgZXhpc3QgYXQgL1VzZXJzL2pvc2VwaGhlc3Rlci9MaWJyYXJ5L0NhY2hlcy9tcy1wbGF5d3JpZ2h0L3dlYmtpdC0yMTQwL3B3X3J1bi5zaAogIDE1IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2xvZ2luJyk7CiAgMTYgfCAgICAgCiAgMTcgfCAgICAgLy8gRmlsbCBpbiBsb2dpbiBmb3JtCiAgMTggfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdVc2VybmFtZScpLmZpbGwoJ3J1cmFsX2FkbWluJyk7CiAgMTkgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdQYXNzd29yZCcpLmZpbGwoJ3J1cmFsX2FkbWluJyk7CiAgMjAgfCAgICAgCiAgMjEgfCAgICAgLy8gU2VsZWN0IGRlcGFydG1lbnQgaWYgdGhlIGZpZWxkIGV4aXN0cwogIDIyIHwgICAgIGNvbnN0IGRlcGFydG1lbnRTZWxlY3RvciA9IHBhZ2UuZ2V0QnlMYWJlbCgnRGVwYXJ0bWVudCcpOwogIDIzIHwgICAgIGlmIChhd2FpdCBkZXBhcnRtZW50U2VsZWN0b3IuaXNWaXNpYmxlKCkpIHsKICAyNCB8ICAgICAgIGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5zZWxlY3RPcHRpb24oJ3J1cmFsJyk7CiAgMjUgfCAgICAgfQogIDI2IHwgICAgIAogIDI3IHwgICAgIC8vIENsaWNrIGxvZ2luIGJ1dHRvbgogIDI4IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6ICdMb2dpbicgfSkuY2xpY2soKTsKICAyOSB8ICAgICAKICAzMCB8ICAgICAvLyBWZXJpZnkgc3VjY2Vzc2Z1bCBsb2dpbgogIDMxIHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9kYXNoYm9hcmQvKTsKICAzMiB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeVRleHQoJ1dlbGNvbWUnKSkudG9CZVZpc2libGUoKTsKICAzMyB8ICAgfSk7CiAgMzQgfAogIDM1IHwgICB0ZXN0KCdzaG91bGQgc2hvdyBlcnJvciB3aXRoIGludmFsaWQgY3JlZGVudGlhbHMnLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICAzNiB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9sb2dpbicpOwogIDM3IHwgICAgIAogIDM4IHwgICAgIC8vIEZpbGwgaW4gbG9naW4gZm9ybSB3aXRoIGludmFsaWQgY3JlZGVudGlhbHMKICAzOSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykuZmlsbCgnaW52YWxpZF91c2VyJyk7CiAgNDAgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdQYXNzd29yZCcpLmZpbGwoJ2ludmFsaWRfcGFzc3dvcmQnKTsKICA0MSB8ICAgICAKICA0MiB8ICAgICAvLyBDbGljayBsb2dpbiBidXR0b24KICA0MyB8ICAgICBhd2FpdCBwYWdlLmdldEJ5Um9sZSgnYnV0dG9uJywgeyBuYW1lOiAnTG9naW4nIH0pLmNsaWNrKCk7CiAgNDQgfCAgICAgCiAgNDUgfCAgICAgLy8gVmVyaWZ5IGVycm9yIG1lc3NhZ2UKICA0NiB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeVRleHQoJ0ludmFsaWQgdXNlcm5hbWUgb3IgcGFzc3dvcmQnKSkudG9CZVZpc2libGUoKTsKICA0NyB8ICAgICAKICA0OCB8ICAgICAvLyBWZXJpZnkgd2UncmUgc3RpbGwgb24gdGhlIGxvZ2luIHBhZ2UKICA0OSB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA1MCB8ICAgfSk7CiAgNTEgfAogIDUyIHwgICB0ZXN0KCdzaG91bGQgcmVkaXJlY3QgdG8gbG9naW4gcGFnZSBmb3IgcHJvdGVjdGVkIHJvdXRlcycsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogIDUzIHwgICAgIC8vIFRyeSB0byBhY2Nlc3MgYSBwcm90ZWN0ZWQgcGFnZSBkaXJlY3RseQogIDU0IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2luY2lkZW50LWxvZ2dlcicpOwogIDU1IHwgICAgIAogIDU2IHwgICAgIC8vIFZlcmlmeSByZWRpcmVjdCB0byBsb2dpbiBwYWdlCiAgNTcgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2xvZ2luLyk7CiAgNTggfCAgIH0pOwogIDU5IHwKICA2MCB8ICAgdGVzdCgnc2hvdWxkIGxvZ291dCBzdWNjZXNzZnVsbHknLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICA2MSB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9sb2dpbicpOwogIDYyIHwgICAgIAogIDYzIHwgICAgIC8vIExvZ2luIGZpcnN0CiAgNjQgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdVc2VybmFtZScpLmZpbGwoJ3J1cmFsX2FkbWluJyk7CiAgNjUgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdQYXNzd29yZCcpLmZpbGwoJ3J1cmFsX2FkbWluJyk7CiAgNjYgfCAgICAgCiAgNjcgfCAgICAgLy8gU2VsZWN0IGRlcGFydG1lbnQgaWYgdGhlIGZpZWxkIGV4aXN0cwogIDY4IHwgICAgIGNvbnN0IGRlcGFydG1lbnRTZWxlY3RvciA9IHBhZ2UuZ2V0QnlMYWJlbCgnRGVwYXJ0bWVudCcpOwogIDY5IHwgICAgIGlmIChhd2FpdCBkZXBhcnRtZW50U2VsZWN0b3IuaXNWaXNpYmxlKCkpIHsKICA3MCB8ICAgICAgIGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5zZWxlY3RPcHRpb24oJ3J1cmFsJyk7CiAgNzEgfCAgICAgfQogIDcyIHwgICAgIAogIDczIHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6ICdMb2dpbicgfSkuY2xpY2soKTsKICA3NCB8ICAgICAKICA3NSB8ICAgICAvLyBWZXJpZnkgc3VjY2Vzc2Z1bCBsb2dpbgogIDc2IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9kYXNoYm9hcmQvKTsKICA3NyB8ICAgICAKICA3OCB8ICAgICAvLyBMb2dvdXQKICA3OSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5Um9sZSgnbGluaycsIHsgbmFtZTogJ0xvZ291dCcgfSkuY2xpY2soKTsKICA4MCB8ICAgICAKICA4MSB8ICAgICAvLyBWZXJpZnkgbG9nb3V0IC0gYmFjayB0byBsb2dpbiBwYWdlCiAgODIgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2xvZ2luLyk7CiAgODMgfCAgICAgCiAgODQgfCAgICAgLy8gVmVyaWZ5IGNhbid0IGFjY2VzcyBwcm90ZWN0ZWQgcm91dGVzIGFueW1vcmUKICA4NSB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9pbmNpZGVudC1sb2dnZXInKTsKICA4NiB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA4NyB8ICAgfSk7CiAgODggfCB9KTsKYGBg"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d5ed79a6b333c2ba7209-58e0c3515b32150e67f3",
+              "file": "auth.spec.js",
+              "line": 14,
+              "column": 3
+            },
+            {
+              "title": "should show error with invalid credentials",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 3,
+                      "error": {
+                        "message": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/webkit-2140/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝",
+                        "stack": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/webkit-2140/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/webkit-2140/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-04-06T03:50:05.008Z",
+                      "attachments": [
+                        {
+                          "name": "_prompt-0",
+                          "contentType": "text/markdown",
+                          "body": "IyBJbnN0cnVjdGlvbnMKCi0gRm9sbG93aW5nIFBsYXl3cmlnaHQgdGVzdCBmYWlsZWQuCi0gRXhwbGFpbiB3aHksIGJlIGNvbmNpc2UsIHJlc3BlY3QgUGxheXdyaWdodCBiZXN0IHByYWN0aWNlcy4KLSBQcm92aWRlIGEgc25pcHBldCBvZiBjb2RlIHdpdGggdGhlIGZpeCwgaWYgcG9zc2libGUuCgojIFRlc3QgaW5mbwoKLSBOYW1lOiBBdXRoZW50aWNhdGlvbiA+PiBzaG91bGQgc2hvdyBlcnJvciB3aXRoIGludmFsaWQgY3JlZGVudGlhbHMKLSBMb2NhdGlvbjogL1VzZXJzL2pvc2VwaGhlc3Rlci9Eb2N1bWVudHMvZmlyZS1lbXMtdG9vbHMvZTJlL3Rlc3RzL2F1dGguc3BlYy5qczozNTozCgojIEVycm9yIGRldGFpbHMKCmBgYApFcnJvcjogYnJvd3NlclR5cGUubGF1bmNoOiBFeGVjdXRhYmxlIGRvZXNuJ3QgZXhpc3QgYXQgL1VzZXJzL2pvc2VwaGhlc3Rlci9MaWJyYXJ5L0NhY2hlcy9tcy1wbGF5d3JpZ2h0L3dlYmtpdC0yMTQwL3B3X3J1bi5zaArilZTilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZcK4pWRIExvb2tzIGxpa2UgUGxheXdyaWdodCBUZXN0IG9yIFBsYXl3cmlnaHQgd2FzIGp1c3QgaW5zdGFsbGVkIG9yIHVwZGF0ZWQuIOKVkQrilZEgUGxlYXNlIHJ1biB0aGUgZm9sbG93aW5nIGNvbW1hbmQgdG8gZG93bmxvYWQgbmV3IGJyb3dzZXJzOiAgICAgICAgICAgICAg4pWRCuKVkSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDilZEK4pWRICAgICBucHggcGxheXdyaWdodCBpbnN0YWxsICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKVkQrilZEgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg4pWRCuKVkSA8MyBQbGF5d3JpZ2h0IFRlYW0gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDilZEK4pWa4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWdCmBgYAoKIyBUZXN0IHNvdXJjZQoKYGBgdHMKICAgMSB8IGNvbnN0IHsgdGVzdCwgZXhwZWN0IH0gPSByZXF1aXJlKCdAcGxheXdyaWdodC90ZXN0Jyk7CiAgIDIgfAogICAzIHwgdGVzdC5kZXNjcmliZSgnQXV0aGVudGljYXRpb24nLCAoKSA9PiB7CiAgIDQgfCAgIHRlc3QoJ3Nob3VsZCBzaG93IGxvZ2luIHBhZ2UnLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICAgNSB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9sb2dpbicpOwogICA2IHwgICAgIAogICA3IHwgICAgIC8vIFZlcmlmeSBsb2dpbiBwYWdlIGVsZW1lbnRzCiAgIDggfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlSb2xlKCdoZWFkaW5nJywgeyBuYW1lOiAnTG9naW4nIH0pKS50b0JlVmlzaWJsZSgpOwogICA5IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykpLnRvQmVWaXNpYmxlKCk7CiAgMTAgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlMYWJlbCgnUGFzc3dvcmQnKSkudG9CZVZpc2libGUoKTsKICAxMSB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogJ0xvZ2luJyB9KSkudG9CZVZpc2libGUoKTsKICAxMiB8ICAgfSk7CiAgMTMgfAogIDE0IHwgICB0ZXN0KCdzaG91bGQgbG9naW4gc3VjY2Vzc2Z1bGx5IHdpdGggdmFsaWQgY3JlZGVudGlhbHMnLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICAxNSB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9sb2dpbicpOwogIDE2IHwgICAgIAogIDE3IHwgICAgIC8vIEZpbGwgaW4gbG9naW4gZm9ybQogIDE4IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlMYWJlbCgnVXNlcm5hbWUnKS5maWxsKCdydXJhbF9hZG1pbicpOwogIDE5IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlMYWJlbCgnUGFzc3dvcmQnKS5maWxsKCdydXJhbF9hZG1pbicpOwogIDIwIHwgICAgIAogIDIxIHwgICAgIC8vIFNlbGVjdCBkZXBhcnRtZW50IGlmIHRoZSBmaWVsZCBleGlzdHMKICAyMiB8ICAgICBjb25zdCBkZXBhcnRtZW50U2VsZWN0b3IgPSBwYWdlLmdldEJ5TGFiZWwoJ0RlcGFydG1lbnQnKTsKICAyMyB8ICAgICBpZiAoYXdhaXQgZGVwYXJ0bWVudFNlbGVjdG9yLmlzVmlzaWJsZSgpKSB7CiAgMjQgfCAgICAgICBhd2FpdCBkZXBhcnRtZW50U2VsZWN0b3Iuc2VsZWN0T3B0aW9uKCdydXJhbCcpOwogIDI1IHwgICAgIH0KICAyNiB8ICAgICAKICAyNyB8ICAgICAvLyBDbGljayBsb2dpbiBidXR0b24KICAyOCB8ICAgICBhd2FpdCBwYWdlLmdldEJ5Um9sZSgnYnV0dG9uJywgeyBuYW1lOiAnTG9naW4nIH0pLmNsaWNrKCk7CiAgMjkgfCAgICAgCiAgMzAgfCAgICAgLy8gVmVyaWZ5IHN1Y2Nlc3NmdWwgbG9naW4KICAzMSB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvZGFzaGJvYXJkLyk7CiAgMzIgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlUZXh0KCdXZWxjb21lJykpLnRvQmVWaXNpYmxlKCk7CiAgMzMgfCAgIH0pOwogIDM0IHwKPiAzNSB8ICAgdGVzdCgnc2hvdWxkIHNob3cgZXJyb3Igd2l0aCBpbnZhbGlkIGNyZWRlbnRpYWxzJywgYXN5bmMgKHsgcGFnZSB9KSA9PiB7CiAgICAgfCAgIF4gRXJyb3I6IGJyb3dzZXJUeXBlLmxhdW5jaDogRXhlY3V0YWJsZSBkb2Vzbid0IGV4aXN0IGF0IC9Vc2Vycy9qb3NlcGhoZXN0ZXIvTGlicmFyeS9DYWNoZXMvbXMtcGxheXdyaWdodC93ZWJraXQtMjE0MC9wd19ydW4uc2gKICAzNiB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9sb2dpbicpOwogIDM3IHwgICAgIAogIDM4IHwgICAgIC8vIEZpbGwgaW4gbG9naW4gZm9ybSB3aXRoIGludmFsaWQgY3JlZGVudGlhbHMKICAzOSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykuZmlsbCgnaW52YWxpZF91c2VyJyk7CiAgNDAgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdQYXNzd29yZCcpLmZpbGwoJ2ludmFsaWRfcGFzc3dvcmQnKTsKICA0MSB8ICAgICAKICA0MiB8ICAgICAvLyBDbGljayBsb2dpbiBidXR0b24KICA0MyB8ICAgICBhd2FpdCBwYWdlLmdldEJ5Um9sZSgnYnV0dG9uJywgeyBuYW1lOiAnTG9naW4nIH0pLmNsaWNrKCk7CiAgNDQgfCAgICAgCiAgNDUgfCAgICAgLy8gVmVyaWZ5IGVycm9yIG1lc3NhZ2UKICA0NiB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeVRleHQoJ0ludmFsaWQgdXNlcm5hbWUgb3IgcGFzc3dvcmQnKSkudG9CZVZpc2libGUoKTsKICA0NyB8ICAgICAKICA0OCB8ICAgICAvLyBWZXJpZnkgd2UncmUgc3RpbGwgb24gdGhlIGxvZ2luIHBhZ2UKICA0OSB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA1MCB8ICAgfSk7CiAgNTEgfAogIDUyIHwgICB0ZXN0KCdzaG91bGQgcmVkaXJlY3QgdG8gbG9naW4gcGFnZSBmb3IgcHJvdGVjdGVkIHJvdXRlcycsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogIDUzIHwgICAgIC8vIFRyeSB0byBhY2Nlc3MgYSBwcm90ZWN0ZWQgcGFnZSBkaXJlY3RseQogIDU0IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2luY2lkZW50LWxvZ2dlcicpOwogIDU1IHwgICAgIAogIDU2IHwgICAgIC8vIFZlcmlmeSByZWRpcmVjdCB0byBsb2dpbiBwYWdlCiAgNTcgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2xvZ2luLyk7CiAgNTggfCAgIH0pOwogIDU5IHwKICA2MCB8ICAgdGVzdCgnc2hvdWxkIGxvZ291dCBzdWNjZXNzZnVsbHknLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICA2MSB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9sb2dpbicpOwogIDYyIHwgICAgIAogIDYzIHwgICAgIC8vIExvZ2luIGZpcnN0CiAgNjQgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdVc2VybmFtZScpLmZpbGwoJ3J1cmFsX2FkbWluJyk7CiAgNjUgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdQYXNzd29yZCcpLmZpbGwoJ3J1cmFsX2FkbWluJyk7CiAgNjYgfCAgICAgCiAgNjcgfCAgICAgLy8gU2VsZWN0IGRlcGFydG1lbnQgaWYgdGhlIGZpZWxkIGV4aXN0cwogIDY4IHwgICAgIGNvbnN0IGRlcGFydG1lbnRTZWxlY3RvciA9IHBhZ2UuZ2V0QnlMYWJlbCgnRGVwYXJ0bWVudCcpOwogIDY5IHwgICAgIGlmIChhd2FpdCBkZXBhcnRtZW50U2VsZWN0b3IuaXNWaXNpYmxlKCkpIHsKICA3MCB8ICAgICAgIGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5zZWxlY3RPcHRpb24oJ3J1cmFsJyk7CiAgNzEgfCAgICAgfQogIDcyIHwgICAgIAogIDczIHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6ICdMb2dpbicgfSkuY2xpY2soKTsKICA3NCB8ICAgICAKICA3NSB8ICAgICAvLyBWZXJpZnkgc3VjY2Vzc2Z1bCBsb2dpbgogIDc2IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9kYXNoYm9hcmQvKTsKICA3NyB8ICAgICAKICA3OCB8ICAgICAvLyBMb2dvdXQKICA3OSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5Um9sZSgnbGluaycsIHsgbmFtZTogJ0xvZ291dCcgfSkuY2xpY2soKTsKICA4MCB8ICAgICAKICA4MSB8ICAgICAvLyBWZXJpZnkgbG9nb3V0IC0gYmFjayB0byBsb2dpbiBwYWdlCiAgODIgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2xvZ2luLyk7CiAgODMgfCAgICAgCiAgODQgfCAgICAgLy8gVmVyaWZ5IGNhbid0IGFjY2VzcyBwcm90ZWN0ZWQgcm91dGVzIGFueW1vcmUKICA4NSB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9pbmNpZGVudC1sb2dnZXInKTsKICA4NiB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA4NyB8ICAgfSk7CiAgODggfCB9KTsKYGBg"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d5ed79a6b333c2ba7209-7176a202f7e5f1ed2234",
+              "file": "auth.spec.js",
+              "line": 35,
+              "column": 3
+            },
+            {
+              "title": "should redirect to login page for protected routes",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 2,
+                      "error": {
+                        "message": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/webkit-2140/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝",
+                        "stack": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/webkit-2140/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/webkit-2140/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-04-06T03:50:05.172Z",
+                      "attachments": [
+                        {
+                          "name": "_prompt-0",
+                          "contentType": "text/markdown",
+                          "body": "IyBJbnN0cnVjdGlvbnMKCi0gRm9sbG93aW5nIFBsYXl3cmlnaHQgdGVzdCBmYWlsZWQuCi0gRXhwbGFpbiB3aHksIGJlIGNvbmNpc2UsIHJlc3BlY3QgUGxheXdyaWdodCBiZXN0IHByYWN0aWNlcy4KLSBQcm92aWRlIGEgc25pcHBldCBvZiBjb2RlIHdpdGggdGhlIGZpeCwgaWYgcG9zc2libGUuCgojIFRlc3QgaW5mbwoKLSBOYW1lOiBBdXRoZW50aWNhdGlvbiA+PiBzaG91bGQgcmVkaXJlY3QgdG8gbG9naW4gcGFnZSBmb3IgcHJvdGVjdGVkIHJvdXRlcwotIExvY2F0aW9uOiAvVXNlcnMvam9zZXBoaGVzdGVyL0RvY3VtZW50cy9maXJlLWVtcy10b29scy9lMmUvdGVzdHMvYXV0aC5zcGVjLmpzOjUyOjMKCiMgRXJyb3IgZGV0YWlscwoKYGBgCkVycm9yOiBicm93c2VyVHlwZS5sYXVuY2g6IEV4ZWN1dGFibGUgZG9lc24ndCBleGlzdCBhdCAvVXNlcnMvam9zZXBoaGVzdGVyL0xpYnJhcnkvQ2FjaGVzL21zLXBsYXl3cmlnaHQvd2Via2l0LTIxNDAvcHdfcnVuLnNoCuKVlOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVlwrilZEgTG9va3MgbGlrZSBQbGF5d3JpZ2h0IFRlc3Qgb3IgUGxheXdyaWdodCB3YXMganVzdCBpbnN0YWxsZWQgb3IgdXBkYXRlZC4g4pWRCuKVkSBQbGVhc2UgcnVuIHRoZSBmb2xsb3dpbmcgY29tbWFuZCB0byBkb3dubG9hZCBuZXcgYnJvd3NlcnM6ICAgICAgICAgICAgICDilZEK4pWRICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKVkQrilZEgICAgIG5weCBwbGF5d3JpZ2h0IGluc3RhbGwgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg4pWRCuKVkSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDilZEK4pWRIDwzIFBsYXl3cmlnaHQgVGVhbSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKVkQrilZrilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZ0KYGBgCgojIFRlc3Qgc291cmNlCgpgYGB0cwogICAxIHwgY29uc3QgeyB0ZXN0LCBleHBlY3QgfSA9IHJlcXVpcmUoJ0BwbGF5d3JpZ2h0L3Rlc3QnKTsKICAgMiB8CiAgIDMgfCB0ZXN0LmRlc2NyaWJlKCdBdXRoZW50aWNhdGlvbicsICgpID0+IHsKICAgNCB8ICAgdGVzdCgnc2hvdWxkIHNob3cgbG9naW4gcGFnZScsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogICA1IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2xvZ2luJyk7CiAgIDYgfCAgICAgCiAgIDcgfCAgICAgLy8gVmVyaWZ5IGxvZ2luIHBhZ2UgZWxlbWVudHMKICAgOCB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeVJvbGUoJ2hlYWRpbmcnLCB7IG5hbWU6ICdMb2dpbicgfSkpLnRvQmVWaXNpYmxlKCk7CiAgIDkgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlMYWJlbCgnVXNlcm5hbWUnKSkudG9CZVZpc2libGUoKTsKICAxMCB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeUxhYmVsKCdQYXNzd29yZCcpKS50b0JlVmlzaWJsZSgpOwogIDExIHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5Um9sZSgnYnV0dG9uJywgeyBuYW1lOiAnTG9naW4nIH0pKS50b0JlVmlzaWJsZSgpOwogIDEyIHwgICB9KTsKICAxMyB8CiAgMTQgfCAgIHRlc3QoJ3Nob3VsZCBsb2dpbiBzdWNjZXNzZnVsbHkgd2l0aCB2YWxpZCBjcmVkZW50aWFscycsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogIDE1IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2xvZ2luJyk7CiAgMTYgfCAgICAgCiAgMTcgfCAgICAgLy8gRmlsbCBpbiBsb2dpbiBmb3JtCiAgMTggfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdVc2VybmFtZScpLmZpbGwoJ3J1cmFsX2FkbWluJyk7CiAgMTkgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdQYXNzd29yZCcpLmZpbGwoJ3J1cmFsX2FkbWluJyk7CiAgMjAgfCAgICAgCiAgMjEgfCAgICAgLy8gU2VsZWN0IGRlcGFydG1lbnQgaWYgdGhlIGZpZWxkIGV4aXN0cwogIDIyIHwgICAgIGNvbnN0IGRlcGFydG1lbnRTZWxlY3RvciA9IHBhZ2UuZ2V0QnlMYWJlbCgnRGVwYXJ0bWVudCcpOwogIDIzIHwgICAgIGlmIChhd2FpdCBkZXBhcnRtZW50U2VsZWN0b3IuaXNWaXNpYmxlKCkpIHsKICAyNCB8ICAgICAgIGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5zZWxlY3RPcHRpb24oJ3J1cmFsJyk7CiAgMjUgfCAgICAgfQogIDI2IHwgICAgIAogIDI3IHwgICAgIC8vIENsaWNrIGxvZ2luIGJ1dHRvbgogIDI4IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6ICdMb2dpbicgfSkuY2xpY2soKTsKICAyOSB8ICAgICAKICAzMCB8ICAgICAvLyBWZXJpZnkgc3VjY2Vzc2Z1bCBsb2dpbgogIDMxIHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9kYXNoYm9hcmQvKTsKICAzMiB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeVRleHQoJ1dlbGNvbWUnKSkudG9CZVZpc2libGUoKTsKICAzMyB8ICAgfSk7CiAgMzQgfAogIDM1IHwgICB0ZXN0KCdzaG91bGQgc2hvdyBlcnJvciB3aXRoIGludmFsaWQgY3JlZGVudGlhbHMnLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICAzNiB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9sb2dpbicpOwogIDM3IHwgICAgIAogIDM4IHwgICAgIC8vIEZpbGwgaW4gbG9naW4gZm9ybSB3aXRoIGludmFsaWQgY3JlZGVudGlhbHMKICAzOSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykuZmlsbCgnaW52YWxpZF91c2VyJyk7CiAgNDAgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdQYXNzd29yZCcpLmZpbGwoJ2ludmFsaWRfcGFzc3dvcmQnKTsKICA0MSB8ICAgICAKICA0MiB8ICAgICAvLyBDbGljayBsb2dpbiBidXR0b24KICA0MyB8ICAgICBhd2FpdCBwYWdlLmdldEJ5Um9sZSgnYnV0dG9uJywgeyBuYW1lOiAnTG9naW4nIH0pLmNsaWNrKCk7CiAgNDQgfCAgICAgCiAgNDUgfCAgICAgLy8gVmVyaWZ5IGVycm9yIG1lc3NhZ2UKICA0NiB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeVRleHQoJ0ludmFsaWQgdXNlcm5hbWUgb3IgcGFzc3dvcmQnKSkudG9CZVZpc2libGUoKTsKICA0NyB8ICAgICAKICA0OCB8ICAgICAvLyBWZXJpZnkgd2UncmUgc3RpbGwgb24gdGhlIGxvZ2luIHBhZ2UKICA0OSB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA1MCB8ICAgfSk7CiAgNTEgfAo+IDUyIHwgICB0ZXN0KCdzaG91bGQgcmVkaXJlY3QgdG8gbG9naW4gcGFnZSBmb3IgcHJvdGVjdGVkIHJvdXRlcycsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogICAgIHwgICBeIEVycm9yOiBicm93c2VyVHlwZS5sYXVuY2g6IEV4ZWN1dGFibGUgZG9lc24ndCBleGlzdCBhdCAvVXNlcnMvam9zZXBoaGVzdGVyL0xpYnJhcnkvQ2FjaGVzL21zLXBsYXl3cmlnaHQvd2Via2l0LTIxNDAvcHdfcnVuLnNoCiAgNTMgfCAgICAgLy8gVHJ5IHRvIGFjY2VzcyBhIHByb3RlY3RlZCBwYWdlIGRpcmVjdGx5CiAgNTQgfCAgICAgYXdhaXQgcGFnZS5nb3RvKCcvaW5jaWRlbnQtbG9nZ2VyJyk7CiAgNTUgfCAgICAgCiAgNTYgfCAgICAgLy8gVmVyaWZ5IHJlZGlyZWN0IHRvIGxvZ2luIHBhZ2UKICA1NyB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA1OCB8ICAgfSk7CiAgNTkgfAogIDYwIHwgICB0ZXN0KCdzaG91bGQgbG9nb3V0IHN1Y2Nlc3NmdWxseScsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogIDYxIHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2xvZ2luJyk7CiAgNjIgfCAgICAgCiAgNjMgfCAgICAgLy8gTG9naW4gZmlyc3QKICA2NCB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICA2NSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1Bhc3N3b3JkJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICA2NiB8ICAgICAKICA2NyB8ICAgICAvLyBTZWxlY3QgZGVwYXJ0bWVudCBpZiB0aGUgZmllbGQgZXhpc3RzCiAgNjggfCAgICAgY29uc3QgZGVwYXJ0bWVudFNlbGVjdG9yID0gcGFnZS5nZXRCeUxhYmVsKCdEZXBhcnRtZW50Jyk7CiAgNjkgfCAgICAgaWYgKGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5pc1Zpc2libGUoKSkgewogIDcwIHwgICAgICAgYXdhaXQgZGVwYXJ0bWVudFNlbGVjdG9yLnNlbGVjdE9wdGlvbigncnVyYWwnKTsKICA3MSB8ICAgICB9CiAgNzIgfCAgICAgCiAgNzMgfCAgICAgYXdhaXQgcGFnZS5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogJ0xvZ2luJyB9KS5jbGljaygpOwogIDc0IHwgICAgIAogIDc1IHwgICAgIC8vIFZlcmlmeSBzdWNjZXNzZnVsIGxvZ2luCiAgNzYgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2Rhc2hib2FyZC8pOwogIDc3IHwgICAgIAogIDc4IHwgICAgIC8vIExvZ291dAogIDc5IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlSb2xlKCdsaW5rJywgeyBuYW1lOiAnTG9nb3V0JyB9KS5jbGljaygpOwogIDgwIHwgICAgIAogIDgxIHwgICAgIC8vIFZlcmlmeSBsb2dvdXQgLSBiYWNrIHRvIGxvZ2luIHBhZ2UKICA4MiB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA4MyB8ICAgICAKICA4NCB8ICAgICAvLyBWZXJpZnkgY2FuJ3QgYWNjZXNzIHByb3RlY3RlZCByb3V0ZXMgYW55bW9yZQogIDg1IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2luY2lkZW50LWxvZ2dlcicpOwogIDg2IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9sb2dpbi8pOwogIDg3IHwgICB9KTsKICA4OCB8IH0pOwpgYGA="
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d5ed79a6b333c2ba7209-6e04f26610d9fc549f83",
+              "file": "auth.spec.js",
+              "line": 52,
+              "column": 3
+            },
+            {
+              "title": "should logout successfully",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 2,
+                      "error": {
+                        "message": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/webkit-2140/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝",
+                        "stack": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/webkit-2140/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: browserType.launch: Executable doesn't exist at /Users/josephhester/Library/Caches/ms-playwright/webkit-2140/pw_run.sh\n╔═════════════════════════════════════════════════════════════════════════╗\n║ Looks like Playwright Test or Playwright was just installed or updated. ║\n║ Please run the following command to download new browsers:              ║\n║                                                                         ║\n║     npx playwright install                                              ║\n║                                                                         ║\n║ <3 Playwright Team                                                      ║\n╚═════════════════════════════════════════════════════════════════════════╝"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-04-06T03:50:05.172Z",
+                      "attachments": [
+                        {
+                          "name": "_prompt-0",
+                          "contentType": "text/markdown",
+                          "body": "IyBJbnN0cnVjdGlvbnMKCi0gRm9sbG93aW5nIFBsYXl3cmlnaHQgdGVzdCBmYWlsZWQuCi0gRXhwbGFpbiB3aHksIGJlIGNvbmNpc2UsIHJlc3BlY3QgUGxheXdyaWdodCBiZXN0IHByYWN0aWNlcy4KLSBQcm92aWRlIGEgc25pcHBldCBvZiBjb2RlIHdpdGggdGhlIGZpeCwgaWYgcG9zc2libGUuCgojIFRlc3QgaW5mbwoKLSBOYW1lOiBBdXRoZW50aWNhdGlvbiA+PiBzaG91bGQgbG9nb3V0IHN1Y2Nlc3NmdWxseQotIExvY2F0aW9uOiAvVXNlcnMvam9zZXBoaGVzdGVyL0RvY3VtZW50cy9maXJlLWVtcy10b29scy9lMmUvdGVzdHMvYXV0aC5zcGVjLmpzOjYwOjMKCiMgRXJyb3IgZGV0YWlscwoKYGBgCkVycm9yOiBicm93c2VyVHlwZS5sYXVuY2g6IEV4ZWN1dGFibGUgZG9lc24ndCBleGlzdCBhdCAvVXNlcnMvam9zZXBoaGVzdGVyL0xpYnJhcnkvQ2FjaGVzL21zLXBsYXl3cmlnaHQvd2Via2l0LTIxNDAvcHdfcnVuLnNoCuKVlOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVlwrilZEgTG9va3MgbGlrZSBQbGF5d3JpZ2h0IFRlc3Qgb3IgUGxheXdyaWdodCB3YXMganVzdCBpbnN0YWxsZWQgb3IgdXBkYXRlZC4g4pWRCuKVkSBQbGVhc2UgcnVuIHRoZSBmb2xsb3dpbmcgY29tbWFuZCB0byBkb3dubG9hZCBuZXcgYnJvd3NlcnM6ICAgICAgICAgICAgICDilZEK4pWRICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKVkQrilZEgICAgIG5weCBwbGF5d3JpZ2h0IGluc3RhbGwgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg4pWRCuKVkSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDilZEK4pWRIDwzIFBsYXl3cmlnaHQgVGVhbSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKVkQrilZrilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZ0KYGBgCgojIFRlc3Qgc291cmNlCgpgYGB0cwogICAxIHwgY29uc3QgeyB0ZXN0LCBleHBlY3QgfSA9IHJlcXVpcmUoJ0BwbGF5d3JpZ2h0L3Rlc3QnKTsKICAgMiB8CiAgIDMgfCB0ZXN0LmRlc2NyaWJlKCdBdXRoZW50aWNhdGlvbicsICgpID0+IHsKICAgNCB8ICAgdGVzdCgnc2hvdWxkIHNob3cgbG9naW4gcGFnZScsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogICA1IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2xvZ2luJyk7CiAgIDYgfCAgICAgCiAgIDcgfCAgICAgLy8gVmVyaWZ5IGxvZ2luIHBhZ2UgZWxlbWVudHMKICAgOCB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeVJvbGUoJ2hlYWRpbmcnLCB7IG5hbWU6ICdMb2dpbicgfSkpLnRvQmVWaXNpYmxlKCk7CiAgIDkgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UuZ2V0QnlMYWJlbCgnVXNlcm5hbWUnKSkudG9CZVZpc2libGUoKTsKICAxMCB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeUxhYmVsKCdQYXNzd29yZCcpKS50b0JlVmlzaWJsZSgpOwogIDExIHwgICAgIGF3YWl0IGV4cGVjdChwYWdlLmdldEJ5Um9sZSgnYnV0dG9uJywgeyBuYW1lOiAnTG9naW4nIH0pKS50b0JlVmlzaWJsZSgpOwogIDEyIHwgICB9KTsKICAxMyB8CiAgMTQgfCAgIHRlc3QoJ3Nob3VsZCBsb2dpbiBzdWNjZXNzZnVsbHkgd2l0aCB2YWxpZCBjcmVkZW50aWFscycsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogIDE1IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2xvZ2luJyk7CiAgMTYgfCAgICAgCiAgMTcgfCAgICAgLy8gRmlsbCBpbiBsb2dpbiBmb3JtCiAgMTggfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdVc2VybmFtZScpLmZpbGwoJ3J1cmFsX2FkbWluJyk7CiAgMTkgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdQYXNzd29yZCcpLmZpbGwoJ3J1cmFsX2FkbWluJyk7CiAgMjAgfCAgICAgCiAgMjEgfCAgICAgLy8gU2VsZWN0IGRlcGFydG1lbnQgaWYgdGhlIGZpZWxkIGV4aXN0cwogIDIyIHwgICAgIGNvbnN0IGRlcGFydG1lbnRTZWxlY3RvciA9IHBhZ2UuZ2V0QnlMYWJlbCgnRGVwYXJ0bWVudCcpOwogIDIzIHwgICAgIGlmIChhd2FpdCBkZXBhcnRtZW50U2VsZWN0b3IuaXNWaXNpYmxlKCkpIHsKICAyNCB8ICAgICAgIGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5zZWxlY3RPcHRpb24oJ3J1cmFsJyk7CiAgMjUgfCAgICAgfQogIDI2IHwgICAgIAogIDI3IHwgICAgIC8vIENsaWNrIGxvZ2luIGJ1dHRvbgogIDI4IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6ICdMb2dpbicgfSkuY2xpY2soKTsKICAyOSB8ICAgICAKICAzMCB8ICAgICAvLyBWZXJpZnkgc3VjY2Vzc2Z1bCBsb2dpbgogIDMxIHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9kYXNoYm9hcmQvKTsKICAzMiB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeVRleHQoJ1dlbGNvbWUnKSkudG9CZVZpc2libGUoKTsKICAzMyB8ICAgfSk7CiAgMzQgfAogIDM1IHwgICB0ZXN0KCdzaG91bGQgc2hvdyBlcnJvciB3aXRoIGludmFsaWQgY3JlZGVudGlhbHMnLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICAzNiB8ICAgICBhd2FpdCBwYWdlLmdvdG8oJy9sb2dpbicpOwogIDM3IHwgICAgIAogIDM4IHwgICAgIC8vIEZpbGwgaW4gbG9naW4gZm9ybSB3aXRoIGludmFsaWQgY3JlZGVudGlhbHMKICAzOSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykuZmlsbCgnaW52YWxpZF91c2VyJyk7CiAgNDAgfCAgICAgYXdhaXQgcGFnZS5nZXRCeUxhYmVsKCdQYXNzd29yZCcpLmZpbGwoJ2ludmFsaWRfcGFzc3dvcmQnKTsKICA0MSB8ICAgICAKICA0MiB8ICAgICAvLyBDbGljayBsb2dpbiBidXR0b24KICA0MyB8ICAgICBhd2FpdCBwYWdlLmdldEJ5Um9sZSgnYnV0dG9uJywgeyBuYW1lOiAnTG9naW4nIH0pLmNsaWNrKCk7CiAgNDQgfCAgICAgCiAgNDUgfCAgICAgLy8gVmVyaWZ5IGVycm9yIG1lc3NhZ2UKICA0NiB8ICAgICBhd2FpdCBleHBlY3QocGFnZS5nZXRCeVRleHQoJ0ludmFsaWQgdXNlcm5hbWUgb3IgcGFzc3dvcmQnKSkudG9CZVZpc2libGUoKTsKICA0NyB8ICAgICAKICA0OCB8ICAgICAvLyBWZXJpZnkgd2UncmUgc3RpbGwgb24gdGhlIGxvZ2luIHBhZ2UKICA0OSB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA1MCB8ICAgfSk7CiAgNTEgfAogIDUyIHwgICB0ZXN0KCdzaG91bGQgcmVkaXJlY3QgdG8gbG9naW4gcGFnZSBmb3IgcHJvdGVjdGVkIHJvdXRlcycsIGFzeW5jICh7IHBhZ2UgfSkgPT4gewogIDUzIHwgICAgIC8vIFRyeSB0byBhY2Nlc3MgYSBwcm90ZWN0ZWQgcGFnZSBkaXJlY3RseQogIDU0IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2luY2lkZW50LWxvZ2dlcicpOwogIDU1IHwgICAgIAogIDU2IHwgICAgIC8vIFZlcmlmeSByZWRpcmVjdCB0byBsb2dpbiBwYWdlCiAgNTcgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2xvZ2luLyk7CiAgNTggfCAgIH0pOwogIDU5IHwKPiA2MCB8ICAgdGVzdCgnc2hvdWxkIGxvZ291dCBzdWNjZXNzZnVsbHknLCBhc3luYyAoeyBwYWdlIH0pID0+IHsKICAgICB8ICAgXiBFcnJvcjogYnJvd3NlclR5cGUubGF1bmNoOiBFeGVjdXRhYmxlIGRvZXNuJ3QgZXhpc3QgYXQgL1VzZXJzL2pvc2VwaGhlc3Rlci9MaWJyYXJ5L0NhY2hlcy9tcy1wbGF5d3JpZ2h0L3dlYmtpdC0yMTQwL3B3X3J1bi5zaAogIDYxIHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2xvZ2luJyk7CiAgNjIgfCAgICAgCiAgNjMgfCAgICAgLy8gTG9naW4gZmlyc3QKICA2NCB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1VzZXJuYW1lJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICA2NSB8ICAgICBhd2FpdCBwYWdlLmdldEJ5TGFiZWwoJ1Bhc3N3b3JkJykuZmlsbCgncnVyYWxfYWRtaW4nKTsKICA2NiB8ICAgICAKICA2NyB8ICAgICAvLyBTZWxlY3QgZGVwYXJ0bWVudCBpZiB0aGUgZmllbGQgZXhpc3RzCiAgNjggfCAgICAgY29uc3QgZGVwYXJ0bWVudFNlbGVjdG9yID0gcGFnZS5nZXRCeUxhYmVsKCdEZXBhcnRtZW50Jyk7CiAgNjkgfCAgICAgaWYgKGF3YWl0IGRlcGFydG1lbnRTZWxlY3Rvci5pc1Zpc2libGUoKSkgewogIDcwIHwgICAgICAgYXdhaXQgZGVwYXJ0bWVudFNlbGVjdG9yLnNlbGVjdE9wdGlvbigncnVyYWwnKTsKICA3MSB8ICAgICB9CiAgNzIgfCAgICAgCiAgNzMgfCAgICAgYXdhaXQgcGFnZS5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogJ0xvZ2luJyB9KS5jbGljaygpOwogIDc0IHwgICAgIAogIDc1IHwgICAgIC8vIFZlcmlmeSBzdWNjZXNzZnVsIGxvZ2luCiAgNzYgfCAgICAgYXdhaXQgZXhwZWN0KHBhZ2UpLnRvSGF2ZVVSTCgvLipcL2Rhc2hib2FyZC8pOwogIDc3IHwgICAgIAogIDc4IHwgICAgIC8vIExvZ291dAogIDc5IHwgICAgIGF3YWl0IHBhZ2UuZ2V0QnlSb2xlKCdsaW5rJywgeyBuYW1lOiAnTG9nb3V0JyB9KS5jbGljaygpOwogIDgwIHwgICAgIAogIDgxIHwgICAgIC8vIFZlcmlmeSBsb2dvdXQgLSBiYWNrIHRvIGxvZ2luIHBhZ2UKICA4MiB8ICAgICBhd2FpdCBleHBlY3QocGFnZSkudG9IYXZlVVJMKC8uKlwvbG9naW4vKTsKICA4MyB8ICAgICAKICA4NCB8ICAgICAvLyBWZXJpZnkgY2FuJ3QgYWNjZXNzIHByb3RlY3RlZCByb3V0ZXMgYW55bW9yZQogIDg1IHwgICAgIGF3YWl0IHBhZ2UuZ290bygnL2luY2lkZW50LWxvZ2dlcicpOwogIDg2IHwgICAgIGF3YWl0IGV4cGVjdChwYWdlKS50b0hhdmVVUkwoLy4qXC9sb2dpbi8pOwogIDg3IHwgICB9KTsKICA4OCB8IH0pOwpgYGA="
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d5ed79a6b333c2ba7209-68234055b562ee8bd48f",
+              "file": "auth.spec.js",
+              "line": 60,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-04-06T03:49:53.785Z",
+    "duration": 11406.06,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 15,
+    "flaky": 0
+  }
+}
