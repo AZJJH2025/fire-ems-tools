@@ -402,7 +402,7 @@ function setupDraggableIcons(map) {
             const marker = L.marker(latlng, {
                 icon: L.divIcon({
                     className: 'custom-marker map-icon',
-                    html: `<i class="fas ${iconType}"></i>`,
+                    html: `<i class="fas ${iconType}" style="color: var(--primary-color, #d32f2f);"></i>`,
                     iconSize: [30, 30]
                 }),
                 draggable: true

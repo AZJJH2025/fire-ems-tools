@@ -812,8 +812,9 @@ function exportMapWithSettings(settings) {
         return;
     }
     
-    // Get the Leaflet map instance
-    const map = mapElement._leaflet_id ? window.L.Map.getMap(mapElement._leaflet_id) : null;
+    // Get the Leaflet map instance using our global reference
+    // This avoids the L.Map.getMap error that was occurring before
+    const map = window.map || window.fireMapProMap || L.map.instance;
     if (!map) {
         console.error("Leaflet map instance not found");
         alert("The map is not properly initialized. Export failed.");
@@ -1641,8 +1642,11 @@ function initializeMapLayers() {
         attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
     });
     
-    const terrainLayer = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.png', {
-        attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    // Fix terrain layer using Thunderforest's Outdoors style (requires API key for production)
+    // Note: For development/testing, we'll use this alternative open terrain service
+    const terrainLayer = L.tileLayer('https://tile.opentopomap.org/{z}/{x}/{y}.png', {
+        attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+        maxZoom: 17
     });
     
     // Set default layer
