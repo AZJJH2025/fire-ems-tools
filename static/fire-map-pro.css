@@ -601,7 +601,7 @@ input[type="file"] {
 /* Layout Designer Styles */
 .layout-designer-container {
     display: flex;
-    height: 450px;
+    height: 600px;
     gap: 15px;
 }
 
@@ -672,11 +672,12 @@ input[type="file"] {
 }
 
 .paper-sheet {
-    width: 300px;
-    height: 400px;
+    width: 400px;
+    height: 520px;
     background-color: white;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     position: relative;
+    overflow: visible; /* Allow content to overflow for better visibility */
 }
 
 .paper-sheet.drag-over {
@@ -703,40 +704,109 @@ input[type="file"] {
     overflow: hidden;
     cursor: pointer;
     transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 8px;
 }
 
 .template-item:hover {
-    transform: scale(1.05);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     border-color: var(--secondary-color);
 }
 
 .template-item img {
     width: 100%;
-    height: auto;
+    height: 70px;
+    object-fit: cover;
     display: block;
+    border-bottom: 1px solid #eee;
 }
 
 .template-item span {
     display: block;
     text-align: center;
-    padding: 5px;
-    font-size: 0.8rem;
+    padding: 6px;
+    font-size: 0.85rem;
     background-color: #f5f5f5;
+    font-weight: 500;
 }
 
 .layout-element {
     position: absolute;
-    min-width: 20px;
-    min-height: 20px;
+    min-width: 50px;
+    min-height: 30px;
+    padding: 5px;
     cursor: move;
     border-radius: 2px;
     z-index: 10;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px dashed #ccc;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .layout-element.selected {
     outline: 2px solid var(--secondary-color);
     z-index: 20;
+}
+
+/* Specific layout element styles */
+.layout-element[data-element="title"] {
+    background-color: #f8f8f8;
+    min-width: 250px;
+    min-height: 50px;
+    padding: 10px;
+    border-bottom: 2px solid var(--secondary-color);
+}
+
+.layout-element[data-element="title"] h3 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.layout-element[data-element="title"] p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-light);
+}
+
+.layout-element[data-element="legend"] {
+    background-color: rgba(255, 255, 255, 0.9);
+    min-width: 120px;
+    min-height: 100px;
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.layout-element[data-element="map"] {
+    background-color: #eef8ff;
+    min-width: 200px;
+    min-height: 200px;
+    border: 1px solid #bbd6e8;
+}
+
+.layout-element[data-element="north-arrow"] {
+    background-color: transparent;
+    min-width: 30px;
+    min-height: 30px;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.layout-element[data-element="north-arrow"] i {
+    font-size: 24px;
+    color: var(--secondary-color);
+}
+
+.layout-element[data-element="scale-bar"] {
+    background-color: white;
+    min-width: 100px;
+    min-height: 20px;
+    border: 1px solid #ddd;
+    padding: 5px;
 }
 
 .no-selection-message {
@@ -1195,7 +1265,7 @@ footer {
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     width: 90%;
-    max-width: 500px;
+    max-width: 900px; /* Increased to accommodate layout designer */
     max-height: 90vh;
     overflow-y: auto;
     position: relative;
@@ -1267,6 +1337,15 @@ footer {
     background-color: rgba(255, 255, 255, 0.2);
     color: white;
     font-weight: 600;
+}
+
+/* Specific styling for export modal to accommodate layout designer */
+#export-modal .modal-content {
+    max-width: 1000px; 
+}
+
+#layout-designer-panel {
+    padding: 0;
 }
 
 .tab-panel {
