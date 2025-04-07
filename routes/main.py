@@ -85,7 +85,40 @@ def module_testing_dashboard():
 @bp.route('/admin')
 def admin_dashboard():
     """Admin Dashboard route"""
-    return render_template('admin/dashboard.html')
+    # Import necessary models and functions
+    from database import db, Department, User, Incident
+    from flask_login import current_user, login_required
+    from flask import redirect, url_for, flash
+    
+    # Check if user is logged in and a super_admin
+    if not hasattr(current_user, 'is_authenticated') or not current_user.is_authenticated:
+        flash('You must be logged in to access the admin dashboard', 'error')
+        return redirect(url_for('auth.login'))
+        
+    if not hasattr(current_user, 'is_super_admin') or not current_user.is_super_admin():
+        flash('You do not have permission to access the admin dashboard', 'error')
+        return redirect(url_for('main.index'))
+    
+    # Get counts for dashboard
+    try:
+        departments_count = Department.query.count()
+        users_count = User.query.count()
+        incidents_count = Incident.query.count()
+    except Exception as e:
+        # Log the error and show a message
+        import logging
+        logging.error(f"Error querying data for admin dashboard: {str(e)}")
+        flash('An error occurred while loading the admin dashboard data', 'error')
+        departments_count = 0
+        users_count = 0
+        incidents_count = 0
+    
+    # Render the template with the required data
+    return render_template('admin/dashboard.html', 
+                           current_user=current_user,
+                           departments_count=departments_count,
+                           users_count=users_count,
+                           incidents_count=incidents_count)
 
 @bp.route('/deployment-status')
 def deployment_status():

@@ -7,6 +7,7 @@ registers blueprints, and sets up the database and other extensions.
 from flask import Flask, jsonify, render_template, session, request
 from flask_cors import CORS
 from flask_wtf.csrf import CSRFProtect
+from flask_login import LoginManager
 import os
 import logging
 import traceback
@@ -31,6 +32,7 @@ from config import config
 
 # Initialize Flask extensions
 csrf = CSRFProtect()
+login_manager = LoginManager()
 
 # Import safe_limit decorator for rate limiting
 try:
@@ -126,6 +128,15 @@ def create_app(config_name='default'):
     db.init_app(app)
     if limiter:
         limiter.init_app(app)
+    
+    # Set up Flask-Login
+    login_manager.init_app(app)
+    login_manager.login_view = 'auth.login'
+    login_manager.login_message_category = 'info'
+    
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
     
     # Session configuration (no need to set secret_key explicitly, it comes from app.config)
     app.config['SESSION_COOKIE_HTTPONLY'] = True
