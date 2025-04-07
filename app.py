@@ -216,6 +216,39 @@ def create_app(config_name='default'):
     
     return app
 
+# Function to create a default super admin user
+def create_default_admin():
+    """Create a default super admin user if none exists"""
+    try:
+        with app.app_context():
+            if User.query.filter_by(role='super_admin').count() == 0:
+                # Check if we need to create a default department first
+                default_dept = Department.query.filter_by(code='ADMIN').first()
+                if not default_dept:
+                    default_dept = Department(
+                        code='ADMIN',
+                        name='System Administration',
+                        is_active=True,
+                        setup_complete=True
+                    )
+                    db.session.add(default_dept)
+                    db.session.commit()
+                
+                # Create default admin user
+                admin_user = User(
+                    email='admin@fireems.ai',
+                    name='System Administrator',
+                    department_id=default_dept.id,
+                    role='super_admin',
+                    is_active=True
+                )
+                admin_user.set_password('admin123')  # Default password, should be changed immediately
+                db.session.add(admin_user)
+                db.session.commit()
+                logger.info("Created default super admin user (admin@fireems.ai)")
+    except Exception as e:
+        logger.error(f"Failed to create default admin user: {str(e)}")
+
 # Create app instance for running directly
 try:
     # Ensure fixes are applied
@@ -224,6 +257,9 @@ try:
     
     # Fix database tables after app creation
     fix_deployment.fix_database_tables(app, db)
+    
+    # Create default admin user if necessary
+    create_default_admin()
     
     logger.info("Application created successfully with all fixes applied")
 except Exception as e:
