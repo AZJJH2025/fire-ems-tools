@@ -205,27 +205,27 @@
         <div class="container">
             <ul class="nav-list">
                 <li class="nav-item">
-                    <a href="/admin/dashboard" class="nav-link active">
+                    <a href="{{ url_for('admin.dashboard') }}" class="nav-link active">
                         <i class="fas fa-tachometer-alt"></i> Dashboard
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="/admin/departments" class="nav-link">
+                    <a href="{{ url_for('admin.departments') }}" class="nav-link">
                         <i class="fas fa-building"></i> Departments
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="/admin/users" class="nav-link">
+                    <a href="{{ url_for('admin.users') }}" class="nav-link">
                         <i class="fas fa-users"></i> Users
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="/admin/tools" class="nav-link">
+                    <a href="{{ url_for('admin.tools') }}" class="nav-link">
                         <i class="fas fa-tools"></i> Tools
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="/admin/settings" class="nav-link">
+                    <a href="{{ url_for('admin.settings') }}" class="nav-link">
                         <i class="fas fa-cog"></i> Settings
                     </a>
                 </li>
@@ -237,10 +237,10 @@
         <div class="content-header">
             <h1 class="content-title">Admin Dashboard</h1>
             <div>
-                <a href="/admin/settings" class="btn btn-secondary">
+                <a href="{{ url_for('admin.settings') }}" class="btn btn-secondary">
                     <i class="fas fa-cog"></i> Settings
                 </a>
-                <a href="/admin/departments/register" class="btn btn-primary">
+                <a href="{{ url_for('admin.department_register') }}" class="btn btn-primary">
                     <i class="fas fa-plus"></i> New Department
                 </a>
             </div>
@@ -279,12 +279,12 @@
                 </h3>
                 <ul class="action-links">
                     <li class="action-link">
-                        <a href="/admin/departments">
+                        <a href="{{ url_for('admin.departments') }}">
                             <i class="fas fa-list"></i> View All Departments
                         </a>
                     </li>
                     <li class="action-link">
-                        <a href="/admin/departments/register">
+                        <a href="{{ url_for('admin.department_register') }}">
                             <i class="fas fa-plus"></i> Register New Department
                         </a>
                     </li>
@@ -297,12 +297,12 @@
                 </h3>
                 <ul class="action-links">
                     <li class="action-link">
-                        <a href="/admin/users">
+                        <a href="{{ url_for('admin.users') }}">
                             <i class="fas fa-list"></i> View All Users
                         </a>
                     </li>
                     <li class="action-link">
-                        <a href="/admin/users/add">
+                        <a href="{{ url_for('admin.users') }}">
                             <i class="fas fa-user-plus"></i> Add New User
                         </a>
                     </li>
@@ -315,12 +315,12 @@
                 </h3>
                 <ul class="action-links">
                     <li class="action-link">
-                        <a href="/admin/tools">
+                        <a href="{{ url_for('admin.tools') }}">
                             <i class="fas fa-toolbox"></i> Manage Tools
                         </a>
                     </li>
                     <li class="action-link">
-                        <a href="/admin/tools/usage">
+                        <a href="{{ url_for('admin.tools_usage') }}">
                             <i class="fas fa-chart-bar"></i> Usage Statistics
                         </a>
                     </li>
@@ -333,7 +333,7 @@
                 </h3>
                 <ul class="action-links">
                     <li class="action-link">
-                        <a href="/admin/settings">
+                        <a href="{{ url_for('admin.settings') }}">
                             <i class="fas fa-sliders-h"></i> System Settings
                         </a>
                     </li>
