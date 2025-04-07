@@ -221,10 +221,22 @@ def create_default_admin():
     """Create a default super admin user if none exists"""
     try:
         with app.app_context():
-            if User.query.filter_by(role='super_admin').count() == 0:
+            # Check if the User model has the required fields
+            required_attrs = ['email', 'name', 'department_id', 'role', 'is_active']
+            for attr in required_attrs:
+                if not hasattr(User, attr):
+                    logger.error(f"User model missing required attribute: {attr}")
+                    return
+            
+            # Check for existing admin users
+            admin_count = User.query.filter_by(role='super_admin').count()
+            logger.info(f"Found {admin_count} existing super_admin users")
+            
+            if admin_count == 0:
                 # Check if we need to create a default department first
                 default_dept = Department.query.filter_by(code='ADMIN').first()
                 if not default_dept:
+                    logger.info("Creating default admin department")
                     default_dept = Department(
                         code='ADMIN',
                         name='System Administration',
@@ -233,6 +245,9 @@ def create_default_admin():
                     )
                     db.session.add(default_dept)
                     db.session.commit()
+                    logger.info(f"Created default department with ID: {default_dept.id}")
+                else:
+                    logger.info(f"Using existing admin department with ID: {default_dept.id}")
                 
                 # Create default admin user
                 admin_user = User(
@@ -242,12 +257,24 @@ def create_default_admin():
                     role='super_admin',
                     is_active=True
                 )
-                admin_user.set_password('admin123')  # Default password, should be changed immediately
+                
+                # Make sure password is set correctly
+                if not hasattr(admin_user, 'set_password'):
+                    logger.error("User model does not have set_password method")
+                    return
+                    
+                # Set a simple password for initial login
+                admin_user.set_password('admin123')
+                
+                # Add and commit the new user
                 db.session.add(admin_user)
                 db.session.commit()
-                logger.info("Created default super admin user (admin@fireems.ai)")
+                logger.info(f"Created default super admin user (admin@fireems.ai) with ID: {admin_user.id}")
+            else:
+                logger.info("Super admin user already exists, skipping creation")
     except Exception as e:
         logger.error(f"Failed to create default admin user: {str(e)}")
+        logger.error(traceback.format_exc())
 
 # Create app instance for running directly
 try:

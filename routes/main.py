@@ -139,3 +139,67 @@ def deployment_status():
     }
     
     return jsonify(status)
+    
+@bp.route('/setup-admin')
+def setup_admin():
+    """Setup admin user and test credentials"""
+    from database import db, Department, User
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        # Check if admin department exists
+        dept = Department.query.filter_by(code='ADMIN').first()
+        if not dept:
+            dept = Department(
+                code='ADMIN',
+                name='System Administration',
+                is_active=True,
+                setup_complete=True
+            )
+            db.session.add(dept)
+            db.session.commit()
+            dept_msg = f"Created admin department with ID {dept.id}"
+        else:
+            dept_msg = f"Admin department exists with ID {dept.id}"
+            
+        # Check if admin user exists
+        admin = User.query.filter_by(email='admin@fireems.ai').first()
+        if not admin:
+            admin = User(
+                email='admin@fireems.ai',
+                name='System Administrator',
+                department_id=dept.id,
+                role='super_admin',
+                is_active=True
+            )
+            admin.set_password('admin123')
+            db.session.add(admin)
+            db.session.commit()
+            user_msg = f"Created admin user with ID {admin.id}"
+        else:
+            # Reset password for existing admin
+            admin.set_password('admin123')
+            db.session.commit()
+            user_msg = f"Reset password for existing admin user (ID: {admin.id})"
+            
+        # Check password
+        pw_check = admin.check_password('admin123')
+        pw_msg = f"Password check {'succeeded' if pw_check else 'failed'}"
+        
+        # Return status
+        return f"""
+        <h1>Admin Setup Complete</h1>
+        <p>{dept_msg}</p>
+        <p>{user_msg}</p>
+        <p>{pw_msg}</p>
+        <p>
+            <strong>Credentials:</strong><br>
+            Email: admin@fireems.ai<br>
+            Password: admin123
+        </p>
+        <p><a href="{url_for('auth.login')}">Go to login page</a></p>
+        """
+    except Exception as e:
+        logger.error(f"Admin setup error: {str(e)}")
+        return f"<h1>Error during admin setup</h1><p>Error: {str(e)}</p>"

@@ -27,18 +27,48 @@ def login():
         password = request.form.get('password')
         remember = bool(request.form.get('remember'))
         
+        logger.info(f"Login attempt for email: {email}")
+        
         # Find user by email
         user = User.query.filter_by(email=email).first()
         
-        # Check if user exists and password is correct
-        if user and user.check_password(password):
+        # Log debugging information
+        if not user:
+            logger.warning(f"Login failed: No user found with email {email}")
+            flash('Invalid email or password', 'error')
+            return render_template('auth/login.html')
+            
+        # Check if password check method exists
+        if not hasattr(user, 'check_password'):
+            logger.error("User model missing check_password method")
+            flash('System error: Authentication method unavailable', 'error')
+            return render_template('auth/login.html')
+        
+        # Check if password is correct
+        password_correct = False
+        try:
+            password_correct = user.check_password(password)
+        except Exception as e:
+            logger.error(f"Password check error: {str(e)}")
+            flash('System error during authentication', 'error')
+            return render_template('auth/login.html')
+            
+        if not password_correct:
+            logger.warning(f"Login failed: Incorrect password for {email}")
+            flash('Invalid email or password', 'error')
+            return render_template('auth/login.html')
+        
+        # Password is correct, login the user
+        try:
             login_user(user, remember=remember)
+            logger.info(f"User {email} logged in successfully")
             
             # Update last login timestamp
             if hasattr(user, 'last_login'):
                 from datetime import datetime
                 user.last_login = datetime.utcnow()
                 db.session.commit()
+                logger.info(f"Updated last login for {email}")
             
             # Redirect to appropriate page
             next_page = request.args.get('next')
@@ -47,7 +77,9 @@ def login():
             
             return redirect(next_page)
             
-        flash('Invalid email or password', 'error')
+        except Exception as e:
+            logger.error(f"Login error: {str(e)}")
+            flash('Error during login process', 'error')
     
     return render_template('auth/login.html')
 
