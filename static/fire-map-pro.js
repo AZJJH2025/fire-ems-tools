@@ -443,13 +443,27 @@ function initializeModals() {
             const formatSelect = document.getElementById('export-format');
             const selectedFormat = formatSelect ? formatSelect.value : 'png';
             
+            // Check if layout designer tab is active
+            const layoutDesignerTab = document.querySelector('.modal-tab[data-tab="layout-designer"].active');
+            const isLayoutDesignerActive = !!layoutDesignerTab;
+            
+            console.log("Export confirmation clicked, format:", selectedFormat, "layout active:", isLayoutDesignerActive);
+            
+            // If using layout designer, capture the layout configuration
+            if (isLayoutDesignerActive) {
+                captureLayoutForExport();
+            }
+            
             // Show print preview for vector formats
             if (['pdf', 'svg', 'eps', 'geopdf'].includes(selectedFormat)) {
-                showPrintPreview();
+                showPrintPreview(isLayoutDesignerActive);
             } else {
                 // For raster formats, export directly
-                exportMap(selectedFormat);
+                exportMap(selectedFormat, isLayoutDesignerActive);
             }
+            
+            // Close the modal after export
+            closeModal('export-modal');
         });
     }
     
@@ -466,9 +480,17 @@ function initializeModals() {
 /**
  * Shows the print preview modal with current export settings
  */
-function showPrintPreview() {
+function showPrintPreview(useLayout = false) {
+    console.log("Showing print preview, useLayout:", useLayout);
+    
     const previewModal = document.getElementById('print-preview-modal');
     if (!previewModal) return;
+    
+    // If using layout, ensure we have the layout configuration
+    if (useLayout && !window.currentLayoutConfig) {
+        console.warn("Layout configuration not found, capturing now");
+        captureLayoutForExport();
+    }
     
     // Update preview info from export settings
     updatePrintPreviewInfo();
@@ -3048,31 +3070,8 @@ document.addEventListener("DOMContentLoaded", function() {
     // Setup file upload handlers
     setupFileUploads();
     
-    // Update export confirm button to check for layout designer
-    const exportConfirmBtn = document.getElementById('export-confirm');
-    if (exportConfirmBtn) {
-        exportConfirmBtn.addEventListener('click', function() {
-            const formatSelect = document.getElementById('export-format');
-            const selectedFormat = formatSelect ? formatSelect.value : 'png';
-            
-            // Check if layout designer tab is active
-            const layoutDesignerTab = document.querySelector('.modal-tab[data-tab="layout-designer"].active');
-            const isLayoutDesignerActive = !!layoutDesignerTab;
-            
-            console.log("Export confirmation clicked, format:", selectedFormat, "layout active:", isLayoutDesignerActive);
-            
-            // If using layout designer, capture the layout configuration
-            if (isLayoutDesignerActive) {
-                captureLayoutForExport();
-            }
-            
-            // Export the map using the layout if applicable
-            exportMap(selectedFormat, isLayoutDesignerActive);
-            
-            // Close the modal
-            closeModal('export-modal');
-        });
-    }
+    // We won't add another event listener for export-confirm here
+    // as it's already handled in the initializeModals function
     
     // Initialize export buttons
     const exportPngBtn = document.getElementById('export-png');
