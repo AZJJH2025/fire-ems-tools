@@ -1158,10 +1158,13 @@ function initializeLayoutDesigner() {
     
     // Template selection handler
     const templateItems = document.querySelectorAll('.template-item');
-    if (templateItems) {
+    console.log("Found template items:", templateItems.length);
+    if (templateItems.length > 0) {
         templateItems.forEach(item => {
+            console.log("Setting up click handler for template:", item.getAttribute('data-template'));
             item.addEventListener('click', function() {
                 const templateName = this.getAttribute('data-template');
+                console.log("Template clicked:", templateName);
                 applyTemplate(templateName);
                 
                 // Highlight selected template
@@ -1169,6 +1172,8 @@ function initializeLayoutDesigner() {
                 this.classList.add('selected');
             });
         });
+    } else {
+        console.warn("No template items found to attach click handlers!");
     }
     
     // Initialize drag and drop
@@ -1195,13 +1200,24 @@ function initializeLayoutDesigner() {
  * Apply a predefined template to the layout
  */
 function applyTemplate(templateName) {
-    const paperSheet = document.querySelector('.paper-sheet');
-    if (!paperSheet) return;
+    console.log("Applying template:", templateName);
+    
+    // Try to find the paper sheet by ID first (more specific), then by class
+    const paperSheet = document.getElementById('layout-paper-sheet') || document.querySelector('.paper-sheet');
+    console.log("Paper sheet element:", paperSheet);
+    
+    if (!paperSheet) {
+        console.error("Paper sheet element not found!");
+        alert("Error: Could not find the layout paper sheet element. Please refresh the page and try again.");
+        return;
+    }
     
     // Clear current layout
+    console.log("Clearing paper sheet, current content:", paperSheet.children.length, "elements");
     paperSheet.innerHTML = '';
     
     // Apply selected template
+    console.log("Selecting template implementation for:", templateName);
     switch (templateName) {
         case 'standard':
             createStandardTemplate(paperSheet);
@@ -1481,6 +1497,15 @@ function createTacticalTemplate(container) {
     container.appendChild(infoBox2);
     container.appendChild(infoBox3);
 }
+
+/**
+ * Fix for template application - direct function to apply a template
+ * Add this to window object so it can be called from HTML
+ */
+window.applyMapTemplate = function(templateName) {
+    console.log("Directly applying template:", templateName);
+    applyTemplate(templateName);
+};
 
 /**
  * Create a layout element with specified styles

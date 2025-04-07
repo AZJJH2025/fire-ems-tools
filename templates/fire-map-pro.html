@@ -1053,19 +1053,19 @@
                             
                             <h4>Templates</h4>
                             <div class="layout-templates">
-                                <div class="template-item" data-template="standard">
+                                <div class="template-item" data-template="standard" onclick="applyMapTemplate('standard')">
                                     <img src="{{ url_for('static', filename='images/template-standard.png') }}" alt="Standard Layout">
                                     <span>Standard</span>
                                 </div>
-                                <div class="template-item" data-template="professional">
+                                <div class="template-item" data-template="professional" onclick="applyMapTemplate('professional')">
                                     <img src="{{ url_for('static', filename='images/template-professional.png') }}" alt="Professional Layout">
                                     <span>Professional</span>
                                 </div>
-                                <div class="template-item" data-template="presentation">
+                                <div class="template-item" data-template="presentation" onclick="applyMapTemplate('presentation')">
                                     <img src="{{ url_for('static', filename='images/template-presentation.png') }}" alt="Presentation Layout">
                                     <span>Presentation</span>
                                 </div>
-                                <div class="template-item" data-template="tactical">
+                                <div class="template-item" data-template="tactical" onclick="applyMapTemplate('tactical')">
                                     <img src="{{ url_for('static', filename='images/template-tactical.png') }}" alt="Tactical Layout">
                                     <span>Tactical</span>
                                 </div>
@@ -1075,7 +1075,12 @@
                         <div class="layout-canvas-container">
                             <div id="layout-canvas" class="layout-canvas">
                                 <!-- Canvas will be populated with draggable elements -->
-                                <div class="paper-sheet"></div>
+                                <div class="paper-sheet" id="layout-paper-sheet">
+                                    <!-- Template content will be added here -->
+                                    <div class="help-text" style="padding: 20px; color: #666; text-align: center;">
+                                        Click on a template from the left panel to start your layout
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
