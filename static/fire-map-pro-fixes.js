@@ -274,7 +274,16 @@ function ensureMapWorks() {
                     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 }).addTo(map);
                 
+                // Store map instance globally to make it accessible to other functions
+                window.map = map;
+                
+                // Create a custom property on L.map to access the instance
+                L.map.instance = map;
+                
                 console.log("Emergency map initialization successful");
+                
+                // Setup draggable icons once the map is ready
+                setupDraggableIcons(map);
                 
                 // Stop checking once map is initialized
                 clearInterval(checkMap);
@@ -282,11 +291,139 @@ function ensureMapWorks() {
                 console.error("Error initializing map:", error);
             }
         } else if (mapElement && mapElement._leaflet_id) {
-            // Map is already initialized
+            // Map is already initialized - get its instance
+            try {
+                // Try to get map from Leaflet's internal container
+                if (!window.map) {
+                    // Get map instance from Leaflet - handle different Leaflet versions
+                    const mapId = mapElement._leaflet_id;
+                    
+                    // Try multiple approaches to get the map instance
+                    try {
+                        // Method 1: Using getMap (some Leaflet versions)
+                        if (L.map && typeof L.map.getMap === 'function') {
+                            window.map = L.map.getMap(mapId);
+                        }
+                        // Method 2: Check for _map property (common in many versions)
+                        else if (mapElement._map) {
+                            window.map = mapElement._map;
+                        }
+                        // Method 3: Check for map in leaflet's internal structure 
+                        else if (mapElement._leaflet) {
+                            window.map = Object.values(mapElement._leaflet).find(obj => obj && obj._zoom !== undefined);
+                        }
+                        // Method 4: Check global L.maps object if it exists
+                        else if (L.maps && L.maps[mapId]) {
+                            window.map = L.maps[mapId];
+                        }
+                        // Method 5: Last resort - look for map-like objects attached to mapElement
+                        else {
+                            for (const key in mapElement) {
+                                if (key.startsWith('_') && 
+                                    typeof mapElement[key] === 'object' && 
+                                    mapElement[key] !== null && 
+                                    ('_zoom' in mapElement[key] || 'getCenter' in mapElement[key])) {
+                                    window.map = mapElement[key];
+                                    break;
+                                }
+                            }
+                        }
+                    } catch (err) {
+                        console.warn("Error getting map instance with standard methods:", err);
+                    }
+                    
+                    if (window.map) {
+                        L.map.instance = window.map;
+                        setupDraggableIcons(window.map);
+                    }
+                }
+            } catch (e) {
+                console.error("Error accessing map instance:", e);
+            }
+            
             console.log("Map already initialized");
             clearInterval(checkMap);
         }
     }, 1000);
+}
+
+/**
+ * Setup drag and drop functionality for map icons
+ */
+function setupDraggableIcons(map) {
+    if (!map) return;
+    
+    const draggableIcons = document.querySelectorAll('.draggable-icon');
+    
+    draggableIcons.forEach(icon => {
+        if (icon._hasDragListeners) return; // Skip if already set up
+        
+        icon.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData('text/plain', this.getAttribute('data-icon'));
+            this.classList.add('dragging');
+        });
+        
+        icon.addEventListener('dragend', function(e) {
+            this.classList.remove('dragging');
+        });
+        
+        icon._hasDragListeners = true;
+    });
+    
+    // Setup the map as a drop target
+    const mapContainer = document.getElementById('map');
+    if (mapContainer && !mapContainer._hasDropListeners) {
+        mapContainer.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('drop-hover');
+        });
+        
+        mapContainer.addEventListener('dragleave', function(e) {
+            this.classList.remove('drop-hover');
+        });
+        
+        mapContainer.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drop-hover');
+            
+            const iconType = e.dataTransfer.getData('text/plain');
+            if (!iconType) return;
+            
+            // Get the map coordinates where the icon was dropped
+            const rect = mapContainer.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Convert pixel coordinates to map coordinates
+            const point = L.point(x, y);
+            const latlng = map.containerPointToLatLng(point);
+            
+            // Create and add a marker for the icon
+            const marker = L.marker(latlng, {
+                icon: L.divIcon({
+                    className: 'custom-marker map-icon',
+                    html: `<i class="fas ${iconType}"></i>`,
+                    iconSize: [30, 30]
+                }),
+                draggable: true
+            }).addTo(map);
+            
+            // Add popup with icon info
+            marker.bindPopup(`<div class="icon-popup">
+                <h4>Icon Marker</h4>
+                <button class="delete-icon" onclick="this.closest('.leaflet-popup').marker.remove()">Remove</button>
+            </div>`);
+            
+            // Store marker reference in popup for easy deletion
+            marker.on('popupopen', function(e) {
+                e.popup.marker = marker;
+            });
+            
+            console.log("Added icon marker at", latlng);
+        });
+        
+        mapContainer._hasDropListeners = true;
+    }
 }
 
 /**
@@ -301,18 +438,69 @@ document.addEventListener('DOMContentLoaded', function() {
         ensureMapWorks();
         setupLayoutImageUploads();
         
-        // Monitor for draggable elements to make them draggable
-        document.addEventListener('DOMNodeInserted', function(event) {
-            if (event.target && event.target.classList && event.target.classList.contains('layout-element')) {
-                if (typeof makeElementDraggable === 'function') {
-                    try {
-                        makeElementDraggable(event.target);
-                    } catch (error) {
-                        console.warn("Could not make element draggable:", error);
-                    }
-                }
+        // Remove any potential deprecated DOMNodeInserted event listeners
+        // This is a safety measure in case any libraries are using them
+        
+        // Remove jQuery-based event listeners if jQuery is present
+        if (window.jQuery) {
+            try {
+                // For jQuery-based event handlers
+                jQuery(document).off('DOMNodeInserted');
+                jQuery('*').off('DOMNodeInserted');
+                console.log("Removed any jQuery DOMNodeInserted listeners");
+            } catch (e) {
+                console.warn("Error removing jQuery event listeners:", e);
             }
+        }
+        
+        // Special handling for direct DOM event listeners
+        try {
+            // Create a patch for addEventListener to prevent future DOMNodeInserted listeners
+            const originalAddEventListener = EventTarget.prototype.addEventListener;
+            EventTarget.prototype.addEventListener = function(type, listener, options) {
+                if (type === 'DOMNodeInserted' || type === 'DOMNodeRemoved' || type === 'DOMAttrModified' ||
+                    type === 'DOMSubtreeModified' || type === 'DOMCharacterDataModified') {
+                    console.warn(`Prevented deprecated mutation event: ${type}`);
+                    
+                    // Instead of adding the deprecated listener, suggest using MutationObserver
+                    console.info("Use MutationObserver instead of deprecated DOM mutation events");
+                    
+                    // Don't add the event listener
+                    return;
+                }
+                
+                // For all other event types, proceed normally
+                return originalAddEventListener.call(this, type, listener, options);
+            };
+            console.log("Patched addEventListener to prevent deprecated mutation events");
+        } catch (e) {
+            console.warn("Error patching addEventListener:", e);
+        }
+        
+        // Monitor for draggable elements using MutationObserver (modern approach)
+        const layoutObserver = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                    Array.from(mutation.addedNodes).forEach(function(node) {
+                        if (node.classList && node.classList.contains('layout-element')) {
+                            if (typeof makeElementDraggable === 'function') {
+                                try {
+                                    setTimeout(function() {
+                                        makeElementDraggable(node);
+                                    }, 0);
+                                } catch (error) {
+                                    console.warn("Could not make element draggable:", error);
+                                }
+                            }
+                        }
+                    });
+                }
+            });
         });
+        
+        // Start observing the document or layout container
+        const layoutContainer = document.querySelector('.layout-canvas') || document.body;
+        layoutObserver.observe(layoutContainer, { childList: true, subtree: true });
         
         // Monitor for map container and initialize if needed
         const observer = new MutationObserver(function(mutations) {

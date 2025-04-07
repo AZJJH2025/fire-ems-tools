@@ -1596,6 +1596,87 @@ function exportGISFormat(map, settings) {
             }
         }, 500);
         
+        // Initialize map layer switcher
+        setTimeout(function() {
+            try {
+                initializeMapLayers();
+                console.log("Map layers initialized");
+            } catch (error) {
+                console.error("Error initializing map layers:", error);
+            }
+        }, 1000);
+        
         console.log("FireMapPro initialization complete");
     });
 })();
+
+/**
+ * Initialize map layer switchers and controls
+ */
+function initializeMapLayers() {
+    console.log("Setting up map layer controls");
+    
+    // Get the map instance
+    const mapElement = document.getElementById('map');
+    if (!mapElement || !mapElement._leaflet_id) {
+        console.warn("Map not initialized yet, will retry");
+        setTimeout(initializeMapLayers, 1000);
+        return;
+    }
+    
+    // Get Leaflet map object
+    const map = L.map.instance || window.map;
+    if (!map) {
+        console.error("Could not find map instance, retrying in 1 second");
+        setTimeout(initializeMapLayers, 1000);
+        return;
+    }
+    
+    // Define base layers
+    const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    });
+    
+    const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+    });
+    
+    const terrainLayer = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.png', {
+        attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    });
+    
+    // Set default layer
+    streetLayer.addTo(map);
+    
+    // Setup layer control event listeners
+    const streetRadio = document.getElementById('street-layer');
+    const satelliteRadio = document.getElementById('satellite-layer');
+    const terrainRadio = document.getElementById('terrain-layer');
+    
+    if (streetRadio) {
+        streetRadio.addEventListener('change', function() {
+            map.removeLayer(satelliteLayer);
+            map.removeLayer(terrainLayer);
+            map.addLayer(streetLayer);
+        });
+    }
+    
+    if (satelliteRadio) {
+        satelliteRadio.addEventListener('change', function() {
+            map.removeLayer(streetLayer);
+            map.removeLayer(terrainLayer);
+            map.addLayer(satelliteLayer);
+        });
+    }
+    
+    if (terrainRadio) {
+        terrainRadio.addEventListener('change', function() {
+            map.removeLayer(streetLayer);
+            map.removeLayer(satelliteLayer);
+            map.addLayer(terrainLayer);
+        });
+    }
+    
+    // Store map instance globally for other functions to access
+    window.fireMapProMap = map;
+}
