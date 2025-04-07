@@ -96,8 +96,19 @@ def admin_dashboard():
         return redirect(url_for('auth.login'))
         
     if not hasattr(current_user, 'is_super_admin') or not current_user.is_super_admin():
-        flash('You do not have permission to access the admin dashboard', 'error')
-        return redirect(url_for('main.index'))
+        # If we have manual session auth from direct login
+        user_id = session.get('user_id')
+        if user_id:
+            user = User.query.get(user_id)
+            if user and user.role == 'super_admin':
+                # Allow access via session
+                pass
+            else:
+                flash('You do not have permission to access the admin dashboard', 'error')
+                return redirect(url_for('main.index'))
+        else:
+            flash('You do not have permission to access the admin dashboard', 'error')
+            return redirect(url_for('main.index'))
     
     # Get counts for dashboard
     try:
@@ -145,6 +156,9 @@ def setup_admin():
     """Setup admin user and test credentials"""
     from database import db, Department, User
     import logging
+    from werkzeug.security import generate_password_hash, check_password_hash
+    import traceback
+    
     logger = logging.getLogger(__name__)
     
     try:
@@ -173,33 +187,113 @@ def setup_admin():
                 role='super_admin',
                 is_active=True
             )
-            admin.set_password('admin123')
+            # Set password directly with low complexity for testing
+            admin.password_hash = generate_password_hash('admin123')
             db.session.add(admin)
             db.session.commit()
             user_msg = f"Created admin user with ID {admin.id}"
         else:
-            # Reset password for existing admin
-            admin.set_password('admin123')
+            # Reset password for existing admin - directly set the hash
+            admin.password_hash = generate_password_hash('admin123')
             db.session.commit()
             user_msg = f"Reset password for existing admin user (ID: {admin.id})"
             
         # Check password
-        pw_check = admin.check_password('admin123')
-        pw_msg = f"Password check {'succeeded' if pw_check else 'failed'}"
+        pw_direct_check = check_password_hash(admin.password_hash, 'admin123')
+        pw_method_check = admin.check_password('admin123') if hasattr(admin, 'check_password') else 'Method not available'
         
-        # Return status
+        # Get all users for diagnostics
+        all_users = User.query.all()
+        users_list = [f"ID: {u.id}, Email: {u.email}, Role: {u.role}" for u in all_users]
+        
+        # Check if our admin user is actually in the database after commit
+        admin_in_db = User.query.filter_by(email='admin@fireems.ai').first()
+        admin_check = "Admin verified in database" if admin_in_db else "CRITICAL: Admin not found in database after commit"
+        
+        # Return detailed status
         return f"""
         <h1>Admin Setup Complete</h1>
         <p>{dept_msg}</p>
         <p>{user_msg}</p>
-        <p>{pw_msg}</p>
+        <p>{admin_check}</p>
+        <p>Direct password check: {'succeeded' if pw_direct_check else 'failed'}</p>
+        <p>Method password check: {pw_method_check}</p>
+        <p>Password hash: {admin.password_hash[:20]}...</p>
         <p>
             <strong>Credentials:</strong><br>
             Email: admin@fireems.ai<br>
             Password: admin123
         </p>
         <p><a href="{url_for('auth.login')}">Go to login page</a></p>
+        <p><a href="/direct-login">Try Direct Login</a></p>
+        <h2>All Users in Database:</h2>
+        <ul>
+            {"".join(f"<li>{user}</li>" for user in users_list)}
+        </ul>
         """
     except Exception as e:
         logger.error(f"Admin setup error: {str(e)}")
-        return f"<h1>Error during admin setup</h1><p>Error: {str(e)}</p>"
+        logger.error(traceback.format_exc())
+        return f"<h1>Error during admin setup</h1><p>Error: {str(e)}</p><pre>{traceback.format_exc()}</pre>"
+
+@bp.route('/direct-login', methods=['GET', 'POST'])
+def direct_login():
+    """Direct login without Flask-Login for testing"""
+    from flask import request, redirect, flash, session
+    from database import db, User
+    import logging
+    from werkzeug.security import check_password_hash
+    
+    logger = logging.getLogger(__name__)
+    
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        logger.info(f"Direct login attempt for: {email}")
+        
+        # Find the user
+        user = User.query.filter_by(email=email).first()
+        
+        if not user:
+            logger.warning(f"No user found with email: {email}")
+            return f"""
+            <h1>Login Failed</h1>
+            <p>No user found with email: {email}</p>
+            <p><a href="/direct-login">Try Again</a></p>
+            """
+            
+        # Check password directly
+        if check_password_hash(user.password_hash, password):
+            logger.info(f"Password correct for {email}")
+            
+            # Set session variables manually
+            session['user_id'] = user.id
+            session['user_email'] = user.email
+            session['user_role'] = user.role
+            
+            return redirect('/admin')
+        else:
+            logger.warning(f"Password incorrect for {email}")
+            return f"""
+            <h1>Login Failed</h1>
+            <p>Password incorrect for: {email}</p>
+            <p>Password hash in DB: {user.password_hash[:20]}...</p>
+            <p><a href="/direct-login">Try Again</a></p>
+            """
+    
+    # GET request - show login form
+    return """
+    <h1>Direct Login Test</h1>
+    <form method="POST">
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <button type="submit">Login</button>
+    </form>
+    """
