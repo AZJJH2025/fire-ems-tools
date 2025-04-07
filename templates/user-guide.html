@@ -638,7 +638,331 @@
           </div>
         </section>
 
-        <!-- More sections would continue here... -->
+        <!-- FireMapPro Section -->
+        <section class="guide-section" id="fire-map-pro">
+          <h2>FireMapPro</h2>
+          
+          <div class="guide-topic">
+            <h3>Overview</h3>
+            <p>FireMapPro is an advanced interactive mapping tool designed specifically for fire and EMS agencies. It allows you to create professional maps for planning, operations, and reporting purposes with customizable features and export options.</p>
+            
+            <div class="callout">
+              <p><strong>Note:</strong> FireMapPro combines the power of Leaflet mapping with customized tools for fire service applications, allowing you to create detailed operational maps and export them in various formats.</p>
+            </div>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Key Features</h3>
+            <p>FireMapPro includes the following capabilities:</p>
+            <ul>
+              <li><strong>Interactive Maps</strong> - Create, customize, and interact with detailed maps</li>
+              <li><strong>Multiple Map Layers</strong> - Switch between street, satellite, and terrain views</li>
+              <li><strong>Drag-and-Drop Icons</strong> - Add fire apparatus, EMS units, incident types, and other markers</li>
+              <li><strong>Drawing Tools</strong> - Add shapes, lines, and annotations to your maps</li>
+              <li><strong>Enhanced Measurement Tools</strong> - Measure distances, areas, and perimeters with customizable units</li>
+              <li><strong>Layout Designer</strong> - Create professional map layouts with titles, legends, and scale bars</li>
+              <li><strong>Export Options</strong> - Export maps in various formats (PNG, JPG, PDF)</li>
+              <li><strong>GIS Data Support</strong> - Import and visualize GIS data (CSV, GeoJSON, KML)</li>
+              <li><strong>Analysis Tools</strong> - Create heatmaps, buffer zones, and perform spatial analysis</li>
+            </ul>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Recent Updates</h3>
+            <p>The latest version of FireMapPro includes several key improvements:</p>
+            <ul>
+              <li><strong>Enhanced Map Layers</strong> - Improved terrain layer with OpenTopoMap for better topographic visualization</li>
+              <li><strong>Consistent Icon Coloring</strong> - All map icons now display with proper coloring and visibility</li>
+              <li><strong>Improved Export Functionality</strong> - More reliable exports with enhanced compatibility across browsers</li>
+              <li><strong>Layout Designer Enhancements</strong> - Better drag-and-drop functionality and element positioning</li>
+              <li><strong>Performance Optimization</strong> - Faster map loading and smoother interaction, especially with complex maps</li>
+            </ul>
+            
+            <div class="callout tip">
+              <p><strong>Tip:</strong> The terrain layer is particularly useful for wildland fire planning and areas with significant elevation changes.</p>
+            </div>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Basic Map Controls</h3>
+            <p>Navigate and control the map using these tools:</p>
+            <ul>
+              <li><strong>Pan</strong> - Click and drag to move the map</li>
+              <li><strong>Zoom</strong> - Use the + and - buttons or mouse wheel to zoom in/out</li>
+              <li><strong>Layer Control</strong> - Select different base maps (street, satellite, terrain)</li>
+              <li><strong>Full Screen</strong> - Expand the map to fill the entire screen</li>
+              <li><strong>Reset View</strong> - Return to the default map view</li>
+              <li><strong>Coordinates Display</strong> - Shows current mouse coordinates</li>
+            </ul>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Adding Map Elements</h3>
+            <p>Enhance your map with various elements:</p>
+            <ol>
+              <li><strong>Icons and Symbols</strong>:
+                <ul>
+                  <li>Locate icons in the sidebar categories (Fire Apparatus, EMS Units, etc.)</li>
+                  <li>Drag and drop icons onto the map</li>
+                  <li>Icons will appear at the drop location and can be moved by dragging</li>
+                  <li>Click on an icon to display a popup with options</li>
+                  <li>Use the delete button in the popup to remove icons</li>
+                </ul>
+              </li>
+              <li><strong>Drawing Tools</strong>:
+                <ul>
+                  <li>Click the "Draw Tools" button to display the drawing toolbar</li>
+                  <li>Use tools to add points, lines, polygons, rectangles, and circles</li>
+                  <li>Edit existing shapes by selecting them and using the edit tools</li>
+                  <li>Delete shapes by selecting them and using the delete tool</li>
+                </ul>
+              </li>
+              <li><strong>Enhanced Measurement Tool</strong>:
+                <ul>
+                  <li>Click the "Measure" button to activate measurement mode</li>
+                  <li>Choose between measuring distance, area, or perimeter</li>
+                  <li>Select your preferred measurement units (feet, meters, miles, kilometers)</li>
+                  <li>Click points on the map to create measurement lines or shapes</li>
+                  <li>Complete a measurement by double-clicking</li>
+                  <li>View measurements directly on the map with clear labels</li>
+                </ul>
+              </li>
+              <li><strong>Map Title</strong>:
+                <ul>
+                  <li>Click the title toggle button to show/hide the map title banner</li>
+                  <li>Click the edit button to customize the title and subtitle</li>
+                  <li>Add a department logo to the title banner</li>
+                </ul>
+              </li>
+            </ol>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Analysis Tools</h3>
+            <p>Perform advanced spatial analysis:</p>
+            <ul>
+              <li><strong>Hotspot Analysis</strong>:
+                <ul>
+                  <li>Click the "Hotspot Analysis" button to open the analysis panel</li>
+                  <li>Select the data layer to analyze</li>
+                  <li>Set the analysis radius and intensity</li>
+                  <li>Generate a heatmap showing incident density</li>
+                </ul>
+              </li>
+              <li><strong>Distance Analysis</strong>:
+                <ul>
+                  <li>Click the "Distance Analysis" button to measure between points</li>
+                  <li>Add points by clicking on the map</li>
+                  <li>View distances between consecutive points</li>
+                  <li>See the total route distance</li>
+                </ul>
+              </li>
+              <li><strong>Buffer Tool</strong>:
+                <ul>
+                  <li>Click the "Create Buffer" button to open the buffer panel</li>
+                  <li>Set the buffer distance in miles</li>
+                  <li>Select which layers to apply the buffer to</li>
+                  <li>Generate buffer zones around the selected points</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Importing Data</h3>
+            <p>Add your own data to the map:</p>
+            <ol>
+              <li><strong>CSV Import</strong>:
+                <ul>
+                  <li>Click "Import CSV" in the sidebar</li>
+                  <li>Select a CSV file with latitude and longitude data</li>
+                  <li>Map the appropriate columns in the CSV mapping modal</li>
+                  <li>Select an icon style for the imported points</li>
+                  <li>Click "Import Data" to add the points to the map</li>
+                </ul>
+              </li>
+              <li><strong>KML/GPX Import</strong>:
+                <ul>
+                  <li>Click "Import KML/GPX" in the sidebar</li>
+                  <li>Select a KML or GPX file</li>
+                  <li>The data will be automatically added to the map</li>
+                </ul>
+              </li>
+              <li><strong>GeoJSON Import</strong>:
+                <ul>
+                  <li>Click "Import GeoJSON" in the sidebar</li>
+                  <li>Select a GeoJSON file</li>
+                  <li>The data will be automatically added to the map</li>
+                </ul>
+              </li>
+            </ol>
+            
+            <div class="callout tip">
+              <p><strong>Tip:</strong> When importing CSV data, ensure your coordinate columns are clearly labeled (e.g., "latitude", "longitude") for automatic detection.</p>
+            </div>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Exporting Maps</h3>
+            <p>Create professional exports of your maps using these steps:</p>
+            <ol>
+              <li>Click one of the export buttons in the sidebar:
+                <ul>
+                  <li>"Export PNG" - For raster image export</li>
+                  <li>"Export PDF" - For document-based export</li>
+                  <li>"Export Data" - For GIS data export</li>
+                </ul>
+              </li>
+              <li>In the export modal, choose between three export modes:
+                <ul>
+                  <li><strong>Basic</strong> - Quick export with simple options</li>
+                  <li><strong>Advanced</strong> - Detailed control over export settings</li>
+                  <li><strong>Layout Designer</strong> - Create professional map layouts</li>
+                </ul>
+              </li>
+              <li>Configure your export settings:
+                <ul>
+                  <li>Title and subtitle</li>
+                  <li>Export format (PNG, JPG, PDF, etc.)</li>
+                  <li>Resolution (DPI)</li>
+                  <li>Paper size and orientation</li>
+                  <li>Element inclusion (legend, scale, north arrow)</li>
+                </ul>
+              </li>
+              <li>Click "Export Map" to generate your export</li>
+              <li>Review the print preview before final export</li>
+              <li>Download the exported file to your device</li>
+            </ol>
+            
+            <div class="callout">
+              <p><strong>Note:</strong> Higher resolution exports (300+ DPI) will result in larger file sizes but better print quality.</p>
+            </div>
+            
+            <div class="callout tip">
+              <p><strong>Tip:</strong> The improved export functionality now ensures that all map elements and colors are accurately preserved in the exported files.</p>
+            </div>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Using the Layout Designer</h3>
+            <p>Create professional map layouts for printing and presentations:</p>
+            <ol>
+              <li>In the export modal, click the "Layout Designer" tab</li>
+              <li>Select a template (Standard, Professional, Presentation, or Tactical)</li>
+              <li>Choose the page orientation (portrait or landscape)</li>
+              <li>Customize layout elements:
+                <ul>
+                  <li>Drag elements to reposition them</li>
+                  <li>Add new elements from the left sidebar</li>
+                  <li>Remove elements by clicking the X button</li>
+                  <li>Edit text content by selecting an element and editing in the properties panel</li>
+                  <li>Upload images to image elements using the upload button</li>
+                </ul>
+              </li>
+              <li>Preview your layout in the print preview</li>
+              <li>Export the final layout as PDF, PNG, or JPG</li>
+            </ol>
+            
+            <div class="callout tip">
+              <p><strong>Tip:</strong> For detailed maps with specific size requirements, use the Advanced export tab to set exact dimensions and resolution before creating your layout.</p>
+            </div>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Map Layers</h3>
+            <p>FireMapPro offers several base map layers for different visualization needs:</p>
+            <ul>
+              <li><strong>OpenStreetMap</strong> - Default street map showing roads, buildings, and infrastructure</li>
+              <li><strong>Satellite</strong> - High-resolution aerial imagery for detailed ground view</li>
+              <li><strong>Terrain</strong> - Enhanced topographic view showing elevation changes and natural features using OpenTopoMap</li>
+              <li><strong>Esri World Imagery</strong> - Alternative satellite view with global coverage</li>
+              <li><strong>Dark Mode</strong> - Low-light map for nighttime operations or reduced screen glare</li>
+            </ul>
+            <p>To switch between layers:</p>
+            <ol>
+              <li>Click the layers icon in the top-right corner of the map</li>
+              <li>Select your preferred base layer from the dropdown</li>
+              <li>Optional overlay layers can be toggled on/off using the checkboxes</li>
+            </ol>
+            
+            <div class="callout">
+              <p><strong>Note:</strong> The terrain layer has been significantly improved in the latest update, with better detail and reliability.</p>
+            </div>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Best Practices</h3>
+            <p>Follow these tips for the best results when using FireMapPro:</p>
+            <ul>
+              <li>Use appropriate icon sizes to avoid cluttering the map</li>
+              <li>Organize information by using different layers</li>
+              <li>Include a legend to explain map symbology</li>
+              <li>Add a scale bar for proper distance perspective</li>
+              <li>Include a north arrow for orientation</li>
+              <li>Use the terrain layer for topographic features</li>
+              <li>Create buffer zones to show coverage areas</li>
+              <li>Save complex maps frequently by exporting them</li>
+              <li>For printing, use at least 300 DPI resolution</li>
+              <li>Test exports at smaller sizes before creating large-format prints</li>
+              <li>Use the enhanced measurement tools for accurate distance and area calculations</li>
+              <li>When working with large data sets, enable "Data Clustering" to improve performance</li>
+            </ul>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Troubleshooting Common Issues</h3>
+            <p>Solutions for common problems you might encounter:</p>
+            <ul>
+              <li><strong>Map Not Loading Properly</strong>:
+                <ul>
+                  <li>Try refreshing the page</li>
+                  <li>Check your internet connection</li>
+                  <li>Clear your browser cache</li>
+                  <li>Try a different browser (Chrome recommended)</li>
+                </ul>
+              </li>
+              <li><strong>Export Fails or Looks Incorrect</strong>:
+                <ul>
+                  <li>Ensure all map elements are within the visible area</li>
+                  <li>Try reducing the map complexity if exporting a large area</li>
+                  <li>For complex maps, try exporting in parts</li>
+                  <li>Use the PNG format for best quality</li>
+                </ul>
+              </li>
+              <li><strong>Drawing Tools Not Working</strong>:
+                <ul>
+                  <li>Make sure you've activated the drawing mode first</li>
+                  <li>Try deselecting any currently selected elements</li>
+                  <li>Close and reopen the drawing toolbar</li>
+                </ul>
+              </li>
+              <li><strong>Imported Data Not Appearing</strong>:
+                <ul>
+                  <li>Verify your data has proper coordinate information</li>
+                  <li>Check that coordinates are in decimal degrees format</li>
+                  <li>Try zooming out to see if the data is outside your current view</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+          
+          <div class="guide-topic">
+            <h3>Coming Soon</h3>
+            <p>Future updates to FireMapPro will include these exciting features:</p>
+            <ul>
+              <li><strong>Vector Exports</strong> - Export maps in vector formats (SVG, EPS) for enhanced scalability</li>
+              <li><strong>Additional GIS Format Support</strong> - Export in more GIS formats (GeoJSON, KML, TIFF)</li>
+              <li><strong>Collaborative Mapping</strong> - Real-time collaboration with team members</li>
+              <li><strong>Custom Icon Library</strong> - Upload and manage your own icon sets</li>
+              <li><strong>More Analysis Tools</strong> - Additional spatial analysis capabilities</li>
+              <li><strong>Mobile Improvements</strong> - Enhanced touch interface for tablet and mobile use</li>
+            </ul>
+            
+            <div class="callout">
+              <p><strong>Note:</strong> Have suggestions for future features? Send them to feedback@fireems.ai with "FireMapPro Feature Request" in the subject line.</p>
+            </div>
+          </div>
+        </section>
         
         <!-- FAQ Section -->
         <section class="guide-section" id="faq">
