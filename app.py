@@ -157,6 +157,7 @@ def create_app(config_name='default'):
         from routes.api import bp as api_bp
         from routes.dashboards import bp as dashboards_bp
         from routes.tools import bp as tools_bp
+        from routes.admin import bp as admin_bp
         
         # Register blueprints
         app.register_blueprint(main_bp)
@@ -164,6 +165,7 @@ def create_app(config_name='default'):
         app.register_blueprint(api_bp)
         app.register_blueprint(dashboards_bp)
         app.register_blueprint(tools_bp)
+        app.register_blueprint(admin_bp)
         
         logger.info("Successfully registered all route blueprints")
     except ImportError as e:

@@ -84,52 +84,8 @@ def module_testing_dashboard():
 
 @bp.route('/admin')
 def admin_dashboard():
-    """Admin Dashboard route"""
-    # Import necessary models and functions
-    from database import db, Department, User, Incident
-    from flask_login import current_user, login_required
-    from flask import redirect, url_for, flash
-    
-    # Check if user is logged in and a super_admin
-    if not hasattr(current_user, 'is_authenticated') or not current_user.is_authenticated:
-        flash('You must be logged in to access the admin dashboard', 'error')
-        return redirect(url_for('auth.login'))
-        
-    if not hasattr(current_user, 'is_super_admin') or not current_user.is_super_admin():
-        # If we have manual session auth from direct login
-        user_id = session.get('user_id')
-        if user_id:
-            user = User.query.get(user_id)
-            if user and user.role == 'super_admin':
-                # Allow access via session
-                pass
-            else:
-                flash('You do not have permission to access the admin dashboard', 'error')
-                return redirect(url_for('main.index'))
-        else:
-            flash('You do not have permission to access the admin dashboard', 'error')
-            return redirect(url_for('main.index'))
-    
-    # Get counts for dashboard
-    try:
-        departments_count = Department.query.count()
-        users_count = User.query.count()
-        incidents_count = Incident.query.count()
-    except Exception as e:
-        # Log the error and show a message
-        import logging
-        logging.error(f"Error querying data for admin dashboard: {str(e)}")
-        flash('An error occurred while loading the admin dashboard data', 'error')
-        departments_count = 0
-        users_count = 0
-        incidents_count = 0
-    
-    # Render the template with the required data
-    return render_template('admin/dashboard.html', 
-                           current_user=current_user,
-                           departments_count=departments_count,
-                           users_count=users_count,
-                           incidents_count=incidents_count)
+    """Admin Dashboard route - redirects to the admin blueprint"""
+    return redirect(url_for('admin.dashboard'))
 
 @bp.route('/deployment-status')
 def deployment_status():
@@ -272,7 +228,7 @@ def direct_login():
             session['user_email'] = user.email
             session['user_role'] = user.role
             
-            return redirect('/admin')
+            return redirect(url_for('admin.dashboard'))
         else:
             logger.warning(f"Password incorrect for {email}")
             return f"""
