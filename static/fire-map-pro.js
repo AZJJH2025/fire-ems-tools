@@ -2185,6 +2185,9 @@ function initMap() {
     try {
         console.log("Initializing map...");
         
+        // Debug log for troubleshooting layer issues
+        console.log("Setting up map layers...");
+        
         // Create the map
         const map = L.map('map', {
             center: [39.8283, -98.5795], // Center of the USA
@@ -2202,8 +2205,9 @@ function initMap() {
             attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
         });
         
-        const terrainLayer = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.png', {
-            attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        const terrainLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+            maxZoom: 17
         });
         
         // Add layer controls to switch between base maps
@@ -2244,9 +2248,16 @@ function initMap() {
         if (terrainLayerRadio) {
             terrainLayerRadio.addEventListener('change', function() {
                 if (this.checked) {
-                    map.removeLayer(streetLayer);
-                    map.removeLayer(satelliteLayer);
-                    map.addLayer(terrainLayer);
+                    console.log("Switching to terrain layer");
+                    // First remove other layers to avoid visual conflicts
+                    if (map.hasLayer(streetLayer)) map.removeLayer(streetLayer);
+                    if (map.hasLayer(satelliteLayer)) map.removeLayer(satelliteLayer);
+                    
+                    // Then add terrain layer if not already added
+                    if (!map.hasLayer(terrainLayer)) {
+                        map.addLayer(terrainLayer);
+                        console.log("Terrain layer added");
+                    }
                 }
             });
         }
