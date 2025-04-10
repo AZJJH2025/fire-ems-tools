@@ -444,6 +444,7 @@
       // Setup UI events for manual field mapping
       const mapFieldsBtn = document.getElementById('map-fields-btn');
       const mappingContainer = document.getElementById('column-mapping-container');
+      const formatterPanels = document.querySelectorAll('.formatter-panel');
       
       if (mapFieldsBtn && mappingContainer) {
         mapFieldsBtn.addEventListener('click', function() {
@@ -451,10 +452,30 @@
           mappingContainer.style.display = 'block';
           
           // Hide the main formatter container
-          document.querySelectorAll('.formatter-panel').forEach(panel => {
+          formatterPanels.forEach(panel => {
             panel.style.display = 'none';
           });
         });
+        
+        // Add global function to return to formatter
+        window.showFormatterPanels = function() {
+          // Show formatter panels
+          formatterPanels.forEach(panel => {
+            panel.style.display = 'block';
+          });
+          
+          // Hide mapping container
+          mappingContainer.style.display = 'none';
+        };
+        
+        // Add global function to show a download button
+        window.enableDownloadButtons = function() {
+          const downloadBtn = document.getElementById('download-btn');
+          const sendToToolBtn = document.getElementById('send-to-tool-btn');
+          
+          if (downloadBtn) downloadBtn.disabled = false;
+          if (sendToToolBtn) sendToToolBtn.disabled = false;
+        };
       }
     });
   </script>

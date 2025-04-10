@@ -149,6 +149,75 @@
       if (typeof onMappingComplete === 'function') {
         onMappingComplete(finalMappings);
       }
+      
+      // Show the formatted panel and enable buttons
+      showFormattedPanel();
+    }
+    
+    // Function to show formatted panel and enable buttons
+    function showFormattedPanel() {
+      // Show a success message first
+      alert('Data formatted successfully! You can now download or send the transformed data.');
+      
+      // Show formatter panels (using the global function)
+      if (window.showFormatterPanels && typeof window.showFormatterPanels === 'function') {
+        window.showFormatterPanels();
+      } else {
+        // Fallback if the global function isn't available
+        const formatterPanels = document.querySelectorAll('.formatter-panel');
+        formatterPanels.forEach(panel => {
+          panel.style.display = 'block';
+        });
+      }
+      
+      // Enable download and send buttons (using the global function)
+      if (window.enableDownloadButtons && typeof window.enableDownloadButtons === 'function') {
+        window.enableDownloadButtons();
+      } else {
+        // Fallback if the global function isn't available
+        const downloadBtn = document.getElementById('download-btn');
+        const sendToToolBtn = document.getElementById('send-to-tool-btn');
+        
+        if (downloadBtn) {
+          downloadBtn.disabled = false;
+          console.log('Download button enabled');
+        }
+        
+        if (sendToToolBtn) {
+          sendToToolBtn.disabled = false;
+          console.log('Send to tool button enabled');
+        }
+      }
+      
+      // Apply client-side transformations if we're not using the API
+      if (window.originalData && window.originalData.length > 0) {
+        // Create transformed data for preview
+        const transformedData = [];
+        
+        // For each row in the original data
+        window.originalData.forEach(originalRow => {
+          const transformedRow = {};
+          
+          // Apply each mapping
+          Object.entries(mappings).forEach(([targetId, sourceIdx]) => {
+            const targetField = targetFields.find(field => field.id === targetId);
+            const sourceField = sourceColumns[sourceIdx];
+            
+            // Copy the value from source to target
+            transformedRow[targetField.name] = originalRow[sourceField];
+          });
+          
+          transformedData.push(transformedRow);
+        });
+        
+        // Store the transformed data for download/send
+        window.transformedData = transformedData;
+        
+        // Show output preview if the function exists
+        if (window.showOutputPreview && typeof window.showOutputPreview === 'function') {
+          window.showOutputPreview(transformedData);
+        }
+      }
     }
     
     // Create component using React.createElement
