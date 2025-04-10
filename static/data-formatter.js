@@ -235,6 +235,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Enable map fields button when data is loaded
+    function updateMapFieldsButton() {
+        const mapFieldsBtn = document.getElementById('map-fields-btn');
+        if (mapFieldsBtn) {
+            mapFieldsBtn.disabled = !(originalData && originalData.length > 0);
+        }
+    }
+    
     // Transform data
     transformBtn.addEventListener('click', function() {
         console.log("🔧 IMPROVED: Transform button clicked");
@@ -553,6 +561,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Reset data
         originalData = null;
         transformedData = null;
+        
+        // Disable the map fields button
+        updateMapFieldsButton();
         
         appendLog('Data cleared');
     });
@@ -954,6 +965,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             } else {
                                 console.log("CSV parsed successfully");
                                 appendLog(`Loaded CSV with ${originalData.length} records and ${Object.keys(originalData[0] || {}).length} fields`);
+                                
+                                // Enable the map fields button
+                                updateMapFieldsButton();
                             }
                         } catch (csvError) {
                             console.error("CSV parsing failed:", csvError);
@@ -994,6 +1008,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                 
                                 console.log("Excel file processed successfully");
                                 appendLog(`Loaded Excel file with ${originalData.length} records and ${headers.length} fields from sheet: ${firstSheetName}`);
+                                
+                                // Enable the map fields button
+                                updateMapFieldsButton();
                             } else {
                                 // Empty or only headers
                                 console.warn("Excel file has no data rows");
@@ -1013,6 +1030,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             originalData = JSON.parse(result);
                             console.log("JSON parsed successfully");
                             appendLog(`Loaded JSON with ${originalData.length} records`);
+                            
+                            // Enable the map fields button
+                            updateMapFieldsButton();
                         } catch (jsonError) {
                             console.error("JSON parsing failed:", jsonError);
                             appendLog(`JSON parsing failed: ${jsonError.message}`, 'error');
@@ -1066,6 +1086,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         appendLog(`Creating basic test data`, 'warning');
                         originalData = createBasicTestData(10);
                     }
+                    
+                    // Enable the map fields button
+                    updateMapFieldsButton();
                 }
                 
                 // Show preview
