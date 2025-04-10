@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const fileName = document.getElementById('file-name');
     const inputFormat = document.getElementById('input-format');
     const targetTool = document.getElementById('target-tool');
-    const transformBtn = document.getElementById('transform-btn');
+    const mapFieldsBtn = document.getElementById('map-fields-btn');
     const clearBtn = document.getElementById('clear-btn');
     const downloadBtn = document.getElementById('download-btn');
     const sendToToolBtn = document.getElementById('send-to-tool-btn');
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     loadExcelSheet(excelWorkbook.SheetNames[0]);
                     
                     // Enable buttons once file is loaded
-                    transformBtn.disabled = false;
+                    mapFieldsBtn.disabled = false;
                     clearBtn.disabled = false;
                 } catch (error) {
                     appendLog(`Error reading Excel file: ${error.message}`, 'error');
@@ -198,7 +198,7 @@ document.addEventListener('DOMContentLoaded', function() {
             loadFile(file);
             
             // Enable buttons once file is loaded
-            transformBtn.disabled = false;
+            mapFieldsBtn.disabled = false;
             clearBtn.disabled = false;
         }
     });
@@ -229,9 +229,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // If we have data, enable transform button
+        // If we have data, enable map fields button
         if (originalData) {
-            transformBtn.disabled = false;
+            mapFieldsBtn.disabled = false;
         }
     });
     
@@ -243,9 +243,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Transform data
-    transformBtn.addEventListener('click', function() {
-        console.log("🔧 IMPROVED: Transform button clicked");
+    // Map fields button - functionality moved to column mapping UI
+    mapFieldsBtn.addEventListener('click', function() {
+        console.log("🔧 IMPROVED: Map fields button clicked");
         
         // Make sure we have data and a selected tool
         if (!originalData || !selectedTool) {
@@ -553,7 +553,7 @@ document.addEventListener('DOMContentLoaded', function() {
         logContainer.innerHTML = '<p class="log-placeholder">Transformation details will appear here</p>';
         
         // Disable buttons
-        transformBtn.disabled = true;
+        mapFieldsBtn.disabled = true;
         clearBtn.disabled = true;
         downloadBtn.disabled = true;
         sendToToolBtn.disabled = true;
@@ -1096,7 +1096,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 showInputPreview(originalData);
                 
                 // Enable buttons
-                transformBtn.disabled = false;
+                mapFieldsBtn.disabled = false;
                 clearBtn.disabled = false;
                 
                 // Success message
@@ -1112,7 +1112,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 showInputPreview(originalData);
                 
                 // Still enable buttons so user can proceed
-                transformBtn.disabled = false;
+                mapFieldsBtn.disabled = false;
                 clearBtn.disabled = false;
             }
         };
@@ -1127,7 +1127,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showInputPreview(originalData);
             
             // Still enable buttons
-            transformBtn.disabled = false;
+            mapFieldsBtn.disabled = false;
             clearBtn.disabled = false;
         };
         
@@ -1148,7 +1148,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showInputPreview(originalData);
             
             // Still enable buttons
-            transformBtn.disabled = false;
+            mapFieldsBtn.disabled = false;
             clearBtn.disabled = false;
         }
     }
