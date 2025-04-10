@@ -67,8 +67,9 @@
             <li><strong>Upload your data file</strong> - Select a CSV, Excel, JSON, XML, or KML/KMZ file to upload.</li>
             <li><strong>Select your target tool</strong> - Choose which FireEMS.ai tool you want to prepare data for.</li>
             <li><strong>Review the required fields</strong> - The tool shows which fields are required for your selected tool.</li>
-            <li><strong>Set transformation options</strong> - Adjust advanced settings if needed.</li>
-            <li><strong>Transform the data</strong> - Click the "Transform Data" button to process your file.</li>
+            <li><strong>Map your fields</strong> - Use the drag-and-drop interface to map your source columns to target fields.</li>
+            <li><strong>Configure transformations</strong> - Customize how your data is transformed (dates, coordinates, etc.).</li>
+            <li><strong>Transform the data</strong> - Apply your mappings to generate the transformed data.</li>
             <li><strong>Review the results</strong> - Check the preview and transformation log.</li>
             <li><strong>Download or send to tool</strong> - Save the transformed data or send it directly to your chosen tool.</li>
           </ol>
@@ -174,6 +175,15 @@
           </div>
         </div>
       </div>
+
+      <!-- Column Mapping Container -->
+      <div id="column-mapping-container" class="column-mapping-container" style="display: none;">
+        <!-- React Column Mapping UI will be rendered here -->
+        <div class="loading-container">
+          <div class="loading-spinner"></div>
+          <p>Loading field mapping interface...</p>
+        </div>
+      </div>
       
       <div class="formatter-panel center-panel">
         <h2>Transformation Settings</h2>
@@ -206,6 +216,9 @@
         <div class="action-buttons">
           <button id="transform-btn" class="primary-btn" disabled>
             <i class="fas fa-magic"></i> Transform Data
+          </button>
+          <button id="map-fields-btn" class="primary-btn" disabled>
+            <i class="fas fa-exchange-alt"></i> Map Fields
           </button>
           <button id="clear-btn" class="secondary-btn" disabled>
             <i class="fas fa-trash-alt"></i> Clear
@@ -393,6 +406,15 @@
   <script src="/static/data-formatter.js"></script>
   <!-- Enhanced version with fixes for file loading, CSV parsing, and sessionStorage issues -->
   <script src="/static/data-formatter-fix.js"></script>
+  <!-- API interface for external data sources -->
+  <script src="/static/js/components/data-formatter-api.js"></script>
+  <!-- React integration for column mapping UI -->
+  <script src="/static/data-formatter-react.js"></script>
+  <!-- API integration for buttons and UI -->
+  <script src="/static/data-formatter-api-integration.js"></script>
+  
+  <!-- Add styling for the column mapping UI -->
+  <link rel="stylesheet" href="/static/column-mapping.css">
   
   <!-- Handle tool preselection from URL parameter -->
   <script>
@@ -409,6 +431,22 @@
           toolSelect.dispatchEvent(event);
         }
       {% endif %}
+      
+      // Setup UI events for manual field mapping
+      const mapFieldsBtn = document.getElementById('map-fields-btn');
+      const mappingContainer = document.getElementById('column-mapping-container');
+      
+      if (mapFieldsBtn && mappingContainer) {
+        mapFieldsBtn.addEventListener('click', function() {
+          // Show the mapping interface
+          mappingContainer.style.display = 'block';
+          
+          // Hide the main formatter container
+          document.querySelectorAll('.formatter-panel').forEach(panel => {
+            panel.style.display = 'none';
+          });
+        });
+      }
     });
   </script>
 </body>
