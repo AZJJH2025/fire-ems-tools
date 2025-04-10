@@ -455,6 +455,11 @@
           formatterPanels.forEach(panel => {
             panel.style.display = 'none';
           });
+          
+          // Log the action
+          if (window.appendLog && typeof window.appendLog === 'function') {
+            window.appendLog('Opening field mapping interface. Map your source columns to target fields.');
+          }
         });
         
         // Add global function to return to formatter
@@ -466,6 +471,11 @@
           
           // Hide mapping container
           mappingContainer.style.display = 'none';
+          
+          // Log the action
+          if (window.appendLog && typeof window.appendLog === 'function') {
+            window.appendLog('Field mapping completed. Review the transformed data in the output preview.');
+          }
         };
         
         // Add global function to show a download button
@@ -475,8 +485,34 @@
           
           if (downloadBtn) downloadBtn.disabled = false;
           if (sendToToolBtn) sendToToolBtn.disabled = false;
+          
+          // Also focus on the output preview section
+          const outputPreview = document.getElementById('output-preview');
+          if (outputPreview) {
+            // Add a highlight effect to draw attention
+            outputPreview.classList.add('highlight-preview');
+            setTimeout(() => {
+              outputPreview.classList.remove('highlight-preview');
+            }, 1500);
+            
+            // Scroll to the output preview
+            outputPreview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
         };
       }
+      
+      // Add the CSS for highlight effect
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes highlight-fade {
+          0% { box-shadow: 0 0 0 2px #4caf50; }
+          100% { box-shadow: 0 0 0 0 transparent; }
+        }
+        .highlight-preview {
+          animation: highlight-fade 1.5s ease-out;
+        }
+      `;
+      document.head.appendChild(style);
     });
   </script>
 </body>

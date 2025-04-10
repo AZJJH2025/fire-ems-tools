@@ -1493,6 +1493,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        // Make global function available
+        window.showOutputPreview = showOutputPreview;
+        
         // Show the first 5 records
         const previewData = data.slice(0, 5);
         
@@ -1509,17 +1512,41 @@ document.addEventListener('DOMContentLoaded', function() {
         previewData.forEach(row => {
             tableHTML += '<tr>';
             headers.forEach(header => {
-                tableHTML += `<td>${row[header] !== undefined ? row[header] : ''}</td>`;
+                // Convert null/undefined to empty string and handle non-string values
+                const value = row[header];
+                const displayValue = value === null || value === undefined ? '' : 
+                    (typeof value === 'object' ? JSON.stringify(value) : String(value));
+                
+                tableHTML += `<td>${displayValue}</td>`;
             });
             tableHTML += '</tr>';
         });
         
         tableHTML += '</tbody></table>';
         
-        // Add record count
-        tableHTML += `<p class="preview-info">${data.length} total records, ${headers.length} fields</p>`;
+        // Add record count with additional information
+        tableHTML += `
+            <div class="preview-info">
+                <p><strong>${data.length}</strong> total records, <strong>${headers.length}</strong> fields</p>
+                <p class="preview-note">This is a preview of the transformed data. Click "Download" to save the complete dataset.</p>
+            </div>
+        `;
         
+        // Replace the placeholder with our table
         outputPreview.innerHTML = tableHTML;
+        
+        // Add a success message
+        appendLog(`Output preview generated with ${Math.min(data.length, 5)} sample records`, 'success');
+        
+        // Ensure the buttons are enabled
+        const downloadBtn = document.getElementById('download-btn');
+        const sendToToolBtn = document.getElementById('send-to-tool-btn');
+        
+        if (downloadBtn) downloadBtn.disabled = false;
+        if (sendToToolBtn) sendToToolBtn.disabled = false;
+        
+        // Expose the function globally for the React component to use
+        window.showOutputPreview = showOutputPreview;
     }
     
     function appendLog(message, type = 'info') {

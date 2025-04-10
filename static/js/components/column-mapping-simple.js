@@ -156,10 +156,36 @@
     
     // Function to show formatted panel and enable buttons
     function showFormattedPanel() {
-      // Show a success message first
-      alert('Data formatted successfully! You can now download or send the transformed data.');
+      console.log('Completing mapping operation and preparing output preview');
       
-      // Show formatter panels (using the global function)
+      // First generate the transformed data
+      let transformedData = [];
+      
+      // Only generate data if we have original data to work with
+      if (window.originalData && window.originalData.length > 0) {
+        // For each row in the original data
+        window.originalData.forEach(originalRow => {
+          const transformedRow = {};
+          
+          // Apply each mapping
+          Object.entries(mappings).forEach(([targetId, sourceIdx]) => {
+            const targetField = targetFields.find(field => field.id === targetId);
+            const sourceField = sourceColumns[sourceIdx];
+            
+            if (targetField && sourceField) {
+              // Copy the value from source to target
+              transformedRow[targetField.name] = originalRow[sourceField];
+            }
+          });
+          
+          transformedData.push(transformedRow);
+        });
+        
+        // Store the transformed data for download/send
+        window.transformedData = transformedData;
+      }
+      
+      // Show formatter panels (using the global function) - do this BEFORE showing preview
       if (window.showFormatterPanels && typeof window.showFormatterPanels === 'function') {
         window.showFormatterPanels();
       } else {
@@ -168,6 +194,21 @@
         formatterPanels.forEach(panel => {
           panel.style.display = 'block';
         });
+        
+        // Also hide the mapping container
+        const mappingContainer = document.getElementById('column-mapping-container');
+        if (mappingContainer) {
+          mappingContainer.style.display = 'none';
+        }
+      }
+      
+      // Now show the preview if we have data
+      if (transformedData && transformedData.length > 0) {
+        // Show output preview if the function exists
+        if (window.showOutputPreview && typeof window.showOutputPreview === 'function') {
+          console.log('Showing output preview with', transformedData.length, 'records');
+          window.showOutputPreview(transformedData);
+        }
       }
       
       // Enable download and send buttons (using the global function)
@@ -189,34 +230,11 @@
         }
       }
       
-      // Apply client-side transformations if we're not using the API
-      if (window.originalData && window.originalData.length > 0) {
-        // Create transformed data for preview
-        const transformedData = [];
-        
-        // For each row in the original data
-        window.originalData.forEach(originalRow => {
-          const transformedRow = {};
-          
-          // Apply each mapping
-          Object.entries(mappings).forEach(([targetId, sourceIdx]) => {
-            const targetField = targetFields.find(field => field.id === targetId);
-            const sourceField = sourceColumns[sourceIdx];
-            
-            // Copy the value from source to target
-            transformedRow[targetField.name] = originalRow[sourceField];
-          });
-          
-          transformedData.push(transformedRow);
-        });
-        
-        // Store the transformed data for download/send
-        window.transformedData = transformedData;
-        
-        // Show output preview if the function exists
-        if (window.showOutputPreview && typeof window.showOutputPreview === 'function') {
-          window.showOutputPreview(transformedData);
-        }
+      // Log the success
+      if (window.appendLog && typeof window.appendLog === 'function') {
+        const recordCount = transformedData ? transformedData.length : 0;
+        window.appendLog(`Data formatting complete. ${recordCount} records transformed successfully.`);
+        window.appendLog('You can now download the data or send it to another tool.');
       }
     }
     

@@ -149,6 +149,23 @@ document.addEventListener('DOMContentLoaded', function() {
   function handleMappingComplete(mappings, apiResult) {
     console.log('Mapping complete:', mappings);
     
+    // Show formatter panels first to ensure UI transition happens regardless of other operations
+    if (window.showFormatterPanels && typeof window.showFormatterPanels === 'function') {
+      window.showFormatterPanels();
+    } else {
+      // Fallback if the global function isn't available
+      const formatterPanels = document.querySelectorAll('.formatter-panel');
+      formatterPanels.forEach(panel => {
+        panel.style.display = 'block';
+      });
+      
+      // Also hide the mapping container
+      const mappingContainer = document.getElementById('column-mapping-container');
+      if (mappingContainer) {
+        mappingContainer.style.display = 'none';
+      }
+    }
+    
     // Check if we have an API result
     if (apiResult && apiResult.success && apiResult.transformId) {
       console.log('API Transform successful:', apiResult);
@@ -157,12 +174,12 @@ document.addEventListener('DOMContentLoaded', function() {
       window.transformId = apiResult.transformId;
       
       // If we have sample data in the API result, use it
-      if (apiResult.sampleData && Array.isArray(apiResult.sampleData)) {
-        window.transformedData = apiResult.sampleData;
+      if (apiResult.preview && Array.isArray(apiResult.preview)) {
+        window.transformedData = apiResult.preview;
         
         // Show output preview
         if (window.showOutputPreview && typeof window.showOutputPreview === 'function') {
-          window.showOutputPreview(apiResult.sampleData);
+          window.showOutputPreview(apiResult.preview);
         }
       } else {
         // Fallback to client-side transformation
@@ -177,12 +194,24 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Log transformation details
       if (window.appendLog && typeof window.appendLog === 'function') {
-        if (apiResult.logs && apiResult.logs.length > 0) {
-          apiResult.logs.forEach(log => {
+        if (apiResult.transformationLog && apiResult.transformationLog.length > 0) {
+          apiResult.transformationLog.forEach(log => {
             window.appendLog(log);
           });
         } else {
           window.appendLog(`Mapping completed successfully. Transform ID: ${apiResult.transformId}`);
+        }
+        
+        // Log row count
+        if (apiResult.rowCount) {
+          window.appendLog(`Transformed ${apiResult.rowCount} records with ${apiResult.columnCount || 'multiple'} fields`);
+        }
+        
+        // Log any errors
+        if (apiResult.errors && apiResult.errors.length > 0) {
+          apiResult.errors.forEach(error => {
+            window.appendLog(`Warning: ${error}`, 'warning');
+          });
         }
       }
       
@@ -200,6 +229,11 @@ document.addEventListener('DOMContentLoaded', function() {
         sendToToolBtn.disabled = false;
         // Update the send button to use the API for sending to tools
         sendToToolBtn.setAttribute('data-transform-id', apiResult.transformId);
+      }
+      
+      // Enable the global function if available
+      if (window.enableDownloadButtons && typeof window.enableDownloadButtons === 'function') {
+        window.enableDownloadButtons();
       }
     } else {
       // Fallback to client-side transformation
@@ -223,13 +257,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if (downloadBtn) downloadBtn.disabled = false;
         if (sendToToolBtn) sendToToolBtn.disabled = false;
         
+        // Enable the global function if available
+        if (window.enableDownloadButtons && typeof window.enableDownloadButtons === 'function') {
+          window.enableDownloadButtons();
+        }
+        
         // Log the completion
         if (window.appendLog && typeof window.appendLog === 'function') {
           window.appendLog(`Mapping completed successfully. ${transformedData.length} records transformed.`);
         }
       } else {
         console.log('Transform function not available in the main script.');
-        alert('Data formatted successfully! You can now download or send the transformed data.');
+        window.appendLog('Data formatted successfully! Ready for download or to send to another tool.');
       }
     }
   }
