@@ -26,15 +26,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Load React
-    loadScript('https://unpkg.com/react@17/umd/react.production.min.js', function() {
+    loadScript('https://cdn.jsdelivr.net/npm/react@17/umd/react.production.min.js', function() {
       // Load ReactDOM
-      loadScript('https://unpkg.com/react-dom@17/umd/react-dom.production.min.js', function() {
+      loadScript('https://cdn.jsdelivr.net/npm/react-dom@17/umd/react-dom.production.min.js', function() {
         // Load Material UI
-        loadScript('https://unpkg.com/@material-ui/core@4.12.3/umd/material-ui.production.min.js', function() {
+        loadScript('https://cdn.jsdelivr.net/npm/@material-ui/core@4.12.3/umd/material-ui.production.min.js', function() {
           // Load React Beautiful DnD
-          loadScript('https://unpkg.com/react-beautiful-dnd@13.1.0/dist/react-beautiful-dnd.min.js', function() {
+          loadScript('https://cdn.jsdelivr.net/npm/react-beautiful-dnd@13.1.0/dist/react-beautiful-dnd.min.js', function() {
             // Load Babel for JSX support
-            loadScript('https://unpkg.com/@babel/standalone/babel.min.js', callback);
+            loadScript('https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js', callback);
+            
+            console.log('All dependencies loaded successfully');
           });
         });
       });
@@ -43,15 +45,28 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Load CSS for Material UI
   function loadStyles() {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap';
-    document.head.appendChild(link);
+    // Skip loading Google Fonts since they're blocked by CSP
+    console.log('Skipping Google Fonts due to CSP restrictions, using system fonts instead');
     
-    const iconLink = document.createElement('link');
-    iconLink.rel = 'stylesheet';
-    iconLink.href = 'https://fonts.googleapis.com/icon?family=Material+Icons';
-    document.head.appendChild(iconLink);
+    // Add a style tag with fallback font definitions
+    const styleTag = document.createElement('style');
+    styleTag.textContent = `
+      .MuiTypography-root, .MuiButton-root, .MuiInputBase-root {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol" !important;
+      }
+      
+      /* Icon fallbacks */
+      .material-icons {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+      }
+      .material-icons.MuiIcon-root {
+        font-size: 24px;
+        width: 1em;
+        height: 1em;
+        overflow: hidden;
+      }
+    `;
+    document.head.appendChild(styleTag);
   }
   
   // Initialize the React component
@@ -284,6 +299,8 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Load the ColumnMappingUI component
   function loadComponentScript() {
+    console.log('Starting to load ColumnMappingUI component');
+    
     // Create script tag for the component
     const script = document.createElement('script');
     script.src = '/static/js/components/ColumnMappingUI.jsx';
@@ -292,14 +309,24 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Handle load event
     script.onload = function() {
-      console.log('ColumnMappingUI component loaded');
+      console.log('ColumnMappingUI JSX file loaded successfully');
+      
+      // Check if Babel is available
+      if (!window.Babel) {
+        console.error('Babel not loaded! Cannot transform JSX.');
+        showComponentError('Babel library is not available for JSX transformation');
+        return;
+      }
       
       // Compile JSX with Babel
       try {
+        console.log('Attempting to transform JSX with Babel...');
         const transformedCode = Babel.transform(script.textContent, {
           presets: ['react'],
           filename: 'ColumnMappingUI.jsx'
         }).code;
+        
+        console.log('JSX transformed successfully, creating compiled script');
         
         // Create a new script element with the transformed code
         const compiledScript = document.createElement('script');
@@ -309,26 +336,103 @@ document.addEventListener('DOMContentLoaded', function() {
         // Set a timeout to allow the component to be registered
         setTimeout(function() {
           if (window.ColumnMappingUI) {
+            console.log('ColumnMappingUI component registered successfully');
             initReactComponent();
           } else {
             console.error('ColumnMappingUI component not found after compilation');
+            showComponentError('Component was compiled but not registered properly');
           }
-        }, 100);
+        }, 300); // Increased timeout for slower systems
       } catch (error) {
         console.error('Error compiling JSX:', error);
+        showComponentError('JSX compilation error: ' + error.message);
       }
     };
     
     // Handle error event
-    script.onerror = function() {
-      console.error('Failed to load ColumnMappingUI component');
-      
-      // Show error message in the container
+    script.onerror = function(e) {
+      console.error('Failed to load ColumnMappingUI component', e);
+      showComponentError('Failed to load the component file');
+    };
+    
+    // Function to show error in the container
+    function showComponentError(message) {
       columnMappingContainer.innerHTML = `
         <div class="error-container">
           <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #f44336; margin-bottom: 15px;"></i>
           <p style="margin-bottom: 20px; color: #666; text-align: center;">
-            Failed to load the column mapping component. Please refresh the page and try again.
+            ${message}
+          </p>
+          <p style="margin-bottom: 10px; color: #666; text-align: center;">
+            Please check the browser console for more details.
+          </p>
+          <button onclick="location.reload()" class="primary-btn">
+            Refresh Page
+          </button>
+        </div>
+      `;
+    }
+    
+    // Add the script to the document
+    console.log('Adding ColumnMappingUI script to document');
+    document.head.appendChild(script);
+  }
+  
+  // Load the simplified non-JSX version of the component
+  function loadSimpleComponent() {
+    console.log('Attempting to load simplified component as fallback');
+    
+    const script = document.createElement('script');
+    script.src = '/static/js/components/column-mapping-simple.js';
+    script.async = true;
+    
+    script.onload = function() {
+      console.log('Simple component loaded successfully');
+      
+      // Initialize React with the simple component
+      if (window.SimpleColumnMappingUI) {
+        console.log('Using SimpleColumnMappingUI as fallback');
+        
+        const sourceColumns = getSourceColumns();
+        const sampleData = getSampleData();
+        const fileId = window.uploadedFileId || null;
+        
+        ReactDOM.render(
+          React.createElement(window.SimpleColumnMappingUI, {
+            sourceColumns: sourceColumns,
+            sampleData: sampleData,
+            fileId: fileId,
+            onMappingComplete: handleMappingComplete
+          }),
+          columnMappingContainer
+        );
+      } else {
+        console.error('SimpleColumnMappingUI not found after loading');
+        
+        // Show error in container
+        columnMappingContainer.innerHTML = `
+          <div class="error-container">
+            <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #f44336; margin-bottom: 15px;"></i>
+            <p style="margin-bottom: 20px; color: #666; text-align: center;">
+              Could not load any mapping component. Please contact support.
+            </p>
+            <button onclick="location.reload()" class="primary-btn">
+              Refresh Page
+            </button>
+          </div>
+        `;
+      }
+    };
+    
+    script.onerror = function() {
+      console.error('Failed to load simple component');
+      
+      // Show error in container
+      columnMappingContainer.innerHTML = `
+        <div class="error-container">
+          <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #f44336; margin-bottom: 15px;"></i>
+          <p style="margin-bottom: 20px; color: #666; text-align: center;">
+            Failed to load any mapping component. Please check network connectivity.
           </p>
           <button onclick="location.reload()" class="primary-btn">
             Refresh Page
@@ -337,16 +441,30 @@ document.addEventListener('DOMContentLoaded', function() {
       `;
     };
     
-    // Add the script to the document
     document.head.appendChild(script);
   }
-  
+
   // Main initialization function
   function init() {
     loadStyles();
     loadReactDependencies(function() {
       console.log('React dependencies loaded');
-      loadComponentScript();
+      
+      // Try to load the full JSX component first
+      try {
+        loadComponentScript();
+        
+        // Set a timeout to check if the component loaded successfully
+        setTimeout(function() {
+          if (!window.ColumnMappingUI) {
+            console.warn('ColumnMappingUI not loaded after 3 seconds, falling back to simple version');
+            loadSimpleComponent();
+          }
+        }, 3000);
+      } catch (e) {
+        console.error('Error loading JSX component:', e);
+        loadSimpleComponent();
+      }
     });
   }
   
