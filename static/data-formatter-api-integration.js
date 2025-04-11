@@ -260,8 +260,54 @@ document.addEventListener('DOMContentLoaded', function() {
   function fallbackSendToTool(selectedTool) {
     if (window.transformedData && window.transformedData.length > 0) {
       try {
-        // Store data in sessionStorage
-        sessionStorage.setItem('formattedData', JSON.stringify(window.transformedData));
+        // Before storing, ensure all records have the required fields for Response Time Analyzer
+        if (selectedTool === 'response-time') {
+          console.log("Preparing data for Response Time Analyzer with required fields");
+          
+          // Clone the data to avoid modifying the original
+          const enhancedData = window.transformedData.map(record => {
+            const newRecord = { ...record };
+            
+            // Ensure all required fields exist
+            // Map GPS coordinates to Latitude/Longitude
+            if (newRecord.GPS_Lat && !newRecord.Latitude) {
+              newRecord.Latitude = newRecord.GPS_Lat;
+            }
+            
+            if (newRecord.GPS_Lon && !newRecord.Longitude) {
+              newRecord.Longitude = newRecord.GPS_Lon;
+            }
+            
+            // Map unit information
+            if (newRecord.Units && !newRecord.Unit) {
+              newRecord.Unit = newRecord.Units;
+            }
+            
+            // Map time fields
+            if (newRecord.Disp_Time && !newRecord['Unit Dispatched']) {
+              newRecord['Unit Dispatched'] = newRecord.Disp_Time;
+            }
+            
+            if (newRecord.Enr_Time && !newRecord['Unit Enroute']) {
+              newRecord['Unit Enroute'] = newRecord.Enr_Time;
+            }
+            
+            if (newRecord.Arriv_Time && !newRecord['Unit Onscene']) {
+              newRecord['Unit Onscene'] = newRecord.Arriv_Time;
+            }
+            
+            return newRecord;
+          });
+          
+          console.log("Enhanced data with required fields:", enhancedData[0]);
+          
+          // Store the enhanced data instead
+          sessionStorage.setItem('formattedData', JSON.stringify(enhancedData));
+        } else {
+          // For other tools, use the original data
+          sessionStorage.setItem('formattedData', JSON.stringify(window.transformedData));
+        }
+        
         sessionStorage.setItem('dataSource', 'formatter');
         sessionStorage.setItem('formatterToolId', selectedTool);
         sessionStorage.setItem('formatterTimestamp', new Date().toISOString());
