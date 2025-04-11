@@ -365,52 +365,25 @@ document.addEventListener('DOMContentLoaded', function() {
   function loadComponentScript() {
     console.log('Starting to load ColumnMappingUI component');
     
-    // Create script tag for the component
+    // Load the non-import version of the component
     const script = document.createElement('script');
-    script.src = '/static/js/components/ColumnMappingUI.jsx';
-    script.type = 'text/babel';
+    script.src = '/static/js/components/non-import-column-mapping.js';
     script.async = true;
     
     // Handle load event
     script.onload = function() {
-      console.log('ColumnMappingUI JSX file loaded successfully');
+      console.log('ColumnMappingUI non-import version loaded successfully');
       
-      // Check if Babel is available
-      if (!window.Babel) {
-        console.error('Babel not loaded! Cannot transform JSX.');
-        showComponentError('Babel library is not available for JSX transformation');
-        return;
-      }
-      
-      // Compile JSX with Babel
-      try {
-        console.log('Attempting to transform JSX with Babel...');
-        const transformedCode = Babel.transform(script.textContent, {
-          presets: ['react'],
-          filename: 'ColumnMappingUI.jsx'
-        }).code;
-        
-        console.log('JSX transformed successfully, creating compiled script');
-        
-        // Create a new script element with the transformed code
-        const compiledScript = document.createElement('script');
-        compiledScript.textContent = transformedCode;
-        document.head.appendChild(compiledScript);
-        
-        // Set a timeout to allow the component to be registered
-        setTimeout(function() {
-          if (window.ColumnMappingUI) {
-            console.log('ColumnMappingUI component registered successfully');
-            initReactComponent();
-          } else {
-            console.error('ColumnMappingUI component not found after compilation');
-            showComponentError('Component was compiled but not registered properly');
-          }
-        }, 300); // Increased timeout for slower systems
-      } catch (error) {
-        console.error('Error compiling JSX:', error);
-        showComponentError('JSX compilation error: ' + error.message);
-      }
+      // Set a timeout to allow the component to be registered
+      setTimeout(function() {
+        if (window.ColumnMappingUI) {
+          console.log('ColumnMappingUI component registered successfully');
+          initReactComponent();
+        } else {
+          console.error('ColumnMappingUI component not found after loading');
+          showComponentError('Component was loaded but not registered properly');
+        }
+      }, 300); // Increased timeout for slower systems
     };
     
     // Handle error event
@@ -514,7 +487,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadReactDependencies(function() {
       console.log('React dependencies loaded');
       
-      // Load the full JSX component with no fallback
+      // Load the non-import version of the component
       try {
         loadComponentScript();
         console.log('Loading ColumnMappingUI component without fallback');
