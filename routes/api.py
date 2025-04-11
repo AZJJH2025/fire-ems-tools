@@ -385,6 +385,16 @@ def upload_data_file():
         logger.error(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
+# Test endpoint to check API connectivity
+@bp.route('/data-formatter/test', methods=['GET'])
+def test_data_formatter_api():
+    """Simple test endpoint to verify API connectivity"""
+    return jsonify({
+        "status": "ok",
+        "message": "Data formatter API is working correctly",
+        "timestamp": datetime.now().isoformat()
+    })
+
 # Data formatter transform endpoint
 @bp.route('/data-formatter/transform', methods=['POST'])
 @safe_limit("5 per minute")

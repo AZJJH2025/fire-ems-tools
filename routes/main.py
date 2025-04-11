@@ -57,6 +57,11 @@ def data_formatter():
     """Data Formatter route"""
     return render_template('data-formatter.html')
     
+@bp.route('/data-formatter-test')
+def data_formatter_test():
+    """Data Formatter Test route for debugging"""
+    return render_template('data-formatter-test.html')
+    
 @bp.route('/station-overview')
 def station_overview():
     """Station Overview route"""
