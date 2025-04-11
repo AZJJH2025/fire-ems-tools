@@ -115,8 +115,6 @@ def create_app(config_name='default'):
     
     # Initialize extensions
     db.init_app(app)
-    if limiter:
-        limiter.init_app(app)
     
     # Set up Flask-Login
     login_manager.init_app(app)
