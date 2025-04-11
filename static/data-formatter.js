@@ -283,6 +283,21 @@ document.addEventListener('DOMContentLoaded', function() {
     mapFieldsBtn.addEventListener('click', function() {
         console.log("🔧 IMPROVED: Map fields button clicked");
         
+        // IMPORTANT: Make sure the mapping container is displayed
+        const mappingContainer = document.getElementById('column-mapping-container');
+        if (mappingContainer) {
+            console.log("Making column mapping container visible");
+            mappingContainer.style.display = 'block';
+            
+            // Hide the main formatter panels
+            const formatterPanels = document.querySelectorAll('.formatter-panel');
+            formatterPanels.forEach(panel => {
+                panel.style.display = 'none';
+            });
+        } else {
+            console.error("Column mapping container not found!");
+        }
+        
         // Get current state from store
         const currentState = store ? store.getState() : { originalData, selectedTool };
         
@@ -302,6 +317,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     originalData = fallbackData;
                 }
                 
+                // Make sure it's also available in the legacy global variable
+                window.originalData = fallbackData;
+                
                 showInputPreview(fallbackData);
                 console.log("Created fallback data");
             }
@@ -317,6 +335,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     selectedTool = defaultTool;
                 }
+                
+                // Make sure it's also available in the legacy global variable
+                window.selectedTool = defaultTool;
                 
                 targetTool.value = defaultTool;
                 const event = new Event('change');

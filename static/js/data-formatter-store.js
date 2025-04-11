@@ -151,6 +151,7 @@
   window.DataFormatterStore = {
     getState,
     subscribe,
+    dispatch, // Explicitly expose dispatch for custom actions
     actions,
     ActionTypes
   };
