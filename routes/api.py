@@ -278,6 +278,8 @@ def upload_data_file():
 def transform_data():
     """Transform data based on field mappings"""
     try:
+        from routes.helpers import transform_datetime, load_schema, apply_transformations
+        
         # Get request data
         data = request.get_json()
         
@@ -325,118 +327,54 @@ def transform_data():
             logger.error(f"Error reading file: {str(e)}")
             return jsonify({"error": f"Error reading file: {str(e)}"}), 500
             
-        # Create a new DataFrame for transformed data
-        transformed_df = pd.DataFrame()
+        # Load the schema
+        schema = load_schema(current_app.root_path)
+        if not schema:
+            return jsonify({"error": "Failed to load schema definition"}), 500
+        
+        # Apply transformations
         transformation_log = []
         errors = []
-        
-        # Process each mapping
-        for mapping in mappings:
-            try:
-                # Extract mapping details
-                source_field = mapping.get('sourceField')
-                target_field = mapping.get('targetField')
-                transform_config = mapping.get('transformConfig')
-                
-                if not source_field or not target_field:
-                    errors.append(f"Invalid mapping missing source or target field")
-                    continue
-                    
-                # Check if source field exists
-                if source_field not in source_df.columns:
-                    errors.append(f"Source field '{source_field}' not found in data")
-                    continue
-                    
-                # Get the source data
-                source_data = source_df[source_field].copy()
-                
-                # Apply transformations based on config
-                if transform_config:
-                    transform_type = transform_config.get('type')
-                    
-                    if transform_type == 'date':
-                        # Date transformation
-                        source_format = transform_config.get('sourceFormat')
-                        target_format = transform_config.get('targetFormat', 'ISO8601')
+
+        try:
+            # Apply the new transformation function
+            transformed_df = apply_transformations(source_df, mappings, schema, current_app.root_path)
+            transformation_log.append(f"Successfully transformed data using schema-based mapping")
+            
+            # Validate the transformed data
+            missing_fields = []
+            
+            # Determine required fields based on schema format
+            required_fields = []
+            
+            # For the old schema format
+            if 'requiredFields' in schema:
+                required_fields = [field['fieldName'] for field in schema.get('requiredFields', [])]
+            
+            # For the new schema format with coreMappings
+            elif 'coreMappings' in schema:
+                for category, fields in schema['coreMappings'].items():
+                    for field_key, field_def in fields.items():
+                        if field_def.get('required', False):
+                            required_fields.append(field_def['name'])
+            
+            # Check for missing required fields
+            if required_fields:
+                for field in required_fields:
+                    if field not in transformed_df.columns or transformed_df[field].isna().all():
+                        missing_fields.append(field)
                         
-                        try:
-                            # Handle 'auto' format detection
-                            if source_format == 'auto':
-                                # Try to infer date format
-                                source_data = pd.to_datetime(source_data, errors='coerce')
-                            elif source_format == 'custom':
-                                # Use custom format
-                                custom_format = transform_config.get('customFormat', '')
-                                # Convert pandas date format to Python date format
-                                python_format = custom_format.replace('YYYY', '%Y').replace('MM', '%m').replace('DD', '%d').replace('hh', '%H').replace('mm', '%M').replace('ss', '%S')
-                                source_data = pd.to_datetime(source_data, format=python_format, errors='coerce')
-                            else:
-                                # Use predefined format
-                                format_mapping = {
-                                    'MM/DD/YYYY': '%m/%d/%Y',
-                                    'DD/MM/YYYY': '%d/%m/%Y',
-                                    'YYYY-MM-DD': '%Y-%m-%d',
-                                    'MM-DD-YYYY': '%m-%d-%Y',
-                                    'DD-MM-YYYY': '%d-%m-%Y'
-                                }
-                                python_format = format_mapping.get(source_format)
-                                if python_format:
-                                    source_data = pd.to_datetime(source_data, format=python_format, errors='coerce')
-                                else:
-                                    source_data = pd.to_datetime(source_data, errors='coerce')
-                            
-                            # Format for output
-                            if target_format == 'ISO8601':
-                                source_data = source_data.dt.strftime('%Y-%m-%d')
-                            elif target_format in format_mapping:
-                                source_data = source_data.dt.strftime(format_mapping[target_format])
-                            
-                            transformation_log.append(f"Transformed '{source_field}' to '{target_field}' with date format '{target_format}'")
-                        except Exception as e:
-                            errors.append(f"Error transforming date field '{source_field}': {str(e)}")
-                            # Fallback to original data
-                            transformation_log.append(f"Date transform failed for '{source_field}', using original values")
-                    
-                    elif transform_type == 'coordinates':
-                        # Coordinate transformation
-                        format_type = transform_config.get('format', 'decimal')
-                        
-                        try:
-                            # For now, just ensure coordinates are numeric and valid
-                            source_data = pd.to_numeric(source_data, errors='coerce')
-                            
-                            # Validate coordinates based on field name
-                            if "latitude" in target_field.lower():
-                                # Latitude should be between -90 and 90
-                                source_data = source_data.where((source_data >= -90) & (source_data <= 90), np.nan)
-                            elif "longitude" in target_field.lower():
-                                # Longitude should be between -180 and 180
-                                source_data = source_data.where((source_data >= -180) & (source_data <= 180), np.nan)
-                                
-                            transformation_log.append(f"Validated coordinate field '{source_field}' to '{target_field}'")
-                        except Exception as e:
-                            errors.append(f"Error transforming coordinate field '{source_field}': {str(e)}")
-                            transformation_log.append(f"Coordinate transform failed for '{source_field}', using original values")
-                    
-                    elif transform_type == 'text':
-                        # Text transformation
-                        text_transform = transform_config.get('textTransform', 'none')
-                        
-                        if text_transform == 'uppercase':
-                            source_data = source_data.str.upper()
-                        elif text_transform == 'lowercase':
-                            source_data = source_data.str.lower()
-                        elif text_transform == 'capitalize':
-                            source_data = source_data.str.capitalize()
-                            
-                        transformation_log.append(f"Applied text transform '{text_transform}' to '{source_field}'")
+            if missing_fields:
+                transformation_log.append(f"Warning: Missing {len(missing_fields)} required fields")
                 
-                # Add the transformed data to the result DataFrame
-                transformed_df[target_field] = source_data
+        except Exception as e:
+            logger.error(f"Error applying transformations: {str(e)}")
+            errors.append(f"Error applying transformations: {str(e)}")
+            
+            # Create an empty DataFrame if transformation failed
+            if transformed_df is None or transformed_df.empty:
+                transformed_df = pd.DataFrame()
                 
-            except Exception as e:
-                errors.append(f"Error processing mapping for '{source_field}' to '{target_field}': {str(e)}")
-        
         # Check if we have any successful transformations
         if transformed_df.empty:
             return jsonify({
@@ -446,25 +384,6 @@ def transform_data():
             
         # Generate the preview (first 10 rows)
         preview_data = transformed_df.head(10).fillna('').to_dict('records')
-        
-        # Detect any missing required fields
-        schema_path = os.path.join(current_app.root_path, 'public', 'standardized_incident_record_schema.json')
-        required_fields = []
-        
-        try:
-            if os.path.exists(schema_path):
-                with open(schema_path, 'r') as f:
-                    schema = json.load(f)
-                    if 'requiredFields' in schema:
-                        required_fields = [field['name'] for field in schema['requiredFields']]
-        except Exception as e:
-            logger.error(f"Error loading schema: {str(e)}")
-        
-        missing_fields = []
-        if required_fields:
-            for field in required_fields:
-                if field not in transformed_df.columns:
-                    missing_fields.append(field)
         
         # Generate a unique ID for the transformed data
         transform_id = str(uuid.uuid4())
