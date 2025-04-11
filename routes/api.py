@@ -344,19 +344,12 @@ def transform_data():
             # Validate the transformed data
             missing_fields = []
             
-            # Determine required fields based on schema format
+            # Get required fields from schema
             required_fields = []
             
-            # For the old schema format
+            # Extract required fields from the standardized schema
             if 'requiredFields' in schema:
                 required_fields = [field['fieldName'] for field in schema.get('requiredFields', [])]
-            
-            # For the new schema format with coreMappings
-            elif 'coreMappings' in schema:
-                for category, fields in schema['coreMappings'].items():
-                    for field_key, field_def in fields.items():
-                        if field_def.get('required', False):
-                            required_fields.append(field_def['name'])
             
             # Check for missing required fields
             if required_fields:

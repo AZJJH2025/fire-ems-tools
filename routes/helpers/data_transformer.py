@@ -178,13 +178,6 @@ def apply_transformations(df, mappings, schema, app_root_path):
         if field_name:
             schema_fields.append(field_name)
     
-    # If using coreMappings structure, extract field names from there
-    if 'coreMappings' in schema:
-        for category, fields in schema['coreMappings'].items():
-            for field_key, field_def in fields.items():
-                if 'name' in field_def:
-                    schema_fields.append(field_def['name'])
-    
     # Ensure all fields in the schema are present
     for field_name in schema_fields:
         if field_name not in result_df.columns:
