@@ -21,7 +21,7 @@ import random
 logger = logging.getLogger(__name__)
 
 # Create blueprint
-bp = Blueprint('tools', __name__, url_prefix='/api')
+bp = Blueprint('tools', __name__, url_prefix='/tools-api')
 
 # Helper functions
 def get_from_session(key, as_dataframe=True):

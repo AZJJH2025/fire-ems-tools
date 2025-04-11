@@ -15,7 +15,7 @@ const DataFormatterAPI = {
             const formData = new FormData();
             formData.append('file', file);
             
-            const response = await fetch('/api/data-formatter/upload', {
+            const response = await fetch('/tools-api/data-formatter/upload', {
                 method: 'POST',
                 body: formData
             });
@@ -48,23 +48,43 @@ const DataFormatterAPI = {
      */
     transformData: async function(fileId, mappings) {
         try {
-            const response = await fetch('/api/data-formatter/transform', {
+            // DEBUG: Log request details before sending
+            console.log('TRANSFORM REQUEST DETAILS:');
+            console.log('URL:', '/tools-api/data-formatter/transform');
+            console.log('Method:', 'POST');
+            console.log('Headers:', {'Content-Type': 'application/json'});
+            console.log('FileId:', fileId);
+            console.log('Mappings:', mappings);
+            
+            const requestBody = {
+                fileId: fileId,
+                mappings: mappings
+            };
+            
+            console.log('Full request body:', JSON.stringify(requestBody, null, 2));
+            
+            const response = await fetch('/tools-api/data-formatter/transform', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    fileId: fileId,
-                    mappings: mappings
-                })
+                body: JSON.stringify(requestBody)
+            })
+            .catch(error => {
+                console.error('API Call Failed:', error);
+                throw error;
             });
             
             if (!response.ok) {
                 const errorData = await response.json();
+                console.error('API returned error:', errorData);
                 throw new Error(errorData.error || 'Failed to transform data');
             }
             
-            return await response.json();
+            // Log the successful response
+            const responseData = await response.json();
+            console.log('API Response:', responseData);
+            return responseData;
         } catch (error) {
             console.error('Error transforming data:', error);
             throw error;
@@ -78,7 +98,7 @@ const DataFormatterAPI = {
      * @returns {string} - The download URL
      */
     getDownloadUrl: function(transformId, format = 'csv') {
-        return `/api/data-formatter/download/${transformId}?format=${format}`;
+        return `/tools-api/data-formatter/download/${transformId}?format=${format}`;
     },
     
     /**
