@@ -84,7 +84,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // For debugging - log what we're uploading
         console.log('Uploading file:', file.name, 'format:', inputFormatSelect ? inputFormatSelect.value : 'auto');
         
-        // Upload file to server
+        console.log('About to upload file, formData contains:', 
+                     Array.from(formData.entries()).map(e => e[0] === 'file' ? 
+                       `${e[0]}:[${e[1].name}, ${e[1].size} bytes, ${e[1].type}]` : `${e[0]}:${e[1]}`));
+                     
+        // Upload file to server with explicit content type omitted to let the browser set it correctly
         const response = await fetch('/api/data-formatter/upload', {
           method: 'POST',
           body: formData,

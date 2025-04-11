@@ -299,10 +299,20 @@ def upload_data_file():
         logger.info(f"Files in request: {list(request.files.keys()) if request.files else 'None'}")
         logger.info(f"Form data: {list(request.form.keys()) if request.form else 'None'}")
         
+        # Debug the request itself
+        logger.info(f"Request methods: {request.method}")
+        logger.info(f"Request content type header: {request.headers.get('Content-Type', 'Not provided')}")
+        
         # Check if file was included in request
         if 'file' not in request.files:
             logger.error("No file part in the request")
-            return jsonify({"error": "No file part in the request"}), 400
+            logger.error(f"Available files: {list(request.files.keys())}")
+            logger.error(f"Available form fields: {list(request.form.keys())}")
+            return jsonify({
+                "error": "No file part in the request", 
+                "files": list(request.files.keys()),
+                "form_fields": list(request.form.keys())
+            }), 400
             
         file = request.files['file']
         logger.info(f"File received: {file.filename}")
