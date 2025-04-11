@@ -23,10 +23,10 @@ try:
         """Initialize the limiter with the Flask app"""
         global limiter
         limiter = Limiter(
-            app,
             key_func=get_remote_address,
             default_limits=["200 per hour", "50 per minute"]
         )
+        limiter.init_app(app)
         return limiter
     
     # Create a safer limit decorator
