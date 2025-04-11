@@ -1,7 +1,20 @@
 // Non-import version of ColumnMappingUI that can be directly loaded in the browser
 
 // Register the component in the global scope
-window.ColumnMappingUI = function({ sourceColumns = [], sampleData = [], fileId = null, onMappingComplete }) {
+window.ColumnMappingUI = function({ sourceColumns = [], sampleData = [], fileId = null, selectedTool = null, onMappingComplete }) {
+  // Access the store if available
+  const store = window.DataFormatterStore;
+  
+  // Debug props received
+  console.log("ColumnMappingUI received props:", { 
+    sourceColumns, 
+    sampleDataLength: sampleData?.length || 0, 
+    fileId, 
+    selectedTool,
+    hasCallback: !!onMappingComplete,
+    hasStore: !!store
+  });
+  
   // Using React from global scope
   const React = window.React;
   const { useState, useEffect } = React;

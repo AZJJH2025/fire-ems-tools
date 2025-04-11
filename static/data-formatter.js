@@ -40,11 +40,40 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeInstructionsBtn = document.getElementById('close-instructions');
     const instructionsPanel = document.getElementById('instructions-panel');
     
-    // Data storage
+    // Use local variables for convenience, but store data in the central store
     let originalData = null;
     let transformedData = null;
     let fileType = null;
     let selectedTool = null;
+    
+    // Get store reference for shorter code
+    const store = window.DataFormatterStore;
+    
+    // Subscribe to store updates to keep local variables in sync
+    if (store) {
+        store.subscribe(function(newState) {
+            // Update local variables when store changes
+            originalData = newState.originalData;
+            transformedData = newState.transformedData;
+            fileType = newState.fileType;
+            selectedTool = newState.selectedTool;
+            
+            // For backward compatibility - expose to window
+            window.originalData = newState.originalData;
+            window.selectedTool = newState.selectedTool;
+            
+            console.log('DataFormatter: Store update received', {
+                hasOriginalData: !!originalData,
+                hasTransformedData: !!transformedData,
+                fileType,
+                selectedTool
+            });
+        });
+        
+        console.log('DataFormatter: Subscribed to store updates');
+    } else {
+        console.error('DataFormatter: Store not available! Falling back to local variables only.');
+    }
     
     // Tool-specific field mappings and requirements
     const toolRequirements = {
@@ -212,7 +241,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Tool selection
     targetTool.addEventListener('change', function() {
-        selectedTool = this.value;
+        // Set the selected tool in our store
+        if (store) {
+            store.actions.setSelectedTool(this.value);
+        } else {
+            // Fallback if store isn't available
+            selectedTool = this.value;
+            window.selectedTool = this.value;
+        }
         
         // Highlight the corresponding requirements section
         document.querySelectorAll('.tool-requirements').forEach(el => {
@@ -247,28 +283,52 @@ document.addEventListener('DOMContentLoaded', function() {
     mapFieldsBtn.addEventListener('click', function() {
         console.log("🔧 IMPROVED: Map fields button clicked");
         
+        // Get current state from store
+        const currentState = store ? store.getState() : { originalData, selectedTool };
+        
         // Make sure we have data and a selected tool
-        if (!originalData || !selectedTool) {
+        if (!currentState.originalData || !currentState.selectedTool) {
             console.warn("Missing originalData or selectedTool");
             
             // Create fallback data if needed
-            if (!originalData) {
+            if (!currentState.originalData) {
                 console.log("Creating fallback data");
-                originalData = createBasicTestData(10);
-                showInputPreview(originalData);
+                const fallbackData = createBasicTestData(10);
+                
+                // Update the store with fallback data
+                if (store) {
+                    store.actions.setOriginalData(fallbackData);
+                } else {
+                    originalData = fallbackData;
+                }
+                
+                showInputPreview(fallbackData);
+                console.log("Created fallback data");
             }
             
             // Select a default tool if needed
-            if (!selectedTool) {
+            if (!currentState.selectedTool) {
                 console.log("Auto-selecting Response Time Analyzer tool");
-                selectedTool = 'response-time';
-                targetTool.value = 'response-time';
+                const defaultTool = 'response-time';
                 
+                // Update the store with default tool
+                if (store) {
+                    store.actions.setSelectedTool(defaultTool);
+                } else {
+                    selectedTool = defaultTool;
+                }
+                
+                targetTool.value = defaultTool;
                 const event = new Event('change');
                 targetTool.dispatchEvent(event);
                 
                 appendLog("Auto-selected Response Time Analyzer", 'info');
             }
+        }
+        
+        // Log the current state for debugging
+        if (store) {
+            console.log("Current store state before showing mapping UI:", store.getState());
         }
         
         try {
@@ -558,9 +618,17 @@ document.addEventListener('DOMContentLoaded', function() {
         downloadBtn.disabled = true;
         sendToToolBtn.disabled = true;
         
-        // Reset data
-        originalData = null;
-        transformedData = null;
+        // Reset data in the store
+        if (store) {
+            store.actions.resetState();
+            console.log("Store state reset");
+        } else {
+            // Fallback
+            originalData = null;
+            transformedData = null;
+            window.originalData = null;
+            window.selectedTool = null;
+        }
         
         // Disable the map fields button
         updateMapFieldsButton();
@@ -965,6 +1033,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             } else {
                                 console.log("CSV parsed successfully");
                                 appendLog(`Loaded CSV with ${originalData.length} records and ${Object.keys(originalData[0] || {}).length} fields`);
+                                
+                                // Update store with the parsed data
+                                if (store) {
+                                    store.actions.setOriginalData(originalData);
+                                    store.actions.setFileType('csv');
+                                    console.log("Updated store with CSV data");
+                                }
                                 
                                 // Enable the map fields button
                                 updateMapFieldsButton();

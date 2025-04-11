@@ -1,14 +1,23 @@
 /**
  * FireEMS.ai Data Formatter React Integration
- * Version: 1.0.0
+ * Version: 2.0.0
  * 
  * This file integrates the React-based ColumnMappingUI component with the rest of the application.
+ * Uses the central data store for state management.
  */
 
 document.addEventListener('DOMContentLoaded', function() {
   // Check if column mapping container exists
   const columnMappingContainer = document.getElementById('column-mapping-container');
   if (!columnMappingContainer) return;
+
+  // Reference to our data store
+  const store = window.DataFormatterStore;
+  if (!store) {
+    console.error('DataFormatterReact: Store not available! Component may not function correctly.');
+  } else {
+    console.log('DataFormatterReact: Store connected');
+  }
 
   // Load React and ReactDOM from CDN if not already loaded
   function loadScript(src, callback) {
@@ -71,9 +80,25 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Initialize the React component
   function initReactComponent() {
-    // Get data from the main data formatter script
-    const sourceColumns = getSourceColumns();
-    const sampleData = getSampleData();
+    // Get data from the store
+    let state;
+    if (store) {
+      state = store.getState();
+      console.log('DataFormatterReact: Got state from store:', {
+        hasOriginalData: !!state.originalData,
+        selectedTool: state.selectedTool
+      });
+    } else {
+      // Fallback to legacy globals
+      state = {
+        originalData: window.originalData,
+        selectedTool: window.selectedTool
+      };
+      console.log('DataFormatterReact: Using fallback global variables');
+    }
+    
+    const sourceColumns = getSourceColumns(state);
+    const sampleData = getSampleData(state);
     const fileId = window.uploadedFileId || null;
     
     console.log('DEBUG: initReactComponent called');
@@ -81,6 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('DEBUG: ReactDOM exists:', !!ReactDOM);
     console.log('DEBUG: sourceColumns:', sourceColumns);
     console.log('DEBUG: sampleData sample:', sampleData.slice(0, 1));
+    console.log('DEBUG: selectedTool:', state.selectedTool);
     
     try {
       // Check if all dependencies are loaded
@@ -94,6 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
           sourceColumns: sourceColumns,
           sampleData: sampleData,
           fileId: fileId,
+          selectedTool: state.selectedTool,
           onMappingComplete: handleMappingComplete
         }),
         columnMappingContainer
@@ -107,13 +134,21 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Helper function to get source columns
-  function getSourceColumns() {
-    // Try to get from the main data formatter script
+  function getSourceColumns(state) {
+    // First try to get from the store state
+    if (state && state.originalData && state.originalData.length > 0) {
+      console.log("Using store originalData for columns");
+      return Object.keys(state.originalData[0]);
+    }
+    
+    // Fallback to direct access of window globals
     if (window.originalData && window.originalData.length > 0) {
+      console.log("Using window.originalData for columns");
       return Object.keys(window.originalData[0]);
     }
     
-    // Fallback to test data
+    // Last resort fallback to test data
+    console.log("Using fallback columns");
     return [
       'incident_number', 'call_date', 'call_time', 'dispatch_time', 
       'arrival_time', 'latitude', 'longitude', 'incident_type', 
@@ -122,13 +157,21 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Helper function to get sample data
-  function getSampleData() {
-    // Try to get from the main data formatter script
+  function getSampleData(state) {
+    // First try to get from the store state
+    if (state && state.originalData && state.originalData.length > 0) {
+      console.log("Using store originalData for sample data");
+      return state.originalData.slice(0, 5);
+    }
+    
+    // Fallback to direct access of window globals
     if (window.originalData && window.originalData.length > 0) {
+      console.log("Using window.originalData for sample data");
       return window.originalData.slice(0, 5);
     }
     
-    // Fallback to test data
+    // Last resort fallback to test data
+    console.log("Using fallback sample data");
     return [
       {
         'incident_number': 'INC-2023-001',
@@ -167,6 +210,15 @@ document.addEventListener('DOMContentLoaded', function() {
   function handleMappingComplete(mappings, apiResult) {
     console.log('Mapping complete:', mappings);
     
+    // Store mappings in the store if available
+    if (store) {
+      // Create a custom action for mappings (not part of default actions)
+      store.dispatch({
+        type: 'SET_MAPPINGS',
+        payload: mappings
+      });
+    }
+    
     // Show formatter panels first to ensure UI transition happens regardless of other operations
     if (window.showFormatterPanels && typeof window.showFormatterPanels === 'function') {
       window.showFormatterPanels();
@@ -193,7 +245,12 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // If we have sample data in the API result, use it
       if (apiResult.preview && Array.isArray(apiResult.preview)) {
-        window.transformedData = apiResult.preview;
+        // Update transformed data in the store
+        if (store) {
+          store.actions.setTransformedData(apiResult.preview);
+        } else {
+          window.transformedData = apiResult.preview;
+        }
         
         // Show output preview
         if (window.showOutputPreview && typeof window.showOutputPreview === 'function') {
@@ -201,8 +258,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       } else {
         // Fallback to client-side transformation
-        const transformedData = applyMappings(window.originalData || [], mappings);
-        window.transformedData = transformedData;
+        const state = store ? store.getState() : { originalData: window.originalData };
+        const originalData = state.originalData || [];
+        
+        const transformedData = applyMappings(originalData, mappings);
+        
+        // Update transformed data in the store
+        if (store) {
+          store.actions.setTransformedData(transformedData);
+        } else {
+          window.transformedData = transformedData;
+        }
         
         // Show output preview
         if (window.showOutputPreview && typeof window.showOutputPreview === 'function') {
@@ -257,11 +323,19 @@ document.addEventListener('DOMContentLoaded', function() {
       // Fallback to client-side transformation
       // Integrate with the main data formatter script
       if (window.transformData && typeof window.transformData === 'function') {
-        // Apply the mappings to transform the data
-        const transformedData = applyMappings(window.originalData || [], mappings);
+        // Get original data from store
+        const state = store ? store.getState() : { originalData: window.originalData };
+        const originalData = state.originalData || [];
         
-        // Update the transformed data in the main script
-        window.transformedData = transformedData;
+        // Apply the mappings to transform the data
+        const transformedData = applyMappings(originalData, mappings);
+        
+        // Update the transformed data in the store
+        if (store) {
+          store.actions.setTransformedData(transformedData);
+        } else {
+          window.transformedData = transformedData;
+        }
         
         // Show output preview
         if (window.showOutputPreview && typeof window.showOutputPreview === 'function') {
@@ -383,6 +457,15 @@ document.addEventListener('DOMContentLoaded', function() {
   function loadComponentScript() {
     console.log('Starting to load ColumnMappingUI component');
     
+    // Check data availability for debugging
+    if (store) {
+      console.log('Store state when loading component:', store.getState());
+    } else {
+      console.log('Store not available, using global variables:');
+      console.log('- originalData:', !!window.originalData);
+      console.log('- selectedTool:', window.selectedTool);
+    }
+    
     // Load the non-import version of the component
     const script = document.createElement('script');
     script.src = '/static/js/components/non-import-column-mapping.js';
@@ -448,8 +531,20 @@ document.addEventListener('DOMContentLoaded', function() {
       if (window.SimpleColumnMappingUI) {
         console.log('Using SimpleColumnMappingUI as fallback');
         
-        const sourceColumns = getSourceColumns();
-        const sampleData = getSampleData();
+        // Get data from store
+        let state;
+        if (store) {
+          state = store.getState();
+        } else {
+          // Fallback to legacy globals
+          state = {
+            originalData: window.originalData,
+            selectedTool: window.selectedTool
+          };
+        }
+        
+        const sourceColumns = getSourceColumns(state);
+        const sampleData = getSampleData(state);
         const fileId = window.uploadedFileId || null;
         
         ReactDOM.render(
@@ -457,6 +552,7 @@ document.addEventListener('DOMContentLoaded', function() {
             sourceColumns: sourceColumns,
             sampleData: sampleData,
             fileId: fileId,
+            selectedTool: state.selectedTool,
             onMappingComplete: handleMappingComplete
           }),
           columnMappingContainer
