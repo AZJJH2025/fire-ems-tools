@@ -28,8 +28,8 @@ logger = logging.getLogger(__name__)
 # Create blueprint
 bp = Blueprint('api', __name__, url_prefix='/api')
 
-# Import utility functions from utils module
-from utils import safe_limit, require_api_key
+# Import utility functions from app_utils module
+from app_utils import safe_limit, require_api_key
 
 # Common helper function for file uploads
 def allowed_file(filename, allowed_extensions):

@@ -14,6 +14,7 @@ import traceback
 from datetime import datetime, timedelta
 import json
 import secrets
+from app_utils import init_limiter, safe_limit, require_api_key
 
 # Setup logging
 logging.basicConfig(
