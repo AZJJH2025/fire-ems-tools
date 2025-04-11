@@ -107,6 +107,12 @@ def create_app(config_name='default'):
     csrf.init_app(app)
 
     # Add exemptions for API endpoints if needed
+    # First register direct exemptions for specific endpoints
+    csrf.exempt('/api/data-formatter/upload')
+    csrf.exempt('/api/data-formatter/transform')
+    csrf.exempt('/api/data-formatter/download')
+    
+    # Then add a general exemption function
     @csrf.exempt
     def csrf_exempt_api():
         if request.path.startswith('/api/'):
@@ -294,5 +300,5 @@ except Exception as e:
 
 if __name__ == "__main__":
     # Run the application
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    port = int(os.environ.get("PORT", 5005))
+    app.run(host='0.0.0.0', port=port, debug=True, threaded=True, use_reloader=False)

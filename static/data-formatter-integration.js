@@ -81,14 +81,28 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('file', file);
         formData.append('format', inputFormatSelect ? inputFormatSelect.value : 'auto');
         
+        // For debugging - log what we're uploading
+        console.log('Uploading file:', file.name, 'format:', inputFormatSelect ? inputFormatSelect.value : 'auto');
+        
         // Upload file to server
         const response = await fetch('/api/data-formatter/upload', {
           method: 'POST',
-          body: formData
+          body: formData,
+          // Don't include credentials which trigger CSRF protection
+          credentials: 'omit'
         });
         
         if (!response.ok) {
-          throw new Error(`Upload failed: ${response.statusText}`);
+          console.error('Upload response not OK:', response.status, response.statusText);
+          // Try to get the error details from the response
+          let errorDetails = '';
+          try {
+            const errorData = await response.json();
+            errorDetails = errorData.error || '';
+          } catch (e) {
+            // Ignore JSON parsing errors
+          }
+          throw new Error(`Upload failed: ${response.statusText}${errorDetails ? ' - ' + errorDetails : ''}`);
         }
         
         const data = await response.json();
@@ -319,12 +333,18 @@ document.addEventListener('DOMContentLoaded', function() {
       window.appendLog(`Field mapping completed. ${Object.keys(mappings).length} fields mapped.`);
       
       try {
+        // Log what we're sending
+        console.log('Submitting mapping with file ID:', window.formatterState.fileId, 
+                   'tool:', window.formatterState.selectedTool,
+                   'mappings:', mappings);
+        
         // Call the transform API
         const response = await fetch('/api/data-formatter/transform', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
+          credentials: 'omit', // Don't include credentials which trigger CSRF protection
           body: JSON.stringify({
             fileId: window.formatterState.fileId,
             mappings: mappings,
