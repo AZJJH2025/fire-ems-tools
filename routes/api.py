@@ -318,13 +318,44 @@ def upload_data_file():
         file_path = os.path.join(get_files_path(), unique_filename)
         file.save(file_path)
         
-        # Return the file ID for later reference
-        return jsonify({
-            "success": True,
-            "fileId": file_id,
-            "originalName": filename,
-            "fileType": file_extension
-        })
+        # Process file to get columns and sample data
+        try:
+            # Load source data based on file type
+            source_df = None
+            if file_extension == 'csv':
+                source_df = pd.read_csv(file_path)
+            elif file_extension in ['xlsx', 'xls']:
+                source_df = pd.read_excel(file_path)
+            elif file_extension == 'json':
+                source_df = pd.read_json(file_path)
+            elif file_extension == 'xml':
+                source_df = pd.read_xml(file_path)
+                
+            # Get columns and sample data
+            columns = list(source_df.columns)
+            sample_data = source_df.head(5).to_dict('records')
+            
+            # Return the file information with column data
+            return jsonify({
+                "success": True,
+                "fileId": file_id,
+                "originalName": filename,
+                "fileType": file_extension,
+                "columns": columns,
+                "sampleData": sample_data,
+                "originalData": True  # Indicates data is ready
+            })
+            
+        except Exception as e:
+            logger.error(f"Error processing file: {str(e)}")
+            # Still return the file ID even if processing failed
+            return jsonify({
+                "success": True,
+                "fileId": file_id,
+                "originalName": filename,
+                "fileType": file_extension,
+                "error": f"File uploaded but could not be processed: {str(e)}"
+            })
         
     except Exception as e:
         logger.error(f"Error in upload_data_file: {str(e)}")

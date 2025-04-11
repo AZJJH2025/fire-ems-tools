@@ -1,242 +1,210 @@
 {
   "schemaVersion": "3.0",
-  "schemaName": "Standardized Incident Record",
-  "lastUpdated": "2025-04-11T20:11:11Z",
+  "name": "Standardized Incident Record Schema",
+  "description": "Standard schema for incident data with FireEMS.ai tools",
   "requiredFields": [
     {
-      "fieldName": "incident_id",
+      "fieldName": "Incident ID",
       "dataType": "string",
-      "formatNotes": "Unique identifier for the incident (e.g., CAD event ID)",
-      "category": "incident",
-      "requiredByTools": [
-        "response-time",
-        "call-density",
-        "incident-logger",
-        "fire-map-pro",
-        "coverage-gap",
-        "isochrone-map"
-      ],
-      "optionalForTools": []
+      "formatNotes": "Unique identifier for the incident",
+      "category": "incident"
     },
     {
-      "fieldName": "call_received_datetime",
-      "dataType": "datetime",
-      "formatNotes": "ISO 8601 UTC timestamp when the call was received/created (YYYY-MM-DDThh:mm:ssZ)",
-      "category": "call",
-      "requiredByTools": [
-        "response-time",
-        "call-density",
-        "incident-logger",
-        "fire-map-pro",
-        "coverage-gap",
-        "isochrone-map"
-      ],
-      "optionalForTools": []
+      "fieldName": "Incident Date",
+      "dataType": "date",
+      "formatNotes": "Date the incident occurred (YYYY-MM-DD)",
+      "category": "timestamp"
     },
     {
-      "fieldName": "latitude",
+      "fieldName": "Incident Time",
+      "dataType": "time",
+      "formatNotes": "Time the incident occurred (HH:MM:SS)",
+      "category": "timestamp"
+    },
+    {
+      "fieldName": "Incident Type",
+      "dataType": "string",
+      "formatNotes": "Type or nature of the incident",
+      "category": "incident"
+    },
+    {
+      "fieldName": "Latitude",
       "dataType": "number",
-      "formatNotes": "Incident location latitude (WGS84 decimal degrees)",
-      "category": "location",
-      "requiredByTools": [
-        "response-time",
-        "call-density",
-        "isochrone-map",
-        "coverage-gap",
-        "fire-map-pro"
-      ],
-      "optionalForTools": [
-        "incident-logger"
-      ]
+      "formatNotes": "Latitude coordinate of incident location",
+      "category": "location"
     },
     {
-      "fieldName": "longitude",
+      "fieldName": "Longitude",
       "dataType": "number",
-      "formatNotes": "Incident location longitude (WGS84 decimal degrees)",
-      "category": "location",
-      "requiredByTools": [
-        "response-time",
-        "call-density",
-        "isochrone-map",
-        "coverage-gap",
-        "fire-map-pro"
-      ],
-      "optionalForTools": [
-        "incident-logger"
-      ]
+      "formatNotes": "Longitude coordinate of incident location",
+      "category": "location"
     }
   ],
   "optionalFields": [
     {
-      "fieldName": "incident_type",
+      "fieldName": "Dispatch Time",
+      "dataType": "time",
+      "formatNotes": "Time when units were dispatched (HH:MM:SS)",
+      "category": "timestamp"
+    },
+    {
+      "fieldName": "En Route Time",
+      "dataType": "time",
+      "formatNotes": "Time when units began traveling to the incident (HH:MM:SS)",
+      "category": "timestamp"
+    },
+    {
+      "fieldName": "On Scene Time",
+      "dataType": "time",
+      "formatNotes": "Time when units arrived on scene (HH:MM:SS)",
+      "category": "timestamp"
+    },
+    {
+      "fieldName": "Transport Time",
+      "dataType": "time",
+      "formatNotes": "Time when patient transport began (HH:MM:SS)",
+      "category": "timestamp"
+    },
+    {
+      "fieldName": "At Hospital Time",
+      "dataType": "time",
+      "formatNotes": "Time when units arrived at hospital (HH:MM:SS)",
+      "category": "timestamp"
+    },
+    {
+      "fieldName": "Clear Time",
+      "dataType": "time",
+      "formatNotes": "Time when units cleared the incident (HH:MM:SS)",
+      "category": "timestamp"
+    },
+    {
+      "fieldName": "Address",
       "dataType": "string",
-      "formatNotes": "Standardized code or description (e.g., NFIRS code, ProQA code, local code)",
-      "category": "incident",
-      "requiredByTools": [
-        "incident-logger"
-      ],
-      "optionalForTools": [
-        "response-time",
-        "call-density",
-        "fire-map-pro"
-      ]
+      "formatNotes": "Street address of the incident",
+      "category": "location"
     },
     {
-      "fieldName": "priority",
+      "fieldName": "City",
       "dataType": "string",
-      "formatNotes": "Incident priority/urgency (e.g., \"Emergency\", \"Non-Emergency\", \"1\", \"3A\")",
-      "category": "general",
-      "requiredByTools": [],
-      "optionalForTools": [
-        "response-time",
-        "incident-logger"
-      ]
+      "formatNotes": "City where the incident occurred",
+      "category": "location"
     },
     {
-      "fieldName": "address",
+      "fieldName": "State",
       "dataType": "string",
-      "formatNotes": "Full street address",
-      "category": "general",
-      "requiredByTools": [],
-      "optionalForTools": [
-        "incident-logger",
-        "fire-map-pro"
-      ]
+      "formatNotes": "State where the incident occurred",
+      "category": "location"
     },
     {
-      "fieldName": "city",
+      "fieldName": "Zip Code",
       "dataType": "string",
-      "formatNotes": "City name",
-      "category": "general",
-      "requiredByTools": [],
-      "optionalForTools": [
-        "incident-logger",
-        "fire-map-pro"
-      ]
+      "formatNotes": "ZIP or Postal code where the incident occurred",
+      "category": "location"
     },
     {
-      "fieldName": "state",
+      "fieldName": "Station",
       "dataType": "string",
-      "formatNotes": "State/province code (e.g., AZ, CA)",
-      "category": "general",
-      "requiredByTools": [],
-      "optionalForTools": [
-        "incident-logger",
-        "fire-map-pro"
-      ]
+      "formatNotes": "Primary station/unit assigned",
+      "category": "incident"
     },
     {
-      "fieldName": "zip_code",
+      "fieldName": "Priority",
       "dataType": "string",
-      "formatNotes": "Postal code",
-      "category": "general",
-      "requiredByTools": [],
-      "optionalForTools": [
-        "incident-logger",
-        "fire-map-pro"
-      ]
+      "formatNotes": "Priority level of the incident",
+      "category": "incident"
     },
     {
-      "fieldName": "station_id",
+      "fieldName": "Response Category",
       "dataType": "string",
-      "formatNotes": "Identifier of the primary responding station",
-      "category": "station",
-      "requiredByTools": [
-        "coverage-gap"
-      ],
-      "optionalForTools": [
-        "response-time",
-        "incident-logger"
-      ]
+      "formatNotes": "Category of response (Fire, EMS, Rescue, etc.)",
+      "category": "incident"
     },
     {
-      "fieldName": "unit_id",
+      "fieldName": "NFIRS Incident Type",
       "dataType": "string",
-      "formatNotes": "Identifier of the specific responding unit",
-      "category": "unit",
-      "requiredByTools": [],
-      "optionalForTools": [
-        "response-time",
-        "isochrone-map",
-        "incident-logger"
-      ]
+      "formatNotes": "NFIRS incident type code",
+      "category": "nfirs"
     },
     {
-      "fieldName": "unit_dispatched_datetime",
-      "dataType": "datetime",
-      "formatNotes": "ISO 8601 UTC timestamp when unit was dispatched",
-      "category": "unit",
-      "requiredByTools": [],
-      "optionalForTools": [
-        "response-time"
-      ]
-    },
-    {
-      "fieldName": "unit_enroute_datetime",
-      "dataType": "datetime",
-      "formatNotes": "ISO 8601 UTC timestamp when unit went en route",
-      "category": "unit",
-      "requiredByTools": [],
-      "optionalForTools": [
-        "response-time"
-      ]
-    },
-    {
-      "fieldName": "unit_onscene_datetime",
-      "dataType": "datetime",
-      "formatNotes": "ISO 8601 UTC timestamp when unit arrived on scene",
-      "category": "unit",
-      "requiredByTools": [
-        "response-time"
-      ],
-      "optionalForTools": []
-    },
-    {
-      "fieldName": "unit_cleared_datetime",
-      "dataType": "datetime",
-      "formatNotes": "ISO 8601 UTC timestamp when unit cleared scene",
-      "category": "unit",
-      "requiredByTools": [],
-      "optionalForTools": [
-        "response-time"
-      ]
-    },
-    {
-      "fieldName": "narrative",
+      "fieldName": "NFIRS Property Type",
       "dataType": "string",
-      "formatNotes": "Text description or notes about the incident",
-      "category": "general",
-      "requiredByTools": [],
-      "optionalForTools": [
-        "incident-logger"
-      ]
+      "formatNotes": "NFIRS property type code",
+      "category": "nfirs"
     },
     {
-      "fieldName": "detector_activated",
-      "dataType": "boolean",
-      "formatNotes": "Was a smoke/fire detector activated?",
-      "category": "general",
-      "requiredByTools": [],
-      "optionalForTools": [
-        "fire-map-pro"
-      ]
+      "fieldName": "NFIRS Property Value",
+      "dataType": "number",
+      "formatNotes": "Value of property in dollars",
+      "category": "nfirs"
     },
     {
-      "fieldName": "sprinkler_activated",
-      "dataType": "boolean",
-      "formatNotes": "Was a sprinkler system activated?",
-      "category": "general",
-      "requiredByTools": [],
-      "optionalForTools": [
-        "fire-map-pro"
-      ]
+      "fieldName": "NFIRS Property Loss",
+      "dataType": "number",
+      "formatNotes": "Value of property loss in dollars",
+      "category": "nfirs"
+    },
+    {
+      "fieldName": "FDID",
+      "dataType": "string",
+      "formatNotes": "Fire Department Identifier",
+      "category": "nfirs"
+    },
+    {
+      "fieldName": "Weather Conditions",
+      "dataType": "string",
+      "formatNotes": "Weather conditions at time of incident",
+      "category": "other"
+    },
+    {
+      "fieldName": "Temperature",
+      "dataType": "number",
+      "formatNotes": "Temperature at time of incident (in degrees F)",
+      "category": "other"
     }
   ],
-  "implementationNotes": [
-    "All datetime fields MUST be in ISO 8601 UTC format, preferably with the 'Z' suffix (e.g., `2024-03-15T14:35:01Z`). Timezone conversion should happen *before* data is sent to the tools. If only date and time are available separately, they should be combined into a single UTC datetime field during transformation.",
-    "Latitude and Longitude MUST be in WGS84 decimal degrees format.",
-    "When mapping source data, prioritize mapping to required fields first.",
-    "Tools listed under \"Required By\" will likely fail or produce inaccurate results if the field is missing.",
-    "Tools listed under \"Optional For\" can use the field to provide richer analysis but can function without it."
-  ]
+  "toolRequirements": {
+    "response-time": [
+      "Incident ID",
+      "Incident Date",
+      "Incident Time",
+      "Dispatch Time",
+      "En Route Time",
+      "On Scene Time",
+      "Incident Type"
+    ],
+    "call-density": [
+      "Incident ID",
+      "Incident Date",
+      "Incident Time",
+      "Latitude",
+      "Longitude",
+      "Incident Type"
+    ],
+    "isochrone": [
+      "Station",
+      "Latitude",
+      "Longitude",
+      "Address",
+      "City",
+      "State"
+    ],
+    "coverage-gap": [
+      "Incident ID",
+      "Latitude", 
+      "Longitude",
+      "Incident Type",
+      "Priority",
+      "On Scene Time",
+      "Response Category"
+    ],
+    "incident-logger": [
+      "Incident ID",
+      "Incident Date",
+      "Incident Time",
+      "Incident Type",
+      "Address",
+      "Latitude",
+      "Longitude"
+    ]
+  }
 }

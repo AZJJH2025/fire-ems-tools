@@ -1,32 +1,28 @@
-/* Column Mapping UI Styles */
-
+/* Column Mapping Styles */
 .column-mapping-container {
-  font-family: 'Roboto', Arial, sans-serif;
-  background-color: #f8f9fa;
-  padding: 20px;
-  border-radius: 8px;
+  background-color: #fff;
+  border-radius: 4px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 20px;
+  margin: 20px 0;
 }
 
-/* Loading spinner */
 .loading-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px;
+  padding: 40px 0;
 }
 
 .loading-spinner {
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #3f51b5;
+  border: 4px solid rgba(0, 0, 0, 0.1);
   border-radius: 50%;
+  border-top: 4px solid #3498db;
   width: 40px;
   height: 40px;
   animation: spin 1s linear infinite;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 @keyframes spin {
@@ -34,223 +30,106 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Droppable areas */
-.droppable-target {
-  border: 1px dashed #ccc;
-  border-radius: 4px;
-  padding: 8px;
-  min-height: 36px;
-  background-color: #f9f9f9;
-  transition: background-color 0.3s ease;
-}
-
-.droppable-target.dragging-over {
-  background-color: #e3f2fd;
-  border-color: #2196f3;
-}
-
-/* Draggable items */
-.draggable-item {
-  background-color: white;
+/* Mapping styles */
+.target-field {
+  background-color: #f5f5f5;
   border: 1px solid #ddd;
   border-radius: 4px;
-  padding: 8px 16px;
-  margin-bottom: 8px;
-  user-select: none;
-  cursor: grab;
-  transition: box-shadow 0.2s ease;
-}
-
-.draggable-item:hover {
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.draggable-item.dragging {
-  opacity: 0.6;
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-}
-
-.draggable-item.mapped {
-  background-color: #f0f7ff;
-  border-color: #90caf9;
-}
-
-/* Field cards */
-.target-field-card {
-  padding: 12px;
-  margin-bottom: 10px;
-  background-color: #f9f9f9;
-  border-radius: 4px;
-  transition: background-color 0.3s ease;
-}
-
-.target-field-card.mapped {
-  background-color: #e8f5e9;
-  border-left: 4px solid #4caf50;
-}
-
-.target-field-card.required {
-  border-left: 4px solid #f44336;
-}
-
-.target-field-card.required.mapped {
-  border-left: 4px solid #4caf50;
-}
-
-/* Chips and badges */
-.field-chip {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 16px;
-  font-size: 0.75rem;
-  margin-right: 8px;
-  background-color: #e0e0e0;
-}
-
-.field-chip.type {
-  background-color: #e0e0e0;
-}
-
-.field-chip.mapped {
-  background-color: #1976d2;
-  color: white;
-}
-
-.field-chip.transform {
-  background-color: #ff9800;
-  color: white;
-}
-
-/* Accordion styles */
-.category-accordion {
-  margin-bottom: 8px;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.category-header {
-  background-color: #f5f5f5;
-  cursor: pointer;
   padding: 10px 15px;
+  margin-bottom: 10px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
 }
 
-/* Progress bar */
-.mapping-progress {
-  height: 8px;
-  border-radius: 4px;
-  background-color: #e0e0e0;
-  margin-bottom: 8px;
+.target-field.required {
+  background-color: #e3f2fd;
 }
 
-.mapping-progress-inner {
-  height: 100%;
-  border-radius: 4px;
-  background-color: #4caf50;
-  transition: width 0.3s ease;
+.target-field.mapped {
+  border: 2px solid #4caf50;
 }
 
-.mapping-progress-inner.incomplete {
-  background-color: #f44336;
-}
-
-/* Configuration popover */
-.config-popover {
-  background-color: white;
-  border-radius: 4px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-  width: 320px;
-  padding: 16px;
-}
-
-.config-form-group {
-  margin-bottom: 16px;
-}
-
-.config-form-label {
-  display: block;
-  margin-bottom: 6px;
-  font-weight: 500;
-}
-
-.config-form-control {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-/* Button styles */
-.config-action-buttons {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
-}
-
-.config-button {
-  padding: 6px 12px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  margin-left: 8px;
-}
-
-.config-button.cancel {
-  background-color: #f5f5f5;
-}
-
-.config-button.apply {
-  background-color: #2196f3;
-  color: white;
-}
-
-/* Sample data table */
-.sample-data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.85rem;
-}
-
-.sample-data-table th {
-  padding: 8px;
-  background-color: #f5f5f5;
-  border-bottom: 2px solid #ddd;
-  text-align: left;
-  font-weight: 600;
-}
-
-.sample-data-table td {
-  padding: 6px 8px;
-  border-bottom: 1px solid #eee;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 150px;
-}
-
-/* Error display */
-.error-container {
-  padding: 16px;
-  text-align: center;
-  color: #666;
-}
-
-.error-container i {
-  font-size: 2rem;
-  color: #f44336;
+.field-category {
   margin-bottom: 15px;
 }
 
-/* Responsive adjustments */
+.category-header {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 15px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.source-field {
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 15px;
+  margin-bottom: 8px;
+  cursor: grab;
+  transition: background-color 0.2s;
+}
+
+.source-field:hover {
+  background-color: #e0e0e0;
+}
+
+.source-field.dragging {
+  background-color: #bbdefb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.mapping-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.mapping-chip {
+  background-color: #e0e0e0;
+  border-radius: 16px;
+  padding: 2px 8px;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.required-chip {
+  background-color: #bbdefb;
+  color: #0d47a1;
+}
+
+.field-description {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* Responsive design */
 @media (max-width: 768px) {
   .column-mapping-container {
     padding: 10px;
   }
   
-  .target-field-card {
-    padding: 8px;
+  .target-field {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .mapping-buttons {
+    flex-direction: column;
+  }
+  
+  .mapping-buttons button {
+    width: 100%;
+    margin-bottom: 8px;
   }
 }

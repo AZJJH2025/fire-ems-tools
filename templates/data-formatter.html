@@ -400,26 +400,7 @@
     </div>
   </footer>
 
-  <!-- Load the central data store first -->
-  <script src="/static/js/data-formatter-store.js"></script>
-  
-  <script src="/static/data-formatter.js"></script>
-  <!-- Enhanced version with fixes for file loading, CSV parsing, and sessionStorage issues -->
-  <script src="/static/data-formatter-fix.js"></script>
-  <!-- API interface for external data sources -->
-  <script src="/static/js/components/data-formatter-api.js"></script>
-  
   <!-- React and required libraries -->
-  <script>
-    // Define a function to check that dependencies are fully loaded
-    window.checkCoreDependencies = function() {
-      console.log("Checking core React dependencies:");
-      console.log("- React:", !!window.React);
-      console.log("- ReactDOM:", !!window.ReactDOM);
-      console.log("- MaterialUI:", !!window.MaterialUI);
-      console.log("- ReactBeautifulDnD:", !!window.ReactBeautifulDnD);
-    };
-  </script>
   <script src="https://cdn.jsdelivr.net/npm/react@17/umd/react.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/react-dom@17/umd/react-dom.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@material-ui/core@4.12.3/umd/material-ui.production.min.js"></script>
@@ -427,22 +408,35 @@
   
   <!-- Assign ReactBeautifulDnD to window object if needed -->
   <script>
-    if (window.reactBeautifulDnd && !window.ReactBeautifulDnD) {
-      window.ReactBeautifulDnD = window.reactBeautifulDnd;
-      console.log("Assigned reactBeautifulDnd to ReactBeautifulDnD global variable");
-    }
-    // Run dependency check after loading libraries
-    if (window.checkCoreDependencies) {
-      window.checkCoreDependencies();
+    // React Beautiful DnD exposes itself as "default" in some bundlers
+    if (!window.ReactBeautifulDnD) {
+      // Try different common export approaches
+      if (window.reactBeautifulDnd) {
+        window.ReactBeautifulDnD = window.reactBeautifulDnd;
+        console.log("Assigned reactBeautifulDnd to ReactBeautifulDnD");
+      } else if (window.ReactBeautifulDnd) {
+        window.ReactBeautifulDnD = window.ReactBeautifulDnd;
+        console.log("Assigned ReactBeautifulDnd to ReactBeautifulDnD");
+      } else if (window.default && typeof window.default === 'object') {
+        window.ReactBeautifulDnD = window.default;
+        console.log("Assigned default export to ReactBeautifulDnD");
+      } else {
+        // Create a stub to prevent errors
+        console.warn("Creating ReactBeautifulDnD stub object to prevent errors");
+        window.ReactBeautifulDnD = {
+          DragDropContext: function() { return null; },
+          Droppable: function() { return null; },
+          Draggable: function() { return null; }
+        };
+      }
     }
   </script>
   
-  <!-- Added React libraries with dependency checks -->
+  <!-- Load our bundled React Data Formatter -->
+  <script src="/static/js/react-data-formatter/dist/data-formatter.js"></script>
   
-  <!-- React integration for column mapping UI -->
-  <script src="/static/data-formatter-react.js"></script>
-  <!-- API integration for buttons and UI -->
-  <script src="/static/data-formatter-api-integration.js"></script>
+  <!-- Integration script to connect the React application with Flask -->
+  <script src="/static/data-formatter-integration.js"></script>
   
   <!-- Add styling for the column mapping UI -->
   <link rel="stylesheet" href="/static/column-mapping.css">
