@@ -28,22 +28,8 @@ logger = logging.getLogger(__name__)
 # Create blueprint
 bp = Blueprint('api', __name__, url_prefix='/api')
 
-# Import the safe_limit decorator if available
-try:
-    from app import safe_limit
-except ImportError:
-    # Create a dummy decorator if not available
-    def safe_limit(*args, **kwargs):
-        def decorator(f):
-            return f
-        return decorator
-
-# Import the require_api_key decorator if available
-try:
-    from app import require_api_key
-except ImportError:
-    # Use the one from fix_deployment
-    require_api_key = fix_deployment.require_api_key_safe
+# Import utility functions from utils module
+from utils import safe_limit, require_api_key
 
 # Common helper function for file uploads
 def allowed_file(filename, allowed_extensions):
