@@ -258,63 +258,101 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Helper function for client-side send to tool
   function fallbackSendToTool(selectedTool) {
+    console.log("🚨 Using fallbackSendToTool with tool:", selectedTool);
+    
+    // Try multiple strategies to get the data
+    let dataToSend = null;
+    
+    // Strategy 1: Use transformedData if available
     if (window.transformedData && window.transformedData.length > 0) {
+      console.log("Strategy 1: Using window.transformedData");
+      dataToSend = window.transformedData;
+    }
+    // Strategy 2: Try to use emergency transformer if available and we have original data
+    else if (window.originalData && window.originalData.length > 0 && 
+             window.emergencyTransformData && typeof window.emergencyTransformData === 'function') {
+      console.log("Strategy 2: Using emergency transformer with original data");
+      dataToSend = window.emergencyTransformData(window.originalData);
+    }
+    // Strategy 3: Try to get data from sessionStorage
+    else {
       try {
-        // Before storing, ensure all records have the required fields for Response Time Analyzer
+        console.log("Strategy 3: Attempting to retrieve from sessionStorage");
+        const tempData = sessionStorage.getItem('tempTransformedData');
+        if (tempData) {
+          dataToSend = JSON.parse(tempData);
+          console.log("Retrieved data from tempTransformedData");
+        }
+      } catch (e) {
+        console.error("Error retrieving from sessionStorage:", e);
+      }
+    }
+    
+    // Double-check if we have data - if not, create emergency data from original data
+    if (!dataToSend && window.originalData && window.originalData.length > 0) {
+      console.log("Strategy 4: Creating emergency data directly");
+      
+      // Create direct mapping for response time analyzer specifically
+      if (selectedTool === 'response-time') {
+        dataToSend = window.originalData.map(record => ({
+          "Incident ID": record.Inc_ID || "",
+          "Latitude": parseFloat(record.GPS_Lat) || 0,
+          "Longitude": parseFloat(record.GPS_Lon) || 0,
+          "Unit": record.Units || "",
+          "Unit Dispatched": record.Disp_Time || "",
+          "Unit Onscene": record.Arriv_Time || "",
+          "Reported": record.Call_Time || "",
+          "Incident Date": record.Call_Date || "",
+          "Incident Type": record.Call_Type || "",
+          "Address": record.Address_Full || "",
+          "_source": "emergency_direct"
+        }));
+      } else {
+        dataToSend = window.originalData;
+      }
+    }
+    
+    // Now, if we have data, store it properly and redirect
+    if (dataToSend && dataToSend.length > 0) {
+      try {
+        console.log("Preparing to send data:", dataToSend[0]);
+        console.log("Data fields:", Object.keys(dataToSend[0]));
+        
+        // For Response Time Analyzer, ensure numeric coordinates
         if (selectedTool === 'response-time') {
-          console.log("Preparing data for Response Time Analyzer with required fields");
-          
-          // Clone the data to avoid modifying the original
-          const enhancedData = window.transformedData.map(record => {
-            const newRecord = { ...record };
+          dataToSend = dataToSend.map(record => {
+            const newRecord = {...record};
             
-            // Ensure all required fields exist
-            // Map GPS coordinates to Latitude/Longitude
-            if (newRecord.GPS_Lat && !newRecord.Latitude) {
-              newRecord.Latitude = newRecord.GPS_Lat;
+            // Ensure Latitude/Longitude are numbers
+            if (newRecord.Latitude && typeof newRecord.Latitude === 'string') {
+              newRecord.Latitude = parseFloat(newRecord.Latitude);
             }
             
-            if (newRecord.GPS_Lon && !newRecord.Longitude) {
-              newRecord.Longitude = newRecord.GPS_Lon;
-            }
-            
-            // Map unit information
-            if (newRecord.Units && !newRecord.Unit) {
-              newRecord.Unit = newRecord.Units;
-            }
-            
-            // Map time fields
-            if (newRecord.Disp_Time && !newRecord['Unit Dispatched']) {
-              newRecord['Unit Dispatched'] = newRecord.Disp_Time;
-            }
-            
-            if (newRecord.Enr_Time && !newRecord['Unit Enroute']) {
-              newRecord['Unit Enroute'] = newRecord.Enr_Time;
-            }
-            
-            if (newRecord.Arriv_Time && !newRecord['Unit Onscene']) {
-              newRecord['Unit Onscene'] = newRecord.Arriv_Time;
+            if (newRecord.Longitude && typeof newRecord.Longitude === 'string') {
+              newRecord.Longitude = parseFloat(newRecord.Longitude);
             }
             
             return newRecord;
           });
-          
-          console.log("Enhanced data with required fields:", enhancedData[0]);
-          
-          // Store the enhanced data instead
-          sessionStorage.setItem('formattedData', JSON.stringify(enhancedData));
-        } else {
-          // For other tools, use the original data
-          sessionStorage.setItem('formattedData', JSON.stringify(window.transformedData));
         }
         
-        sessionStorage.setItem('dataSource', 'formatter');
-        sessionStorage.setItem('formatterToolId', selectedTool);
-        sessionStorage.setItem('formatterTimestamp', new Date().toISOString());
+        // Use the emergency storage method if available
+        if (window.storeEmergencyData && typeof window.storeEmergencyData === 'function') {
+          window.storeEmergencyData(dataToSend, selectedTool);
+        } 
+        // Otherwise use direct sessionStorage
+        else {
+          sessionStorage.setItem('formattedData', JSON.stringify(dataToSend));
+          sessionStorage.setItem('dataSource', 'formatter');
+          sessionStorage.setItem('formatterToolId', selectedTool);
+          sessionStorage.setItem('formatterTimestamp', new Date().toISOString());
+        }
         
-        // Log
+        // Log the action
         if (window.appendLog && typeof window.appendLog === 'function') {
           window.appendLog(`Data prepared for ${getToolName(selectedTool)}. Redirecting...`);
+        } else {
+          console.log(`Data prepared for ${getToolName(selectedTool)}. Redirecting...`);
         }
         
         // Redirect based on tool
