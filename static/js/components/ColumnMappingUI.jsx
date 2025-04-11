@@ -79,7 +79,8 @@ const ColumnMappingUI = ({ sourceColumns = [], sampleData = [], fileId = null, o
   const loadSchema = async () => {
     setIsSchemaLoading(true);
     try {
-      const response = await fetch('/public/standardized_incident_record_schema.json');
+      // Changed from /public to /static directory where the schema actually exists
+      const response = await fetch('/static/standardized_incident_record_schema.json');
       if (!response.ok) {
         throw new Error(`Failed to load schema: ${response.status} ${response.statusText}`);
       }

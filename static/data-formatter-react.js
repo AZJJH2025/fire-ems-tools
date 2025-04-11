@@ -514,20 +514,28 @@ document.addEventListener('DOMContentLoaded', function() {
     loadReactDependencies(function() {
       console.log('React dependencies loaded');
       
-      // Try to load the full JSX component first
+      // Load the full JSX component with no fallback
       try {
         loadComponentScript();
-        
-        // Set a timeout to check if the component loaded successfully
-        setTimeout(function() {
-          if (!window.ColumnMappingUI) {
-            console.warn('ColumnMappingUI not loaded after 3 seconds, falling back to simple version');
-            loadSimpleComponent();
-          }
-        }, 3000);
+        console.log('Loading ColumnMappingUI component without fallback');
       } catch (e) {
-        console.error('Error loading JSX component:', e);
-        loadSimpleComponent();
+        console.error('Error loading ColumnMappingUI component:', e);
+        
+        // Display error in the column mapping container
+        const columnMappingContainer = document.getElementById('column-mapping-container');
+        if (columnMappingContainer) {
+          columnMappingContainer.innerHTML = `
+            <div class="error-container">
+              <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #f44336; margin-bottom: 15px;"></i>
+              <p style="margin-bottom: 20px; color: #666; text-align: center;">
+                Failed to load the Data Formatter component. Please refresh the page or contact support.
+              </p>
+              <button onclick="location.reload()" class="primary-btn">
+                Refresh Page
+              </button>
+            </div>
+          `;
+        }
       }
     });
   }

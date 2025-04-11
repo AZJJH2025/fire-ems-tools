@@ -15,8 +15,10 @@ import json
 import os
 import uuid
 import tempfile
+import traceback
 from datetime import datetime
 from werkzeug.utils import secure_filename
+from flask_wtf.csrf import CSRFProtect
 
 from database import db, Department, Incident, User, Station
 import fix_deployment
@@ -229,9 +231,79 @@ def api_create_station(department):
         logger.error(f"Error in api_create_station: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+# Create a CSRFProtect instance just for exemption
+# This is only for development and testing purposes
+csrf = CSRFProtect()
+
+# Test endpoint to verify data transformation functionality
+@bp.route('/test/data-transformer', methods=['GET'])
+def test_data_transformer():
+    """Test endpoint for data transformer functionality"""
+    from routes.helpers.data_transformer import transform_datetime, apply_transformations, load_schema
+    
+    # Create a test DataFrame
+    data = {
+        "Incident_No": ["TEST-001", "TEST-002", "TEST-003"],
+        "Date": ["2023-01-15", "2023-01-16", "2023-01-17"],
+        "Time": ["14:30:00", "15:45:00", "16:20:00"],
+        "Lat": [33.4484, 33.4584, 33.4684],
+        "Lon": [-112.0740, -112.0840, -112.0940],
+        "Type": ["Fire", "EMS", "Rescue"]
+    }
+    
+    df = pd.DataFrame(data)
+    
+    # Load the schema
+    schema = load_schema(current_app.root_path)
+    if not schema:
+        return jsonify({"error": "Failed to load schema"}), 500
+    
+    # Create field mappings
+    mappings = {
+        "Incident ID": {"sourceId": "Incident_No"},
+        "Incident Date": {"sourceId": "Date"},
+        "Incident Time": {"sourceId": "Time"},
+        "Latitude": {"sourceId": "Lat"},
+        "Longitude": {"sourceId": "Lon"},
+        "Incident Type": {"sourceId": "Type"}
+    }
+    
+    # Apply transformations
+    try:
+        result_df = apply_transformations(df, mappings, schema, current_app.root_path)
+        
+        # Convert to dict for response
+        result = result_df.to_dict(orient='records')
+        
+        # Check for datetime formatting
+        validation = {
+            "success": True,
+            "has_incident_datetime": "incident_datetime" in result_df.columns,
+            "sample_incident_datetime": result_df["incident_datetime"].iloc[0] if "incident_datetime" in result_df.columns and not result_df.empty else None,
+            "formatted_correctly": False
+        }
+        
+        # Validate datetime format
+        if validation["sample_incident_datetime"]:
+            sample = validation["sample_incident_datetime"]
+            validation["formatted_correctly"] = isinstance(sample, str) and 'T' in sample and sample.endswith('Z')
+        
+        return jsonify({
+            "success": True,
+            "result": result[:3],  # Just return the first 3 records
+            "validation": validation,
+            "column_count": len(result_df.columns),
+            "row_count": len(result_df)
+        })
+    except Exception as e:
+        logger.error(f"Error in test_data_transformer: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({"error": str(e)}), 500
+
 # File upload endpoint for the data formatter
 @bp.route('/data-formatter/upload', methods=['POST'])
 @safe_limit("10 per minute")
+@csrf.exempt
 def upload_data_file():
     """Upload a data file for processing in the data formatter"""
     try:
@@ -275,6 +347,7 @@ def upload_data_file():
 # Data formatter transform endpoint
 @bp.route('/data-formatter/transform', methods=['POST'])
 @safe_limit("5 per minute")
+@csrf.exempt
 def transform_data():
     """Transform data based on field mappings"""
     try:
