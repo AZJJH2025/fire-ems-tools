@@ -103,21 +103,11 @@ def create_app(config_name='default'):
     # Set up CORS with more restrictive settings
     CORS(app, resources={r"/api/*": {"origins": "*"}})
     
-    # Set up anti-CSRF protection
-    csrf.init_app(app)
-
-    # Add exemptions for API endpoints if needed
-    # First register direct exemptions for specific endpoints
-    csrf.exempt('/api/data-formatter/upload')
-    csrf.exempt('/api/data-formatter/transform')
-    csrf.exempt('/api/data-formatter/download')
+    # TEMPORARILY DISABLE CSRF FOR DEBUGGING
+    app.config['WTF_CSRF_ENABLED'] = False
     
-    # Then add a general exemption function
-    @csrf.exempt
-    def csrf_exempt_api():
-        if request.path.startswith('/api/'):
-            return True
-        return False
+    # Initialize but don't enforce CSRF protection
+    csrf.init_app(app)
     
     # Initialize extensions
     db.init_app(app)
