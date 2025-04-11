@@ -400,43 +400,42 @@
     </div>
   </footer>
 
-  <!-- React and required libraries -->
-  <script src="https://cdn.jsdelivr.net/npm/react@17/umd/react.production.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/react-dom@17/umd/react-dom.production.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@material-ui/core@4.12.3/umd/material-ui.production.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/react-beautiful-dnd@13.1.0/dist/react-beautiful-dnd.min.js"></script>
+  <!-- Core dependencies for React and Material UI -->
+  <script src="https://cdn.jsdelivr.net/npm/react@17/umd/react.production.min.js" integrity="sha256-UkE6Sny96UqpJlVQrJr/aBiNK8V/uENHm2hUNnh+ZcE=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@17/umd/react-dom.production.min.js" integrity="sha256-qWzfKIRGSHbz9NjWIy7iSZJl9uNJQN5UopM9Z3nQ4KQ=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@material-ui/core@4.12.3/umd/material-ui.production.min.js" crossorigin="anonymous"></script>
   
-  <!-- Assign ReactBeautifulDnD to window object if needed -->
+  <!-- Single consolidated bundle that handles all dependencies and loading -->
+  <script src="/static/data-formatter-bundle.js?v=1.0.0"></script>
+  
+  <!-- Simple error detection in case the bundle fails -->
   <script>
-    // React Beautiful DnD exposes itself as "default" in some bundlers
-    if (!window.ReactBeautifulDnD) {
-      // Try different common export approaches
-      if (window.reactBeautifulDnd) {
-        window.ReactBeautifulDnD = window.reactBeautifulDnd;
-        console.log("Assigned reactBeautifulDnd to ReactBeautifulDnD");
-      } else if (window.ReactBeautifulDnd) {
-        window.ReactBeautifulDnD = window.ReactBeautifulDnd;
-        console.log("Assigned ReactBeautifulDnd to ReactBeautifulDnD");
-      } else if (window.default && typeof window.default === 'object') {
-        window.ReactBeautifulDnD = window.default;
-        console.log("Assigned default export to ReactBeautifulDnD");
-      } else {
-        // Create a stub to prevent errors
-        console.warn("Creating ReactBeautifulDnD stub object to prevent errors");
-        window.ReactBeautifulDnD = {
-          DragDropContext: function() { return null; },
-          Droppable: function() { return null; },
-          Draggable: function() { return null; }
-        };
-      }
-    }
+    document.addEventListener('DOMContentLoaded', function() {
+      // Wait 3 seconds then check if the formatter was loaded
+      setTimeout(function() {
+        if (!window.dataFormatterLoaded) {
+          console.error('Data formatter failed to load within timeout period');
+          
+          // Create error message for user
+          var container = document.querySelector('.formatter-container');
+          if (container) {
+            var errorMsg = document.createElement('div');
+            errorMsg.className = 'error-message';
+            errorMsg.innerHTML = '<h3>Error Loading Data Formatter</h3>' +
+                                '<p>The application components failed to load properly. Please try:</p>' +
+                                '<ol>' +
+                                  '<li>Refreshing the page</li>' +
+                                  '<li>Clearing your browser cache</li>' +
+                                  '<li>Trying a different browser</li>' +
+                                '</ol>' +
+                                '<button onclick="location.reload()">Refresh Page</button>';
+            
+            container.prepend(errorMsg);
+          }
+        }
+      }, 3000);
+    });
   </script>
-  
-  <!-- Load our bundled React Data Formatter -->
-  <script src="/static/js/react-data-formatter/dist/data-formatter.js"></script>
-  
-  <!-- Integration script to connect the React application with Flask -->
-  <script src="/static/data-formatter-integration.js"></script>
   
   <!-- Add styling for the column mapping UI -->
   <link rel="stylesheet" href="/static/column-mapping.css">
@@ -459,8 +458,77 @@
       
       // Setup UI events for manual field mapping
       const mapFieldsBtn = document.getElementById('map-fields-btn');
+      const clearBtn = document.getElementById('clear-btn');
       const mappingContainer = document.getElementById('column-mapping-container');
       const formatterPanels = document.querySelectorAll('.formatter-panel');
+      const showInstructionsBtn = document.getElementById('show-instructions');
+      const closeInstructionsBtn = document.getElementById('close-instructions');
+      const instructionsPanel = document.getElementById('instructions-panel');
+      const advancedToggle = document.getElementById('advanced-toggle');
+      const advancedOptions = document.querySelector('.advanced-options');
+      const requirementsToggle = document.getElementById('requirements-toggle');
+      const requirementsContent = document.querySelector('.requirements-content');
+      const dateFormatSelect = document.getElementById('date-format');
+      const customDateFormatInput = document.getElementById('custom-date-format');
+      const handleMissingCheckbox = document.getElementById('handle-missing');
+      const missingValuesOptions = document.querySelector('.missing-values-options');
+      
+      // Setup instructions toggle
+      if (showInstructionsBtn && instructionsPanel) {
+        showInstructionsBtn.addEventListener('click', function() {
+          instructionsPanel.style.display = 'block';
+        });
+      }
+      
+      if (closeInstructionsBtn && instructionsPanel) {
+        closeInstructionsBtn.addEventListener('click', function() {
+          instructionsPanel.style.display = 'none';
+        });
+      }
+      
+      // Setup advanced options toggle
+      if (advancedToggle && advancedOptions) {
+        advancedToggle.addEventListener('click', function() {
+          advancedOptions.style.display = advancedOptions.style.display === 'none' ? 'block' : 'none';
+          advancedToggle.classList.toggle('collapsed');
+          
+          // Update chevron icon
+          const chevron = advancedToggle.querySelector('i');
+          if (chevron) {
+            chevron.classList.toggle('fa-chevron-down');
+            chevron.classList.toggle('fa-chevron-up');
+          }
+        });
+      }
+      
+      // Setup requirements toggle
+      if (requirementsToggle && requirementsContent) {
+        requirementsToggle.addEventListener('click', function() {
+          requirementsContent.style.display = requirementsContent.style.display === 'none' ? 'block' : 'none';
+          requirementsToggle.classList.toggle('collapsed');
+          
+          // Update chevron icon
+          const chevron = requirementsToggle.querySelector('i');
+          if (chevron) {
+            chevron.classList.toggle('fa-chevron-down');
+            chevron.classList.toggle('fa-chevron-up');
+          }
+        });
+      }
+      
+      // Show custom date format input when "Custom" is selected
+      if (dateFormatSelect && customDateFormatInput) {
+        dateFormatSelect.addEventListener('change', function() {
+          customDateFormatInput.style.display = dateFormatSelect.value === 'custom' ? 'block' : 'none';
+        });
+      }
+      
+      // Show missing values options when "Handle missing values" is checked
+      if (handleMissingCheckbox && missingValuesOptions) {
+        handleMissingCheckbox.addEventListener('change', function() {
+          missingValuesOptions.style.display = handleMissingCheckbox.checked ? 'block' : 'none';
+        });
+      }
       
       if (mapFieldsBtn && mappingContainer) {
         mapFieldsBtn.addEventListener('click', function() {
@@ -515,6 +583,74 @@
             outputPreview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
           }
         };
+      }
+      
+      // Clear button functionality
+      if (clearBtn) {
+        clearBtn.addEventListener('click', function() {
+          // Reset file input
+          const fileInput = document.getElementById('data-file');
+          const fileNameDisplay = document.getElementById('file-name');
+          if (fileInput) {
+            fileInput.value = '';
+          }
+          if (fileNameDisplay) {
+            fileNameDisplay.textContent = 'No file selected';
+          }
+          
+          // Clear previews
+          const inputPreview = document.getElementById('input-preview');
+          const outputPreview = document.getElementById('output-preview');
+          
+          if (inputPreview) {
+            inputPreview.innerHTML = `
+              <div class="placeholder-message">
+                <i class="fas fa-arrow-up"></i>
+                <p>Upload a file to preview</p>
+              </div>
+            `;
+          }
+          
+          if (outputPreview) {
+            outputPreview.innerHTML = `
+              <div class="placeholder-message">
+                <i class="fas fa-arrow-left"></i>
+                <p>Transform data to preview</p>
+              </div>
+            `;
+          }
+          
+          // Clear log
+          const logContainer = document.getElementById('log-container');
+          if (logContainer) {
+            logContainer.innerHTML = '<p class="log-placeholder">Transformation details will appear here</p>';
+          }
+          
+          // Disable buttons
+          if (mapFieldsBtn) mapFieldsBtn.disabled = true;
+          const downloadBtn = document.getElementById('download-btn');
+          const sendToToolBtn = document.getElementById('send-to-tool-btn');
+          if (downloadBtn) downloadBtn.disabled = true;
+          if (sendToToolBtn) sendToToolBtn.disabled = true;
+          
+          // Reset form state
+          if (window.formatterState) {
+            window.formatterState = {
+              fileId: null,
+              sourceColumns: [],
+              sampleData: [],
+              selectedTool: null,
+              mappings: null,
+              transformedData: null,
+              originalData: null
+            };
+          }
+          
+          // Log action
+          if (window.appendLog && typeof window.appendLog === 'function') {
+            window.appendLog('Form cleared. Ready for new data.');
+          }
+        });
       }
       
       // Add the CSS for highlight effect

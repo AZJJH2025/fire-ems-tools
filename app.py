@@ -63,10 +63,10 @@ def create_app(config_name='default'):
     template_folder = os.path.join(os.getcwd(), 'templates')
     static_folder = os.path.join(os.getcwd(), 'static')
     
+    # Use our own static file handling instead of Flask's built-in
     app = Flask(__name__, 
                 template_folder=template_folder,
-                static_folder=static_folder, 
-                static_url_path="/static")
+                static_folder=None)
     
     # Initialize rate limiter
     init_limiter(app)
@@ -98,6 +98,11 @@ def create_app(config_name='default'):
         # Set Permissions-Policy
         response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=(self)'
         
+        # Ensure JavaScript files have the correct content type
+        if response.mimetype == 'text/html' and request.path.endswith('.js'):
+            response.mimetype = 'application/javascript'
+            app.logger.info(f"Corrected mimetype for {request.path} to application/javascript")
+            
         return response
     
     # Set up CORS with more restrictive settings
@@ -132,6 +137,10 @@ def create_app(config_name='default'):
         if '_csrf_token' not in session:
             session['_csrf_token'] = secrets.token_hex(16)
     
+    # Register custom static file handling
+    from static_middleware import register_static_handler
+    register_static_handler(app)
+        
     # Register blueprints from modular routes
     try:
         # Import blueprints
