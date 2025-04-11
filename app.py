@@ -17,10 +17,21 @@ import secrets
 
 # Setup logging
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# Enable debug logging for all modules
+logging.getLogger('routes.api').setLevel(logging.DEBUG)
+logging.getLogger('routes.helpers.data_transformer').setLevel(logging.DEBUG)
+
+# Ensure logs are written to flask.log as well
+handler = logging.FileHandler('flask.log')
+handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logging.getLogger().addHandler(handler)
 
 # Apply deployment fixes before importing models
 import fix_deployment

@@ -278,20 +278,30 @@ def upload_data_file():
 def transform_data():
     """Transform data based on field mappings"""
     try:
+        # CRITICAL DEBUG - Log that we've entered the transform endpoint
+        logger.debug("======= DATA FORMATTER TRANSFORM ENDPOINT CALLED =======")
+        logger.debug(f"Request method: {request.method}, content type: {request.content_type}")
+        logger.debug(f"Request headers: {dict(request.headers)}")
+        logger.debug(f"Request data: {request.get_data().decode('utf-8', errors='replace')}")
+        
         from routes.helpers.data_transformer import transform_datetime, load_schema, apply_transformations
         
         # Get request data
         data = request.get_json()
+        logger.debug(f"Parsed JSON data: {json.dumps(data)}")
         
         # Validate required fields
         if 'fileId' not in data:
+            logger.error("Missing required field: fileId")
             return jsonify({"error": "Missing required field: fileId"}), 400
             
         if 'mappings' not in data:
+            logger.error("Missing required field: mappings")
             return jsonify({"error": "Missing required field: mappings"}), 400
             
         file_id = data['fileId']
         mappings = data['mappings']
+        logger.debug(f"CRITICAL DEBUG - Raw mappings object: {mappings}")
         
         # Get the target tool if provided
         target_tool = data.get('targetTool', 'response-time')
@@ -397,8 +407,22 @@ def transform_data():
         missing_fields = []
 
         try:
+            # CRITICAL DEBUG - Log right before transformation
+            logger.debug("======= STARTING TRANSFORMATION PROCESS =======")
+            logger.debug(f"Source DataFrame columns: {list(source_df.columns)}")
+            logger.debug(f"Source DataFrame shape: {source_df.shape}")
+            logger.debug(f"Enhanced mappings being used: {json.dumps(enhanced_mappings)}")
+            
             # Apply the transformation function with the enhanced mappings
             transformed_df = apply_transformations(source_df, enhanced_mappings, schema, current_app.root_path)
+            
+            # CRITICAL DEBUG - Log right after transformation
+            logger.debug("======= TRANSFORMATION PROCESS COMPLETED =======")
+            logger.debug(f"Transformed DataFrame columns: {list(transformed_df.columns) if not transformed_df.empty else 'EMPTY DATAFRAME'}")
+            logger.debug(f"Transformed DataFrame shape: {transformed_df.shape if not transformed_df.empty else '(0, 0)'}")
+            if not transformed_df.empty:
+                logger.debug(f"Sample transformed data:\n{transformed_df.head(3).to_string()}")
+            
             logger.info(f"Transformation complete with {len(transformed_df)} rows")
             transformation_log.append(f"Successfully transformed data using schema-based mapping")
             

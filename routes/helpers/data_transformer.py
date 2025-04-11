@@ -159,6 +159,13 @@ def get_standardized_field_name(field_id, schema=None):
 
 def apply_transformations(df, mappings, schema, app_root_path):
     """Apply transformations based on mappings and schema."""
+    logger.debug("======= ENTERING APPLY_TRANSFORMATIONS FUNCTION =======")
+    logger.debug(f"Source DataFrame columns: {list(df.columns)}")
+    logger.debug(f"Source DataFrame shape: {df.shape}")
+    logger.debug(f"First few rows of source data:\n{df.head(3).to_string()}")
+    logger.debug(f"Mappings object type: {type(mappings)}, length: {len(mappings)}")
+    logger.debug(f"Mappings keys: {list(mappings.keys())}")
+    
     result_df = pd.DataFrame()
     
     # Create a dictionary to track standard field name mappings
@@ -166,55 +173,50 @@ def apply_transformations(df, mappings, schema, app_root_path):
     standard_field_mappings = {}
     required_fields = []
     
-    # Process schema to extract field information
-    if 'coreMappings' in schema:
-        # New schema format with coreMappings
-        for category, fields in schema['coreMappings'].items():
-            for field_id, field_def in fields.items():
-                field_path = f"{category}.{field_id}"
-                standard_field_name = f"{category}_{field_id}"
-                
-                # Store the mapping from field_path to standard_field_name
-                standard_field_mappings[field_path] = standard_field_name
-                
-                # Track required fields
-                if field_def.get('required', False):
-                    required_fields.append(standard_field_name)
-    else:
-        # Standard schema format with requiredFields/optionalFields
-        # Process required fields
-        for field in schema.get('requiredFields', []):
-            # Use fieldName if available, otherwise derive from name
-            if 'fieldName' in field:
-                field_name = field['fieldName']
-            else:
-                field_name = field.get('name', '').lower().replace(' ', '_')
-                
-            standard_field_mappings[field['name']] = field_name
-            required_fields.append(field_name)
-        
-        # Process optional fields
-        for field in schema.get('optionalFields', []):
-            # Use fieldName if available, otherwise derive from name
-            if 'fieldName' in field:
-                field_name = field['fieldName']
-            else:
-                field_name = field.get('name', '').lower().replace(' ', '_')
-                
-            standard_field_mappings[field['name']] = field_name
+    # Process schema to extract field information - using only requiredFields/optionalFields format
+    # Process required fields
+    for field in schema.get('requiredFields', []):
+        # Use fieldName if available, otherwise derive from name
+        if 'fieldName' in field:
+            field_name = field['fieldName']
+        else:
+            field_name = field.get('name', '').lower().replace(' ', '_')
+            
+        standard_field_mappings[field['name']] = field_name
+        required_fields.append(field_name)
+    
+    # Process optional fields
+    for field in schema.get('optionalFields', []):
+        # Use fieldName if available, otherwise derive from name
+        if 'fieldName' in field:
+            field_name = field['fieldName']
+        else:
+            field_name = field.get('name', '').lower().replace(' ', '_')
+            
+        standard_field_mappings[field['name']] = field_name
     
     # Log standard field mappings for debugging
     logger.info(f"Standard field mappings: {standard_field_mappings}")
     
     # Process each mapping from the request
+    logger.debug(f"Starting to process {len(mappings)} field mappings")
+    mapping_count = 0
+    successful_mappings = 0
+    
     for field_id, mapping in mappings.items():
+        mapping_count += 1
+        logger.debug(f"===== Processing mapping #{mapping_count}: {field_id} =====")
+        logger.debug(f"Mapping content: {mapping}")
+        
         # Skip if no source field is defined
         if not mapping.get('sourceId'):
             logger.warning(f"Skipping field '{field_id}' as it has no sourceId defined")
             continue
         
         source_field = mapping['sourceId']
+        logger.debug(f"Source field for '{field_id}': '{source_field}'")
         transformations = mapping.get('transformations', [])
+        logger.debug(f"Transformations for '{field_id}': {transformations}")
         
         # Find the standard field name from the schema
         standard_field_name = None
@@ -252,20 +254,12 @@ def apply_transformations(df, mappings, schema, app_root_path):
         # Get field type from schema if available
         field_type = None
         
-        # Check schema format and extract type
-        if 'coreMappings' in schema:
-            # CoreMappings schema format
-            if '.' in field_id:
-                category, field = field_id.split('.')
-                if category in schema['coreMappings'] and field in schema['coreMappings'][category]:
-                    field_type = schema['coreMappings'][category][field].get('type')
-        else:
-            # Standard schema format
-            for field in schema.get('requiredFields', []) + schema.get('optionalFields', []):
-                if field.get('name') == field_id:
-                    field_type = field.get('type')
-                    logger.info(f"Found field type for '{field_id}': {field_type}")
-                    break
+        # Extract type from the standard schema format (requiredFields/optionalFields)
+        for field in schema.get('requiredFields', []) + schema.get('optionalFields', []):
+            if field.get('name') == field_id:
+                field_type = field.get('type')
+                logger.info(f"Found field type for '{field_id}': {field_type}")
+                break
         
         logger.info(f"Field '{standard_field_name}' detected type: {field_type}")
         
@@ -362,6 +356,18 @@ def apply_transformations(df, mappings, schema, app_root_path):
     logger.info(f"Final transformed columns: {list(result_df.columns)}")
     if not result_df.empty:
         logger.info(f"Sample transformed row: {result_df.iloc[0].to_dict()}")
+    
+    # CRITICAL DEBUG - Summarize transformation results
+    logger.debug("======= APPLY_TRANSFORMATIONS FUNCTION SUMMARY =======")
+    logger.debug(f"Result DataFrame columns: {list(result_df.columns)}")
+    logger.debug(f"Result DataFrame shape: {result_df.shape}")
+    logger.debug(f"Standard field mappings used: {standard_field_mappings}")
+    logger.debug(f"Required fields: {required_fields}")
+    if not result_df.empty:
+        logger.debug(f"First few rows of transformed data:\n{result_df.head(3).to_string()}")
+    else:
+        logger.debug("CRITICAL WARNING: Result DataFrame is EMPTY!")
+    logger.debug("======= EXITING APPLY_TRANSFORMATIONS FUNCTION =======")
     
     return result_df
 
