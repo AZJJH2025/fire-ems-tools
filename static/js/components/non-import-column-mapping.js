@@ -839,3 +839,24 @@ window.ColumnMappingUI = function({ sourceColumns = [], sampleData = [], fileId 
 
 // Log when the script is loaded
 console.log('non-import-column-mapping.js loaded - ColumnMappingUI component is globally available');
+
+// Add more specific debugging to the window object
+window.debugColumnMappingUI = {
+  component: window.ColumnMappingUI,
+  checkStatus: function() {
+    console.log("DEBUG: ColumnMappingUI available:", !!window.ColumnMappingUI);
+    if (window.ColumnMappingUI) {
+      console.log("DEBUG: ColumnMappingUI is a", typeof window.ColumnMappingUI);
+    }
+    return !!window.ColumnMappingUI;
+  }
+};
+
+// Debug function to check dependencies
+window.checkReactDependencies = function() {
+  console.log("DEBUG: Checking React dependencies");
+  console.log("React available:", !!window.React);
+  console.log("ReactDOM available:", !!window.ReactDOM);
+  console.log("MaterialUI available:", !!window.MaterialUI);
+  console.log("ReactBeautifulDnD available:", !!window.ReactBeautifulDnD);
+};

@@ -76,16 +76,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const sampleData = getSampleData();
     const fileId = window.uploadedFileId || null;
     
-    // Render the React component
-    ReactDOM.render(
-      React.createElement(window.ColumnMappingUI, {
-        sourceColumns: sourceColumns,
-        sampleData: sampleData,
-        fileId: fileId,
-        onMappingComplete: handleMappingComplete
-      }),
-      columnMappingContainer
-    );
+    console.log('DEBUG: initReactComponent called');
+    console.log('DEBUG: ColumnMappingUI exists:', !!window.ColumnMappingUI);
+    console.log('DEBUG: ReactDOM exists:', !!ReactDOM);
+    console.log('DEBUG: sourceColumns:', sourceColumns);
+    console.log('DEBUG: sampleData sample:', sampleData.slice(0, 1));
+    
+    try {
+      // Check if all dependencies are loaded
+      if (window.checkReactDependencies) {
+        window.checkReactDependencies();
+      }
+      
+      // Render the React component
+      ReactDOM.render(
+        React.createElement(window.ColumnMappingUI, {
+          sourceColumns: sourceColumns,
+          sampleData: sampleData,
+          fileId: fileId,
+          onMappingComplete: handleMappingComplete
+        }),
+        columnMappingContainer
+      );
+      
+      console.log('DEBUG: ReactDOM.render called successfully');
+    } catch (error) {
+      console.error('ERROR in initReactComponent:', error);
+      showComponentError('Error initializing React component: ' + error.message);
+    }
   }
   
   // Helper function to get source columns
