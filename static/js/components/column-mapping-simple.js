@@ -19,6 +19,7 @@
     const [targetFields, setTargetFields] = React.useState([]);
     const [mappings, setMappings] = React.useState({});
     const [isSchemaLoading, setIsSchemaLoading] = React.useState(true);
+    const [suggestions, setSuggestions] = React.useState({});
     
     // Load schema on component mount
     React.useEffect(function() {
@@ -40,6 +41,11 @@
           console.log('Schema loaded successfully:', schema);
           processSchema(schema);
           setIsSchemaLoading(false);
+          
+          // Auto-suggest mappings if we have data
+          if (window.originalData && window.originalData.length > 0) {
+            generateSuggestions(window.originalData, schema);
+          }
         })
         .catch(function(error) {
           console.error('Error loading schema:', error);
@@ -63,32 +69,120 @@
         });
     }
     
+    // Generate mapping suggestions using DataMapper
+    function generateSuggestions(data, schema) {
+      try {
+        // Check if we have the DataMapper service available
+        if (window.DataMapper) {
+          console.log("Using DataMapper service for auto suggestions");
+          // Create a new DataMapper instance with the schema
+          const mapper = new DataMapper(schema);
+          
+          // Get suggestions for the current tool 
+          const selectedTool = document.getElementById('target-tool')?.value || 'response-time';
+          const mappingSuggestions = mapper.suggestMappings(data, selectedTool);
+          
+          console.log("Mapping suggestions:", mappingSuggestions);
+          
+          // Convert the suggested mappings to our format
+          const convertedSuggestions = {};
+          Object.entries(mappingSuggestions).forEach(([fieldPath, sourceField]) => {
+            // Find source column index
+            const sourceIndex = sourceColumns.findIndex(col => col === sourceField);
+            if (sourceIndex !== -1) {
+              // Get field ID from path
+              const [category, field] = fieldPath.split('.');
+              const fieldId = `${category}_${field}`;
+              convertedSuggestions[fieldId] = sourceIndex;
+            }
+          });
+          
+          console.log("Converted suggestions:", convertedSuggestions);
+          setSuggestions(convertedSuggestions);
+          
+          // Apply suggestions automatically only if we have good coverage
+          const requiredFields = targetFields.filter(f => f.required);
+          const suggestedRequiredCount = requiredFields
+            .filter(f => convertedSuggestions[f.id] !== undefined)
+            .length;
+          
+          // If we have suggestions for at least half of the required fields, apply them automatically
+          if (requiredFields.length > 0 && suggestedRequiredCount >= Math.ceil(requiredFields.length / 2)) {
+            console.log(`Auto-applying ${suggestedRequiredCount}/${requiredFields.length} required field suggestions`);
+            setMappings(convertedSuggestions);
+            
+            // Log auto-mapping for user
+            if (window.appendLog && typeof window.appendLog === 'function') {
+              window.appendLog(`Auto-mapped ${Object.keys(convertedSuggestions).length} fields based on detected field names.`);
+            }
+          } else {
+            console.log("Not enough required fields detected for auto-apply");
+            // Don't auto-apply, but keep suggestions available
+          }
+        }
+      } catch (error) {
+        console.error("Error generating suggestions:", error);
+      }
+    }
+    
     // Process schema data
     function processSchema(schema) {
       const fields = [];
       
-      // Process required fields
-      if (schema.requiredFields && Array.isArray(schema.requiredFields)) {
-        schema.requiredFields.forEach(function(field) {
-          fields.push({
-            ...field,
-            id: field.name.replace(/\s+/g, '_').toLowerCase(),
-            required: true,
-            category: field.category || categorizeField(field.name)
+      // Check if we have the new schema format with coreMappings
+      if (schema.coreMappings) {
+        console.log("Processing new schema format with coreMappings");
+        
+        // Get the selected tool
+        const selectedTool = document.getElementById('target-tool')?.value || 'response-time';
+        console.log("Selected tool for requirements:", selectedTool);
+        
+        // Get required fields for this tool
+        const requiredFieldPaths = schema.toolRequirements?.[selectedTool] || [];
+        console.log("Required field paths:", requiredFieldPaths);
+        
+        // Process all core mappings
+        Object.entries(schema.coreMappings).forEach(([category, categoryFields]) => {
+          Object.entries(categoryFields).forEach(([fieldName, fieldDef]) => {
+            const fieldPath = `${category}.${fieldName}`;
+            const isRequired = requiredFieldPaths.includes(fieldPath);
+            
+            fields.push({
+              id: `${category}_${fieldName}`,
+              name: fieldDef.name,
+              required: isRequired,
+              category: category,
+              type: fieldDef.type || 'string',
+              aliases: fieldDef.aliases,
+              path: fieldPath
+            });
           });
         });
-      }
-      
-      // Process optional fields
-      if (schema.optionalFields && Array.isArray(schema.optionalFields)) {
-        schema.optionalFields.forEach(function(field) {
-          fields.push({
-            ...field,
-            id: field.name.replace(/\s+/g, '_').toLowerCase(),
-            required: false,
-            category: field.category || categorizeField(field.name)
+      } else {
+        // Fall back to old schema format
+        console.log("Falling back to old schema format");
+        
+        if (schema.requiredFields && Array.isArray(schema.requiredFields)) {
+          schema.requiredFields.forEach(function(field) {
+            fields.push({
+              ...field,
+              id: field.name.replace(/\s+/g, '_').toLowerCase(),
+              required: true,
+              category: field.category || categorizeField(field.name)
+            });
           });
-        });
+        }
+        
+        if (schema.optionalFields && Array.isArray(schema.optionalFields)) {
+          schema.optionalFields.forEach(function(field) {
+            fields.push({
+              ...field,
+              id: field.name.replace(/\s+/g, '_').toLowerCase(),
+              required: false,
+              category: field.category || categorizeField(field.name)
+            });
+          });
+        }
       }
       
       setTargetFields(fields);
@@ -130,11 +224,146 @@
       });
     }
     
+    // Handler for applying all suggestions
+    function applyAllSuggestions() {
+      console.log('Applying all suggestions:', suggestions);
+      setMappings(suggestions);
+    }
+    
     // Handler for applying the mappings
     function applyMappings() {
       console.log('Applying mappings:', mappings);
       
-      // Create the final mapping object
+      // Create the source to schema mappings object for DataMapper
+      const schemaFieldMappings = {};
+      
+      // Get the selected tool from the dropdown
+      const selectedTool = document.getElementById('target-tool')?.value || 'response-time';
+      
+      targetFields.forEach(field => {
+        if (mappings[field.id] !== undefined) {
+          const sourceField = sourceColumns[mappings[field.id]];
+          
+          // If field has a path property, use it for DataMapper format
+          if (field.path) {
+            schemaFieldMappings[field.path] = sourceField;
+          } else {
+            // Fallback for old format
+            schemaFieldMappings[field.name] = sourceField;
+          }
+        }
+      });
+      
+      // Check if DataMapper is available for transforming data
+      if (window.DataMapper && window.originalData && window.originalData.length > 0) {
+        console.log("Using DataMapper service for transformation");
+        
+        try {
+          // Create a new DataMapper instance
+          const mapper = new DataMapper();
+          
+          // Set our field mappings
+          mapper.setMappings(schemaFieldMappings);
+          
+          // Log the user-defined mappings for diagnostics
+          console.log("User-defined mappings for DataMapper:", schemaFieldMappings);
+          
+          // Log the transformation start for the user
+          if (window.appendLog) {
+            window.appendLog(`Transforming ${window.originalData.length} records using schema-based mapping...`);
+          }
+          
+          // Transform the data for the selected tool
+          const transformedResult = mapper.transform(window.originalData, selectedTool);
+          
+          // Validate the transformed data
+          const validation = mapper.validate(transformedResult, selectedTool);
+          
+          // Log the validation results
+          console.log("Validation results:", validation);
+          
+          if (!validation.valid) {
+            console.warn("Validation detected issues:", validation.problems);
+            
+            // Group issues by type for better reporting
+            const missingFields = new Set();
+            const invalidNumbers = new Set();
+            
+            validation.problems.forEach(problem => {
+              if (problem.issue === 'missing_value') {
+                missingFields.add(problem.field);
+              } else if (problem.issue === 'invalid_number') {
+                invalidNumbers.add(problem.field);
+              }
+            });
+            
+            // Log detailed warnings to help the user fix issues
+            if (window.appendLog) {
+              if (missingFields.size > 0) {
+                window.appendLog(`Warning: Missing values detected for ${Array.from(missingFields).join(', ')}`, 'warning');
+              }
+              
+              if (invalidNumbers.size > 0) {
+                window.appendLog(`Warning: Invalid number format detected for ${Array.from(invalidNumbers).join(', ')}`, 'warning');
+              }
+              
+              // Specific help for coordinate issues since they're common and critical
+              if (missingFields.has('Latitude') || missingFields.has('Longitude') || 
+                  invalidNumbers.has('Latitude') || invalidNumbers.has('Longitude')) {
+                window.appendLog('Tip: For mapping applications, valid numeric coordinates are required.', 'info');
+              }
+            }
+          } else {
+            if (window.appendLog) {
+              window.appendLog('Validation successful! All required fields are properly mapped.', 'success');
+            }
+          }
+          
+          // Store transformed data globally
+          window.transformedData = transformedResult;
+          
+          console.log("Data transformed successfully using DataMapper");
+          console.log("First record sample:", transformedResult[0]);
+          
+          // Log success for the user
+          if (window.appendLog) {
+            window.appendLog(`Successfully transformed ${transformedResult.length} records using the DataMapper service.`);
+          }
+        } catch (error) {
+          console.error("Error using DataMapper:", error);
+          
+          // Log error for the user
+          if (window.appendLog) {
+            window.appendLog(`Error using DataMapper: ${error.message}. Trying alternative method...`, 'error');
+          }
+          
+          // Fall back to the original transformation method
+          createLegacyTransformedData();
+        }
+      } else {
+        // Log the fallback for the user
+        if (window.appendLog) {
+          window.appendLog('DataMapper service not available, using legacy transformation method.', 'info');
+        }
+        
+        // Use the original transformation method if DataMapper is not available
+        createLegacyTransformedData();
+      }
+      
+      // Call the callback function with the mappings
+      if (typeof onMappingComplete === 'function') {
+        onMappingComplete(schemaFieldMappings);
+      }
+      
+      // Show the formatted panel and enable buttons
+      showFormattedPanel();
+    }
+    
+    // Legacy transformation method
+    function createLegacyTransformedData() {
+      console.log("Using legacy transformation method");
+      
+      // Create the final mapping object for legacy processing
       const finalMappings = Object.entries(mappings).map(function([targetId, sourceIdx]) {
         const targetField = targetFields.find(field => field.id === targetId);
         return {
@@ -145,20 +374,7 @@
         };
       });
       
-      // Call the callback function with the mappings
-      if (typeof onMappingComplete === 'function') {
-        onMappingComplete(finalMappings);
-      }
-      
-      // Show the formatted panel and enable buttons
-      showFormattedPanel();
-    }
-    
-    // Function to show formatted panel and enable buttons
-    function showFormattedPanel() {
-      console.log('Completing mapping operation and preparing output preview');
-      
-      // First generate the transformed data
+      // Generate transformed data
       let transformedData = [];
       
       // Only generate data if we have original data to work with
@@ -243,22 +459,23 @@
           }
         }
         
-        // Store the transformed data for download/send - VERY IMPORTANT!
+        // Store the transformed data for download/send
         window.transformedData = transformedData;
-        
-        // Make sure transformed data is globally accessible for other scripts
-        if (typeof sessionStorage !== 'undefined') {
-          try {
-            sessionStorage.setItem('tempTransformedData', JSON.stringify(transformedData));
-            console.log('Stored transformed data in sessionStorage as backup');
-          } catch (e) {
-            console.error('Failed to store in sessionStorage:', e);
-          }
+      }
+    }
+    
+    // Function to show formatted panel and enable buttons
+    function showFormattedPanel() {
+      console.log('Completing mapping operation and preparing output preview');
+      
+      // Make sure transformed data is globally accessible for other scripts
+      if (window.transformedData && typeof sessionStorage !== 'undefined') {
+        try {
+          sessionStorage.setItem('tempTransformedData', JSON.stringify(window.transformedData));
+          console.log('Stored transformed data in sessionStorage as backup');
+        } catch (e) {
+          console.error('Failed to store in sessionStorage:', e);
         }
-        
-        // Log the mapping results for debugging
-        console.log('Transformation complete with fields:', 
-          Object.keys(transformedData[0] || {}).join(', '));
       }
       
       // Show formatter panels (using the global function) - do this BEFORE showing preview
@@ -279,11 +496,11 @@
       }
       
       // Now show the preview if we have data
-      if (transformedData && transformedData.length > 0) {
+      if (window.transformedData && window.transformedData.length > 0) {
         // Show output preview if the function exists
         if (window.showOutputPreview && typeof window.showOutputPreview === 'function') {
-          console.log('Showing output preview with', transformedData.length, 'records');
-          window.showOutputPreview(transformedData);
+          console.log('Showing output preview with', window.transformedData.length, 'records');
+          window.showOutputPreview(window.transformedData);
         }
       }
       
@@ -308,7 +525,7 @@
       
       // Log the success
       if (window.appendLog && typeof window.appendLog === 'function') {
-        const recordCount = transformedData ? transformedData.length : 0;
+        const recordCount = window.transformedData ? window.transformedData.length : 0;
         window.appendLog(`Data formatting complete. ${recordCount} records transformed successfully.`);
         window.appendLog('You can now download the data or send it to another tool.');
       }
@@ -324,8 +541,30 @@
         
         // Description
         React.createElement('p', { key: 'description', style: { marginBottom: '20px' } }, 
-          'Drag source columns from the left panel to the matching target fields on the right. Required fields are marked with an asterisk (*).'
+          'Map source columns from your data to the matching target fields. Required fields are marked with an asterisk (*).'
         ),
+        
+        // Auto-suggestion button (only show if suggestions are available)
+        Object.keys(suggestions).length > 0 ?
+          React.createElement('div', { key: 'auto-suggest', style: { marginBottom: '20px' } },
+            React.createElement('button', {
+              className: 'auto-suggest-btn',
+              onClick: applyAllSuggestions,
+              style: {
+                backgroundColor: '#4caf50',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontWeight: '500',
+                marginRight: '10px'
+              }
+            }, 'Apply Auto-Suggested Mappings'),
+            React.createElement('span', { style: { fontSize: '0.9rem', color: '#666' } },
+              `(${Object.keys(suggestions).length} fields can be auto-mapped)`
+            )
+          ) : null,
         
         // Main grid
         React.createElement('div', { key: 'grid', style: { display: 'flex', flexWrap: 'wrap' } }, [
@@ -418,6 +657,7 @@
                     targetFields.filter(field => field.required).length > 0 ?
                       targetFields.filter(field => field.required).map(function(field, index) {
                         const isMapped = mappings[field.id] !== undefined;
+                        const isSuggested = suggestions[field.id] !== undefined && mappings[field.id] === undefined;
                         const mappedSourceName = isMapped ? sourceColumns[mappings[field.id]] : null;
                         
                         return React.createElement('div', {
@@ -425,9 +665,9 @@
                           style: {
                             padding: '10px',
                             marginBottom: '8px',
-                            backgroundColor: isMapped ? '#e8f5e9' : '#fff',
+                            backgroundColor: isMapped ? '#e8f5e9' : (isSuggested ? '#fff8e1' : '#fff'),
                             border: '1px solid #ddd',
-                            borderLeft: '4px solid ' + (isMapped ? '#4caf50' : '#f44336'),
+                            borderLeft: '4px solid ' + (isMapped ? '#4caf50' : (isSuggested ? '#ff9800' : '#f44336')),
                             borderRadius: '4px',
                             position: 'relative'
                           }
@@ -471,23 +711,56 @@
                               }, 'Clear')
                             ]) :
                             
-                            // Select source column dropdown
-                            React.createElement('select', {
-                              key: 'select-source',
-                              onChange: function(e) { handleMapField(e.target.value, field.id); },
-                              style: {
-                                width: '100%',
-                                padding: '8px',
-                                borderRadius: '4px',
-                                border: '1px solid #ddd'
-                              }
-                            }, [
-                              React.createElement('option', { key: 'placeholder', value: '' }, '-- Select source column --'),
+                            // Select source column dropdown with suggestion if available
+                            React.createElement('div', { key: 'selection', style: { width: '100%' } }, [
+                              // Suggestion indicator if available
+                              isSuggested ? 
+                                React.createElement('div', { 
+                                  key: 'suggestion', 
+                                  style: { 
+                                    marginBottom: '5px',
+                                    fontSize: '0.85rem',
+                                    color: '#ff9800',
+                                    display: 'flex',
+                                    alignItems: 'center'
+                                  } 
+                                }, [
+                                  React.createElement('span', { key: 'suggestion-text' }, 
+                                    `Suggested: ${sourceColumns[suggestions[field.id]]}`
+                                  ),
+                                  React.createElement('button', {
+                                    key: 'apply',
+                                    onClick: function() { handleMapField(suggestions[field.id], field.id); },
+                                    style: {
+                                      backgroundColor: 'transparent',
+                                      border: 'none',
+                                      cursor: 'pointer',
+                                      color: '#1976d2',
+                                      marginLeft: '8px',
+                                      fontSize: '0.85rem',
+                                      textDecoration: 'underline'
+                                    }
+                                  }, 'Apply')
+                                ]) : null,
                               
-                              // Options for each source column
-                              sourceColumns.map(function(col, idx) {
-                                return React.createElement('option', { key: `src-${idx}`, value: idx }, col);
-                              })
+                              // Dropdown for selection
+                              React.createElement('select', {
+                                key: 'select-source',
+                                onChange: function(e) { handleMapField(e.target.value, field.id); },
+                                style: {
+                                  width: '100%',
+                                  padding: '8px',
+                                  borderRadius: '4px',
+                                  border: '1px solid #ddd'
+                                }
+                              }, [
+                                React.createElement('option', { key: 'placeholder', value: '' }, '-- Select source column --'),
+                                
+                                // Options for each source column
+                                sourceColumns.map(function(col, idx) {
+                                  return React.createElement('option', { key: `src-${idx}`, value: idx }, col);
+                                })
+                              ])
                             ])
                         ]);
                       }) :
@@ -502,8 +775,9 @@
                   React.createElement('h4', { key: 'optional-header', style: { marginBottom: '10px' } }, 'Optional Fields'),
                   React.createElement('div', { key: 'optional-list', style: { backgroundColor: '#f9f9f9', padding: '15px', borderRadius: '4px' } },
                     targetFields.filter(field => !field.required).length > 0 ?
-                      targetFields.filter(field => !field.required).slice(0, 5).map(function(field, index) {
+                      targetFields.filter(field => !field.required).slice(0, 8).map(function(field, index) {
                         const isMapped = mappings[field.id] !== undefined;
+                        const isSuggested = suggestions[field.id] !== undefined && mappings[field.id] === undefined;
                         const mappedSourceName = isMapped ? sourceColumns[mappings[field.id]] : null;
                         
                         return React.createElement('div', {
@@ -511,7 +785,7 @@
                           style: {
                             padding: '10px',
                             marginBottom: '8px',
-                            backgroundColor: isMapped ? '#e8f5e9' : '#fff',
+                            backgroundColor: isMapped ? '#e8f5e9' : (isSuggested ? '#fff8e1' : '#fff'),
                             border: '1px solid #ddd',
                             borderRadius: '4px',
                             position: 'relative'
@@ -556,23 +830,56 @@
                               }, 'Clear')
                             ]) :
                             
-                            // Select source column dropdown
-                            React.createElement('select', {
-                              key: 'select-source',
-                              onChange: function(e) { handleMapField(e.target.value, field.id); },
-                              style: {
-                                width: '100%',
-                                padding: '8px',
-                                borderRadius: '4px',
-                                border: '1px solid #ddd'
-                              }
-                            }, [
-                              React.createElement('option', { key: 'placeholder', value: '' }, '-- Select source column --'),
+                            // Select source column dropdown with suggestion if available
+                            React.createElement('div', { key: 'selection', style: { width: '100%' } }, [
+                              // Suggestion indicator if available
+                              isSuggested ? 
+                                React.createElement('div', { 
+                                  key: 'suggestion', 
+                                  style: { 
+                                    marginBottom: '5px',
+                                    fontSize: '0.85rem',
+                                    color: '#ff9800',
+                                    display: 'flex',
+                                    alignItems: 'center'
+                                  } 
+                                }, [
+                                  React.createElement('span', { key: 'suggestion-text' }, 
+                                    `Suggested: ${sourceColumns[suggestions[field.id]]}`
+                                  ),
+                                  React.createElement('button', {
+                                    key: 'apply',
+                                    onClick: function() { handleMapField(suggestions[field.id], field.id); },
+                                    style: {
+                                      backgroundColor: 'transparent',
+                                      border: 'none',
+                                      cursor: 'pointer',
+                                      color: '#1976d2',
+                                      marginLeft: '8px',
+                                      fontSize: '0.85rem',
+                                      textDecoration: 'underline'
+                                    }
+                                  }, 'Apply')
+                                ]) : null,
                               
-                              // Options for each source column
-                              sourceColumns.map(function(col, idx) {
-                                return React.createElement('option', { key: `src-${idx}`, value: idx }, col);
-                              })
+                              // Dropdown for selection
+                              React.createElement('select', {
+                                key: 'select-source',
+                                onChange: function(e) { handleMapField(e.target.value, field.id); },
+                                style: {
+                                  width: '100%',
+                                  padding: '8px',
+                                  borderRadius: '4px',
+                                  border: '1px solid #ddd'
+                                }
+                              }, [
+                                React.createElement('option', { key: 'placeholder', value: '' }, '-- Select source column --'),
+                                
+                                // Options for each source column
+                                sourceColumns.map(function(col, idx) {
+                                  return React.createElement('option', { key: `src-${idx}`, value: idx }, col);
+                                })
+                              ])
                             ])
                         ]);
                       }) :
@@ -611,17 +918,13 @@
         React.createElement('div', { key: 'instructions', style: { marginTop: '20px', padding: '15px', backgroundColor: '#fff8e1', borderRadius: '4px' } }, [
           React.createElement('h4', { key: 'instructions-header', style: { marginBottom: '10px' } }, 'How to Use:'),
           React.createElement('ol', { key: 'instructions-list', style: { paddingLeft: '20px' } }, [
-            React.createElement('li', { key: 'step1' }, 'Select a source column from the dropdown for each target field'),
-            React.createElement('li', { key: 'step2' }, 'Match data types when possible (e.g., date columns to date fields)'),
-            React.createElement('li', { key: 'step3' }, 'All required fields (marked with *) must be mapped before continuing'),
-            React.createElement('li', { key: 'step4' }, 'Click "Apply & Preview Transformation" when finished')
+            React.createElement('li', { key: 'step1' }, 'Yellow fields have auto-suggested mappings you can apply with one click'),
+            React.createElement('li', { key: 'step2' }, 'Select a source column from the dropdown for each target field'),
+            React.createElement('li', { key: 'step3' }, 'Match data types when possible (e.g., date columns to date fields)'),
+            React.createElement('li', { key: 'step4' }, 'All required fields (marked with *) must be mapped before continuing'),
+            React.createElement('li', { key: 'step5' }, 'Click "Apply & Preview Transformation" when finished')
           ])
-        ]),
-        
-        // Note about full version
-        React.createElement('p', { key: 'note', style: { marginTop: '20px', fontSize: '0.9rem', color: '#666', fontStyle: 'italic' } },
-          'Note: This is a simplified version of the column mapping UI. The full version includes drag-and-drop functionality and field transformations.'
-        )
+        ])
       ]
     );
   };

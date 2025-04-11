@@ -1,40 +1,76 @@
 /**
  * Emergency Data Transformer
  * This is a direct, reliable method to transform data for Response Time Analyzer
+ * and other FireEMS.ai tools. It now uses DataMapper when available.
  */
 
 (function() {
   // Register the global transformer
-  window.emergencyTransformData = function(originalData) {
-    console.log("🚨 EMERGENCY: Using direct data transformer");
+  window.emergencyTransformData = function(originalData, toolId) {
+    console.log("🚨 EMERGENCY: Using enhanced data transformer");
     
     if (!originalData || !Array.isArray(originalData) || originalData.length === 0) {
       console.error("No original data to transform");
       return [];
     }
     
+    // Default tool to response-time if not specified
+    toolId = toolId || 'response-time';
+    
     // Log the structure we're working with
     console.log("Original data structure:", Object.keys(originalData[0]));
     
-    // Transform each record with explicit field mapping
+    // Try using DataMapper first if available
+    if (window.DataMapper) {
+      try {
+        console.log("Using DataMapper service for emergency transformation");
+        const mapper = new DataMapper();
+        
+        // Auto-detect mappings based on field names
+        const mappings = mapper.suggestMappings(originalData, toolId);
+        console.log("Auto-detected mappings:", mappings);
+        
+        if (Object.keys(mappings).length > 0) {
+          // Set the mappings and transform the data
+          mapper.setMappings(mappings);
+          const result = mapper.transform(originalData, toolId);
+          
+          // Validate the transformed data
+          const validation = mapper.validate(result, toolId);
+          if (!validation.valid) {
+            console.warn("DataMapper validation issues:", validation.problems);
+          }
+          
+          console.log("DataMapper transformed data successfully:", result[0]);
+          return result;
+        } else {
+          console.warn("No mappings could be auto-detected, falling back to direct transformation");
+        }
+      } catch (error) {
+        console.error("Error using DataMapper:", error);
+        console.warn("Falling back to direct transformation");
+      }
+    }
+    
+    // Direct transformation as a fallback
     return originalData.map(record => {
       // Create a new object with exactly the fields Response Time Analyzer needs
       const transformed = {
         // Required fields with fallbacks
-        "Incident ID": record.Inc_ID || record.IncidentID || record.id || "",
-        "Latitude": parseFloat(record.GPS_Lat) || 0,
-        "Longitude": parseFloat(record.GPS_Lon) || 0,
-        "Unit": record.Units || record.Unit || "",
-        "Unit Dispatched": record.Disp_Time || record["Unit Dispatched"] || "",
-        "Unit Onscene": record.Arriv_Time || record["Unit Onscene"] || "",
-        "Reported": record.Call_Time || record.Reported || "",
+        "Incident ID": record.Inc_ID || record.IncidentID || record.id || record.Call_ID || record.EventID || "",
+        "Latitude": parseFloat(record.GPS_Lat || record.Lat || record.LATITUDE || record.lat || record.Y || 0),
+        "Longitude": parseFloat(record.GPS_Lon || record.Lon || record.Long || record.LONGITUDE || record.lon || record.X || 0),
+        "Unit": record.Units || record.Unit || record.Unit_ID || record.Apparatus || record.UnitName || "",
+        "Unit Dispatched": record.Disp_Time || record["Unit Dispatched"] || record.DispatchTime || record.TimeDispatched || "",
+        "Unit Onscene": record.Arriv_Time || record["Unit Onscene"] || record.ArrivalTime || record.TimeArrived || record.OnSceneTime || "",
+        "Reported": record.Call_Time || record.Reported || record.Time || record.IncidentTime || record.EventTime || "",
         
         // Copy other useful fields
-        "Incident Date": record.Call_Date || record.Date || "",
-        "Incident Time": record.Call_Time || record.Time || "",
-        "Incident Type": record.Call_Type || record.Type || "",
-        "Address": record.Address_Full || record.Address || "",
-        "Priority": record.Priority || "",
+        "Incident Date": record.Call_Date || record.Date || record.IncidentDate || record.EventDate || "",
+        "Incident Time": record.Call_Time || record.Time || record.IncidentTime || record.EventTime || "",
+        "Incident Type": record.Call_Type || record.Type || record.Nature || record.IncidentType || record.EventType || "",
+        "Address": record.Address_Full || record.Address || record.FullAddress || record.Location || record.StreetAddress || "",
+        "Priority": record.Priority || record.Call_Priority || record.CallPriority || "",
         
         // Add source tracking for debugging
         "_source": "emergency_transformer"
@@ -64,6 +100,13 @@
         source: "emergency_transformer"
       }));
       
+      // Also store in tempTransformedData as a backup
+      try {
+        sessionStorage.setItem('tempTransformedData', JSON.stringify(data));
+      } catch (e) {
+        console.warn("Could not store backup in tempTransformedData:", e);
+      }
+      
       console.log("✅ Emergency data stored successfully:", data[0]);
       return true;
     } catch (error) {
@@ -73,5 +116,5 @@
   };
   
   // Attempt to register this directly when loaded
-  console.log("🚨 Emergency data transformer loaded and ready");
+  console.log("🚨 Enhanced emergency data transformer loaded and ready");
 })();

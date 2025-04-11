@@ -278,7 +278,7 @@ def upload_data_file():
 def transform_data():
     """Transform data based on field mappings"""
     try:
-        from routes.helpers import transform_datetime, load_schema, apply_transformations
+        from routes.helpers.data_transformer import transform_datetime, load_schema, apply_transformations
         
         # Get request data
         data = request.get_json()
@@ -292,6 +292,13 @@ def transform_data():
             
         file_id = data['fileId']
         mappings = data['mappings']
+        
+        # Get the target tool if provided
+        target_tool = data.get('targetTool', 'response-time')
+        
+        # Log the request data for debugging
+        logger.info(f"Transform request for file: {file_id}, target tool: {target_tool}")
+        logger.debug(f"Mappings: {json.dumps(mappings)}")
         
         # Find the file
         files_path = get_files_path()
@@ -335,21 +342,38 @@ def transform_data():
         # Apply transformations
         transformation_log = []
         errors = []
+        missing_fields = []
 
         try:
-            # Apply the new transformation function
+            # Apply the transformation function
             transformed_df = apply_transformations(source_df, mappings, schema, current_app.root_path)
+            logger.info(f"Transformation complete with {len(transformed_df)} rows")
             transformation_log.append(f"Successfully transformed data using schema-based mapping")
             
-            # Validate the transformed data
-            missing_fields = []
-            
-            # Get required fields from schema
+            # Get required fields for this tool
             required_fields = []
             
-            # Extract required fields from the standardized schema
-            if 'requiredFields' in schema:
-                required_fields = [field['fieldName'] for field in schema.get('requiredFields', [])]
+            # Extract required fields based on schema format
+            if 'coreMappings' in schema and 'toolRequirements' in schema:
+                # New schema format with coreMappings and toolRequirements
+                tool_requirements = schema.get('toolRequirements', {}).get(target_tool, [])
+                logger.info(f"Tool requirements for {target_tool}: {tool_requirements}")
+                
+                # Convert field paths to standardized field names
+                for field_path in tool_requirements:
+                    # Convert dot notation (e.g., "incident.id") to standard field name (e.g., "incident_id")
+                    if '.' in field_path:
+                        category, field = field_path.split('.')
+                        standard_field_name = f"{category}_{field}"
+                        required_fields.append(standard_field_name)
+            else:
+                # Legacy schema format
+                for field in schema.get('requiredFields', []):
+                    field_name = field.get('name', '').lower().replace(' ', '_')
+                    required_fields.append(field_name)
+            
+            # Log the required fields
+            logger.info(f"Required fields for {target_tool}: {required_fields}")
             
             # Check for missing required fields
             if required_fields:
@@ -358,14 +382,15 @@ def transform_data():
                         missing_fields.append(field)
                         
             if missing_fields:
-                transformation_log.append(f"Warning: Missing {len(missing_fields)} required fields")
+                transformation_log.append(f"Warning: Missing {len(missing_fields)} required fields: {', '.join(missing_fields)}")
+                logger.warning(f"Missing required fields: {missing_fields}")
                 
         except Exception as e:
             logger.error(f"Error applying transformations: {str(e)}")
             errors.append(f"Error applying transformations: {str(e)}")
             
             # Create an empty DataFrame if transformation failed
-            if transformed_df is None or transformed_df.empty:
+            if 'transformed_df' not in locals() or transformed_df is None or transformed_df.empty:
                 transformed_df = pd.DataFrame()
                 
         # Check if we have any successful transformations
@@ -374,6 +399,9 @@ def transform_data():
                 "error": "No valid mappings could be processed",
                 "details": errors
             }), 400
+            
+        # Log column names to verify standardized field names
+        logger.info(f"Transformed DataFrame columns: {list(transformed_df.columns)}")
             
         # Generate the preview (first 10 rows)
         preview_data = transformed_df.head(10).fillna('').to_dict('records')
@@ -385,6 +413,7 @@ def transform_data():
         try:
             transform_path = os.path.join(files_path, f"transformed_{transform_id}.csv")
             transformed_df.to_csv(transform_path, index=False)
+            logger.info(f"Transformed data saved to {transform_path}")
         except Exception as e:
             logger.error(f"Error saving transformed data: {str(e)}")
             # Continue even if saving fails

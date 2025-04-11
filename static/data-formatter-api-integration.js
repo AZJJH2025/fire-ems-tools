@@ -268,16 +268,71 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log("Strategy 1: Using window.transformedData");
       dataToSend = window.transformedData;
     }
-    // Strategy 2: Try to use emergency transformer if available and we have original data
+    // Strategy 2: Try to use enhanced emergency transformer (which uses DataMapper internally)
     else if (window.originalData && window.originalData.length > 0 && 
              window.emergencyTransformData && typeof window.emergencyTransformData === 'function') {
-      console.log("Strategy 2: Using emergency transformer with original data");
-      dataToSend = window.emergencyTransformData(window.originalData);
+      console.log("Strategy 2: Using enhanced emergency transformer with original data");
+      try {
+        // The enhanced transformer will use DataMapper if available or fall back to direct mapping
+        dataToSend = window.emergencyTransformData(window.originalData, selectedTool);
+        console.log("Enhanced transformer processed data:", dataToSend[0]);
+        
+        if (window.appendLog) {
+          window.appendLog(`Successfully transformed data using enhanced transformer`);
+        }
+      } catch (error) {
+        console.error("Error using enhanced transformer:", error);
+        if (window.appendLog) {
+          window.appendLog(`Error in enhanced transformer: ${error.message}. Trying other methods.`, 'warning');
+        }
+        dataToSend = null;
+      }
     }
-    // Strategy 3: Try to get data from sessionStorage
+    // Strategy 3: Use DataMapper directly if available
+    else if (window.DataMapper && window.originalData && window.originalData.length > 0) {
+      console.log("Strategy 3: Using DataMapper service directly with original data");
+      try {
+        const mapper = new DataMapper();
+        
+        // Try to detect mappings automatically
+        const mappings = mapper.suggestMappings(window.originalData, selectedTool);
+        console.log("Auto-detected mappings:", mappings);
+        
+        if (Object.keys(mappings).length > 0) {
+          // Set the auto-detected mappings and transform
+          mapper.setMappings(mappings);
+          dataToSend = mapper.transform(window.originalData, selectedTool);
+          console.log("DataMapper transformed data successfully:", dataToSend[0]);
+          
+          // Check validation
+          const validation = mapper.validate(dataToSend, selectedTool);
+          if (!validation.valid) {
+            console.warn("DataMapper validation issues:", validation.problems);
+            if (window.appendLog) {
+              window.appendLog(`Warning: DataMapper found ${validation.problems.length} issues with transformation`, 'warning');
+            }
+          }
+        } else {
+          console.warn("No mappings could be auto-detected");
+          if (window.appendLog) {
+            window.appendLog(`No field mappings could be auto-detected for ${getToolName(selectedTool)}`, 'warning');
+          }
+          // Continue to other strategies
+          dataToSend = null;
+        }
+      } catch (error) {
+        console.error("Error using DataMapper:", error);
+        if (window.appendLog) {
+          window.appendLog(`Error using DataMapper: ${error.message}. Trying other methods.`, 'error');
+        }
+        // Continue to other strategies
+        dataToSend = null;
+      }
+    }
+    // Strategy 4: Try to get data from sessionStorage
     else {
       try {
-        console.log("Strategy 3: Attempting to retrieve from sessionStorage");
+        console.log("Strategy 4: Attempting to retrieve from sessionStorage");
         const tempData = sessionStorage.getItem('tempTransformedData');
         if (tempData) {
           dataToSend = JSON.parse(tempData);
@@ -288,28 +343,45 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
     
-    // Double-check if we have data - if not, create emergency data from original data
+    // Strategy 5: Last resort - create emergency data from original data
     if (!dataToSend && window.originalData && window.originalData.length > 0) {
-      console.log("Strategy 4: Creating emergency data directly");
+      console.log("Strategy 5: Creating emergency data directly");
       
-      // Create direct mapping for response time analyzer specifically
-      if (selectedTool === 'response-time') {
-        dataToSend = window.originalData.map(record => ({
-          "Incident ID": record.Inc_ID || "",
-          "Latitude": parseFloat(record.GPS_Lat) || 0,
-          "Longitude": parseFloat(record.GPS_Lon) || 0,
-          "Unit": record.Units || "",
-          "Unit Dispatched": record.Disp_Time || "",
-          "Unit Onscene": record.Arriv_Time || "",
-          "Reported": record.Call_Time || "",
-          "Incident Date": record.Call_Date || "",
-          "Incident Type": record.Call_Type || "",
-          "Address": record.Address_Full || "",
+      // Create direct mapping with more exhaustive field aliases
+      dataToSend = window.originalData.map(record => {
+        // Start with a base object
+        const transformed = {
           "_source": "emergency_direct"
-        }));
-      } else {
-        dataToSend = window.originalData;
-      }
+        };
+        
+        // Map incident fields
+        transformed["Incident ID"] = record.Inc_ID || record.IncidentID || record.id || record.Call_ID || record.EventID || record.Run_Number || record.CAD_Number || record.CFS_Number || "";
+        transformed["Incident Date"] = record.Call_Date || record.Date || record.IncidentDate || record.EventDate || record.ReportedDate || "";
+        transformed["Incident Time"] = record.Call_Time || record.Time || record.IncidentTime || record.EventTime || record.Reported || record.ReportedTime || "";
+        transformed["Incident Type"] = record.Call_Type || record.Type || record.Nature || record.IncidentType || record.EventType || record.CallNature || "";
+        transformed["Priority"] = record.Priority || record.Call_Priority || record.CallPriority || record.EventPriority || "";
+        
+        // Map location fields
+        transformed["Latitude"] = parseFloat(record.GPS_Lat || record.Lat || record.Y || record.lat || record.LATITUDE || record.LocationLat || 0);
+        transformed["Longitude"] = parseFloat(record.GPS_Lon || record.Lon || record.Long || record.X || record.lon || record.LONGITUDE || record.LocationLon || 0);
+        transformed["Address"] = record.Address_Full || record.Address || record.FullAddress || record.Location || record.StreetAddress || record.IncidentAddress || "";
+        transformed["City"] = record.City || record.City_Name || record.CityName || record.IncidentCity || record.Jurisdiction || "";
+        transformed["State"] = record.State || record.State_Name || record.StateName || record.IncidentState || record.ST || record.Province || "";
+        transformed["ZIP Code"] = record.Zip || record.ZIP || record.ZipCode || record.PostalCode || "";
+        
+        // Map response fields
+        transformed["Unit"] = record.Units || record.Unit || record.Unit_ID || record.Apparatus || record.VehicleID || record.UnitName || record.ResponderID || "";
+        transformed["Unit Dispatched"] = record.Disp_Time || record["Unit Dispatched"] || record.DispatchTime || record.TimeDispatched || record.TimeUnitDispatched || "";
+        transformed["Unit Enroute"] = record.Enr_Time || record["Unit Enroute"] || record.EnrouteTime || record.TimeEnroute || record.TimeUnitEnroute || record.RespondingTime || "";
+        transformed["Unit Onscene"] = record.Arriv_Time || record["Unit Onscene"] || record.ArrivalTime || record.TimeArrived || record.TimeOnScene || record.OnSceneTime || "";
+        transformed["Unit Cleared"] = record.Clear_Time || record["Unit Cleared"] || record.ClearTime || record.TimeCleared || record.TimeUnitCleared || record.CompleteTime || "";
+        transformed["Station"] = record.Station || record.Station_ID || record.StationNumber || record.FireStation || record.BaseStation || "";
+        
+        // Handle Reported time separately as it's particularly important
+        transformed["Reported"] = record.Call_Time || record.Reported || record.Time || record.IncidentTime || record.EventTime || record.ReportedTime || "";
+        
+        return transformed;
+      });
     }
     
     // Now, if we have data, store it properly and redirect
