@@ -298,7 +298,7 @@ def transform_data():
         
         # Log the request data for debugging
         logger.info(f"Transform request for file: {file_id}, target tool: {target_tool}")
-        logger.debug(f"Mappings: {json.dumps(mappings)}")
+        logger.info(f"Mappings received from frontend: {json.dumps(mappings)}")
         
         # Find the file
         files_path = get_files_path()
@@ -322,12 +322,20 @@ def transform_data():
         try:
             if file_extension == 'csv':
                 source_df = pd.read_csv(file_path)
+                logger.info(f"Loaded CSV file with columns: {list(source_df.columns)}")
+                logger.info(f"Source dataframe sample:\n{source_df.head(3).to_string()}")
             elif file_extension in ['xlsx', 'xls']:
                 source_df = pd.read_excel(file_path)
+                logger.info(f"Loaded Excel file with columns: {list(source_df.columns)}")
+                logger.info(f"Source dataframe sample:\n{source_df.head(3).to_string()}")
             elif file_extension == 'json':
                 source_df = pd.read_json(file_path)
+                logger.info(f"Loaded JSON file with columns: {list(source_df.columns)}")
+                logger.info(f"Source dataframe sample:\n{source_df.head(3).to_string()}")
             elif file_extension == 'xml':
                 source_df = pd.read_xml(file_path)
+                logger.info(f"Loaded XML file with columns: {list(source_df.columns)}")
+                logger.info(f"Source dataframe sample:\n{source_df.head(3).to_string()}")
             else:
                 return jsonify({"error": f"Unsupported file type: {file_extension}"}), 400
         except Exception as e:
@@ -339,45 +347,94 @@ def transform_data():
         if not schema:
             return jsonify({"error": "Failed to load schema definition"}), 500
         
+        # Log schema info
+        logger.info(f"Loaded schema with version: {schema.get('schemaVersion')}")
+        logger.info(f"Required fields in schema: {[field.get('fieldName') for field in schema.get('requiredFields', [])]}")
+        
+        # Process mappings to add transformation hints from schema
+        enhanced_mappings = {}
+        for field_id, mapping in mappings.items():
+            # Skip if no source field is specified
+            if not mapping.get('sourceId'):
+                continue
+                
+            # Copy the original mapping
+            enhanced_mapping = mapping.copy()
+            
+            # Look up field type from schema
+            field_type = None
+            for field in schema.get('requiredFields', []) + schema.get('optionalFields', []):
+                if field.get('name') == field_id:
+                    field_type = field.get('type')
+                    break
+            
+            # If we found a field type, add transformation hint
+            if field_type:
+                # Only add transformation if one isn't already specified
+                if 'transformations' not in enhanced_mapping:
+                    enhanced_mapping['transformations'] = []
+                    
+                # Add type-specific transformation
+                if field_type in ['datetime', 'date', 'time']:
+                    enhanced_mapping['transformations'].append({
+                        'type': 'datetime',
+                        'timezone': 'America/Phoenix'  # Default timezone
+                    })
+                elif field_type == 'number':
+                    enhanced_mapping['transformations'].append({
+                        'type': 'number'
+                    })
+            
+            # Store the enhanced mapping
+            enhanced_mappings[field_id] = enhanced_mapping
+        
+        # Log the enhanced mappings
+        logger.info(f"Enhanced mappings with schema-based transformation hints: {json.dumps(enhanced_mappings)}")
+        
         # Apply transformations
         transformation_log = []
         errors = []
         missing_fields = []
 
         try:
-            # Apply the transformation function
-            transformed_df = apply_transformations(source_df, mappings, schema, current_app.root_path)
+            # Apply the transformation function with the enhanced mappings
+            transformed_df = apply_transformations(source_df, enhanced_mappings, schema, current_app.root_path)
             logger.info(f"Transformation complete with {len(transformed_df)} rows")
             transformation_log.append(f"Successfully transformed data using schema-based mapping")
             
-            # Get required fields for this tool
-            required_fields = []
+            # Extract required fields from toolRequirements
+            required_fields = schema.get('toolRequirements', {}).get(target_tool, [])
             
-            # Extract required fields based on schema format
-            if 'coreMappings' in schema and 'toolRequirements' in schema:
-                # New schema format with coreMappings and toolRequirements
-                tool_requirements = schema.get('toolRequirements', {}).get(target_tool, [])
-                logger.info(f"Tool requirements for {target_tool}: {tool_requirements}")
-                
-                # Convert field paths to standardized field names
-                for field_path in tool_requirements:
-                    # Convert dot notation (e.g., "incident.id") to standard field name (e.g., "incident_id")
-                    if '.' in field_path:
-                        category, field = field_path.split('.')
-                        standard_field_name = f"{category}_{field}"
-                        required_fields.append(standard_field_name)
-            else:
-                # Legacy schema format
-                for field in schema.get('requiredFields', []):
-                    field_name = field.get('name', '').lower().replace(' ', '_')
-                    required_fields.append(field_name)
-            
-            # Log the required fields
+            # Log the required fields for this tool
             logger.info(f"Required fields for {target_tool}: {required_fields}")
             
+            # Transform the field names from the tool requirements to standardized field names
+            standardized_required_fields = []
+            for field_path in required_fields:
+                standardized_field_name = None
+                
+                # First check if it's a direct match to a field in the schema
+                for field in schema.get('requiredFields', []) + schema.get('optionalFields', []):
+                    if field['name'] == field_path:
+                        standardized_field_name = field.get('fieldName')
+                        break
+                
+                # If not found, handle the case where it's in dot notation
+                if not standardized_field_name and '.' in field_path:
+                    category, field = field_path.split('.')
+                    standardized_field_name = f"{category}_{field}"
+                
+                # If still not found, just use the original converted to snake_case
+                if not standardized_field_name:
+                    standardized_field_name = field_path.lower().replace(' ', '_')
+                
+                standardized_required_fields.append(standardized_field_name)
+            
+            logger.info(f"Standardized required fields: {standardized_required_fields}")
+            
             # Check for missing required fields
-            if required_fields:
-                for field in required_fields:
+            if standardized_required_fields:
+                for field in standardized_required_fields:
                     if field not in transformed_df.columns or transformed_df[field].isna().all():
                         missing_fields.append(field)
                         
@@ -387,6 +444,7 @@ def transform_data():
                 
         except Exception as e:
             logger.error(f"Error applying transformations: {str(e)}")
+            logger.error(f"Exception traceback: {traceback.format_exc()}")
             errors.append(f"Error applying transformations: {str(e)}")
             
             # Create an empty DataFrame if transformation failed
@@ -400,8 +458,10 @@ def transform_data():
                 "details": errors
             }), 400
             
-        # Log column names to verify standardized field names
+        # Log column names and sample data to verify standardized field names
         logger.info(f"Transformed DataFrame columns: {list(transformed_df.columns)}")
+        if not transformed_df.empty:
+            logger.info(f"Sample transformed data:\n{transformed_df.head(3).to_string()}")
             
         # Generate the preview (first 10 rows)
         preview_data = transformed_df.head(10).fillna('').to_dict('records')
@@ -432,6 +492,7 @@ def transform_data():
         
     except Exception as e:
         logger.error(f"Error in transform_data: {str(e)}")
+        logger.error(f"Exception traceback: {traceback.format_exc()}")
         return jsonify({"error": str(e)}), 500
 
 # Data formatter download endpoint
