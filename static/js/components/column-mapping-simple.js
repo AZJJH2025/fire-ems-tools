@@ -29,7 +29,7 @@
     function loadSchema() {
       setIsSchemaLoading(true);
       
-      fetch('/public/standardized_incident_record_schema.json')
+      fetch('/static/standardized_incident_record_schema.json')
         .then(function(response) {
           if (!response.ok) {
             throw new Error('Failed to load schema: ' + response.status);
@@ -178,11 +178,87 @@
             }
           });
           
+          // For Response Time Analyzer specifically - add required fields
+          // Handle coordinates for mapping
+          if (originalRow.GPS_Lat && !transformedRow['Latitude']) {
+            transformedRow['Latitude'] = originalRow.GPS_Lat;
+          }
+          
+          if (originalRow.GPS_Lon && !transformedRow['Longitude']) {
+            transformedRow['Longitude'] = originalRow.GPS_Lon;
+          }
+          
+          // Handle unit information
+          if (originalRow.Units && !transformedRow['Unit']) {
+            transformedRow['Unit'] = originalRow.Units;
+          }
+          
+          // Handle time fields for response time analysis
+          if (originalRow.Disp_Time && !transformedRow['Unit Dispatched']) {
+            transformedRow['Unit Dispatched'] = originalRow.Disp_Time;
+          }
+          
+          if (originalRow.Enr_Time && !transformedRow['Unit Enroute']) {
+            transformedRow['Unit Enroute'] = originalRow.Enr_Time;
+          }
+          
+          if (originalRow.Arriv_Time && !transformedRow['Unit Onscene']) {
+            transformedRow['Unit Onscene'] = originalRow.Arriv_Time;
+          }
+          
+          // Call time or Reported Time
+          if (originalRow.Call_Time && !transformedRow['Reported']) {
+            transformedRow['Reported'] = originalRow.Call_Time;
+          }
+          
           transformedData.push(transformedRow);
         });
         
-        // Store the transformed data for download/send
+        // Double-check for Response Time Analyzer required fields
+        console.log('Checking for required fields in first record:', 
+          transformedData.length > 0 ? JSON.stringify(transformedData[0]) : 'No records');
+        
+        if (transformedData.length > 0) {
+          const first = transformedData[0];
+          const required = ['Latitude', 'Longitude', 'Unit', 'Unit Dispatched', 'Unit Onscene', 'Reported'];
+          const missing = required.filter(field => !first[field]);
+          
+          if (missing.length > 0) {
+            console.warn(`Still missing fields: ${missing.join(', ')}. Adding direct mappings.`);
+            
+            // Direct field mapping for all records as fallback
+            transformedData = transformedData.map(record => {
+              const r = {...record};
+              const src = window.originalData.find(o => o.Inc_ID === record['Incident ID']) || {};
+              
+              if (!r.Latitude && src.GPS_Lat) r.Latitude = src.GPS_Lat;
+              if (!r.Longitude && src.GPS_Lon) r.Longitude = src.GPS_Lon;
+              if (!r.Unit && src.Units) r.Unit = src.Units;
+              if (!r['Unit Dispatched'] && src.Disp_Time) r['Unit Dispatched'] = src.Disp_Time;
+              if (!r['Unit Onscene'] && src.Arriv_Time) r['Unit Onscene'] = src.Arriv_Time;
+              if (!r.Reported && src.Call_Time) r.Reported = src.Call_Time;
+              
+              return r;
+            });
+          }
+        }
+        
+        // Store the transformed data for download/send - VERY IMPORTANT!
         window.transformedData = transformedData;
+        
+        // Make sure transformed data is globally accessible for other scripts
+        if (typeof sessionStorage !== 'undefined') {
+          try {
+            sessionStorage.setItem('tempTransformedData', JSON.stringify(transformedData));
+            console.log('Stored transformed data in sessionStorage as backup');
+          } catch (e) {
+            console.error('Failed to store in sessionStorage:', e);
+          }
+        }
+        
+        // Log the mapping results for debugging
+        console.log('Transformation complete with fields:', 
+          Object.keys(transformedData[0] || {}).join(', '));
       }
       
       // Show formatter panels (using the global function) - do this BEFORE showing preview

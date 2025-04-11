@@ -363,6 +363,51 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
     } else {
+      // Try to load from tempTransformedData in sessionStorage as fallback
+      try {
+        const tempData = sessionStorage.getItem('tempTransformedData');
+        if (tempData) {
+          console.log("Retrieved transformed data from sessionStorage fallback");
+          const parsedData = JSON.parse(tempData);
+          
+          if (Array.isArray(parsedData) && parsedData.length > 0) {
+            console.log("Using transformed data from sessionStorage:", parsedData[0]);
+            sessionStorage.setItem('formattedData', tempData);
+            sessionStorage.setItem('dataSource', 'formatter');
+            sessionStorage.setItem('formatterToolId', selectedTool);
+            sessionStorage.setItem('formatterTimestamp', new Date().toISOString());
+            
+            // Add diagnostic info
+            window.appendLog = window.appendLog || function(msg) { console.log(msg); };
+            window.appendLog("Using fallback data from session storage");
+            
+            // Redirect after a small delay
+            setTimeout(() => {
+              const toolUrls = {
+                'response-time': '/fire-ems-dashboard',
+                'isochrone': '/isochrone-map',
+                'isochrone-stations': '/isochrone-map?type=stations',
+                'isochrone-incidents': '/isochrone-map?type=incidents',
+                'call-density': '/call-density-heatmap',
+                'incident-logger': '/incident-logger',
+                'coverage-gap': '/coverage-gap-finder',
+                'station-overview': '/station-overview',
+                'fire-map-pro': '/fire-map-pro'
+              };
+              
+              if (toolUrls[selectedTool]) {
+                window.location.href = toolUrls[selectedTool] + (toolUrls[selectedTool].includes('?') ? '&' : '?') + 'from_formatter=true';
+              }
+            }, 500);
+            
+            return;
+          }
+        }
+      } catch (e) {
+        console.error("Error retrieving fallback data:", e);
+      }
+      
+      // If fallback also failed, show alert
       alert('No transformed data available to send.');
       
       // Reset button state

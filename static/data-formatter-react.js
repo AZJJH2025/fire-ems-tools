@@ -268,7 +268,32 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       } else {
         console.log('Transform function not available in the main script.');
-        window.appendLog('Data formatted successfully! Ready for download or to send to another tool.');
+        
+        // Check if window.appendLog is available before calling it
+        if (window.appendLog && typeof window.appendLog === 'function') {
+          window.appendLog('Data formatted successfully! Ready for download or to send to another tool.');
+        } else {
+          console.log('Data formatted successfully! Ready for download or to send to another tool.');
+          
+          // Try to create a fallback logging function if it doesn't exist
+          if (!window.appendLog) {
+            window.appendLog = function(message, type = 'info') {
+              console.log(`[${type.toUpperCase()}] ${message}`);
+              
+              // Try to append to log container if it exists
+              const logContainer = document.getElementById('log-container');
+              if (logContainer) {
+                const logEntry = document.createElement('p');
+                logEntry.className = `log-entry log-${type}`;
+                logEntry.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+                logContainer.appendChild(logEntry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+              }
+            };
+            
+            console.log('Created fallback appendLog function');
+          }
+        }
       }
     }
   }

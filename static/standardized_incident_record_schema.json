@@ -1,0 +1,116 @@
+{
+  "schemaVersion": "1.0",
+  "description": "Standardized incident record schema for FireEMS.ai tools",
+  "requiredFields": [
+    {
+      "name": "Incident ID",
+      "description": "Unique identifier for the incident",
+      "type": "string",
+      "category": "incident"
+    },
+    {
+      "name": "Incident Date",
+      "description": "Date when the incident occurred",
+      "type": "date",
+      "category": "timestamp"
+    },
+    {
+      "name": "Incident Time",
+      "description": "Time when the incident occurred",
+      "type": "time",
+      "category": "timestamp"
+    },
+    {
+      "name": "Latitude",
+      "description": "Latitude coordinate of incident location",
+      "type": "number",
+      "category": "location"
+    },
+    {
+      "name": "Longitude",
+      "description": "Longitude coordinate of incident location",
+      "type": "number",
+      "category": "location"
+    },
+    {
+      "name": "Incident Type",
+      "description": "Type or nature of the incident",
+      "type": "string",
+      "category": "incident"
+    }
+  ],
+  "optionalFields": [
+    {
+      "name": "Address",
+      "description": "Street address of incident",
+      "type": "string",
+      "category": "location"
+    },
+    {
+      "name": "City",
+      "description": "City where incident occurred",
+      "type": "string",
+      "category": "location"
+    },
+    {
+      "name": "State",
+      "description": "State where incident occurred",
+      "type": "string",
+      "category": "location"
+    },
+    {
+      "name": "ZIP Code",
+      "description": "ZIP code of incident location",
+      "type": "string",
+      "category": "location"
+    },
+    {
+      "name": "Unit",
+      "description": "Unit responding to incident",
+      "type": "string",
+      "category": "response"
+    },
+    {
+      "name": "Unit Dispatched",
+      "description": "Time when unit was dispatched",
+      "type": "time",
+      "category": "response"
+    },
+    {
+      "name": "Unit Enroute",
+      "description": "Time when unit began traveling to incident",
+      "type": "time",
+      "category": "response"
+    },
+    {
+      "name": "Unit Onscene",
+      "description": "Time when unit arrived on scene",
+      "type": "time",
+      "category": "response"
+    },
+    {
+      "name": "Unit Clear",
+      "description": "Time when unit cleared from incident",
+      "type": "time",
+      "category": "response"
+    },
+    {
+      "name": "Priority",
+      "description": "Priority or urgency level of incident",
+      "type": "string",
+      "category": "incident"
+    },
+    {
+      "name": "Station",
+      "description": "Station responding to incident",
+      "type": "string",
+      "category": "response"
+    },
+    {
+      "name": "Reported",
+      "description": "Time when incident was reported",
+      "type": "time",
+      "category": "timestamp"
+    }
+  ]
+}
