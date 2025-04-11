@@ -141,6 +141,261 @@ def create_app(config_name='default'):
     from static_middleware import register_static_handler
     register_static_handler(app)
         
+    # Direct static file serving for emergencies
+    @app.route('/app-static/<path:filename>')
+    def serve_static_direct(filename):
+        import os
+        import mimetypes
+        import traceback
+        static_dir = os.path.join(os.getcwd(), 'static')
+        
+        try:
+            # Get MIME type
+            _, ext = os.path.splitext(filename)
+            mimetype = mimetypes.types_map.get(ext.lower())
+            
+            # Force JavaScript MIME type for JS files
+            if ext.lower() in ['.js', '.jsx']:
+                mimetype = 'application/javascript'
+            elif ext.lower() == '.css':
+                mimetype = 'text/css'
+                
+            app.logger.info(f"Direct static file request: {filename} as {mimetype}")
+            
+            # Full path to file
+            file_path = os.path.join(static_dir, filename)
+            if not os.path.exists(file_path):
+                app.logger.error(f"File not found: {file_path}")
+                return f"File not found: {filename}", 404
+                
+            # Serve the file directly
+            with open(file_path, 'rb') as f:
+                content = f.read()
+                
+            from flask import make_response
+            response = make_response(content)
+            response.headers['Content-Type'] = mimetype or 'application/octet-stream'
+            response.headers['X-Served-By'] = 'app-static direct route'
+            return response
+        except Exception as e:
+            app.logger.error(f"Error serving {filename} via app-static: {str(e)}")
+            app.logger.error(traceback.format_exc())
+            return f"Error serving file: {str(e)}", 500
+    
+    # Diagnostic endpoint to check static file serving
+    @app.route('/diagnostic/static')
+    def static_diagnostic():
+        """Interactive diagnostic page for troubleshooting static file serving"""
+        import os
+        import mimetypes
+        import traceback
+        from flask import render_template_string
+        
+        # Get all static file routes
+        static_routes = [
+            {'name': 'Blueprint Static', 'path': '/static/'},
+            {'name': 'Direct Static', 'path': '/direct-static/'}, 
+            {'name': 'App Static', 'path': '/app-static/'}
+        ]
+        
+        # List some critical files to test
+        static_files = ['styles.css', 'data-formatter.css', 'data-formatter-bundle.js']
+        
+        # Check if files exist
+        static_dir = os.path.join(os.getcwd(), 'static')
+        file_status = []
+        
+        for file in static_files:
+            file_path = os.path.join(static_dir, file)
+            exists = os.path.exists(file_path)
+            size = os.path.getsize(file_path) if exists else 0
+            _, ext = os.path.splitext(file)
+            mimetype = mimetypes.types_map.get(ext.lower(), 'unknown')
+            
+            file_status.append({
+                'name': file,
+                'exists': exists,
+                'size': size,
+                'path': file_path,
+                'mimetype': mimetype
+            })
+        
+        # Get registered url rules for more info
+        url_rules = []
+        for rule in app.url_map.iter_rules():
+            if 'static' in rule.endpoint:
+                url_rules.append({
+                    'endpoint': rule.endpoint,
+                    'methods': ', '.join(rule.methods),
+                    'rule': str(rule)
+                })
+        
+        # Generate HTML template for diagnostics
+        template = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Static File Diagnostics</title>
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 1200px; margin: 0 auto; }
+                h1 { color: #333; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
+                h2 { color: #0066cc; margin-top: 30px; }
+                .section { margin-bottom: 30px; background: #f9f9f9; padding: 15px; border-radius: 5px; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; }
+                th { background-color: #f2f2f2; }
+                tr:hover { background-color: #f5f5f5; }
+                .success { color: green; }
+                .error { color: red; }
+                .test-btn { background: #0066cc; color: white; border: none; padding: 8px 12px; cursor: pointer; border-radius: 4px; margin: 5px; }
+                #test-results { margin-top: 20px; padding: 10px; background: #f0f0f0; border-radius: 4px; min-height: 200px; }
+                .code { font-family: monospace; background: #eee; padding: 2px 4px; }
+            </style>
+            <script>
+                function testStaticFile(path, file) {
+                    const url = path + file;
+                    const resultDiv = document.getElementById('test-results');
+                    
+                    resultDiv.innerHTML = `<p>Testing: <strong>${url}</strong>...</p>`;
+                    
+                    const startTime = new Date();
+                    
+                    fetch(url)
+                        .then(response => {
+                            const elapsed = new Date() - startTime;
+                            
+                            let resultHtml = `
+                                <p>URL: <strong>${url}</strong></p>
+                                <p>Status: <strong>${response.status} ${response.statusText}</strong></p>
+                                <p>Content-Type: <strong>${response.headers.get('content-type')}</strong></p>
+                                <p>Time: <strong>${elapsed}ms</strong></p>
+                                <p>Headers:</p>
+                                <pre>`;
+                            
+                            response.headers.forEach((value, name) => {
+                                resultHtml += `${name}: ${value}\\n`;
+                            });
+                            
+                            resultHtml += `</pre>`;
+                            
+                            if (response.ok) {
+                                return response.text().then(text => {
+                                    const firstChars = text.substring(0, 100);
+                                    resultHtml += `
+                                        <p>Content starts with:</p>
+                                        <pre>${firstChars}...</pre>
+                                    `;
+                                    resultDiv.innerHTML = resultHtml;
+                                });
+                            } else {
+                                resultHtml += `<p class="error">Failed to load resource</p>`;
+                                resultDiv.innerHTML = resultHtml;
+                            }
+                        })
+                        .catch(error => {
+                            resultDiv.innerHTML = `
+                                <p>URL: <strong>${url}</strong></p>
+                                <p class="error">Error: ${error.message}</p>
+                            `;
+                        });
+                }
+            </script>
+        </head>
+        <body>
+            <h1>Static File Serving Diagnostics</h1>
+            
+            <div class="section">
+                <h2>Static File Routes</h2>
+                <table>
+                    <tr>
+                        <th>Name</th>
+                        <th>Path</th>
+                        <th>Test</th>
+                    </tr>
+                    {% for route in static_routes %}
+                    <tr>
+                        <td>{{ route.name }}</td>
+                        <td>{{ route.path }}</td>
+                        <td>
+                            {% for file in static_files %}
+                            <button class="test-btn" onclick="testStaticFile('{{ route.path }}', '{{ file }}')">Test {{ file }}</button>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            
+            <div class="section">
+                <h2>Static File Status</h2>
+                <table>
+                    <tr>
+                        <th>File</th>
+                        <th>Exists</th>
+                        <th>Size</th>
+                        <th>MIME Type</th>
+                        <th>Path</th>
+                    </tr>
+                    {% for file in file_status %}
+                    <tr>
+                        <td>{{ file.name }}</td>
+                        <td class="{% if file.exists %}success{% else %}error{% endif %}">
+                            {{ 'Yes' if file.exists else 'No' }}
+                        </td>
+                        <td>{{ file.size }} bytes</td>
+                        <td>{{ file.mimetype }}</td>
+                        <td>{{ file.path }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            
+            <div class="section">
+                <h2>URL Rules</h2>
+                <table>
+                    <tr>
+                        <th>Endpoint</th>
+                        <th>Methods</th>
+                        <th>Rule</th>
+                    </tr>
+                    {% for rule in url_rules %}
+                    <tr>
+                        <td>{{ rule.endpoint }}</td>
+                        <td>{{ rule.methods }}</td>
+                        <td>{{ rule.rule }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            
+            <div class="section">
+                <h2>Test Results</h2>
+                <div id="test-results">
+                    <p>Click a "Test" button above to check a static file route.</p>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Troubleshooting Tips</h2>
+                <ol>
+                    <li>Ensure files exist in the correct location</li>
+                    <li>Check MIME types are being correctly set</li>
+                    <li>Review response headers for any issues</li>
+                    <li>Test different static file routes to see which works</li>
+                    <li>Check for any 500 errors in the server logs</li>
+                    <li>Try the direct route at <code>/app-static/styles.css</code> first</li>
+                </ol>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return render_template_string(template, 
+                                    static_routes=static_routes,
+                                    static_files=static_files,
+                                    file_status=file_status,
+                                    url_rules=url_rules)
+    
     # Register blueprints from modular routes
     try:
         # Import blueprints

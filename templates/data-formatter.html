@@ -4,8 +4,52 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Data Formatter - FireEMS.ai</title>
-  <link rel="stylesheet" href="/static/styles.css">
-  <link rel="stylesheet" href="/static/data-formatter.css">
+  
+  <!-- Fallback static file loading script -->
+  <script>
+    function loadCSS(url, fallbackUrl) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = url;
+      
+      link.onerror = function() {
+        console.warn(`Failed to load CSS from ${url}, trying fallback...`);
+        // Try first fallback path
+        const fallbackLink = document.createElement('link');
+        fallbackLink.rel = 'stylesheet';
+        fallbackLink.href = fallbackUrl;
+        
+        fallbackLink.onerror = function() {
+          console.error(`Fallback CSS load failed for ${fallbackUrl}`);
+          // If that fails, try the app-static path
+          const emergencyLink = document.createElement('link');
+          emergencyLink.rel = 'stylesheet';
+          emergencyLink.href = url.replace('/static/', '/app-static/');
+          document.head.appendChild(emergencyLink);
+        };
+        
+        document.head.appendChild(fallbackLink);
+      };
+      
+      document.head.appendChild(link);
+    }
+    
+    // Load critical CSS files with fallbacks
+    loadCSS('/static/styles.css', '/direct-static/styles.css');
+    loadCSS('/static/data-formatter.css', '/direct-static/data-formatter.css');
+  </script>
+  
+  <!-- Inline critical CSS to ensure basic styling works even if files fail to load -->
+  <style>
+    /* Critical styles for basic layout and usability */
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; line-height: 1.6; }
+    .navbar { background-color: #202830; color: #fff; padding: 10px 20px; display: flex; justify-content: space-between; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+    .tool-header { background: linear-gradient(135deg, #202830 0%, #3498db 100%); color: white; padding: 20px 0; margin-bottom: 20px; }
+    button { background-color: #2196f3; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+    .formatter-panel { background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px; }
+  </style>
+  
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- XLSX.js for Excel file processing -->
@@ -401,12 +445,140 @@
   </footer>
 
   <!-- Core dependencies for React and Material UI -->
-  <script src="https://cdn.jsdelivr.net/npm/react@17/umd/react.production.min.js" integrity="sha256-UkE6Sny96UqpJlVQrJr/aBiNK8V/uENHm2hUNnh+ZcE=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/react-dom@17/umd/react-dom.production.min.js" integrity="sha256-qWzfKIRGSHbz9NjWIy7iSZJl9uNJQN5UopM9Z3nQ4KQ=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@material-ui/core@4.12.3/umd/material-ui.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react@17/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@17/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@material-ui/core@4.12.3/umd/material-ui.production.min.js"></script>
   
-  <!-- Single consolidated bundle that handles all dependencies and loading -->
-  <script src="/static/data-formatter-bundle.js?v=1.0.0"></script>
+  <!-- Robust JavaScript loading with fallbacks -->
+  <script>
+    function loadScript(url, fallbackUrl, callback) {
+      console.log(`Attempting to load script: ${url}`);
+      const script = document.createElement('script');
+      script.src = url;
+      
+      script.onload = function() {
+        console.log(`Successfully loaded: ${url}`);
+        if (callback) callback(true);
+      };
+      
+      script.onerror = function() {
+        console.warn(`Failed to load script from ${url}, trying fallback...`);
+        
+        // Try first fallback
+        const fallbackScript = document.createElement('script');
+        fallbackScript.src = fallbackUrl;
+        
+        fallbackScript.onload = function() {
+          console.log(`Successfully loaded fallback: ${fallbackUrl}`);
+          if (callback) callback(true);
+        };
+        
+        fallbackScript.onerror = function() {
+          console.error(`Fallback script load failed for ${fallbackUrl}`);
+          
+          // Try emergency fallback with app-static
+          const emergencyScript = document.createElement('script');
+          emergencyScript.src = url.replace('/static/', '/app-static/');
+          
+          emergencyScript.onload = function() {
+            console.log(`Emergency load succeeded: ${emergencyScript.src}`);
+            if (callback) callback(true);
+          };
+          
+          emergencyScript.onerror = function() {
+            console.error(`All script loading attempts failed for ${url}`);
+            if (callback) callback(false);
+          };
+          
+          document.body.appendChild(emergencyScript);
+        };
+        
+        document.body.appendChild(fallbackScript);
+      };
+      
+      document.body.appendChild(script);
+    }
+    
+    // Load column mapping CSS with fallback
+    loadCSS('/static/column-mapping.css', '/direct-static/column-mapping.css');
+    
+    // Load main bundle
+    loadScript('/static/data-formatter-bundle.js?v=1.0.1', '/direct-static/data-formatter-bundle.js', function(success) {
+      if (!success) {
+        console.error("Failed to load main bundle even with fallbacks");
+        
+        // Show error to user
+        const container = document.querySelector('.formatter-container');
+        if (container) {
+          const errorMsg = document.createElement('div');
+          errorMsg.className = 'error-message';
+          errorMsg.innerHTML = `
+            <h3>Error Loading Data Formatter</h3>
+            <p>The application components failed to load properly. Please try:</p>
+            <ol>
+              <li>Refreshing the page</li>
+              <li>Clearing your browser cache</li>
+              <li>Trying a different browser</li>
+            </ol>
+            <p>Technical details: Failed to load bundle after multiple attempts.</p>
+            <button onclick="location.reload()">Refresh Page</button>
+            <button onclick="loadDirect()">Try Emergency Mode</button>
+          `;
+          container.prepend(errorMsg);
+        }
+      }
+    });
+    
+    // Emergency direct script loading
+    function loadDirect() {
+      console.log("Attempting emergency direct loading of critical components");
+      
+      // Clear any existing error messages
+      const existingErrors = document.querySelectorAll('.error-message');
+      existingErrors.forEach(el => el.remove());
+      
+      // Show loading message
+      const container = document.querySelector('.formatter-container');
+      if (container) {
+        const loadingMsg = document.createElement('div');
+        loadingMsg.className = 'loading-message';
+        loadingMsg.innerHTML = '<h3>Loading Emergency Mode...</h3><p>Please wait while we load critical components...</p>';
+        container.prepend(loadingMsg);
+      }
+      
+      // Try to load each component directly
+      const scripts = [
+        '/app-static/data-formatter-direct.js',
+        '/app-static/data-formatter-fix.js',
+        '/app-static/data-formatter-integration.js'
+      ];
+      
+      let loaded = 0;
+      scripts.forEach(script => {
+        const scriptEl = document.createElement('script');
+        scriptEl.src = script;
+        
+        scriptEl.onload = function() {
+          console.log(`Emergency loaded: ${script}`);
+          loaded++;
+          if (loaded === scripts.length) {
+            // All scripts loaded, try to initialize
+            if (container) {
+              const loadingMsg = document.querySelector('.loading-message');
+              if (loadingMsg) loadingMsg.remove();
+              
+              const successMsg = document.createElement('div');
+              successMsg.className = 'success-message';
+              successMsg.innerHTML = '<h3>Emergency Mode Loaded</h3><p>Basic functionality should now be available.</p>';
+              container.prepend(successMsg);
+            }
+          }
+        };
+        
+        document.body.appendChild(scriptEl);
+      });
+    }
+  </script>
   
   <!-- Simple error detection in case the bundle fails -->
   <script>
@@ -416,29 +588,30 @@
         if (!window.dataFormatterLoaded) {
           console.error('Data formatter failed to load within timeout period');
           
-          // Create error message for user
-          var container = document.querySelector('.formatter-container');
-          if (container) {
-            var errorMsg = document.createElement('div');
-            errorMsg.className = 'error-message';
-            errorMsg.innerHTML = '<h3>Error Loading Data Formatter</h3>' +
-                                '<p>The application components failed to load properly. Please try:</p>' +
-                                '<ol>' +
-                                  '<li>Refreshing the page</li>' +
-                                  '<li>Clearing your browser cache</li>' +
-                                  '<li>Trying a different browser</li>' +
-                                '</ol>' +
-                                '<button onclick="location.reload()">Refresh Page</button>';
-            
-            container.prepend(errorMsg);
+          // If not already showing an error message, create one
+          if (!document.querySelector('.error-message')) {
+            // Create error message for user
+            var container = document.querySelector('.formatter-container');
+            if (container) {
+              var errorMsg = document.createElement('div');
+              errorMsg.className = 'error-message';
+              errorMsg.innerHTML = '<h3>Error Loading Data Formatter</h3>' +
+                                  '<p>The application components failed to load properly. Please try:</p>' +
+                                  '<ol>' +
+                                    '<li>Refreshing the page</li>' +
+                                    '<li>Clearing your browser cache</li>' +
+                                    '<li>Trying a different browser</li>' +
+                                  '</ol>' +
+                                  '<button onclick="location.reload()">Refresh Page</button>' +
+                                  '<button onclick="loadDirect()">Try Emergency Mode</button>';
+              
+              container.prepend(errorMsg);
+            }
           }
         }
       }, 3000);
     });
   </script>
-  
-  <!-- Add styling for the column mapping UI -->
-  <link rel="stylesheet" href="/static/column-mapping.css">
   
   <!-- Handle tool preselection from URL parameter -->
   <script>
