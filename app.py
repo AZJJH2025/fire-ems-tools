@@ -46,34 +46,8 @@ from config import config
 csrf = CSRFProtect()
 login_manager = LoginManager()
 
-# Import safe_limit decorator for rate limiting
-try:
-    from flask_limiter import Limiter
-    from flask_limiter.util import get_remote_address
-    
-    # Create a safer version of limiter that won't fail in production
-    limiter = Limiter(key_func=get_remote_address, default_limits=["200 per hour", "50 per minute"])
-    
-    # Create a safer limit decorator
-    def safe_limit(limit_string, **kwargs):
-        """A safer version of limiter.limit that won't fail if limiter is not working"""
-        def decorator(f):
-            try:
-                # Try to use the real limiter
-                return limiter.limit(limit_string, **kwargs)(f)
-            except Exception as e:
-                # If it fails, just return the original function
-                logger.warning(f"Rate limiting failed, continuing without limits: {str(e)}")
-                return f
-        return decorator
-except Exception as e:
-    logger.error(f"Error initializing limiter: {str(e)}")
-    # Create dummy functions if limiter fails
-    limiter = None
-    def safe_limit(limit_string, **kwargs):
-        def decorator(f):
-            return f
-        return decorator
+# Limiter will be initialized in create_app function
+limiter = None
 
 def create_app(config_name='default'):
     """Application factory function"""
@@ -93,6 +67,9 @@ def create_app(config_name='default'):
                 template_folder=template_folder,
                 static_folder=static_folder, 
                 static_url_path="/static")
+    
+    # Initialize rate limiter
+    init_limiter(app)
     
     # Set up template auto-reloading in development
     app.config['TEMPLATES_AUTO_RELOAD'] = True
