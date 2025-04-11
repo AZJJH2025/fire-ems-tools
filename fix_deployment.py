@@ -42,10 +42,12 @@ def add_missing_columns(db_connection, table_name, column_definitions, dialect=N
         column_definitions: List of (column_name, column_definition) tuples
         dialect: Database dialect (sqlite, postgresql, etc.)
     """
+    from sqlalchemy import text
+    
     for column_name, column_def in column_definitions:
         try:
             # Check if column exists
-            db_connection.execute(f"SELECT {column_name} FROM {table_name} LIMIT 0")
+            db_connection.execute(text(f"SELECT {column_name} FROM {table_name} LIMIT 0"))
             logger.info(f"Column {column_name} already exists in {table_name}")
         except Exception:
             # Column doesn't exist, add it
@@ -54,9 +56,11 @@ def add_missing_columns(db_connection, table_name, column_definitions, dialect=N
                 if column_def.startswith('JSON') and dialect == 'sqlite':
                     # SQLite doesn't have a native JSON type, use TEXT
                     adjusted_def = column_def.replace('JSON', 'TEXT')
-                    db_connection.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {adjusted_def}")
+                    alter_statement = text(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {adjusted_def}")
+                    db_connection.execute(alter_statement)
                 else:
-                    db_connection.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_def}")
+                    alter_statement = text(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_def}")
+                    db_connection.execute(alter_statement)
                     
                 logger.info(f"Added column {column_name} to {table_name}")
             except Exception as e:
@@ -303,50 +307,69 @@ def fix_database_tables(app, db):
     from sqlalchemy import text
     
     with app.app_context():
-        connection = db.engine.connect()
-        dialect = db.engine.dialect.name
-        
-        try:
-            # Fix users table
-            add_missing_columns(connection, 'users', [
-                ('preferences', 'JSON DEFAULT \'{}\'')
-            ], dialect)
+        # Use a transaction to ensure all schema changes are atomic
+        with db.engine.begin() as connection:
+            dialect = db.engine.dialect.name
             
-            # Fix departments table
-            add_missing_columns(connection, 'departments', [
-                ('webhooks_enabled', 'BOOLEAN DEFAULT FALSE'),
-                ('webhook_url', 'VARCHAR(255)'),
-                ('webhook_secret', 'VARCHAR(64)'),
-                ('webhook_events', 'JSON DEFAULT \'{"incident.created": true, "incident.updated": true, "station.created": false, "user.created": false}\''),
-                ('webhook_last_error', 'TEXT'),
-                ('webhook_last_success', 'TIMESTAMP')
-            ], dialect)
-            
-            # Update missing webhook secrets for departments with API keys
             try:
-                # Import here to avoid circular imports
-                from database import Department
-                departments_with_api = db.session.query(Department).filter_by(api_enabled=True).all()
+                # Check if tables exist first
+                try:
+                    connection.execute(text("SELECT 1 FROM users LIMIT 1"))
+                    users_table_exists = True
+                except Exception:
+                    users_table_exists = False
+                    logger.warning("Users table does not exist, skipping column additions")
                 
-                for dept in departments_with_api:
-                    if hasattr(dept, 'webhook_secret') and not dept.webhook_secret:
-                        dept.webhook_secret = secrets.token_hex(32)
-                        logger.info(f"Generated webhook secret for department {dept.id}")
+                try:
+                    connection.execute(text("SELECT 1 FROM departments LIMIT 1"))
+                    departments_table_exists = True
+                except Exception:
+                    departments_table_exists = False
+                    logger.warning("Departments table does not exist, skipping column additions")
                 
-                if departments_with_api:
-                    db.session.commit()
-                    logger.info(f"Updated webhook secrets for {len(departments_with_api)} departments")
+                # Only proceed with column additions if tables exist
+                if users_table_exists:
+                    # Fix users table
+                    add_missing_columns(connection, 'users', [
+                        ('preferences', 'JSON DEFAULT \'{}\'')
+                    ], dialect)
+                
+                if departments_table_exists:
+                    # Fix departments table
+                    add_missing_columns(connection, 'departments', [
+                        ('webhooks_enabled', 'BOOLEAN DEFAULT FALSE'),
+                        ('webhook_url', 'VARCHAR(255)'),
+                        ('webhook_secret', 'VARCHAR(64)'),
+                        ('webhook_events', 'JSON DEFAULT \'{"incident.created": true, "incident.updated": true, "station.created": false, "user.created": false}\''),
+                        ('webhook_last_error', 'TEXT'),
+                        ('webhook_last_success', 'TIMESTAMP')
+                    ], dialect)
+                
+                # Transaction will be automatically committed if no exceptions occur
+                
             except Exception as e:
-                logger.error(f"Failed to update webhook secrets: {str(e)}")
-                db.session.rollback()
+                logger.error(f"Failed to modify database schema: {str(e)}")
+                logger.error(traceback.format_exc())
+                # Transaction will be automatically rolled back on exception
+        
+        # Update missing webhook secrets for departments with API keys in a separate transaction
+        try:
+            from database import Department
+            departments_with_api = db.session.query(Department).filter_by(api_enabled=True).all()
             
-            logger.info("Database tables fixed successfully")
+            for dept in departments_with_api:
+                if hasattr(dept, 'webhook_secret') and not dept.webhook_secret:
+                    dept.webhook_secret = secrets.token_hex(32)
+                    logger.info(f"Generated webhook secret for department {dept.id}")
             
+            if departments_with_api:
+                db.session.commit()
+                logger.info(f"Updated webhook secrets for {len(departments_with_api)} departments")
         except Exception as e:
-            logger.error(f"Failed to fix database tables: {str(e)}")
-            logger.error(traceback.format_exc())
-        finally:
-            connection.close()
+            logger.error(f"Failed to update webhook secrets: {str(e)}")
+            db.session.rollback()
+        
+        logger.info("Database tables fixed successfully")
 
 def require_api_key_safe(original_function):
     """A safer version of the require_api_key decorator that handles errors gracefully"""
