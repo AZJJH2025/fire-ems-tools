@@ -251,6 +251,7 @@
               const normalizedRoute = targetRoute.replace(/^\/+/, ''); // Remove leading slashes
               
               // Build the full URL with proper formatting
+              // CRITICAL FIX: Make absolutely sure the data ID is properly URI encoded
               const fullUrl = `${origin}/${normalizedRoute}?emergency_data=${encodeURIComponent(dataId)}&t=${timestamp}&source=framework`;
               
               console.log(`[FireEMS Framework] Navigating to: ${fullUrl}`);

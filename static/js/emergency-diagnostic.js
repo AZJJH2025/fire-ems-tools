@@ -25,6 +25,18 @@
     const source = urlParams.get('source');
     const timestamp = urlParams.get('t') || urlParams.get('timestamp');
     
+    // DEBUG FIX: Log emergency data format for troubleshooting
+    if (emergencyData) {
+      console.log("📊 Emergency Mode Diagnostic - emergency_data param:", {
+        raw: emergencyData,
+        decoded: decodeURIComponent(emergencyData),
+        type: typeof emergencyData,
+        isArray: Array.isArray(emergencyData),
+        isObject: typeof emergencyData === 'object' && emergencyData !== null,
+        length: emergencyData.length
+      });
+    }
+    
     // If emergency data is in URL, run diagnostics
     if (emergencyData) {
       collectDiagnostics(emergencyData, source, timestamp);

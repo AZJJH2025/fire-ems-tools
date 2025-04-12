@@ -292,6 +292,10 @@ def create_app(config_name='default'):
     @app.route('/diagnostic/emergency')
     def emergency_diagnostic():
         """Interactive diagnostic page for testing emergency mode functionality"""
+        app.logger.info(f"Emergency diagnostic request: {request.args}")
+        # Log detailed diagnostic info
+        if 'emergency_data' in request.args:
+            app.logger.info(f"Emergency data param: {request.args.get('emergency_data')}")
         return send_file('static/test-emergency-fix.html')
     
     # Diagnostic endpoint to check static file serving

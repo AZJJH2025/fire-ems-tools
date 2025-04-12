@@ -194,6 +194,7 @@
         const normalizedRoute = targetRoute.replace(/^\/+/, ''); // Remove leading slashes
         
         // Create the final URL, ensuring we're using absolute path
+        // IMPORTANT: Use encodeURIComponent to properly format the data ID as a query parameter
         const targetUrl = `${origin}/${normalizedRoute}?emergency_data=${encodeURIComponent(dataId)}&timestamp=${timestamp}&source=test`;
         log(`Navigating to: ${targetUrl}`, 'info');
         

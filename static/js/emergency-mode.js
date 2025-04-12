@@ -468,7 +468,8 @@ FireEMS.EmergencyMode = (function() {
     const normalizedRoute = targetRoute.replace(/^\/+/, ''); // Remove leading slashes
     
     // Compose the URL with proper formatting
-    const targetUrl = `${origin}/${normalizedRoute}?emergency_data=${queryParam}&t=${timestamp}&source=emergency_mode`;
+    // CRITICAL FIX: Ensure the data ID is properly URI encoded to prevent [object Object] issues
+    const targetUrl = `${origin}/${normalizedRoute}?emergency_data=${encodeURIComponent(queryParam)}&t=${timestamp}&source=emergency_mode`;
     
     log(`Redirecting to: ${targetUrl}`, 'info');
     
