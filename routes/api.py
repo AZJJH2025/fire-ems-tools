@@ -5,6 +5,7 @@ This module defines the API endpoints for the application, including:
 - Data upload endpoints
 - Data retrieval endpoints
 - Data processing endpoints
+- System health endpoints
 """
 
 from flask import Blueprint, request, jsonify, current_app
@@ -27,6 +28,16 @@ logger = logging.getLogger(__name__)
 
 # Create blueprint
 bp = Blueprint('api', __name__, url_prefix='/api')
+
+# Health check endpoint for resilience framework
+@bp.route('/health-check')
+def health_check():
+    """API health check endpoint for resilience monitoring"""
+    return jsonify({
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "environment": current_app.config.get('ENV', 'development')
+    })
 
 # Import utility functions from app_utils module
 from app_utils import safe_limit, require_api_key
@@ -497,13 +508,28 @@ def transform_data():
         
         # Process mappings to add transformation hints from schema
         enhanced_mappings = {}
+        logger.debug(f"Processing mappings with {len(mappings)} fields")
+        
         for field_id, mapping in mappings.items():
+            # Backward compatibility: Handle both string values and dictionary mappings
+            if isinstance(mapping, str):
+                # Convert simple string mapping to proper format
+                logger.debug(f"Converting string mapping '{mapping}' to dict format for field '{field_id}'")
+                mapping = {'sourceId': mapping}
+            
+            # Validate mapping structure
+            if not isinstance(mapping, dict):
+                logger.warning(f"Skipping invalid mapping for field {field_id}: {mapping} (type: {type(mapping).__name__})")
+                continue
+                
             # Skip if no source field is specified
             if not mapping.get('sourceId'):
+                logger.debug(f"Skipping mapping without sourceId for field {field_id}")
                 continue
                 
             # Copy the original mapping
             enhanced_mapping = mapping.copy()
+            logger.debug(f"Processing mapping for {field_id}: {enhanced_mapping}")
             
             # Look up field type from schema
             field_type = None
