@@ -37,7 +37,18 @@ def serve_static(filename):
         The file with appropriate headers
     """
     try:
-        static_folder = os.path.join(os.getcwd(), 'static')
+        # Check if we're running on Render
+        is_render = os.environ.get('RENDER', 'false').lower() == 'true'
+        
+        # Set correct static folder based on environment
+        if is_render:
+            # Render deployment path
+            static_folder = '/opt/render/project/src/static'
+            logger.info(f"Using Render-specific static path: {static_folder}")
+        else:
+            # Local development path
+            static_folder = os.path.join(os.getcwd(), 'static')
+            logger.info(f"Using local development static path: {static_folder}")
         
         # Get the file extension
         _, ext = os.path.splitext(filename)
@@ -72,17 +83,45 @@ def serve_static(filename):
         full_path = os.path.join(static_folder, filename)
         if not os.path.exists(full_path):
             logger.error(f"Static file not found: {full_path}")
-            return f"File not found: {filename}", 404
-        else:
-            logger.info(f"File exists at: {full_path}")
-            logger.debug(f"File size: {os.path.getsize(full_path)} bytes")
+            
+            # List files in the directory to help diagnose
+            try:
+                parent_dir = os.path.dirname(full_path)
+                if os.path.exists(parent_dir):
+                    files_in_dir = os.listdir(parent_dir)
+                    logger.error(f"Files in directory {parent_dir}: {files_in_dir}")
+                    
+                    # Try case-insensitive matching as a fallback
+                    basename = os.path.basename(filename).lower()
+                    found_match = False
+                    for f in files_in_dir:
+                        if f.lower() == basename:
+                            # Found a case-insensitive match
+                            actual_filename = os.path.join(os.path.dirname(filename), f)
+                            full_path = os.path.join(static_folder, actual_filename)
+                            logger.info(f"Found case-insensitive match: {f} for requested {filename}")
+                            found_match = True
+                            break
+                    
+                    if not found_match:
+                        logger.error(f"No case-insensitive match found for {filename}")
+                        return f"File not found: {filename}", 404
+                else:
+                    logger.error(f"Parent directory doesn't exist: {parent_dir}")
+                    return f"File not found: {filename} (parent directory missing)", 404
+            except Exception as e:
+                logger.error(f"Error listing directory: {str(e)}")
+                return f"Error checking for file: {str(e)}", 500
+        
+        logger.info(f"File exists at: {full_path}")
+        logger.debug(f"File size: {os.path.getsize(full_path)} bytes")
         
         # Direct file serving as a fallback mechanism
         try:
             # Get response from send_from_directory without passing headers
             response = send_from_directory(
                 static_folder, 
-                filename,
+                filename if 'found_match' not in locals() or not found_match else actual_filename,
                 mimetype=mimetype,
                 as_attachment=False,
                 download_name=None,
