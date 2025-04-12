@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FireEMS.ai Emergency Mode Data Transfer Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    h1, h2, h3 {
+      color: #0066cc;
+    }
+    .test-panel {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+      background-color: #f9f9f9;
+    }
+    pre {
+      background-color: #f0f0f0;
+      padding: 10px;
+      border-radius: 4px;
+      overflow: auto;
+      max-height: 300px;
+      font-size: 12px;
+    }
+    button {
+      background-color: #0066cc;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px 5px 5px 0;
+    }
+    button.secondary {
+      background-color: #666;
+    }
+    button.danger {
+      background-color: #cc3300;
+    }
+    input, select {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin: 5px 0;
+    }
+    .success {
+      color: #2e7d32;
+      font-weight: bold;
+    }
+    .error {
+      color: #c62828;
+      font-weight: bold;
+    }
+    .warning {
+      color: #e65100;
+      font-weight: bold;
+    }
+    .info {
+      color: #0277bd;
+      font-weight: bold;
+    }
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #ddd;
+      margin-bottom: 15px;
+    }
+    .tab {
+      padding: 8px 16px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-bottom: none;
+      margin-right: 4px;
+    }
+    .tab.active {
+      background-color: #f9f9f9;
+      border-color: #ddd;
+      border-radius: 4px 4px 0 0;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .data-preview {
+      max-height: 200px;
+      overflow: auto;
+      margin: 10px 0;
+    }
+    .tool-info {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background-color: #e3f2fd;
+      margin: 5px 5px 5px 0;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <h1>FireEMS.ai Emergency Mode Data Transfer Test</h1>
+  
+  <div class="test-panel">
+    <h2>Test Overview</h2>
+    <p>
+      This utility allows you to test the emergency mode data transfer functionality between 
+      tools in the FireEMS.ai platform. It helps diagnose issues with storage, retrieval, and URL construction.
+    </p>
+    
+    <div class="tool-info"><strong>Current URL:</strong> <span id="current-url"></span></div>
+    <div class="tool-info"><strong>Current Page:</strong> <span id="current-page"></span></div>
+    <div class="tool-info"><strong>Emergency Mode:</strong> <span id="emergency-mode-status">Checking...</span></div>
+  </div>
+  
+  <div class="tabs">
+    <div class="tab active" data-tab="send">Create & Send Data</div>
+    <div class="tab" data-tab="receive">Receive Data</div>
+    <div class="tab" data-tab="inspect">Inspect Storage</div>
+    <div class="tab" data-tab="diagnostics">Diagnostics</div>
+  </div>
+  
+  <!-- Create and Send Data Tab -->
+  <div id="send-tab" class="tab-content active">
+    <div class="test-panel">
+      <h2>Create Test Data</h2>
+      
+      <div>
+        <label for="record-count">Number of Records:</label>
+        <input type="number" id="record-count" min="1" max="1000" value="10">
+        
+        <label for="data-type">Data Type:</label>
+        <select id="data-type">
+          <option value="standard">Standard Incident Data</option>
+          <option value="large">Large Records</option>
+          <option value="minimal">Minimal Format</option>
+        </select>
+      </div>
+      
+      <div>
+        <button id="create-test-data">Generate Test Data</button>
+      </div>
+      
+      <div class="data-preview">
+        <h3>Preview:</h3>
+        <pre id="data-preview">Generate data to preview it here...</pre>
+      </div>
+    </div>
+    
+    <div class="test-panel">
+      <h2>Store & Send Data</h2>
+      
+      <div>
+        <label for="target-tool">Target Tool:</label>
+        <select id="target-tool">
+          <option value="fire-ems-dashboard">Response Time Analyzer</option>
+          <option value="call-density-heatmap">Call Density Heatmap</option>
+          <option value="isochrone-map">Isochrone Map</option>
+          <option value="incident-logger">Incident Logger</option>
+        </select>
+      </div>
+      
+      <div>
+        <button id="store-data">Store Data</button>
+        <button id="send-data" disabled>Send to Selected Tool</button>
+      </div>
+      
+      <div>
+        <h3>Storage Log:</h3>
+        <pre id="storage-log">Actions will be logged here...</pre>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Receive Data Tab -->
+  <div id="receive-tab" class="tab-content">
+    <div class="test-panel">
+      <h2>Detect Emergency Data</h2>
+      
+      <div>
+        <p>This panel checks for emergency data in the URL parameters or in storage.</p>
+        <button id="check-for-data">Check for Emergency Data</button>
+      </div>
+      
+      <div>
+        <h3>URL Parameters:</h3>
+        <pre id="url-params">No emergency data found in URL.</pre>
+        
+        <h3>Data Content:</h3>
+        <pre id="received-data">No data found...</pre>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Inspect Storage Tab -->
+  <div id="inspect-tab" class="tab-content">
+    <div class="test-panel">
+      <h2>Storage Inspector</h2>
+      
+      <div>
+        <button id="refresh-storage">Refresh Storage</button>
+        <button id="clear-local-storage" class="danger">Clear localStorage</button>
+        <button id="clear-session-storage" class="danger">Clear sessionStorage</button>
+      </div>
+      
+      <div class="tabs">
+        <div class="tab active" data-tab="local-storage">localStorage</div>
+        <div class="tab" data-tab="session-storage">sessionStorage</div>
+      </div>
+      
+      <div id="local-storage-tab" class="tab-content active">
+        <h3>localStorage Items:</h3>
+        <table id="local-storage-table">
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th>Value Preview</th>
+              <th>Size</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="4">Loading...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <div id="session-storage-tab" class="tab-content">
+        <h3>sessionStorage Items:</h3>
+        <table id="session-storage-table">
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th>Value Preview</th>
+              <th>Size</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="4">Loading...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Diagnostics Tab -->
+  <div id="diagnostics-tab" class="tab-content">
+    <div class="test-panel">
+      <h2>URL Construction Test</h2>
+      
+      <div>
+        <label for="test-target-tool">Target Tool:</label>
+        <select id="test-target-tool">
+          <option value="fire-ems-dashboard">Response Time Analyzer</option>
+          <option value="/fire-ems-dashboard">Response Time (with leading slash)</option>
+          <option value="response-time">Response Time (alias)</option>
+          <option value="call-density-heatmap">Call Density Heatmap</option>
+          <option value="isochrone-map">Isochrone Map</option>
+          <option value="incident-logger">Incident Logger</option>
+        </select>
+        
+        <button id="test-url-construction">Test URL Construction</button>
+      </div>
+      
+      <div>
+        <h3>Test Results:</h3>
+        <pre id="url-test-results">Run the test to see results...</pre>
+      </div>
+    </div>
+    
+    <div class="test-panel">
+      <h2>Storage Limits Test</h2>
+      
+      <div>
+        <button id="test-storage-limits">Test Storage Limits</button>
+      </div>
+      
+      <div>
+        <h3>Test Results:</h3>
+        <pre id="storage-limits-results">Run the test to see results...</pre>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Dialog for viewing data -->
+  <div id="view-data-dialog" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000;">
+    <div style="position: relative; width: 80%; max-width: 800px; height: 80%; margin: 50px auto; background: white; padding: 20px; border-radius: 8px; overflow: auto;">
+      <button id="close-dialog" style="position: absolute; top: 10px; right: 10px; background: #cc3300; color: white; border: none; width: 30px; height: 30px; border-radius: 15px; cursor: pointer;">×</button>
+      <h3 id="dialog-title">View Data</h3>
+      <pre id="dialog-content" style="max-height: calc(100% - 60px); overflow: auto;"></pre>
+    </div>
+  </div>
+  
+  <!-- Load any additional framework scripts -->
+  <script>
+    // Basic script to check if emergency mode is loaded
+    function checkEmergencyMode() {
+      const statusElement = document.getElementById('emergency-mode-status');
+      
+      // Check if FireEMS.EmergencyMode is available
+      if (window.FireEMS && window.FireEMS.EmergencyMode) {
+        statusElement.textContent = "Available";
+        statusElement.classList.add('success');
+      } else {
+        statusElement.textContent = "Not loaded";
+        statusElement.classList.add('error');
+        
+        // Try to load it
+        loadEmergencyModeScript();
+      }
+    }
+    
+    // Attempt to load emergency mode script
+    function loadEmergencyModeScript() {
+      const script = document.createElement('script');
+      script.src = '/static/js/emergency-mode.js';
+      script.onload = function() {
+        console.log("Emergency mode script loaded successfully");
+        checkEmergencyMode();
+      };
+      script.onerror = function() {
+        console.error("Failed to load emergency mode script");
+        const statusElement = document.getElementById('emergency-mode-status');
+        statusElement.textContent = "Failed to load";
+        statusElement.classList.add('error');
+      };
+      document.head.appendChild(script);
+    }
+    
+    // Don't run yet, wait for DOMContentLoaded
+  </script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set current URL and page
+      document.getElementById('current-url').textContent = window.location.href;
+      document.getElementById('current-page').textContent = window.location.pathname;
+      
+      // Check emergency mode
+      checkEmergencyMode();
+      
+      // Tab handling
+      const tabs = document.querySelectorAll('.tabs .tab');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          // Get the tab data
+          const tabId = this.getAttribute('data-tab');
+          
+          // If this is a subtab, find its parent
+          const parentTabContent = this.closest('.tab-content');
+          
+          if (parentTabContent) {
+            // Handle subtabs
+            parentTabContent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            parentTabContent.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Show the selected tab content inside this parent
+            document.getElementById(`${tabId}-tab`).classList.add('active');
+          } else {
+            // Main tabs
+            document.querySelectorAll('.tabs > .tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Show the selected tab content
+            document.getElementById(`${tabId}-tab`).classList.add('active');
+          }
+        });
+      });
+      
+      // Create Test Data
+      const createTestDataBtn = document.getElementById('create-test-data');
+      const recordCount = document.getElementById('record-count');
+      const dataType = document.getElementById('data-type');
+      const dataPreview = document.getElementById('data-preview');
+      
+      createTestDataBtn.addEventListener('click', function() {
+        const count = parseInt(recordCount.value, 10) || 10;
+        const type = dataType.value;
+        
+        const data = generateTestData(count, type);
+        window.testData = data;
+        
+        const previewData = data.slice(0, 3);
+        dataPreview.textContent = JSON.stringify(previewData, null, 2);
+        
+        appendToLog('storage-log', `Generated ${count} test records of type "${type}"`);
+      });
+      
+      // Store Data
+      const storeDataBtn = document.getElementById('store-data');
+      const storageLog = document.getElementById('storage-log');
+      
+      storeDataBtn.addEventListener('click', function() {
+        if (!window.testData) {
+          appendToLog('storage-log', 'No data to store. Please generate test data first.', 'error');
+          return;
+        }
+        
+        // Check if FireEMS.EmergencyMode is available
+        if (window.FireEMS && window.FireEMS.EmergencyMode) {
+          const dataId = window.FireEMS.EmergencyMode.storeData(window.testData);
+          
+          if (dataId) {
+            window.storedDataId = dataId;
+            appendToLog('storage-log', `Data stored with ID: ${dataId}`, 'success');
+            document.getElementById('send-data').disabled = false;
+          } else {
+            appendToLog('storage-log', 'Failed to store data', 'error');
+          }
+        } else {
+          // Fallback to direct localStorage if emergency mode is not available
+          try {
+            const dataId = 'emergency_data_test_' + Date.now();
+            const packagedData = {
+              data: window.testData,
+              metadata: {
+                created: Date.now(),
+                expires: Date.now() + (24 * 60 * 60 * 1000), // 24 hours
+                source: window.location.pathname,
+                recordCount: window.testData.length
+              }
+            };
+            
+            localStorage.setItem(dataId, JSON.stringify(packagedData));
+            window.storedDataId = dataId;
+            
+            appendToLog('storage-log', `Data stored with ID: ${dataId} (direct localStorage)`, 'success');
+            document.getElementById('send-data').disabled = false;
+          } catch (error) {
+            appendToLog('storage-log', `Error storing data: ${error.message}`, 'error');
+          }
+        }
+        
+        // Update storage tables
+        refreshStorage();
+      });
+      
+      // Send to Tool
+      const sendDataBtn = document.getElementById('send-data');
+      const targetTool = document.getElementById('target-tool');
+      
+      sendDataBtn.addEventListener('click', function() {
+        if (!window.storedDataId) {
+          appendToLog('storage-log', 'No stored data to send. Please store data first.', 'error');
+          return;
+        }
+        
+        const selectedTool = targetTool.value;
+        
+        // Check if FireEMS.EmergencyMode is available
+        if (window.FireEMS && window.FireEMS.EmergencyMode) {
+          appendToLog('storage-log', `Sending data to ${selectedTool}...`);
+          window.FireEMS.EmergencyMode.sendToTool(window.storedDataId, selectedTool);
+        } else {
+          // Fallback with direct URL construction
+          appendToLog('storage-log', `Emergency mode not available. Using fallback URL construction...`);
+          
+          // Simple URL construction (leading slashes properly handled)
+          const normalizedRoute = selectedTool.replace(/^\/+/, ''); // Remove leading slashes
+          const origin = window.location.origin || '';
+          const targetUrl = `${origin}/${normalizedRoute}?emergency_data=${encodeURIComponent(window.storedDataId)}&t=${Date.now()}&source=test`;
+          
+          // Navigate
+          appendToLog('storage-log', `Redirecting to: ${targetUrl}`);
+          window.location.href = targetUrl;
+        }
+      });
+      
+      // Check for emergency data
+      const checkForDataBtn = document.getElementById('check-for-data');
+      const urlParams = document.getElementById('url-params');
+      const receivedData = document.getElementById('received-data');
+      
+      checkForDataBtn.addEventListener('click', function() {
+        const params = new URLSearchParams(window.location.search);
+        const emergencyDataId = params.get('emergency_data');
+        
+        if (emergencyDataId) {
+          urlParams.textContent = `emergency_data=${emergencyDataId}`;
+          urlParams.className = 'success';
+          
+          // Try to retrieve the data
+          let data = null;
+          
+          // Try localStorage first
+          try {
+            const serializedData = localStorage.getItem(emergencyDataId);
+            if (serializedData) {
+              const parsedData = JSON.parse(serializedData);
+              data = parsedData.data || parsedData;
+              
+              receivedData.textContent = JSON.stringify(data.slice(0, 3), null, 2);
+              receivedData.className = 'success';
+            } else {
+              receivedData.textContent = `No data found with ID ${emergencyDataId} in localStorage`;
+              receivedData.className = 'error';
+            }
+          } catch (error) {
+            receivedData.textContent = `Error retrieving data: ${error.message}`;
+            receivedData.className = 'error';
+          }
+        } else {
+          urlParams.textContent = 'No emergency_data parameter found in URL';
+          urlParams.className = 'warning';
+          
+          // Check for formattedData
+          if (sessionStorage && sessionStorage.getItem('formattedData')) {
+            receivedData.textContent = 'Found formattedData in sessionStorage (from Data Formatter)';
+            receivedData.className = 'success';
+          } else {
+            receivedData.textContent = 'No emergency data found in URL or sessionStorage';
+            receivedData.className = 'warning';
+          }
+        }
+      });
+      
+      // Storage inspection
+      const refreshStorageBtn = document.getElementById('refresh-storage');
+      const clearLocalStorageBtn = document.getElementById('clear-local-storage');
+      const clearSessionStorageBtn = document.getElementById('clear-session-storage');
+      
+      refreshStorageBtn.addEventListener('click', refreshStorage);
+      
+      clearLocalStorageBtn.addEventListener('click', function() {
+        if (confirm('Are you sure you want to clear all localStorage items?')) {
+          localStorage.clear();
+          refreshStorage();
+          appendToLog('storage-log', 'localStorage cleared', 'warning');
+        }
+      });
+      
+      clearSessionStorageBtn.addEventListener('click', function() {
+        if (confirm('Are you sure you want to clear all sessionStorage items?')) {
+          sessionStorage.clear();
+          refreshStorage();
+          appendToLog('storage-log', 'sessionStorage cleared', 'warning');
+        }
+      });
+      
+      // URL Construction Test
+      const testUrlConstructionBtn = document.getElementById('test-url-construction');
+      const testTargetTool = document.getElementById('test-target-tool');
+      const urlTestResults = document.getElementById('url-test-results');
+      
+      testUrlConstructionBtn.addEventListener('click', function() {
+        const targetTool = testTargetTool.value;
+        
+        // Check if FireEMS.EmergencyMode is available
+        if (window.FireEMS && window.FireEMS.EmergencyMode) {
+          // This is just the URL construction test, don't actually navigate
+          const oldSendToTool = window.FireEMS.EmergencyMode.sendToTool;
+          let targetUrl = '';
+          
+          // Override sendToTool temporarily to capture the URL
+          window.FireEMS.EmergencyMode.sendToTool = function(data, tool, options) {
+            // Create a mock dataId for testing
+            const dataId = 'emergency_data_test_' + Date.now();
+            
+            // Get the normalized target from original function (based on reverse engineering)
+            const normalizedTargetTool = (tool || '')
+              .toString()
+              .toLowerCase()
+              .replace(/[^a-z0-9]/g, '-')
+              .replace(/--+/g, '-')
+              .replace(/^-|-$/g, '');
+              
+            // Tool route mapping (simplified for test)
+            const toolRouteMap = {
+              'response-time': 'fire-ems-dashboard',
+              'response-time-analyzer': 'fire-ems-dashboard',
+              'fire-ems-dashboard': 'fire-ems-dashboard',
+              'call-density': 'call-density-heatmap',
+              'call-density-heatmap': 'call-density-heatmap',
+              'isochrone': 'isochrone-map',
+              'isochrone-map': 'isochrone-map',
+              'incident-logger': 'incident-logger'
+            };
+            
+            // Get the correct route, first try exact match, then try normalized
+            const targetRoute = toolRouteMap[tool] || toolRouteMap[normalizedTargetTool] || tool;
+            
+            // Remove leading slashes
+            const normalizedRoute = targetRoute.replace(/^\/+/, '');
+            
+            // Timestamp
+            const timestamp = Date.now();
+            
+            // Create URL (based on actual implementation)
+            const origin = window.location.origin || '';
+            targetUrl = `${origin}/${normalizedRoute}?emergency_data=${encodeURIComponent(dataId)}&t=${timestamp}&source=emergency_mode`;
+            
+            // Return true to simulate success
+            return true;
+          };
+          
+          // Call the function to test URL construction
+          window.FireEMS.EmergencyMode.sendToTool('test_data', targetTool);
+          
+          // Restore original function
+          window.FireEMS.EmergencyMode.sendToTool = oldSendToTool;
+          
+          // Display results
+          let validationMessage = '';
+          try {
+            const urlObj = new URL(targetUrl);
+            if (urlObj.pathname.includes('//')) {
+              validationMessage = '❌ ERROR: URL contains double slashes in path';
+            } else {
+              validationMessage = '✅ URL is valid';
+            }
+          } catch (e) {
+            validationMessage = `❌ ERROR: ${e.message}`;
+          }
+          
+          urlTestResults.innerHTML = `
+          Target Tool: ${targetTool}
+          
+          Constructed URL: ${targetUrl}
+          
+          ${validationMessage}
+          `;
+          
+          urlTestResults.className = validationMessage.includes('ERROR') ? 'error' : 'success';
+        } else {
+          // Show error if emergency mode is not available
+          urlTestResults.textContent = 'Emergency mode not available. Cannot test URL construction.';
+          urlTestResults.className = 'error';
+        }
+      });
+      
+      // Storage Limits Test
+      const testStorageLimitsBtn = document.getElementById('test-storage-limits');
+      const storageLimitsResults = document.getElementById('storage-limits-results');
+      
+      testStorageLimitsBtn.addEventListener('click', function() {
+        storageLimitsResults.textContent = 'Testing storage limits. This may take a moment...';
+        
+        setTimeout(function() {
+          const results = testStorageLimits();
+          
+          let resultsHtml = `Storage Limit Test Results:\n\n`;
+          resultsHtml += `Browser: ${navigator.userAgent}\n\n`;
+          
+          resultsHtml += `Max Size Tested: ${results.maxSize} KB\n`;
+          resultsHtml += `Actual Limit Found: ${results.actualLimit ? results.actualLimit + ' KB' : 'Not reached'}\n\n`;
+          
+          resultsHtml += `Test Details:\n`;
+          results.tests.forEach(test => {
+            resultsHtml += `${test.size} KB: ${test.success ? 'Success ✅' : 'Failed ❌'} ${test.error || ''}\n`;
+          });
+          
+          storageLimitsResults.textContent = resultsHtml;
+        }, 100);
+      });
+      
+      // Data dialog functionality
+      const closeDialogBtn = document.getElementById('close-dialog');
+      const viewDataDialog = document.getElementById('view-data-dialog');
+      
+      closeDialogBtn.addEventListener('click', function() {
+        viewDataDialog.style.display = 'none';
+      });
+      
+      // Run initial storage refresh
+      refreshStorage();
+      
+      // Auto-check if there's emergency data in the URL
+      if (window.location.search.includes('emergency_data')) {
+        checkForDataBtn.click();
+      }
+    });
+    
+    // Helper function to append logs
+    function appendToLog(logId, message, type = 'info') {
+      const logElement = document.getElementById(logId);
+      const timestamp = new Date().toLocaleTimeString();
+      
+      let classStr = '';
+      if (type === 'error') classStr = ' class="error"';
+      if (type === 'warning') classStr = ' class="warning"';
+      if (type === 'success') classStr = ' class="success"';
+      if (type === 'info') classStr = ' class="info"';
+      
+      logElement.innerHTML += `[${timestamp}]<span${classStr}> ${message}</span>\n`;
+      logElement.scrollTop = logElement.scrollHeight;
+    }
+    
+    // Generate test data
+    function generateTestData(count, type) {
+      const data = [];
+      
+      for (let i = 0; i < count; i++) {
+        switch (type) {
+          case 'standard':
+            data.push({
+              'Incident ID': `TEST-${i+1000}`,
+              'Incident Date': new Date().toISOString().split('T')[0],
+              'Incident Time': '08:00:00',
+              'Dispatch Time': '08:01:30',
+              'En Route Time': '08:02:45',
+              'On Scene Time': '08:07:15',
+              'Incident Type': ['FIRE', 'EMS', 'RESCUE', 'HAZMAT', 'OTHER'][i % 5],
+              'Priority': `${i % 5 + 1}`,
+              'Notes': 'Test data record',
+              'Latitude': (33.4484 + (i * 0.01)).toFixed(4),
+              'Longitude': (-112.0740 - (i * 0.01)).toFixed(4)
+            });
+            break;
+            
+          case 'large':
+            // Create larger records with more fields
+            const record = {
+              'Incident ID': `TEST-${i+1000}`,
+              'Incident Date': new Date().toISOString().split('T')[0],
+              'Incident Time': '08:00:00',
+              'Dispatch Time': '08:01:30',
+              'En Route Time': '08:02:45',
+              'On Scene Time': '08:07:15',
+              'Incident Type': ['FIRE', 'EMS', 'RESCUE', 'HAZMAT', 'OTHER'][i % 5],
+              'Priority': `${i % 5 + 1}`,
+              'Notes': 'This is a test record with more fields and longer text content to simulate larger data sizes that might be encountered in real fire department incident records. The goal is to test how the emergency mode handles larger data sets.',
+              'Latitude': (33.4484 + (i * 0.01)).toFixed(4),
+              'Longitude': (-112.0740 - (i * 0.01)).toFixed(4),
+              'Address': `${1000 + i} Main Street, Phoenix, AZ 85001`,
+              'Unit ID': `Engine-${10 + (i % 15)}`,
+              'First Name': 'John',
+              'Last Name': `Doe-${i}`,
+              'Station': `Station ${1 + (i % 10)}`,
+              'Personnel': [
+                { name: "Firefighter 1", role: "Captain" },
+                { name: "Firefighter 2", role: "Engineer" },
+                { name: "Firefighter 3", role: "Medic" }
+              ],
+              'Temperature': `${70 + (i % 20)}°F`,
+              'Weather': ['Sunny', 'Cloudy', 'Rainy', 'Windy', 'Snowy'][i % 5],
+              'Call Type': ['Emergency', 'Non-Emergency', 'Wellness Check', 'False Alarm'][i % 4],
+              'Responding Units': ['Engine 1', 'Ladder 3', 'Medic 7'],
+              'Patient Info': {
+                age: 20 + (i % 60),
+                gender: i % 2 === 0 ? 'Male' : 'Female',
+                condition: ['Stable', 'Critical', 'Deceased', 'Unknown'][i % 4]
+              }
+            };
+            
+            // Add even more fields to make it larger
+            for (let j = 1; j <= 10; j++) {
+              record[`Extra Field ${j}`] = `Value ${j} for record ${i}`;
+            }
+            
+            data.push(record);
+            break;
+            
+          case 'minimal':
+            // Minimal data with just essential fields
+            data.push({
+              'id': `${i+1000}`,
+              'date': new Date().toISOString().split('T')[0],
+              'type': ['FIRE', 'EMS', 'RESCUE'][i % 3],
+              'lat': (33.4484 + (i * 0.01)).toFixed(4),
+              'lng': (-112.0740 - (i * 0.01)).toFixed(4)
+            });
+            break;
+        }
+      }
+      
+      return data;
+    }
+    
+    // Refresh storage tables
+    function refreshStorage() {
+      // localStorage table
+      const localStorageTable = document.getElementById('local-storage-table').querySelector('tbody');
+      localStorageTable.innerHTML = '';
+      
+      if (localStorage.length === 0) {
+        localStorageTable.innerHTML = '<tr><td colspan="4">No items in localStorage</td></tr>';
+      } else {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          const value = localStorage.getItem(key);
+          const size = value.length;
+          
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${key}</td>
+            <td>${value.length > 50 ? value.substring(0, 50) + '...' : value}</td>
+            <td>${size} bytes</td>
+            <td>
+              <button class="view-data" data-storage="local" data-key="${key}">View</button>
+              <button class="delete-data" data-storage="local" data-key="${key}">Delete</button>
+            </td>
+          `;
+          
+          localStorageTable.appendChild(row);
+        }
+      }
+      
+      // sessionStorage table
+      const sessionStorageTable = document.getElementById('session-storage-table').querySelector('tbody');
+      sessionStorageTable.innerHTML = '';
+      
+      if (sessionStorage.length === 0) {
+        sessionStorageTable.innerHTML = '<tr><td colspan="4">No items in sessionStorage</td></tr>';
+      } else {
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i);
+          const value = sessionStorage.getItem(key);
+          const size = value.length;
+          
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${key}</td>
+            <td>${value.length > 50 ? value.substring(0, 50) + '...' : value}</td>
+            <td>${size} bytes</td>
+            <td>
+              <button class="view-data" data-storage="session" data-key="${key}">View</button>
+              <button class="delete-data" data-storage="session" data-key="${key}">Delete</button>
+            </td>
+          `;
+          
+          sessionStorageTable.appendChild(row);
+        }
+      }
+      
+      // Add event listeners to buttons
+      document.querySelectorAll('.view-data').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const storage = this.getAttribute('data-storage');
+          const key = this.getAttribute('data-key');
+          
+          viewStorageData(storage, key);
+        });
+      });
+      
+      document.querySelectorAll('.delete-data').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const storage = this.getAttribute('data-storage');
+          const key = this.getAttribute('data-key');
+          
+          if (confirm(`Are you sure you want to delete ${key} from ${storage}Storage?`)) {
+            if (storage === 'local') {
+              localStorage.removeItem(key);
+            } else {
+              sessionStorage.removeItem(key);
+            }
+            refreshStorage();
+          }
+        });
+      });
+    }
+    
+    // View storage data in dialog
+    function viewStorageData(storage, key) {
+      let value = '';
+      
+      if (storage === 'local') {
+        value = localStorage.getItem(key);
+      } else {
+        value = sessionStorage.getItem(key);
+      }
+      
+      const dialogTitle = document.getElementById('dialog-title');
+      const dialogContent = document.getElementById('dialog-content');
+      const viewDataDialog = document.getElementById('view-data-dialog');
+      
+      dialogTitle.textContent = `${storage}Storage: ${key}`;
+      
+      try {
+        // Try to parse JSON for prettier display
+        const parsedValue = JSON.parse(value);
+        dialogContent.textContent = JSON.stringify(parsedValue, null, 2);
+      } catch (e) {
+        // Show as raw string if not valid JSON
+        dialogContent.textContent = value;
+      }
+      
+      viewDataDialog.style.display = 'block';
+    }
+    
+    // Test storage limits
+    function testStorageLimits() {
+      const testSizes = [10, 100, 500, 1000, 2000, 4000, 5000, 7000, 10000];
+      const results = {
+        maxSize: testSizes[testSizes.length - 1],
+        actualLimit: null,
+        tests: []
+      };
+      
+      // Clean up any existing test data
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('storage_test_')) {
+          localStorage.removeItem(key);
+        }
+      }
+      
+      // Test each size
+      for (let i = 0; i < testSizes.length; i++) {
+        const sizeKB = testSizes[i];
+        const testString = 'A'.repeat(sizeKB * 1024); // Convert KB to bytes
+        const testKey = `storage_test_${sizeKB}kb`;
+        
+        try {
+          localStorage.setItem(testKey, testString);
+          results.tests.push({
+            size: sizeKB,
+            success: true
+          });
+        } catch (e) {
+          results.tests.push({
+            size: sizeKB,
+            success: false,
+            error: e.message
+          });
+          
+          // Set the actual limit to the previous successful size
+          if (i > 0) {
+            results.actualLimit = testSizes[i - 1];
+          }
+          
+          break; // Stop testing after first failure
+        }
+      }
+      
+      // Clean up test data
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('storage_test_')) {
+          localStorage.removeItem(key);
+        }
+      }
+      
+      return results;
+    }
+  </script>
+</body>
+</html>

@@ -297,6 +297,13 @@ def create_app(config_name='default'):
         if 'emergency_data' in request.args:
             app.logger.info(f"Emergency data param: {request.args.get('emergency_data')}")
         return send_file('static/test-emergency-fix.html')
+        
+    # New comprehensive emergency data test tool
+    @app.route('/diagnostic/emergency-data-test')
+    def emergency_data_test():
+        """Comprehensive emergency data transfer testing tool"""
+        app.logger.info(f"Emergency data test tool request: {request.args}")
+        return send_file('static/emergency-data-test.html')
     
     # Diagnostic endpoint to check static file serving
     @app.route('/diagnostic/static')

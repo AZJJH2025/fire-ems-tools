@@ -1,154 +1,119 @@
-# FireEMS Emergency Mode Testing Guide
+# Emergency Mode Testing Plan
 
-This document provides step-by-step instructions for testing the emergency mode functionality in the FireEMS.ai platform. The implementation resolves critical issues with Chart.js canvas reuse and improves the reliability of emergency data transfer between tools.
+## Overview
 
-## Starting the Server
+This testing plan outlines a comprehensive approach to verify the fix for the Emergency Mode "Send to Tool" functionality in the FireEMS.ai platform. The primary issue was in the `sendToTool` function of emergency-mode.js where `dataId` was incorrectly used instead of `queryParam` in the URL construction, resulting in 404 errors when transferring from Data Formatter to Response Time Analyzer.
 
-Run the following command in your terminal:
+## Test Utilities
 
-```bash
-cd /Users/josephhester/Documents/fire-ems-tools
-./run_server.sh
-```
+We have two test utilities to help verify the fix:
 
-This will start the server on port 5010. You can then access the application at:
+1. **Emergency Data Test Utility** (`/diagnostic/emergency-data-test`): A comprehensive utility for testing all aspects of emergency mode data transfer.
+2. **Emergency Mode URL Fix Test** (`/diagnostic/emergency`): A focused utility for specifically testing URL construction.
 
-- Main URL: http://localhost:5010
-- Emergency Test Page: http://localhost:5010/emergency-test
-- Data Formatter: http://localhost:5010/data-formatter
-- Response Time Analyzer: http://localhost:5010/fire-ems-dashboard
+## Test Scenarios
 
-## What's Been Fixed
+### 1. Basic URL Construction Tests
 
-1. **Chart.js Canvas Reuse Errors**
-   - Problem: Charts would fail to render in emergency mode with "Canvas is already in use" errors
-   - Solution: Implemented a ChartManager service that handles canvas regeneration, cleanup, and lifecycle management
+**Using the Emergency Mode URL Fix Test utility:**
 
-2. **Emergency Data Transfer**
-   - Problem: Data was not being properly serialized when transferred between tools in emergency mode
-   - Solution: Improved serialization and URL construction, with multiple fallback mechanisms
+- Test with each target tool:
+  - Response Time Analyzer (fire-ems-dashboard)
+  - Call Density Heatmap (call-density-heatmap)
+  - Isochrone Map (isochrone-map)
+  - Incident Logger (incident-logger)
+  
+- Test with different URL input formats:
+  - Normal tool name (fire-ems-dashboard)
+  - Tool name with leading slash (/fire-ems-dashboard)
+  - Tool name with double slashes (//fire-ems-dashboard)
+  - Tool alias (response-time)
 
-## Test Case 1: Emergency Test Page
+- Verify for each case:
+  - URL is constructed correctly
+  - No double slashes in the path
+  - `emergency_data` parameter contains the correct value
+  
+### 2. End-to-End Data Transfer Tests
 
-1. Navigate to http://localhost:5010/emergency-test
-2. The page should load with an "Emergency Data Transfer Test" control panel
-3. Adjust the test data size if needed (default: 20 records)
-4. Click "Test Data Storage" to verify localStorage functionality
-   - This should show success messages in the log area
-5. Click "Test Data Transfer" to send test data to the Response Time Analyzer
-   - You will be redirected to the Response Time Analyzer
-   - An emergency data notification should appear at the top
-   - Click "Load Data" to process the data
-   - Verify that charts render correctly without Canvas errors
+**Using the Emergency Data Test utility:**
 
-**Expected Result**: Data is successfully transferred and charts render without errors.
+- Test sending data from Data Formatter to Response Time Analyzer (fire-ems-dashboard):
+  - Generate small test data (10 records)
+  - Generate large test data (100+ records)
+  - Verify data appears correctly in the target tool
+  
+- Test with various tool combinations:
+  - Data Formatter to Call Density Heatmap
+  - Data Formatter to Isochrone Map
+  - Data Formatter to Incident Logger
+  
+- Test corner cases:
+  - Data with special characters
+  - Data with minimum required fields only
+  - Data with all optional fields
 
-## Test Case 2: Data Formatter Emergency Send
+### 3. Error Recovery Tests
 
-1. Navigate to http://localhost:5010/data-formatter
-2. Scroll down to find the orange "Emergency Data Transfer Test" panel
-   - If not visible, check that the data-formatter-emergency-test.js script loaded correctly
-3. Click "Test Emergency Send" to test sending data to Response Time Analyzer
-4. After the redirect, verify that:
-   - An emergency data notification appears
-   - Charts render correctly when you click "Load Data"
-   - No "Canvas is already in use" errors appear in the console
+- Test with invalid data IDs:
+  - Manually modify the emergency_data parameter
+  - Use an expired data ID
+  - Use a data ID that does not exist
+  
+- Test with localStorage limitations:
+  - Create data that approaches browser storage limits
+  - Verify graceful handling when limits are exceeded
 
-**Expected Result**: Data is successfully transferred and charts render without errors.
+### 4. Cross-Browser Testing
 
-## Test Case 3: Verify Canvas Regeneration
+Test in multiple browsers to ensure consistent behavior:
 
-1. In the browser console, enter: `FireEMS.ChartManager.create('test-chart', 'bar', {labels: ['A', 'B'], datasets: [{data: [1, 2]}]}, {})` 
-2. Then try to create another chart with the same ID:
-   `FireEMS.ChartManager.create('test-chart', 'line', {labels: ['X', 'Y'], datasets: [{data: [3, 4]}]}, {})`
-3. No errors should occur, as the ChartManager handles canvas regeneration
+- Google Chrome (latest)
+- Mozilla Firefox (latest)
+- Microsoft Edge (latest)
+- Safari (latest, if available)
 
-**Expected Result**: Both chart creation calls succeed without errors.
+For each browser, verify:
+- URL construction works properly
+- Data is successfully stored and retrieved
+- Error messages are displayed appropriately
+- No console errors related to emergency mode functionality
 
-## Technical Implementation Details
+### 5. Edge Case Testing
 
-### ChartManager Service (`static/js/chart-manager.js`)
+- Test with network throttling enabled (simulating slow connections)
+- Test with cache disabled
+- Test with private/incognito mode
+- Test emergency mode while regular data loading is in progress
 
-The ChartManager service provides several key functions:
+## Test Documentation
 
-1. **Canvas Regeneration**:
-   ```javascript
-   // Create a fresh canvas to prevent reuse issues
-   const parent = canvas.parentNode;
-   const newCanvas = document.createElement('canvas');
-   newCanvas.id = id;
-   // Copy attributes and replace old canvas
-   parent.replaceChild(newCanvas, canvas);
-   ```
+For each test scenario, document:
 
-2. **Deep Copy of Chart Data**:
-   ```javascript
-   new Chart(canvas, {
-     type: type,
-     data: JSON.parse(JSON.stringify(data)), // Deep copy to prevent reference issues
-     options: options
-   })
-   ```
+1. The test environment (browser, version)
+2. The steps followed
+3. Expected result
+4. Actual result
+5. Any errors or warnings observed
+6. Screenshots of the process
 
-3. **Robust Cleanup**:
-   ```javascript
-   function destroyChart(id) {
-     if (_charts[id] && _charts[id].instance) {
-       _charts[id].instance.destroy();
-       delete _charts[id];
-       
-       // Force cleanup of canvas
-       const canvas = document.getElementById(id);
-       if (canvas && canvas.getContext) {
-         canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-       }
-     }
-   }
-   ```
+## Implementation Verification
 
-### Emergency Data Transfer (`static/js/emergency-mode.js`)
+To verify the specific fix was properly implemented:
 
-The emergency data transfer functionality includes:
+1. Confirm line 480 in emergency-mode.js now uses `queryParam` instead of `dataId`
+2. Verify this code is deployed to the environment being tested
+3. Check if any log messages in the console indicate the fixed code is being executed
 
-1. **Proper Data Serialization**:
-   ```javascript
-   const serializedData = JSON.stringify({
-     data: data,
-     metadata: {
-       created: Date.now(),
-       expires: Date.now() + opts.expiration,
-       source: window.location.pathname
-     }
-   });
-   localStorage.setItem(dataId, serializedData);
-   ```
+## Final Success Criteria
 
-2. **Correct URL Construction**:
-   ```javascript
-   const targetUrl = `/${targetRoute}?emergency_data=${dataId}`;
-   window.location.href = targetUrl;
-   ```
+The emergency mode data transfer is considered fixed when:
 
-3. **Multiple Retrieval Methods**:
-   - Using FireEMS.StateService if available
-   - Falling back to emergency-mode.js library
-   - Direct localStorage as a last resort
+1. URLs are correctly constructed with proper parameters in all browsers
+2. Data successfully transfers from Data Formatter to all target tools
+3. No 404 errors are observed during transfers
+4. Storage mechanisms properly retain and retrieve emergency data
+5. Proper error messages are shown when issues occur
+6. The implementation is resilient against common edge cases
 
-## Troubleshooting
-
-If you encounter issues:
-
-1. **Check Browser Console** for any errors
-2. **Verify localStorage** is working in your browser
-3. **Clear localStorage** if there might be corrupted data:
-   - In the console: `localStorage.clear()`
-4. **Restart the server** if needed
-
-## Next Steps
-
-Further improvements to consider:
-
-1. Implement additional test coverage for all tools
-2. Add performance optimization for large datasets in emergency mode
-3. Create a monitoring dashboard for emergency mode events
-4. Add telemetry for chart creation/destruction events
+This testing plan will help ensure the emergency mode functionality is robust and reliable across all supported environments.

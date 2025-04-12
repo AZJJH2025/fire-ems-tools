@@ -477,7 +477,8 @@ FireEMS.EmergencyMode = (function() {
     
     // Compose the URL with proper formatting
     // CRITICAL FIX: Ensure the data ID is properly URI encoded to prevent [object Object] issues
-    const targetUrl = `${origin}/${normalizedRoute}?emergency_data=${encodeURIComponent(dataId)}&t=${timestamp}&source=emergency_mode`;
+    // CRITICAL FIX: Use queryParam (which contains the stored data ID) not dataId (which could be null)
+    const targetUrl = `${origin}/${normalizedRoute}?emergency_data=${encodeURIComponent(queryParam)}&t=${timestamp}&source=emergency_mode`;
     
     log(`Redirecting to: ${targetUrl}`, 'info');
     
