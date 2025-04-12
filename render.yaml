@@ -5,14 +5,7 @@ services:
     name: fire-ems-tools
     env: python
     plan: free
-    buildCommand: |
-      pip install -r requirements.txt
-      echo "Creating static directory..."
-      mkdir -p /opt/render/project/src/static
-      echo "Copying static files..."
-      cp -rv ./static/* /opt/render/project/src/static/
-      echo "Listing contents of deployed static directory:"
-      ls -la /opt/render/project/src/static/
+    buildCommand: chmod +x ./build.sh && ./build.sh
     startCommand: gunicorn app:app
     envVars:
       - key: PYTHON_VERSION
