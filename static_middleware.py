@@ -118,21 +118,35 @@ def serve_static(filename):
         
         # Direct file serving as a fallback mechanism
         try:
-            # Get response from send_from_directory without passing headers
-            response = send_from_directory(
-                static_folder, 
-                filename if 'found_match' not in locals() or not found_match else actual_filename,
-                mimetype=mimetype,
-                as_attachment=False,
-                download_name=None,
-                conditional=True
-            )
+            # Check if it's Render environment (which has different behavior with Flask's send_from_directory)
+            is_render = os.environ.get('RENDER', 'false').lower() == 'true'
             
-            # Add our custom headers to the response after it's created
-            for key, value in headers.items():
-                response.headers[key] = value
+            if is_render:
+                # On Render, read and serve the file directly instead of using send_from_directory
+                with open(full_path, 'rb') as f:
+                    content = f.read()
                 
-            return response
+                logger.info(f"Serving {filename} directly on Render, size: {len(content)} bytes")
+                response = Response(content, mimetype=mimetype)
+                for key, value in headers.items():
+                    response.headers[key] = value
+                return response
+            else:
+                # Get response from send_from_directory without passing headers
+                response = send_from_directory(
+                    static_folder, 
+                    filename if 'found_match' not in locals() or not found_match else actual_filename,
+                    mimetype=mimetype,
+                    as_attachment=False,
+                    download_name=None,
+                    conditional=True
+                )
+                
+                # Add our custom headers to the response after it's created
+                for key, value in headers.items():
+                    response.headers[key] = value
+                    
+                return response
         except Exception as e:
             logger.error(f"Error using send_from_directory for {filename}: {str(e)}")
             logger.error(traceback.format_exc())
@@ -203,7 +217,20 @@ def register_static_handler(app):
         """Alternative direct static file route that bypasses the blueprint system"""
         try:
             logger.info(f"Using direct-static fallback route for: {filename}")
-            static_folder = os.path.join(os.getcwd(), 'static')
+            
+            # Check if we're running on Render
+            is_render = os.environ.get('RENDER', 'false').lower() == 'true'
+            
+            # Set correct static folder based on environment
+            if is_render:
+                # Render deployment path
+                static_folder = '/opt/render/project/src/static'
+                logger.info(f"Using Render-specific static path for direct-static: {static_folder}")
+            else:
+                # Local development path
+                static_folder = os.path.join(os.getcwd(), 'static')
+                logger.info(f"Using local development static path for direct-static: {static_folder}")
+            
             full_path = os.path.join(static_folder, filename)
             
             if not os.path.exists(full_path):
@@ -221,12 +248,19 @@ def register_static_handler(app):
             else:
                 mimetype = mimetypes.types_map.get(ext.lower(), 'application/octet-stream')
             
+            # Log file info
+            logger.info(f"Direct-static: File exists at: {full_path}")
+            file_size = os.path.getsize(full_path)
+            logger.debug(f"Direct-static: File size: {file_size} bytes")
+            
             # Read and serve the file directly
             with open(full_path, 'rb') as f:
                 content = f.read()
             
+            logger.info(f"Direct-static: Serving {filename} directly, content size: {len(content)} bytes")
             response = Response(content, mimetype=mimetype)
             response.headers['X-Served-By'] = 'direct-static fallback route'
+            response.headers['Content-Length'] = str(len(content))
             return response
             
         except Exception as e:

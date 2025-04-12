@@ -158,7 +158,16 @@ def create_app(config_name='default'):
             static_logger.addHandler(file_handler)
             static_logger.setLevel(logging.DEBUG)
         
-        static_dir = os.path.join(os.getcwd(), 'static')
+        # Set correct static folder based on environment
+        is_render = os.environ.get('RENDER', 'false').lower() == 'true'
+        if is_render:
+            # Render deployment path
+            static_dir = '/opt/render/project/src/static'
+            static_logger.info(f"Using Render-specific static path: {static_dir}")
+        else:
+            # Local development path
+            static_dir = os.path.join(os.getcwd(), 'static')
+            static_logger.info(f"Using local development static path: {static_dir}")
         
         try:
             # Sanitize the filename to prevent directory traversal attacks
@@ -232,31 +241,55 @@ def create_app(config_name='default'):
                 if not os.path.exists(file_path) or not os.path.isfile(file_path):
                     return f"File not found: {safe_filename}", 404
             
-            # First try with send_file which is more efficient
-            try:
-                response = send_file(file_path, mimetype=mimetype or 'application/octet-stream', 
-                                    as_attachment=False, max_age=86400)
-                response.headers['X-Served-By'] = 'app-static send_file'
-                response.headers['Cache-Control'] = 'public, max-age=86400'
-                static_logger.info(f"APP-STATIC SUCCESS: Served with send_file: {safe_filename}")
-                return response
-            except Exception as send_file_err:
-                static_logger.warning(f"APP-STATIC WARNING: send_file failed, falling back to direct read: {str(send_file_err)}")
-                
-                # Fallback to direct file reading
+            # Check if we need to use send_file or direct file reading
+            if is_render:
+                # On Render, always use direct file reading to avoid response size issues
                 try:
+                    file_size = os.path.getsize(file_path)
+                    static_logger.info(f"APP-STATIC: File size is {file_size} bytes")
+                    
                     with open(file_path, 'rb') as f:
                         content = f.read()
                         
+                    static_logger.info(f"APP-STATIC: Read {len(content)} bytes of content")
+                    
                     response = make_response(content)
                     response.headers['Content-Type'] = mimetype or 'application/octet-stream'
-                    response.headers['X-Served-By'] = 'app-static direct read'
+                    response.headers['Content-Length'] = str(len(content))
+                    response.headers['X-Served-By'] = 'app-static direct read (Render)'
                     response.headers['Cache-Control'] = 'public, max-age=86400'
-                    static_logger.info(f"APP-STATIC SUCCESS: Served with direct read: {safe_filename}")
+                    static_logger.info(f"APP-STATIC SUCCESS: Served with direct read on Render: {safe_filename}")
                     return response
                 except Exception as read_err:
                     static_logger.error(f"APP-STATIC ERROR: Direct read failed: {str(read_err)}")
                     raise read_err  # Re-raise to be caught by the outer try/except
+            else:
+                # In local development, try send_file first which is more efficient
+                try:
+                    response = send_file(file_path, mimetype=mimetype or 'application/octet-stream', 
+                                        as_attachment=False, max_age=86400)
+                    response.headers['X-Served-By'] = 'app-static send_file'
+                    response.headers['Cache-Control'] = 'public, max-age=86400'
+                    static_logger.info(f"APP-STATIC SUCCESS: Served with send_file: {safe_filename}")
+                    return response
+                except Exception as send_file_err:
+                    static_logger.warning(f"APP-STATIC WARNING: send_file failed, falling back to direct read: {str(send_file_err)}")
+                    
+                    # Fallback to direct file reading
+                    try:
+                        with open(file_path, 'rb') as f:
+                            content = f.read()
+                            
+                        response = make_response(content)
+                        response.headers['Content-Type'] = mimetype or 'application/octet-stream'
+                        response.headers['Content-Length'] = str(len(content))
+                        response.headers['X-Served-By'] = 'app-static direct read'
+                        response.headers['Cache-Control'] = 'public, max-age=86400'
+                        static_logger.info(f"APP-STATIC SUCCESS: Served with direct read: {safe_filename}")
+                        return response
+                    except Exception as read_err:
+                        static_logger.error(f"APP-STATIC ERROR: Direct read failed: {str(read_err)}")
+                        raise read_err  # Re-raise to be caught by the outer try/except
         except Exception as e:
             static_logger.error(f"APP-STATIC ERROR: Unhandled exception serving {filename}: {str(e)}")
             static_logger.error(traceback.format_exc())
