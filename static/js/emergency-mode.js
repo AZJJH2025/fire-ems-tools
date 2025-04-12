@@ -376,35 +376,154 @@ FireEMS.EmergencyMode = (function() {
     const dataId = storeEmergencyData(data, options);
     
     if (!dataId) {
+      log('Failed to store emergency data', 'error');
       return false;
     }
     
-    // Map tool names to correct routes
+    // Normalize the target tool ID to handle different formats
+    // Strip any special characters and standardize separators
+    const normalizedTargetTool = (targetTool || '')
+      .toString()
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '-')
+      .replace(/--+/g, '-')
+      .replace(/^-|-$/g, '');
+    
+    // Comprehensive mapping of tool identifiers to their actual routes
+    // This handles various tool naming conventions across the app
     const toolRouteMap = {
+      // Response Time Analyzer variations
       'response-time': 'fire-ems-dashboard',
       'response-time-analyzer': 'fire-ems-dashboard',
+      'responsetimeanalyzer': 'fire-ems-dashboard',
+      'response-time-analysis': 'fire-ems-dashboard',
+      'responsetime': 'fire-ems-dashboard',
       'fire-ems-dashboard': 'fire-ems-dashboard',
+      'fireemsdashboard': 'fire-ems-dashboard',
+      'rta': 'fire-ems-dashboard',
+      
+      // Call Density variations
       'call-density': 'call-density-heatmap',
       'call-density-heatmap': 'call-density-heatmap',
+      'calldensity': 'call-density-heatmap',
+      'calldensityheatmap': 'call-density-heatmap',
+      'heatmap': 'call-density-heatmap',
+      'density': 'call-density-heatmap',
+      
+      // Isochrone map variations
       'isochrone': 'isochrone-map',
       'isochrone-map': 'isochrone-map',
-      'incident-logger': 'incident-logger'
+      'isochronemap': 'isochrone-map',
+      'isochrones': 'isochrone-map',
+      'iso': 'isochrone-map',
+      
+      // Incident logger variations
+      'incident-logger': 'incident-logger',
+      'incidentlogger': 'incident-logger',
+      'logger': 'incident-logger',
+      'incidents': 'incident-logger',
+      
+      // Other tools
+      'coverage-gap-finder': 'coverage-gap-finder',
+      'coverage': 'coverage-gap-finder',
+      'gaps': 'coverage-gap-finder',
+      'station-overview': 'station-overview',
+      'stations': 'station-overview',
+      'fire-map-pro': 'fire-map-pro',
+      'map': 'fire-map-pro',
+      'firemappro': 'fire-map-pro'
     };
     
-    // Get the correct route or use the provided one as fallback
-    const targetRoute = toolRouteMap[targetTool] || targetTool;
+    // Normalize underscore variations too (handle both - and _)
+    Object.keys(toolRouteMap).forEach(key => {
+      const underscoreKey = key.replace(/-/g, '_');
+      if (!toolRouteMap[underscoreKey]) {
+        toolRouteMap[underscoreKey] = toolRouteMap[key];
+      }
+    });
     
-    // Build target URL
-    const targetUrl = `/${targetRoute}?emergency_data=${dataId}`;
+    // Log all operations for debugging
+    log(`Original target tool: ${targetTool}`, 'info');
+    log(`Normalized target tool: ${normalizedTargetTool}`, 'info');
     
-    log(`Redirecting to ${targetUrl}`);
+    // Get the correct route, first try exact match, then try normalized
+    let targetRoute = toolRouteMap[targetTool] || // Try direct match first
+                     toolRouteMap[normalizedTargetTool] || // Try normalized
+                     targetTool; // Fallback to the original value
     
-    // Navigate to target
+    // Ensure target route has no leading slash (we'll add it later)
+    targetRoute = targetRoute.replace(/^\//, '');
+    
+    log(`Mapped to route: ${targetRoute}`, 'info');
+    
+    // Generate a timestamp to prevent caching issues
+    const timestamp = Date.now();
+    
+    // Build target URL with careful formatting
+    // CRITICAL FIX: Uses window.location.origin to ensure absolute path
+    const origin = window.location.origin || '';
+    const queryParam = encodeURIComponent(dataId);
+    const targetUrl = `${origin}/${targetRoute}?emergency_data=${queryParam}&t=${timestamp}`;
+    
+    log(`Redirecting to: ${targetUrl}`, 'info');
+    
+    // Try to store the data in multiple storage mechanisms for redundancy
     try {
-      window.location.href = targetUrl;
+      // Store data ID in sessionStorage as a backup
+      sessionStorage.setItem('last_emergency_data_id', dataId);
+      sessionStorage.setItem('last_emergency_target', targetRoute);
+      sessionStorage.setItem('last_emergency_timestamp', timestamp.toString());
+      
+      // Store a backup copy of the data with a standard key as well
+      const backupDataId = 'emergency_data_latest';
+      const serializedBackup = localStorage.getItem(dataId);
+      
+      if (serializedBackup) {
+        localStorage.setItem(backupDataId, serializedBackup);
+        sessionStorage.setItem(backupDataId, serializedBackup);
+        log(`Created backup copies with key: ${backupDataId}`, 'info');
+      }
+      
+      // Store diagnostic information
+      const diagnosticInfo = JSON.stringify({
+        dataId: dataId,
+        targetTool: targetTool,
+        normalizedTool: normalizedTargetTool,
+        targetRoute: targetRoute,
+        targetUrl: targetUrl,
+        timestamp: timestamp,
+        origin: origin,
+        recordCount: Array.isArray(data) ? data.length : 1
+      });
+      
+      sessionStorage.setItem('emergency_diagnostic', diagnosticInfo);
+      log('Stored diagnostic information', 'info');
+      
+    } catch (e) {
+      log('Warning: Could not create all backup copies', 'warning');
+      // Continue anyway - this is just extra redundancy
+    }
+    
+    // Navigate to target with error handling
+    try {
+      // For debugging on production, add a small delay to see logs
+      setTimeout(() => {
+        window.location.href = targetUrl;
+      }, 200);
       return true;
     } catch (error) {
-      log('Error navigating to target tool', error);
+      log('Error navigating to target tool: ' + error.message, 'error');
+      
+      // Last resort fallback: try direct navigation without parameters
+      try {
+        log('Attempting direct navigation fallback', 'warning');
+        setTimeout(() => {
+          window.location.href = `${origin}/${targetRoute}`;
+        }, 200);
+      } catch (e) {
+        // If that fails too, show an alert
+        alert('Failed to navigate to ' + targetRoute + '. Error: ' + error.message);
+      }
       return false;
     }
   }

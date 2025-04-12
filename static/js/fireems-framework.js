@@ -227,14 +227,69 @@
             if (dataId) {
               console.log(`[FireEMS Framework] Data stored with ID: ${dataId}`);
               
+              // Map tool IDs to routes for consistency
+              const toolRouteMap = {
+                'response-time': 'fire-ems-dashboard',
+                'response-time-analyzer': 'fire-ems-dashboard',
+                'fire-ems-dashboard': 'fire-ems-dashboard',
+                'call-density': 'call-density-heatmap',
+                'call-density-heatmap': 'call-density-heatmap',
+                'isochrone': 'isochrone-map',
+                'isochrone-map': 'isochrone-map',
+                'incident-logger': 'incident-logger'
+              };
+                
+              // Get the correct route
+              const targetRoute = toolRouteMap[targetTool] || targetTool;
+              const origin = window.location.origin || '';
+                  
+              // Generate timestamp for cache busting
+              const timestamp = Date.now();
+              
               // Navigate to the target tool with the data ID
-              window.location.href = `/${targetTool}?emergency_data=${dataId}`;
+              console.log(`[FireEMS Framework] Navigating to: ${origin}/${targetRoute}?emergency_data=${encodeURIComponent(dataId)}&t=${timestamp}`);
+                  
+              // For debugging purposes, store the navigation info
+              sessionStorage.setItem('last_framework_navigation', JSON.stringify({
+                dataId,
+                targetTool,
+                targetRoute,
+                timestamp: timestamp,
+                encodedDataId: encodeURIComponent(dataId),
+                fullUrl: `${origin}/${targetRoute}?emergency_data=${encodeURIComponent(dataId)}&t=${timestamp}`
+              }));
+              
+              // Create backup copies for redundancy
+              try {
+                // Store a backup copy with standard key
+                const backupDataId = 'emergency_data_latest';
+                const serializedBackup = localStorage.getItem(dataId);
+                
+                if (serializedBackup) {
+                  localStorage.setItem(backupDataId, serializedBackup);
+                  sessionStorage.setItem(backupDataId, serializedBackup);
+                  console.log(`[FireEMS Framework] Created backup copies with key: ${backupDataId}`);
+                }
+              } catch (e) {
+                console.warn('[FireEMS Framework] Could not create backup copies:', e);
+              }
+                  
+              window.location.href = `${origin}/${targetRoute}?emergency_data=${encodeURIComponent(dataId)}&t=${timestamp}`;
             } else {
               throw new Error('Failed to store data');
             }
           } catch (error) {
             console.error('[FireEMS Framework] Error sending data:', error);
             alert('Error sending data: ' + error.message);
+            
+            // Log extra debug info
+            console.error('[FireEMS Framework] Debug info:', {
+              targetTool,
+              dataExists: !!data,
+              dataLength: Array.isArray(data) ? data.length : 'not array',
+              errorMessage: error.message,
+              errorStack: error.stack
+            });
           }
         } else {
           console.warn('[FireEMS Framework] StateService not available, using emergency mode library');
@@ -313,50 +368,136 @@
     // Check for emergency data in URL
     const urlParams = new URLSearchParams(window.location.search);
     const emergencyDataId = urlParams.get('emergency_data');
+    const timestamp = urlParams.get('t'); // Get timestamp parameter if available
     
     if (emergencyDataId) {
-      console.log(`[FireEMS Framework] Found emergency data ID: ${emergencyDataId}`);
+      console.log(`[FireEMS Framework] Found emergency data ID: ${emergencyDataId} (timestamp: ${timestamp || 'none'})`);
       
-      // Use the state service to retrieve the data
-      if (window.FireEMS.StateService) {
-        try {
-          const data = window.FireEMS.StateService.retrieveEmergencyData(emergencyDataId, false);
+      // Create a list of data retrieval strategies to try in sequence
+      const retrievalStrategies = [
+        // Strategy 1: Use the StateService if available
+        function tryStateService() {
+          if (!window.FireEMS.StateService) return null;
           
-          if (data) {
-            console.log('[FireEMS Framework] Successfully retrieved emergency data');
-            processEmergencyData(data, emergencyDataId);
-          } else {
-            console.error('[FireEMS Framework] Emergency data not found or expired');
-            showEmergencyDataError('Emergency data not found or has expired');
-          }
-        } catch (error) {
-          console.error('[FireEMS Framework] Error retrieving emergency data:', error);
-          showEmergencyDataError('Error retrieving emergency data: ' + error.message);
-        }
-      } else {
-        console.warn('[FireEMS Framework] StateService not available, using emergency mode library');
-        
-        // Try emergency mode library
-        if (window.FireEMS.EmergencyMode) {
-          const data = window.FireEMS.EmergencyMode.retrieveData(emergencyDataId, false);
-          if (data) {
-            processEmergencyData(data, emergencyDataId);
-          } else {
-            showEmergencyDataError('Emergency data not found or has expired');
-          }
-        } else {
-          // Last resort - try to use localStorage directly
           try {
-            const data = JSON.parse(localStorage.getItem(emergencyDataId));
-            if (data) {
-              processEmergencyData(data, emergencyDataId);
-            } else {
-              showEmergencyDataError('Emergency data not found or has expired');
-            }
+            console.log('[FireEMS Framework] Trying StateService for data retrieval');
+            return window.FireEMS.StateService.retrieveEmergencyData(emergencyDataId, false);
           } catch (e) {
-            showEmergencyDataError('Error retrieving emergency data: ' + e.message);
+            console.warn('[FireEMS Framework] StateService retrieval failed:', e);
+            return null;
+          }
+        },
+        
+        // Strategy 2: Use EmergencyMode library if available
+        function tryEmergencyMode() {
+          if (!window.FireEMS.EmergencyMode) return null;
+          
+          try {
+            console.log('[FireEMS Framework] Trying EmergencyMode.retrieveData');
+            return window.FireEMS.EmergencyMode.retrieveData(emergencyDataId, false);
+          } catch (e) {
+            console.warn('[FireEMS Framework] EmergencyMode retrieval failed:', e);
+            return null;
+          }
+        },
+        
+        // Strategy 3: Try direct localStorage with the provided ID
+        function tryLocalStorage() {
+          try {
+            console.log('[FireEMS Framework] Trying direct localStorage access');
+            const serialized = localStorage.getItem(emergencyDataId);
+            if (!serialized) return null;
+            
+            const parsed = JSON.parse(serialized);
+            return parsed.data || parsed; // Handle both wrapped and unwrapped formats
+          } catch (e) {
+            console.warn('[FireEMS Framework] Direct localStorage retrieval failed:', e);
+            return null;
+          }
+        },
+        
+        // Strategy 4: Try sessionStorage with the provided ID
+        function trySessionStorage() {
+          try {
+            console.log('[FireEMS Framework] Trying sessionStorage access');
+            const serialized = sessionStorage.getItem(emergencyDataId);
+            if (!serialized) return null;
+            
+            const parsed = JSON.parse(serialized);
+            return parsed.data || parsed; // Handle both wrapped and unwrapped formats
+          } catch (e) {
+            console.warn('[FireEMS Framework] SessionStorage retrieval failed:', e);
+            return null;
+          }
+        },
+        
+        // Strategy 5: Try the backup generic key in localStorage
+        function tryBackupLocalStorage() {
+          try {
+            console.log('[FireEMS Framework] Trying backup localStorage key');
+            const serialized = localStorage.getItem('emergency_data_latest');
+            if (!serialized) return null;
+            
+            const parsed = JSON.parse(serialized);
+            return parsed.data || parsed; // Handle both wrapped and unwrapped formats
+          } catch (e) {
+            console.warn('[FireEMS Framework] Backup localStorage retrieval failed:', e);
+            return null;
+          }
+        },
+        
+        // Strategy 6: Try the backup generic key in sessionStorage
+        function tryBackupSessionStorage() {
+          try {
+            console.log('[FireEMS Framework] Trying backup sessionStorage key');
+            const serialized = sessionStorage.getItem('emergency_data_latest');
+            if (!serialized) return null;
+            
+            const parsed = JSON.parse(serialized);
+            return parsed.data || parsed; // Handle both wrapped and unwrapped formats
+          } catch (e) {
+            console.warn('[FireEMS Framework] Backup sessionStorage retrieval failed:', e);
+            return null;
           }
         }
+      ];
+      
+      // Try each strategy in sequence until one returns data
+      let data = null;
+      let dataSource = '';
+      
+      for (let i = 0; i < retrievalStrategies.length; i++) {
+        data = retrievalStrategies[i]();
+        if (data) {
+          dataSource = `Strategy ${i+1}`;
+          break;
+        }
+      }
+      
+      // Process the data if we found it from any strategy
+      if (data) {
+        console.log(`[FireEMS Framework] Successfully retrieved emergency data using ${dataSource}`);
+        processEmergencyData(data, emergencyDataId);
+      } else {
+        console.error('[FireEMS Framework] All data retrieval strategies failed');
+        
+        // Display diagnostic info to help with troubleshooting
+        let diagnosticInfo = '';
+        try {
+          const diagnostic = sessionStorage.getItem('emergency_diagnostic');
+          if (diagnostic) {
+            diagnosticInfo = JSON.parse(diagnostic);
+            console.log('[FireEMS Framework] Found diagnostic info:', diagnosticInfo);
+          }
+        } catch (e) {
+          console.warn('[FireEMS Framework] Could not retrieve diagnostic info:', e);
+        }
+        
+        // Show error with more detailed info
+        showEmergencyDataError(
+          'Could not retrieve emergency data. The data may have expired or been lost during navigation. ' + 
+          'Try returning to the Data Formatter and sending the data again.'
+        );
       }
     }
   }
