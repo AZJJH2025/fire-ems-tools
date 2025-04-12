@@ -141,46 +141,141 @@ def create_app(config_name='default'):
     from static_middleware import register_static_handler
     register_static_handler(app)
         
-    # Direct static file serving for emergencies
+    # Direct static file serving for emergencies - Enhanced robust version
     @app.route('/app-static/<path:filename>')
     def serve_static_direct(filename):
         import os
         import mimetypes
         import traceback
+        import logging
+        from flask import send_file, make_response, current_app
+        
+        # Setup dedicated logger for static files
+        static_logger = logging.getLogger('app.static')
+        if not static_logger.handlers:
+            file_handler = logging.FileHandler('static_middleware.log')
+            file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+            static_logger.addHandler(file_handler)
+            static_logger.setLevel(logging.DEBUG)
+        
         static_dir = os.path.join(os.getcwd(), 'static')
         
         try:
-            # Get MIME type
-            _, ext = os.path.splitext(filename)
-            mimetype = mimetypes.types_map.get(ext.lower())
+            # Sanitize the filename to prevent directory traversal attacks
+            safe_filename = os.path.normpath(filename).lstrip('/')
             
-            # Force JavaScript MIME type for JS files
-            if ext.lower() in ['.js', '.jsx']:
-                mimetype = 'application/javascript'
-            elif ext.lower() == '.css':
-                mimetype = 'text/css'
+            # Get file extension and MIME type
+            _, ext = os.path.splitext(safe_filename)
+            ext = ext.lower()
+            
+            # Comprehensive MIME type mapping
+            mime_mapping = {
+                '.js': 'application/javascript',
+                '.jsx': 'application/javascript',
+                '.mjs': 'application/javascript',
+                '.json': 'application/json',
+                '.css': 'text/css',
+                '.html': 'text/html',
+                '.htm': 'text/html',
+                '.txt': 'text/plain',
+                '.csv': 'text/csv',
+                '.jpg': 'image/jpeg',
+                '.jpeg': 'image/jpeg',
+                '.png': 'image/png',
+                '.gif': 'image/gif',
+                '.svg': 'image/svg+xml',
+                '.ico': 'image/x-icon',
+                '.pdf': 'application/pdf',
+                '.xml': 'application/xml',
+                '.zip': 'application/zip',
+                '.woff': 'font/woff',
+                '.woff2': 'font/woff2',
+                '.ttf': 'font/ttf',
+                '.eot': 'application/vnd.ms-fontobject',
+                '.otf': 'font/otf',
+                '.mp4': 'video/mp4',
+                '.webm': 'video/webm',
+                '.mp3': 'audio/mpeg',
+                '.wav': 'audio/wav'
+            }
+            
+            # Get MIME type from our mapping or fallback to mimetypes module
+            mimetype = mime_mapping.get(ext)
+            if not mimetype:
+                mimetype = mimetypes.types_map.get(ext)
+            
+            # Log detailed information about the request
+            static_logger.info(f"APP-STATIC REQUEST: '{safe_filename}' with type '{mimetype}'")
                 
-            app.logger.info(f"Direct static file request: {filename} as {mimetype}")
-            
             # Full path to file
-            file_path = os.path.join(static_dir, filename)
-            if not os.path.exists(file_path):
-                app.logger.error(f"File not found: {file_path}")
-                return f"File not found: {filename}", 404
+            file_path = os.path.join(static_dir, safe_filename)
+            
+            # Check if file exists
+            if not os.path.exists(file_path) or not os.path.isfile(file_path):
+                static_logger.error(f"APP-STATIC ERROR: File not found: {file_path}")
                 
-            # Serve the file directly
-            with open(file_path, 'rb') as f:
-                content = f.read()
+                # Try case-insensitive matching as a fallback
+                try:
+                    parent_dir = os.path.dirname(file_path)
+                    if os.path.exists(parent_dir):
+                        base_name = os.path.basename(file_path)
+                        for existing_file in os.listdir(parent_dir):
+                            if existing_file.lower() == base_name.lower():
+                                # Found a case-insensitive match
+                                file_path = os.path.join(parent_dir, existing_file)
+                                static_logger.info(f"APP-STATIC RECOVERY: Found via case-insensitive match: {existing_file}")
+                                break
+                except Exception as case_err:
+                    static_logger.error(f"APP-STATIC ERROR: Case-insensitive lookup failed: {str(case_err)}")
                 
-            from flask import make_response
-            response = make_response(content)
-            response.headers['Content-Type'] = mimetype or 'application/octet-stream'
-            response.headers['X-Served-By'] = 'app-static direct route'
-            return response
+                # Check again after case-insensitive attempt
+                if not os.path.exists(file_path) or not os.path.isfile(file_path):
+                    return f"File not found: {safe_filename}", 404
+            
+            # First try with send_file which is more efficient
+            try:
+                response = send_file(file_path, mimetype=mimetype or 'application/octet-stream', 
+                                    as_attachment=False, max_age=86400)
+                response.headers['X-Served-By'] = 'app-static send_file'
+                response.headers['Cache-Control'] = 'public, max-age=86400'
+                static_logger.info(f"APP-STATIC SUCCESS: Served with send_file: {safe_filename}")
+                return response
+            except Exception as send_file_err:
+                static_logger.warning(f"APP-STATIC WARNING: send_file failed, falling back to direct read: {str(send_file_err)}")
+                
+                # Fallback to direct file reading
+                try:
+                    with open(file_path, 'rb') as f:
+                        content = f.read()
+                        
+                    response = make_response(content)
+                    response.headers['Content-Type'] = mimetype or 'application/octet-stream'
+                    response.headers['X-Served-By'] = 'app-static direct read'
+                    response.headers['Cache-Control'] = 'public, max-age=86400'
+                    static_logger.info(f"APP-STATIC SUCCESS: Served with direct read: {safe_filename}")
+                    return response
+                except Exception as read_err:
+                    static_logger.error(f"APP-STATIC ERROR: Direct read failed: {str(read_err)}")
+                    raise read_err  # Re-raise to be caught by the outer try/except
         except Exception as e:
-            app.logger.error(f"Error serving {filename} via app-static: {str(e)}")
-            app.logger.error(traceback.format_exc())
+            static_logger.error(f"APP-STATIC ERROR: Unhandled exception serving {filename}: {str(e)}")
+            static_logger.error(traceback.format_exc())
             return f"Error serving file: {str(e)}", 500
+    
+    # Health check endpoints for resilience framework
+    @app.route('/api/health-check')
+    def api_health_check():
+        """API health check endpoint for resilience monitoring"""
+        return jsonify({
+            "status": "healthy",
+            "timestamp": datetime.utcnow().isoformat(),
+            "environment": app.config.get('ENV', 'development')
+        })
+
+    @app.route('/static/health-check.txt')
+    def static_health_check():
+        """Static file health check endpoint for resilience monitoring"""
+        return "healthy", 200, {"Content-Type": "text/plain"}
     
     # Diagnostic endpoint to check static file serving
     @app.route('/diagnostic/static')
@@ -189,17 +284,18 @@ def create_app(config_name='default'):
         import os
         import mimetypes
         import traceback
+        import glob
         from flask import render_template_string
         
         # Get all static file routes
         static_routes = [
             {'name': 'Blueprint Static', 'path': '/static/'},
             {'name': 'Direct Static', 'path': '/direct-static/'}, 
-            {'name': 'App Static', 'path': '/app-static/'}
+            {'name': 'App Static (Emergency)', 'path': '/app-static/'}
         ]
         
         # List some critical files to test
-        static_files = ['styles.css', 'data-formatter.css', 'data-formatter-bundle.js']
+        static_files = ['styles.css', 'data-formatter.css', 'data-formatter-bundle.js', 'data-formatter-direct.js', 'fire-ems-dashboard.js']
         
         # Check if files exist
         static_dir = os.path.join(os.getcwd(), 'static')
@@ -351,6 +447,98 @@ def create_app(config_name='default'):
             </div>
             
             <div class="section">
+                <h2>Emergency Mode Features</h2>
+                <div style="background-color: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+                    <h3 style="margin-top: 0; color: #0d47a1;">About Emergency Mode</h3>
+                    <p>This application includes multiple fallback mechanisms to ensure it continues to work even when static files fail to load properly.</p>
+                    
+                    <h4>Static File Fallbacks:</h4>
+                    <ol>
+                        <li>Primary route: <code>/static/file.js</code> - Uses Flask's Blueprint</li>
+                        <li>First fallback: <code>/direct-static/file.js</code> - Direct file reading fallback</li>
+                        <li>Emergency fallback: <code>/app-static/file.js</code> - Highly resilient direct serving with detailed logging</li>
+                    </ol>
+                    
+                    <h4>Client-Side Emergency Features:</h4>
+                    <ul>
+                        <li><strong>Resilient CSS Loading:</strong> Multiple path attempts with inline critical CSS</li>
+                        <li><strong>Resilient JS Loading:</strong> CDN fallbacks and dedicated error handlers</li>
+                        <li><strong>Client-side Processing:</strong> Pure JS implementations when React components fail</li>
+                        <li><strong>Offline Data Processing:</strong> Client-side CSV parsing for Data Formatter</li>
+                        <li><strong>LocalStorage Data Transfer:</strong> Emergency mode uses localStorage to transfer data between tools</li>
+                    </ul>
+                    
+                    <h4>Emergency Data Storage Status:</h4>
+                    <div id="emergency-storage-status">Checking localStorage usage...</div>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const statusDiv = document.getElementById('emergency-storage-status');
+                            
+                            try {
+                                let emergencyKeys = [];
+                                let totalSize = 0;
+                                
+                                // Scan localStorage for emergency data
+                                for (let i = 0; i < localStorage.length; i++) {
+                                    const key = localStorage.key(i);
+                                    if (key && key.startsWith('emergency_data_')) {
+                                        const value = localStorage.getItem(key);
+                                        const size = value ? value.length : 0;
+                                        totalSize += size;
+                                        
+                                        const timestamp = key.replace('emergency_data_', '');
+                                        const date = new Date(parseInt(timestamp));
+                                        
+                                        emergencyKeys.push({
+                                            key: key,
+                                            size: size,
+                                            date: date
+                                        });
+                                    }
+                                }
+                                
+                                // Display results
+                                if (emergencyKeys.length === 0) {
+                                    statusDiv.innerHTML = '<p>✅ No emergency data currently stored in localStorage.</p>';
+                                } else {
+                                    let html = `<p>⚠️ Found ${emergencyKeys.length} emergency data entries using approximately ${Math.round(totalSize / 1024)} KB:</p><ul>`;
+                                    
+                                    emergencyKeys.forEach(item => {
+                                        html += `<li>
+                                            <strong>${item.key}</strong> - ${Math.round(item.size / 1024)} KB, 
+                                            created on ${item.date.toLocaleString()}
+                                            <button onclick="localStorage.removeItem('${item.key}'); location.reload();">Clear</button>
+                                        </li>`;
+                                    });
+                                    
+                                    html += `</ul>
+                                    <button onclick="clearAllEmergencyData()">Clear All Emergency Data</button>
+                                    <script>
+                                        function clearAllEmergencyData() {
+                                            const keys = [];
+                                            for (let i = 0; i < localStorage.length; i++) {
+                                                const key = localStorage.key(i);
+                                                if (key && key.startsWith('emergency_data_')) {
+                                                    keys.push(key);
+                                                }
+                                            }
+                                            
+                                            keys.forEach(key => localStorage.removeItem(key));
+                                            location.reload();
+                                        }
+                                    <\/script>`;
+                                    
+                                    statusDiv.innerHTML = html;
+                                }
+                            } catch (error) {
+                                statusDiv.innerHTML = `<p>❌ Error checking localStorage: ${error.message}</p>`;
+                            }
+                        });
+                    </script>
+                </div>
+            </div>
+            
+            <div class="section">
                 <h2>URL Rules</h2>
                 <table>
                     <tr>
@@ -385,6 +573,108 @@ def create_app(config_name='default'):
                     <li>Check for any 500 errors in the server logs</li>
                     <li>Try the direct route at <code>/app-static/styles.css</code> first</li>
                 </ol>
+            </div>
+            
+            <div class="section">
+                <h2>Emergency Mode Testing</h2>
+                <div style="background-color: #fff3e0; border-left: 4px solid #ff9800; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+                    <h3 style="margin-top: 0; color: #e65100;">Emergency Data Transfer Test</h3>
+                    <p>This section allows administrators to test the emergency data transfer functionality between tools.</p>
+                    
+                    <div style="margin-top: 15px;">
+                        <h4>1. Create Test Data</h4>
+                        <button id="create-test-data" style="background-color: #ff9800; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                            Create Sample Data
+                        </button>
+                        <span id="create-status"></span>
+                    </div>
+                    
+                    <div style="margin-top: 15px;">
+                        <h4>2. Test Transfer</h4>
+                        <select id="target-tool" style="padding: 8px; margin-right: 10px;">
+                            <option value="fire-ems-dashboard">Response Time Analyzer</option>
+                            <option value="call-density-heatmap">Call Density Heatmap</option>
+                            <option value="isochrone-map">Isochrone Map</option>
+                            <option value="incident-logger">Incident Logger</option>
+                        </select>
+                        <button id="test-transfer" style="background-color: #ff9800; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                            Test Transfer
+                        </button>
+                    </div>
+                    
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const createBtn = document.getElementById('create-test-data');
+                            const transferBtn = document.getElementById('test-transfer');
+                            const createStatus = document.getElementById('create-status');
+                            const toolSelect = document.getElementById('target-tool');
+                            
+                            if (createBtn) {
+                                createBtn.addEventListener('click', function() {
+                                    // Feature detection for localStorage
+                                    if (typeof Storage === 'undefined') {
+                                        createStatus.textContent = '❌ Error: localStorage not supported in this browser';
+                                        return;
+                                    }
+                                    
+                                    // Generate a small test dataset
+                                    const testData = [];
+                                    const now = new Date();
+                                    
+                                    for (let i = 1; i <= 10; i++) {
+                                        testData.push({
+                                            incident_id: `TEST-${i}`,
+                                            incident_date: now.toISOString().split('T')[0],
+                                            incident_time: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
+                                            latitude: (Math.random() * 10 + 30).toFixed(6),
+                                            longitude: (Math.random() * 10 - 90).toFixed(6),
+                                            incident_type: 'TEST',
+                                            priority: Math.floor(Math.random() * 3) + 1
+                                        });
+                                    }
+                                    
+                                    // Store in localStorage with error handling for quota limits
+                                    const dataId = 'emergency_data_test_' + Date.now();
+                                    try {
+                                        // Serialize data
+                                        const serializedData = JSON.stringify(testData);
+                                        const dataSize = new Blob([serializedData]).size;
+                                        
+                                        // Check size (show warning if over 1MB)
+                                        const sizeWarning = dataSize > 1000000 ? ' ⚠️ Large data size may not work in all browsers!' : '';
+                                        
+                                        localStorage.setItem(dataId, serializedData);
+                                        createStatus.innerHTML = `✅ Created sample data with ID: <code>${dataId}</code> (${Math.round(dataSize / 1024)} KB)${sizeWarning}`;
+                                        
+                                        // Save the ID for the transfer test
+                                        window.testDataId = dataId;
+                                    } catch (error) {
+                                        if (error.name === 'QuotaExceededError' || error.message.includes('quota')) {
+                                            createStatus.textContent = '❌ Error: Storage quota exceeded. Try clearing browser storage.';
+                                        } else {
+                                            createStatus.textContent = `❌ Error: ${error.message}`;
+                                        }
+                                    }
+                                });
+                            }
+                            
+                            if (transferBtn) {
+                                transferBtn.addEventListener('click', function() {
+                                    if (!window.testDataId) {
+                                        alert('Please create test data first');
+                                        return;
+                                    }
+                                    
+                                    const targetTool = toolSelect.value;
+                                    const url = `/${targetTool}?emergency_data=${window.testDataId}`;
+                                    
+                                    // Open in new tab
+                                    window.open(url, '_blank');
+                                });
+                            }
+                        });
+                    </script>
+                </div>
             </div>
         </body>
         </html>

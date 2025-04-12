@@ -848,30 +848,90 @@ function createTimeChart(data, stats) {
         return;
     }
     
-    // Check if we need to ensure all records have Reported_obj Date objects
-    const recordsWithDateObj = data.filter(record => record['Reported_obj'] instanceof Date).length;
-    console.log(`Records with Date objects: ${recordsWithDateObj} out of ${data.length}`);
+    // Normalize and enhance time/date fields for visualization
+    console.log("Normalizing time/date fields for time chart...");
     
-    // If some records are missing Date objects but have timestamp fields, try to create them
-    if (recordsWithDateObj < data.length) {
-        console.log("Attempting to create missing Date objects for time chart");
-        data.forEach(record => {
-            if (!(record['Reported_obj'] instanceof Date)) {
-                // Try to create Date object from various fields
-                if (record['Reported'] && !record['Reported_obj']) {
-                    try {
-                        // If it's just a time value, combine with Incident Date if available
-                        if (record['Reported'].match(/^\d{1,2}:\d{1,2}:\d{1,2}$/)) {
-                            if (record['Incident Date']) {
-                                const timestamp = new Date(`${record['Incident Date']}T${record['Reported']}`);
-                                if (!isNaN(timestamp)) {
-                                    record['Reported_obj'] = timestamp;
-                                    console.log(`Created Date from combined Incident Date and Reported time: ${timestamp}`);
-                                }
+    data.forEach(record => {
+        // Handle record._date_obj which might have been created by our preprocessor
+        if (record._date_obj instanceof Date && !record['Reported_obj']) {
+            record['Reported_obj'] = record._date_obj;
+            console.log("Using _date_obj for Reported_obj");
+        }
+        
+        // Try multiple field combinations for dates and times
+        if (!(record['Reported_obj'] instanceof Date)) {
+            try {
+                // Try incident_date and incident_time first (common in emergency data)
+                if (record['incident_date'] && record['incident_time']) {
+                    let dateStr = record['incident_date'];
+                    let timeStr = record['incident_time'];
+                    
+                    // Normalize date format - handle both MM/DD/YYYY and YYYY-MM-DD
+                    if (dateStr.includes('/')) {
+                        // Format: MM/DD/YYYY or M/D/YYYY
+                        const parts = dateStr.split('/');
+                        if (parts.length === 3) {
+                            // Ensure 4-digit year
+                            if (parts[2].length === 2) {
+                                parts[2] = '20' + parts[2];
+                            }
+                            // Format as YYYY-MM-DD for ISO compatibility
+                            dateStr = `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+                        }
+                    }
+                    
+                    // Normalize time format to ensure HH:MM:SS
+                    if (!timeStr.includes(':')) {
+                        // Assuming numeric format like 0831 for 8:31 AM
+                        const hour = timeStr.substring(0, 2).padStart(2, '0');
+                        const minute = timeStr.substring(2, 4).padStart(2, '0');
+                        timeStr = `${hour}:${minute}:00`;
+                    } else if (timeStr.split(':').length === 2) {
+                        // Add seconds if missing
+                        timeStr = `${timeStr}:00`;
+                    }
+                    
+                    // Create timestamp
+                    const timestamp = new Date(`${dateStr}T${timeStr}`);
+                    if (!isNaN(timestamp.getTime())) {
+                        record['Reported_obj'] = timestamp;
+                        console.log(`Created Date from incident_date and incident_time: ${timestamp}`);
+                    }
+                }
+                
+                // Fallback to other field combinations if still no date object
+                if (!(record['Reported_obj'] instanceof Date)) {
+                    // Try Incident Date and Reported Time
+                    if (record['Incident Date'] && record['Reported']) {
+                        // If it's just a time value, combine with Incident Date
+                        if (record['Reported'].match(/^\d{1,2}:\d{1,2}(:\d{1,2})?$/)) {
+                            const timeStr = record['Reported'].split(':').length === 2 ? 
+                                record['Reported'] + ':00' : record['Reported'];
+                                
+                            const timestamp = new Date(`${record['Incident Date']}T${timeStr}`);
+                            if (!isNaN(timestamp.getTime())) {
+                                record['Reported_obj'] = timestamp;
+                                console.log(`Created Date from Incident Date and Reported: ${timestamp}`);
+                            }
+                        } else {
+                            // Try parsing the full string
+                            const timestamp = new Date(record['Reported']);
+                            if (!isNaN(timestamp.getTime())) {
+                                record['Reported_obj'] = timestamp;
+                            }
+                        }
+                    } else {
+                        // Last resort - check if Reported field has a full timestamp
+                        if (record['Reported']) {
+                            const timestamp = new Date(record['Reported']);
+                            if (!isNaN(timestamp.getTime())) {
+                                record['Reported_obj'] = timestamp;
                             } else {
                                 // Use today's date with the time as last resort
                                 const today = new Date().toISOString().split('T')[0];
-                                const timestamp = new Date(`${today}T${record['Reported']}`);
+                                const timeStr = record['Reported'].split(':').length === 2 ? 
+                                    record['Reported'] + ':00' : record['Reported'];
+                                const timestamp = new Date(`${today}T${timeStr}`);
                                 if (!isNaN(timestamp)) {
                                     record['Reported_obj'] = timestamp;
                                     console.log(`Created Date using today's date with Reported time: ${timestamp}`);
@@ -1008,8 +1068,62 @@ function createIncidentMap(data) {
         return;
     }
     
-    // Filter records with valid coordinates.
-    const geoData = data.filter(record => record.validCoordinates);
+    // Normalize coordinate fields - support both camelCase and lowercase variants
+    const normalizedData = data.map(record => {
+        const normalized = {...record};
+        
+        // If coordinates aren't already validated, check and set them now
+        if (normalized.validCoordinates === undefined || normalized.validCoordinates === false) {
+            // Handle different possible coordinate field names
+            // First check for latitude/longitude fields
+            let lat = null, lng = null;
+            
+            // Check lowercase versions first
+            if (normalized.latitude !== undefined && normalized.longitude !== undefined) {
+                lat = parseFloat(normalized.latitude);
+                lng = parseFloat(normalized.longitude);
+                console.log("Found lowercase lat/lng:", lat, lng);
+            }
+            // Then check capitalized versions
+            else if (normalized.Latitude !== undefined && normalized.Longitude !== undefined) {
+                lat = parseFloat(normalized.Latitude);
+                lng = parseFloat(normalized.Longitude);
+                console.log("Found capitalized Lat/Lng:", lat, lng);
+            }
+            // Then try variants
+            else if (normalized.lat !== undefined && (normalized.lng !== undefined || normalized.lon !== undefined)) {
+                lat = parseFloat(normalized.lat);
+                lng = parseFloat(normalized.lng || normalized.lon);
+                console.log("Found abbreviated lat/lng:", lat, lng);
+            }
+            
+            // Validate coordinates
+            if (lat !== null && lng !== null) {
+                normalized.validCoordinates = (
+                    !isNaN(lat) && !isNaN(lng) &&
+                    lat >= -90 && lat <= 90 &&
+                    lng >= -180 && lng <= 180
+                );
+                
+                // Store normalized values
+                if (normalized.validCoordinates) {
+                    normalized.Latitude = lat;
+                    normalized.Longitude = lng;
+                    normalized.latitude = lat; // Store in both formats for compatibility
+                    normalized.longitude = lng;
+                }
+            } else {
+                normalized.validCoordinates = false;
+            }
+        }
+        
+        return normalized;
+    });
+    
+    // Filter records with valid coordinates
+    const geoData = normalizedData.filter(record => record.validCoordinates);
+    console.log(`Found ${geoData.length} records with valid coordinates out of ${normalizedData.length} total records`);
+    
     if (geoData.length === 0) {
         mapContainer.innerHTML = '<p>No valid geographic data available to display map</p>';
         return;
@@ -1019,8 +1133,8 @@ function createIncidentMap(data) {
     mapContainer.innerHTML = '';
     
     // Compute average coordinates for map center.
-    const avgLat = geoData.reduce((sum, record) => sum + record.Latitude, 0) / geoData.length;
-    const avgLng = geoData.reduce((sum, record) => sum + record.Longitude, 0) / geoData.length;
+    const avgLat = geoData.reduce((sum, record) => sum + (record.Latitude || record.latitude), 0) / geoData.length;
+    const avgLng = geoData.reduce((sum, record) => sum + (record.Longitude || record.longitude), 0) / geoData.length;
     
     // Initialize Leaflet map.
     const map = L.map(mapContainer, { center: [avgLat, avgLng], zoom: 10 });
@@ -1083,10 +1197,15 @@ function createUnitChart(data, stats) {
         return;
     }
     
+    // Support various unit field names in our data
     const unitCounts = {};
     data.forEach(record => {
-        if (record['Unit']) {
-            unitCounts[record['Unit']] = (unitCounts[record['Unit']] || 0) + 1;
+        // Try various possible unit field names
+        const unitValue = record['Unit'] || record['unit'] || record['Unit ID'] || 
+                         record['UnitID'] || record['unit_id'] || record['apparatus'];
+                         
+        if (unitValue) {
+            unitCounts[unitValue] = (unitCounts[unitValue] || 0) + 1;
         }
     });
     
@@ -1094,25 +1213,24 @@ function createUnitChart(data, stats) {
         .sort((a, b) => b[1] - a[1])
         .slice(0, 8);
     
-    new Chart(canvas, {
-        type: 'bar',
-        data: {
-            labels: topUnits.map(item => item[0]),
-            datasets: [{
-                label: 'Incidents',
-                data: topUnits.map(item => item[1]),
-                backgroundColor: 'rgba(76, 175, 80, 0.7)',
-                borderColor: 'rgba(76, 175, 80, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            scales: { x: { beginAtZero: true } },
-            plugins: { legend: { display: false } },
-            maintainAspectRatio: false
-        }
+    // Use Chart Manager to handle chart creation and cleanup
+    FireEMS.ChartManager.create('unit-chart', 'bar', {
+        labels: topUnits.map(item => item[0]),
+        datasets: [{
+            label: 'Incidents',
+            data: topUnits.map(item => item[1]),
+            backgroundColor: 'rgba(76, 175, 80, 0.7)',
+            borderColor: 'rgba(76, 175, 80, 1)',
+            borderWidth: 1
+        }]
+    }, {
+        indexAxis: 'y',
+        scales: { x: { beginAtZero: true } },
+        plugins: { legend: { display: false } },
+        maintainAspectRatio: false
     });
+    
+    console.log("Unit chart created using ChartManager");
 }
 
 /**
@@ -1191,37 +1309,36 @@ function createLocationChart(data, stats) {
         topLocations.push(['Other', otherIncidents]);
     }
     
-    new Chart(canvas, {
-        type: 'doughnut',
-        data: {
-            labels: topLocations.map(item => item[0]),
-            datasets: [{
-                data: topLocations.map(item => item[1]),
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.7)',
-                    'rgba(54, 162, 235, 0.7)',
-                    'rgba(255, 206, 86, 0.7)',
-                    'rgba(75, 192, 192, 0.7)',
-                    'rgba(153, 102, 255, 0.7)',
-                    'rgba(255, 159, 64, 0.7)',
-                    'rgba(199, 199, 199, 0.7)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            plugins: {
-                legend: {
-                    position: 'right',
-                    labels: {
-                        boxWidth: 12,
-                        font: { size: 10 }
-                    }
+    // Use Chart Manager to handle chart creation and cleanup
+    FireEMS.ChartManager.create('location-chart', 'doughnut', {
+        labels: topLocations.map(item => item[0]),
+        datasets: [{
+            data: topLocations.map(item => item[1]),
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.7)',
+                'rgba(54, 162, 235, 0.7)',
+                'rgba(255, 206, 86, 0.7)',
+                'rgba(75, 192, 192, 0.7)',
+                'rgba(153, 102, 255, 0.7)',
+                'rgba(255, 159, 64, 0.7)',
+                'rgba(199, 199, 199, 0.7)'
+            ],
+            borderWidth: 1
+        }]
+    }, {
+        plugins: {
+            legend: {
+                position: 'right',
+                labels: {
+                    boxWidth: 12,
+                    font: { size: 10 }
                 }
-            },
-            maintainAspectRatio: false
-        }
+            }
+        },
+        maintainAspectRatio: false
     });
+    
+    console.log("Location chart created using ChartManager");
 }
 
 /**
