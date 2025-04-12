@@ -39,6 +39,14 @@
     
     // If emergency data is in URL, run diagnostics
     if (emergencyData) {
+      // CRITICAL FIX: Detect and fix malformed emergency data parameter
+      // This handles the case where objects got encoded as [object Object] in URL
+      if (emergencyData.includes('[object Object]')) {
+        console.error('📊 Detected malformed emergency data parameter (object reference)!');
+        emergencyData = 'emergency_data_latest'; // Fall back to standard backup ID
+        console.log('📊 Using emergency data fallback: emergency_data_latest');
+      }
+      
       collectDiagnostics(emergencyData, source, timestamp);
       
       if (config.showUI) {

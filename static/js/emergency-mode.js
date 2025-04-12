@@ -372,12 +372,21 @@ FireEMS.EmergencyMode = (function() {
    * @returns {boolean} - Whether the operation was successful
    */
   function sendToTool(data, targetTool, options = {}) {
-    // Store the data and get ID
-    const dataId = storeEmergencyData(data, options);
+    // CRITICAL FIX: Verify what we're passing is actual data, not already a dataId
+    // This prevents the direct passing of objects that would serialize to [object Object]
+    let queryParam;
     
-    if (!dataId) {
-      log('Failed to store emergency data', 'error');
-      return false;
+    if (typeof data === 'string' && data.startsWith('emergency_data_')) {
+      log('Detected dataId passed directly to sendToTool - using it directly', 'warning');
+      queryParam = data; // Use the passed string directly as the ID
+    } else {
+      // Normal flow - store the data and get ID
+      queryParam = storeEmergencyData(data, options);
+      
+      if (!queryParam) {
+        log('Failed to store emergency data', 'error');
+        return false;
+      }
     }
     
     // Normalize the target tool ID to handle different formats

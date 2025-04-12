@@ -215,12 +215,23 @@
         // Use the state service for emergency data transfer
         if (window.FireEMS.StateService) {
           try {
-            // Store the data with the state service
-            const dataId = window.FireEMS.StateService.storeEmergencyData(data, {
+            // CRITICAL FIX: Ensure we're storing the actual data, not passing objects directly
+            // Check if the data is valid and suitable for storage
+            if (typeof data !== 'object') {
+              throw new Error('Data must be an object or array');
+            }
+            
+            // Generate a unique string ID
+            const timestamp = Date.now();
+            const uniqueId = `emergency_data_${timestamp}`;
+            
+            // Store the data with the state service using our guaranteed string ID
+            const dataId = window.FireEMS.StateService.storeEmergencyData(uniqueId, data, {
               metadata: {
                 source: 'data-formatter',
-                timestamp: Date.now(),
-                targetTool: targetTool
+                timestamp: timestamp,
+                targetTool: targetTool,
+                recordCount: Array.isArray(data) ? data.length : 1
               }
             });
             
@@ -385,11 +396,18 @@
     
     // Check for emergency data in URL
     const urlParams = new URLSearchParams(window.location.search);
-    const emergencyDataId = urlParams.get('emergency_data');
+    let emergencyDataId = urlParams.get('emergency_data');
     const timestamp = urlParams.get('t'); // Get timestamp parameter if available
     
     if (emergencyDataId) {
       console.log(`[FireEMS Framework] Found emergency data ID: ${emergencyDataId} (timestamp: ${timestamp || 'none'})`);
+      
+      // CRITICAL FIX: Detect and handle when objects are passed directly in URL
+      if (emergencyDataId.includes('[object Object]')) {
+        console.error('[FireEMS Framework] Detected malformed emergency data parameter (object reference)!');
+        console.warn('[FireEMS Framework] Falling back to emergency_data_latest');
+        emergencyDataId = 'emergency_data_latest'; // Fall back to standard backup key
+      }
       
       // Create a list of data retrieval strategies to try in sequence
       const retrievalStrategies = [
