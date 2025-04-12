@@ -5,6 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Data Formatter - FireEMS.ai</title>
   
+  <!-- FireEMS Resilience Framework -->
+  <script>
+    // Load the framework initialization script
+    (function() {
+      function loadFramework() {
+        console.log("Loading FireEMS Framework");
+        const script = document.createElement('script');
+        script.src = '/static/js/fireems-framework.js';
+        
+        script.onerror = function() {
+          console.warn("Failed to load framework from primary path, trying fallback...");
+          const fallbackScript = document.createElement('script');
+          fallbackScript.src = '/app-static/js/fireems-framework.js';
+          
+          fallbackScript.onerror = function() {
+            console.error("Failed to load framework from all paths");
+          };
+          
+          document.head.appendChild(fallbackScript);
+        };
+        
+        document.head.appendChild(script);
+      }
+      
+      // Load the framework when the document is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadFramework);
+      } else {
+        loadFramework();
+      }
+    })();
+  </script>
+  
   <!-- Fallback static file loading script -->
   <script>
     function loadCSS(url, fallbackUrl) {
@@ -38,6 +71,9 @@
     loadCSS('/static/styles.css', '/direct-static/styles.css');
     loadCSS('/static/data-formatter.css', '/direct-static/data-formatter.css');
   </script>
+  
+  <!-- Framework CSS -->
+  <link rel="stylesheet" href="/static/fireems-framework.css" />
   
   <!-- Inline critical CSS to ensure basic styling works even if files fail to load -->
   <style>
@@ -570,6 +606,38 @@
               }
             }
             
+            // Emergency mode script
+            function loadEmergencyLibrary() {
+              return new Promise((resolve, reject) => {
+                // If already loaded
+                if (window.FireEMS && window.FireEMS.EmergencyMode) {
+                  console.log('Emergency mode library already loaded');
+                  resolve(window.FireEMS.EmergencyMode);
+                  return;
+                }
+                
+                // Try to load it
+                const script = document.createElement('script');
+                script.src = '/app-static/js/emergency-mode.js';
+                
+                script.onload = function() {
+                  console.log('Emergency mode library loaded');
+                  if (window.FireEMS && window.FireEMS.EmergencyMode) {
+                    resolve(window.FireEMS.EmergencyMode);
+                  } else {
+                    reject(new Error('Emergency mode library failed to initialize'));
+                  }
+                };
+                
+                script.onerror = function() {
+                  console.error('Failed to load emergency mode library');
+                  reject(new Error('Failed to load emergency mode library'));
+                };
+                
+                document.body.appendChild(script);
+              });
+            }
+            
             // Create a sample output preview
             function createSampleOutput() {
               const outputPreview = document.getElementById('output-preview');
@@ -622,6 +690,318 @@
               
               // Save transformed data to state
               window.formatterState.transformedData = transformedData;
+              
+              // Enable download and send buttons
+              const downloadBtn = document.getElementById('download-btn');
+              const sendToToolBtn = document.getElementById('send-to-tool-btn');
+              
+              if (downloadBtn) {
+                downloadBtn.disabled = false;
+                
+                // Add emergency event listener for download button
+                downloadBtn.addEventListener('click', function() {
+                  downloadTransformedData();
+                });
+              }
+              
+              if (sendToToolBtn) {
+                sendToToolBtn.disabled = false;
+                
+                // Add emergency event listener for send to tool button
+                sendToToolBtn.addEventListener('click', function() {
+                  sendDataToTool();
+                });
+              }
+              
+              // Log action
+              const logContainer = document.getElementById('log-container');
+              if (logContainer) {
+                const timestamp = new Date().toLocaleTimeString();
+                logContainer.innerHTML += `<div class="log-entry log-info">
+                  <span class="log-time">${timestamp}</span> 
+                  Data transformation complete. Preview created with ${transformedData.length} record(s).
+                </div>`;
+              }
+            }
+            
+            // Emergency download functionality using shared library
+            function downloadTransformedData() {
+              console.log("Emergency download functionality activated");
+              
+              // Check if we have transformed data
+              if (!window.formatterState || !window.formatterState.transformedData || window.formatterState.transformedData.length === 0) {
+                alert("No transformed data available to download");
+                return;
+              }
+              
+              // Get selected output format
+              const outputFormat = document.getElementById('output-format');
+              const format = outputFormat ? outputFormat.value : 'csv';
+              
+              // Try to use the emergency mode library
+              loadEmergencyLibrary().then(emergencyMode => {
+                try {
+                  // Get the data
+                  const data = window.formatterState.transformedData;
+                  
+                  // Use the library to download
+                  const success = emergencyMode.downloadData(data, {
+                    format: format,
+                    filename: 'transformed-data'
+                  });
+                  
+                  if (success) {
+                    // Log success
+                    const logContainer = document.getElementById('log-container');
+                    if (logContainer) {
+                      const timestamp = new Date().toLocaleTimeString();
+                      logContainer.innerHTML += `<div class="log-entry log-success">
+                        <span class="log-time">${timestamp}</span> 
+                        File downloaded successfully in emergency mode (${format} format).
+                      </div>`;
+                    }
+                  } else {
+                    throw new Error("Download failed");
+                  }
+                } catch (error) {
+                  // Log error
+                  console.error("Download error:", error);
+                  
+                  // Show error in log
+                  const logContainer = document.getElementById('log-container');
+                  if (logContainer) {
+                    const timestamp = new Date().toLocaleTimeString();
+                    logContainer.innerHTML += `<div class="log-entry log-error">
+                      <span class="log-time">${timestamp}</span> 
+                      Download failed: ${error.message}
+                    </div>`;
+                  }
+                  
+                  alert("Error creating download file: " + error.message);
+                  
+                  // Fall back to direct implementation if library fails
+                  fallbackDownload(data, format);
+                }
+              }).catch(error => {
+                console.error("Failed to load emergency library:", error);
+                
+                // Fall back to direct implementation
+                fallbackDownload(window.formatterState.transformedData, format);
+              });
+            }
+            
+            // Fallback download functionality if library fails
+            function fallbackDownload(data, format) {
+              try {
+                console.log("Using fallback download implementation");
+                const headers = Object.keys(data[0]);
+                
+                // Prepare content based on format
+                let content = '';
+                let fileName = 'transformed-data';
+                let mimeType = '';
+                
+                if (format === 'csv') {
+                  // CSV format
+                  content = headers.join(',') + '\n';
+                  
+                  data.forEach(row => {
+                    const values = headers.map(header => {
+                      // Handle values with commas by wrapping in quotes
+                      const value = row[header] || '';
+                      return value.includes(',') ? `"${value}"` : value;
+                    });
+                    content += values.join(',') + '\n';
+                  });
+                  
+                  fileName += '.csv';
+                  mimeType = 'text/csv';
+                } else if (format === 'json') {
+                  // JSON format
+                  content = JSON.stringify(data, null, 2);
+                  fileName += '.json';
+                  mimeType = 'application/json';
+                } else if (format === 'excel') {
+                  // Fall back to CSV
+                  alert("Excel format not available in emergency mode. Downloading as CSV instead.");
+                  content = headers.join(',') + '\n';
+                  
+                  data.forEach(row => {
+                    const values = headers.map(header => {
+                      const value = row[header] || '';
+                      return value.includes(',') ? `"${value}"` : value;
+                    });
+                    content += values.join(',') + '\n';
+                  });
+                  
+                  fileName += '.csv';
+                  mimeType = 'text/csv';
+                }
+                
+                // Create a Blob and download link
+                const blob = new Blob([content], { type: mimeType });
+                const url = URL.createObjectURL(blob);
+                
+                // Create temporary link and trigger download
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                
+                // Clean up
+                setTimeout(() => {
+                  document.body.removeChild(link);
+                  URL.revokeObjectURL(url);
+                }, 100);
+                
+                // Log success
+                const logContainer = document.getElementById('log-container');
+                if (logContainer) {
+                  const timestamp = new Date().toLocaleTimeString();
+                  logContainer.innerHTML += `<div class="log-entry log-info">
+                    <span class="log-time">${timestamp}</span> 
+                    File downloaded with fallback method (${format} format).
+                  </div>`;
+                }
+              } catch (error) {
+                console.error("Fallback download error:", error);
+                alert("Error in fallback download: " + error.message);
+              }
+            }
+            
+            // Emergency send to tool functionality
+            function sendDataToTool() {
+              console.log("Emergency send to tool functionality activated");
+              
+              // Check if we have transformed data
+              if (!window.formatterState || !window.formatterState.transformedData || window.formatterState.transformedData.length === 0) {
+                alert("No transformed data available to send");
+                return;
+              }
+              
+              // Get target tool
+              const toolSelect = document.getElementById('target-tool');
+              if (!toolSelect) {
+                alert("Cannot identify target tool");
+                return;
+              }
+              
+              const selectedTool = toolSelect.value;
+              if (!selectedTool) {
+                alert("Please select a target tool first");
+                return;
+              }
+              
+              // Map tool selection to target URL path
+              const toolMapping = {
+                'response-time': 'fire-ems-dashboard',
+                'isochrone': 'isochrone-map',
+                'isochrone-stations': 'isochrone-map',
+                'isochrone-incidents': 'isochrone-map',
+                'call-density': 'call-density-heatmap',
+                'incident-logger': 'incident-logger',
+                'coverage-gap': 'coverage-gap-finder',
+                'station-overview': 'station-overview',
+                'fire-map-pro': 'fire-map-pro'
+              };
+              
+              const targetTool = toolMapping[selectedTool] || selectedTool;
+              
+              // Try to use the emergency mode library
+              loadEmergencyLibrary().then(emergencyMode => {
+                try {
+                  // Get the data
+                  const data = window.formatterState.transformedData;
+                  
+                  // Use the library to send to tool
+                  const success = emergencyMode.sendToTool(data, targetTool, {
+                    // Set expiration to 1 hour
+                    expiration: 60 * 60 * 1000
+                  });
+                  
+                  if (success) {
+                    // Log success (though we'll be redirecting)
+                    const logContainer = document.getElementById('log-container');
+                    if (logContainer) {
+                      const timestamp = new Date().toLocaleTimeString();
+                      logContainer.innerHTML += `<div class="log-entry log-success">
+                        <span class="log-time">${timestamp}</span> 
+                        Data prepared for ${selectedTool}. Redirecting to target tool...
+                      </div>`;
+                    }
+                  } else {
+                    throw new Error("Send to tool failed");
+                  }
+                } catch (error) {
+                  // Log error
+                  console.error("Send to tool error:", error);
+                  
+                  // Show error in log
+                  const logContainer = document.getElementById('log-container');
+                  if (logContainer) {
+                    const timestamp = new Date().toLocaleTimeString();
+                    logContainer.innerHTML += `<div class="log-entry log-error">
+                      <span class="log-time">${timestamp}</span> 
+                      Failed to send data to tool: ${error.message}
+                    </div>`;
+                  }
+                  
+                  alert("Error sending data to tool: " + error.message);
+                  
+                  // Fall back to direct implementation if library fails
+                  fallbackSendToTool(data, targetTool);
+                }
+              }).catch(error => {
+                console.error("Failed to load emergency library:", error);
+                
+                // Fall back to direct implementation
+                fallbackSendToTool(window.formatterState.transformedData, targetTool);
+              });
+            }
+            
+            // Fallback send to tool if library fails
+            function fallbackSendToTool(data, targetTool) {
+              try {
+                console.log("Using fallback send to tool implementation");
+                
+                // Generate a unique ID for this data transfer
+                const dataId = 'emergency_data_' + Date.now();
+                
+                // Check if the data is too large for localStorage
+                // Serialize the data first to check size
+                const serializedData = JSON.stringify(data);
+                const dataSize = new Blob([serializedData]).size;
+                
+                if (dataSize > 5000000) { // ~5MB limit for most browsers
+                  alert("Data is too large to send directly. Please use the Download option instead and manually upload the file.");
+                  return;
+                }
+                
+                // Store data in localStorage
+                localStorage.setItem(dataId, serializedData);
+                
+                // Build target URL
+                const targetUrl = `/${targetTool}?emergency_data=${dataId}`;
+                
+                // Log the action
+                const logContainer = document.getElementById('log-container');
+                if (logContainer) {
+                  const timestamp = new Date().toLocaleTimeString();
+                  logContainer.innerHTML += `<div class="log-entry log-info">
+                    <span class="log-time">${timestamp}</span> 
+                    Using fallback method to send data to ${targetTool}. (${Math.round(dataSize / 1024)} KB)
+                  </div>`;
+                }
+                
+                // Navigate to the target tool with a slight delay
+                setTimeout(() => {
+                  window.location.href = targetUrl;
+                }, 1000);
+              } catch (error) {
+                console.error("Fallback send to tool error:", error);
+                alert("Error in fallback send to tool: " + error.message);
+              }
             }
           });
         </script>
@@ -1237,6 +1617,13 @@
       `;
       document.head.appendChild(style);
     });
+    
+    // Load emergency mode test script
+    setTimeout(function() {
+      const testScript = document.createElement('script');
+      testScript.src = '/static/js/data-formatter-emergency-test.js';
+      document.body.appendChild(testScript);
+    }, 2000);
   </script>
 </body>
 </html>

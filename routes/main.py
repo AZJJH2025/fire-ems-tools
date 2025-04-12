@@ -62,6 +62,38 @@ def data_formatter_test():
     """Data Formatter Test route for debugging"""
     return render_template('data-formatter-test.html')
     
+@bp.route('/static-test')
+def static_test():
+    """Test route for static file serving"""
+    return render_template('static-test.html')
+    
+@bp.route('/style-test')
+def style_test():
+    """Style test page"""
+    return render_template('style-test.html')
+
+@bp.route('/css-debug')
+def css_debug():
+    """Debug route to test CSS loading"""
+    with open('/Users/josephhester/Documents/fire-ems-tools/static/styles.css', 'r') as f:
+        css_content = f.read()
+    return f"""
+    <html>
+    <head>
+        <title>CSS Debug</title>
+        <style>{css_content}</style>
+    </head>
+    <body>
+        <h1 style="color: red;">CSS Debug Page</h1>
+        <p>This page loads the styles.css file directly to test if it works.</p>
+        <div class="navbar">
+            <div class="logo">Test Logo</div>
+            <div class="nav-links">Test Links</div>
+        </div>
+    </body>
+    </html>
+    """
+    
 @bp.route('/station-overview')
 def station_overview():
     """Station Overview route"""
@@ -81,6 +113,11 @@ def quick_stats():
 def user_guide():
     """User Guide route"""
     return render_template('user-guide.html')
+
+@bp.route('/emergency-test')
+def emergency_test():
+    """Emergency Mode Test route"""
+    return render_template('emergency-test.html')
 
 @bp.route('/tests/module_testing_dashboard.html')
 def module_testing_dashboard():
