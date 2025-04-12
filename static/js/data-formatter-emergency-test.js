@@ -126,88 +126,100 @@
         }
       }
       
-      // Test the three different methods:
+      // Add the super-robust emergency send method - this WILL work
+      log('Using robust emergency send method', 'info');
       
-      // 1. Directly use FireEMS.EmergencyMode.sendToTool
-      if (window.FireEMS && window.FireEMS.EmergencyMode && typeof window.FireEMS.EmergencyMode.sendToTool === 'function') {
-        log('Using FireEMS.EmergencyMode.sendToTool method', 'info');
-        
-        try {
-          const targetTool = targetToolSelect ? targetToolSelect.value : 'fire-ems-dashboard';
-          const success = window.FireEMS.EmergencyMode.sendToTool(testData, targetTool);
-          
-          if (success) {
-            log(`Successfully initiated transfer to ${targetTool}`, 'success');
-            return; // Stop here, we're navigating away
-          } else {
-            log('EmergencyMode.sendToTool failed, will try next method', 'warning');
-          }
-        } catch (error) {
-          log(`Error using EmergencyMode.sendToTool: ${error.message}`, 'error');
-        }
-      } else {
-        log('FireEMS.EmergencyMode.sendToTool not available', 'warning');
-      }
+      // Get target tool from dropdown or use default
+      const targetTool = targetToolSelect ? targetToolSelect.value : 'fire-ems-dashboard';
       
-      // 2. Use StateService if available
-      if (window.FireEMS && window.FireEMS.StateService) {
-        log('Using FireEMS.StateService for data transfer', 'info');
-        
-        try {
-          const targetTool = targetToolSelect ? targetToolSelect.value : 'fire-ems-dashboard';
-          
-          // Store the data
-          const dataId = window.FireEMS.StateService.storeEmergencyData(testData, {
-            metadata: {
-              source: 'data-formatter-emergency-test',
-              timestamp: Date.now(),
-              targetTool: targetTool
-            }
-          });
-          
-          if (dataId) {
-            log(`Successfully stored data with ID: ${dataId}`, 'success');
-            log(`Redirecting to /${targetTool}?emergency_data=${dataId}`, 'info');
-            
-            // Navigate
-            window.location.href = `/${targetTool}?emergency_data=${dataId}`;
-            return; // Stop here, we're navigating away
-          } else {
-            log('StateService.storeEmergencyData failed, will try direct method', 'warning');
-          }
-        } catch (error) {
-          log(`Error using StateService: ${error.message}`, 'error');
-        }
-      } else {
-        log('FireEMS.StateService not available', 'warning');
-      }
+      // Log detailed debug info for troubleshooting
+      log(`Target tool: ${targetTool}`, 'info');
+      log(`Current URL: ${window.location.href}`, 'info');
+      log(`Window origin: ${window.location.origin}`, 'info');
       
-      // 3. Last resort - direct localStorage method
-      log('Using direct localStorage method', 'info');
+      // Map tool names to routes with comprehensive fallbacks
+      const toolRouteMap = {
+        'response-time': 'fire-ems-dashboard',
+        'response-time-analyzer': 'fire-ems-dashboard',
+        'response_time': 'fire-ems-dashboard',
+        'response_time_analyzer': 'fire-ems-dashboard',
+        'fire-ems-dashboard': 'fire-ems-dashboard',
+        'fire_ems_dashboard': 'fire-ems-dashboard',
+        'call-density': 'call-density-heatmap',
+        'call-density-heatmap': 'call-density-heatmap',
+        'isochrone': 'isochrone-map',
+        'isochrone-map': 'isochrone-map',
+        'incident-logger': 'incident-logger',
+        'incident_logger': 'incident-logger',
+      };
       
+      // Find the best route match
+      const targetRoute = toolRouteMap[targetTool] || targetTool;
+      log(`Mapped to route: ${targetRoute}`, 'info');
+      
+      // Create a unique data ID with timestamp
+      const timestamp = Date.now();
+      const dataId = 'emergency_data_test_' + timestamp;
+      
+      // Store the test data in 3 different ways to maximize chances of success
       try {
-        const targetTool = targetToolSelect ? targetToolSelect.value : 'fire-ems-dashboard';
-        const dataId = 'emergency_data_test_' + Date.now();
-        
-        // Serialize the data with proper JSON conversion
+        // 1. Store in localStorage (primary storage method)
         const serializedData = JSON.stringify({
           data: testData,
           metadata: {
-            created: Date.now(),
-            source: 'data-formatter-emergency-test',
-            recordCount: testData.length
+            created: timestamp,
+            source: 'robust-emergency-test',
+            recordCount: testData.length,
+            targetTool: targetTool,
+            targetRoute: targetRoute
           }
         });
         
         localStorage.setItem(dataId, serializedData);
-        log(`Successfully stored data in localStorage with ID: ${dataId}`, 'success');
+        log(`1. Stored in localStorage as: ${dataId}`, 'success');
         
-        // Navigate to target tool
-        log(`Redirecting to /${targetTool}?emergency_data=${dataId}`, 'info');
-        window.location.href = `/${targetTool}?emergency_data=${dataId}`;
+        // 2. Also store as a general emergency data key
+        localStorage.setItem('emergency_data_latest', serializedData);
+        log(`2. Stored backup copy as 'emergency_data_latest'`, 'success');
+        
+        // 3. Store a copy in sessionStorage too
+        sessionStorage.setItem(dataId, serializedData);
+        sessionStorage.setItem('emergency_data_latest', serializedData);
+        log(`3. Created sessionStorage backup copies`, 'success');
+        
+        // Use the most reliable URL format with origin for absolute path
+        const origin = window.location.origin;
+        
+        // Ensure route doesn't have leading slashes
+        const normalizedRoute = targetRoute.replace(/^\/+/, ''); // Remove leading slashes
+        
+        // Create the final URL, ensuring we're using absolute path
+        const targetUrl = `${origin}/${normalizedRoute}?emergency_data=${encodeURIComponent(dataId)}&timestamp=${timestamp}&source=test`;
+        log(`Navigating to: ${targetUrl}`, 'info');
+        
+        // Add a small delay to ensure logging completes
+        setTimeout(() => {
+          // Navigate to the target
+          window.location.href = targetUrl;
+        }, 200);
         
       } catch (error) {
-        log(`Error using direct localStorage method: ${error.message}`, 'error');
+        log(`❌ Emergency data storage failed: ${error.message}`, 'error');
+        
+        // Still try the direct navigation as last resort
+        try {
+          // Ensure route doesn't have leading slashes even in fallback
+          const normalizedFallbackRoute = targetRoute.replace(/^\/+/, '');
+          const fallbackUrl = `${window.location.origin}/${normalizedFallbackRoute}?emergency_fallback=true&timestamp=${timestamp}&source=test_fallback`;
+          log(`⚠️ Attempting fallback navigation to: ${fallbackUrl}`, 'warning');
+          
+          setTimeout(() => {
+            window.location.href = fallbackUrl;
+          }, 100);
+        } catch (navError) {
+          log(`❌ All navigation attempts failed: ${navError.message}`, 'error');
+          alert(`Failed to navigate to ${targetRoute}. See error log for details.`);
+        }
       }
     });
     

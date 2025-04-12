@@ -169,6 +169,14 @@
             console.error("EMERGENCY STORAGE ERROR:", e);
           }
         }, 500);
+        
+        // Load diagnostic tools for emergency mode
+        setTimeout(function() {
+          console.log("Loading emergency diagnostic tools...");
+          const script = document.createElement('script');
+          script.src = '/static/js/emergency-diagnostic.js';
+          document.head.appendChild(script);
+        }, 1000);
       }
     })();
   </script>

@@ -463,7 +463,12 @@ FireEMS.EmergencyMode = (function() {
     // CRITICAL FIX: Uses window.location.origin to ensure absolute path
     const origin = window.location.origin || '';
     const queryParam = encodeURIComponent(dataId);
-    const targetUrl = `${origin}/${targetRoute}?emergency_data=${queryParam}&t=${timestamp}`;
+    
+    // Make sure the route doesn't have extra slashes when composed
+    const normalizedRoute = targetRoute.replace(/^\/+/, ''); // Remove leading slashes
+    
+    // Compose the URL with proper formatting
+    const targetUrl = `${origin}/${normalizedRoute}?emergency_data=${queryParam}&t=${timestamp}&source=emergency_mode`;
     
     log(`Redirecting to: ${targetUrl}`, 'info');
     
@@ -516,9 +521,13 @@ FireEMS.EmergencyMode = (function() {
       
       // Last resort fallback: try direct navigation without parameters
       try {
-        log('Attempting direct navigation fallback', 'warning');
+        // Make sure we still normalize the route path
+        const fallbackRoute = normalizedRoute;
+        const fallbackUrl = `${origin}/${fallbackRoute}?emergency_fallback=true&t=${timestamp}&source=emergency_fallback`;
+        
+        log(`Attempting direct navigation fallback: ${fallbackUrl}`, 'warning');
         setTimeout(() => {
-          window.location.href = `${origin}/${targetRoute}`;
+          window.location.href = fallbackUrl;
         }, 200);
       } catch (e) {
         // If that fails too, show an alert

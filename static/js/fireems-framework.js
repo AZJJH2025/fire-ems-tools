@@ -247,7 +247,13 @@
               const timestamp = Date.now();
               
               // Navigate to the target tool with the data ID
-              console.log(`[FireEMS Framework] Navigating to: ${origin}/${targetRoute}?emergency_data=${encodeURIComponent(dataId)}&t=${timestamp}`);
+              // Ensure route doesn't have leading slashes
+              const normalizedRoute = targetRoute.replace(/^\/+/, ''); // Remove leading slashes
+              
+              // Build the full URL with proper formatting
+              const fullUrl = `${origin}/${normalizedRoute}?emergency_data=${encodeURIComponent(dataId)}&t=${timestamp}&source=framework`;
+              
+              console.log(`[FireEMS Framework] Navigating to: ${fullUrl}`);
                   
               // For debugging purposes, store the navigation info
               sessionStorage.setItem('last_framework_navigation', JSON.stringify({
@@ -256,7 +262,7 @@
                 targetRoute,
                 timestamp: timestamp,
                 encodedDataId: encodeURIComponent(dataId),
-                fullUrl: `${origin}/${targetRoute}?emergency_data=${encodeURIComponent(dataId)}&t=${timestamp}`
+                fullUrl: fullUrl
               }));
               
               // Create backup copies for redundancy
@@ -274,7 +280,7 @@
                 console.warn('[FireEMS Framework] Could not create backup copies:', e);
               }
                   
-              window.location.href = `${origin}/${targetRoute}?emergency_data=${encodeURIComponent(dataId)}&t=${timestamp}`;
+              window.location.href = fullUrl;
             } else {
               throw new Error('Failed to store data');
             }
@@ -302,7 +308,18 @@
             try {
               const dataId = 'emergency_data_' + Date.now();
               localStorage.setItem(dataId, JSON.stringify(data));
-              window.location.href = `/${targetTool}?emergency_data=${dataId}`;
+              
+              // Get origin for absolute path
+              const origin = window.location.origin || '';
+              
+              // Ensure we normalize the target tool to avoid path issues
+              const normalizedTool = targetTool.replace(/^\/+/, '');
+              
+              // Build the URL with source parameter for debugging
+              const directUrl = `${origin}/${normalizedTool}?emergency_data=${dataId}&t=${Date.now()}&source=direct_fallback`;
+              
+              console.log('[FireEMS Framework] Using last resort direct navigation:', directUrl);
+              window.location.href = directUrl;
             } catch (e) {
               alert('Failed to send data to tool: ' + e.message);
             }
@@ -553,68 +570,430 @@
       // Continue anyway - this is just preparation
     }
     
-    // Then, try to find a suitable processor function or implement direct processing
+    // Hide any existing file upload elements since we'll be displaying our own UI
     try {
-      // First try - use the direct chart creation approach for Response Time Analyzer
-      if (window.location.pathname.includes('fire-ems-dashboard') || 
-          window.location.pathname.includes('response-time')) {
+      const uploadElements = document.querySelectorAll('.file-upload-container, .upload-section');
+      uploadElements.forEach(el => {
+        el.style.display = 'none';
+      });
+      
+      // Also try to hide any result elements that might be showing error messages
+      const resultElements = document.querySelectorAll('#result, .result');
+      resultElements.forEach(el => {
+        el.innerHTML = '';
+      });
+    } catch (e) {
+      console.warn('[FireEMS Framework] Error hiding upload elements:', e);
+    }
+    
+    // Create our emergency container that will display regardless of page JS errors
+    const emergencyContainer = document.createElement('div');
+    emergencyContainer.id = 'emergency-data-display';
+    emergencyContainer.className = 'emergency-data-container';
+    emergencyContainer.style.cssText = `
+      margin: 20px; 
+      padding: 20px; 
+      border: 2px solid #4caf50; 
+      border-radius: 8px; 
+      background-color: #f1f8e9;
+    `;
+    
+    // Add a header to the emergency container
+    const header = document.createElement('div');
+    header.innerHTML = `
+      <h2 style="color: #2e7d32; margin-top: 0;">
+        <span style="color: #f44336;">⚠️</span> 
+        Emergency Data Loaded Successfully
+      </h2>
+      <p style="margin-bottom: 20px;">
+        <strong>${preprocessedData.length}</strong> records were transferred from Data Formatter 
+        in emergency mode and are displayed below.
+      </p>
+    `;
+    emergencyContainer.appendChild(header);
+    
+    // Create tabs for different visualizations
+    const tabsContainer = document.createElement('div');
+    tabsContainer.style.cssText = `
+      display: flex;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #ddd;
+    `;
+    
+    const tabs = [
+      { id: 'summary-tab', label: 'Summary' },
+      { id: 'table-tab', label: 'Data Table' },
+      { id: 'charts-tab', label: 'Charts' }
+    ];
+    
+    tabs.forEach((tab, index) => {
+      const tabButton = document.createElement('button');
+      tabButton.id = tab.id;
+      tabButton.textContent = tab.label;
+      tabButton.style.cssText = `
+        padding: 10px 20px;
+        background: ${index === 0 ? '#e8f5e9' : '#f5f5f5'};
+        border: 1px solid #ddd;
+        border-bottom: ${index === 0 ? '1px solid #e8f5e9' : '1px solid #ddd'};
+        border-radius: 4px 4px 0 0;
+        margin-right: 4px;
+        margin-bottom: -1px;
+        cursor: pointer;
+        font-weight: ${index === 0 ? 'bold' : 'normal'};
+      `;
+      tabButton.onclick = function() {
+        // Set all tabs to inactive style
+        document.querySelectorAll('#emergency-data-display .tab-button').forEach(btn => {
+          btn.style.background = '#f5f5f5';
+          btn.style.fontWeight = 'normal';
+          btn.style.borderBottom = '1px solid #ddd';
+        });
         
-        const result = directProcessResponseTimeData(preprocessedData);
-        if (result) {
-          console.log('[FireEMS Framework] Successfully processed data using direct Response Time implementation');
-          showEmergencyDataSuccess('Data loaded successfully');
-          
-          // Clean up after success
-          cleanupStorage(dataId);
-          return;
+        // Set this tab to active style
+        this.style.background = '#e8f5e9';
+        this.style.fontWeight = 'bold';
+        this.style.borderBottom = '1px solid #e8f5e9';
+        
+        // Hide all tab content
+        document.querySelectorAll('#emergency-data-display .tab-content').forEach(content => {
+          content.style.display = 'none';
+        });
+        
+        // Show the selected tab content
+        const contentId = this.id.replace('-tab', '-content');
+        const content = document.getElementById(contentId);
+        if (content) {
+          content.style.display = 'block';
         }
+      };
+      tabButton.className = 'tab-button';
+      tabsContainer.appendChild(tabButton);
+    });
+    
+    emergencyContainer.appendChild(tabsContainer);
+    
+    // Create content containers for each tab
+    const tabContents = document.createElement('div');
+    tabContents.className = 'tab-contents';
+    
+    // Summary tab content
+    const summaryContent = document.createElement('div');
+    summaryContent.id = 'summary-tab-content';
+    summaryContent.className = 'tab-content';
+    summaryContent.style.display = 'block'; // Show by default
+    tabContents.appendChild(summaryContent);
+    
+    // Table tab content
+    const tableContent = document.createElement('div');
+    tableContent.id = 'table-tab-content';
+    tableContent.className = 'tab-content';
+    tableContent.style.display = 'none';
+    tabContents.appendChild(tableContent);
+    
+    // Charts tab content
+    const chartsContent = document.createElement('div');
+    chartsContent.id = 'charts-tab-content';
+    chartsContent.className = 'tab-content';
+    chartsContent.style.display = 'none';
+    
+    // Add chart containers
+    chartsContent.innerHTML = `
+      <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 20px;">
+        <div style="flex: 1; min-width: 300px; background: white; padding: 15px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+          <h3 style="margin-top: 0;">Unit Response Times</h3>
+          <canvas id="emergency-unit-chart" width="400" height="300"></canvas>
+        </div>
+        <div style="flex: 1; min-width: 300px; background: white; padding: 15px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+          <h3 style="margin-top: 0;">Incidents by Location</h3>
+          <canvas id="emergency-location-chart" width="400" height="300"></canvas>
+        </div>
+      </div>
+    `;
+    tabContents.appendChild(chartsContent);
+    
+    emergencyContainer.appendChild(tabContents);
+    
+    // Add to document at the most visible location
+    try {
+      // Try to insert after the main navigation
+      const navbar = document.querySelector('.navbar, header, .header');
+      if (navbar && navbar.parentNode) {
+        navbar.parentNode.insertBefore(emergencyContainer, navbar.nextSibling);
+      } else {
+        // Fallback - insert at the beginning of the body
+        document.body.insertBefore(emergencyContainer, document.body.firstChild);
+      }
+    } catch (e) {
+      console.warn('[FireEMS Framework] Error inserting emergency container:', e);
+      // Last resort - append to body
+      document.body.appendChild(emergencyContainer);
+    }
+    
+    console.log('[FireEMS Framework] Created emergency data display container');
+    
+    // Now fill each tab with content
+    try {
+      renderDataSummary(preprocessedData, document.getElementById('summary-tab-content'));
+      renderFallbackTable(preprocessedData, document.getElementById('table-tab-content'));
+      
+      // Then, try to create charts using our direct implementation
+      try {
+        // Create charts for emergency display
+        if (window.Chart) {
+          // Unit chart
+          createDirectUnitChart(preprocessedData, 'emergency-unit-chart');
+          
+          // Location chart
+          createDirectLocationChart(preprocessedData, 'emergency-location-chart');
+        } else {
+          // Try to load Chart.js
+          const script = document.createElement('script');
+          script.src = 'https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js';
+          script.onload = function() {
+            createDirectUnitChart(preprocessedData, 'emergency-unit-chart');
+            createDirectLocationChart(preprocessedData, 'emergency-location-chart');
+          };
+          document.head.appendChild(script);
+          
+          document.getElementById('charts-tab-content').innerHTML += `
+            <p style="text-align: center; color: #f57c00; padding: 20px;">
+              Loading Chart.js library... Charts will appear shortly.
+            </p>
+          `;
+        }
+      } catch (chartError) {
+        console.warn('[FireEMS Framework] Error creating charts:', chartError);
+        document.getElementById('charts-tab-content').innerHTML = `
+          <p style="text-align: center; color: #f44336; padding: 20px;">
+            Unable to create charts: ${chartError.message}<br>
+            The data is still available in the Table tab.
+          </p>
+        `;
       }
       
-      // Second try - use any available processor function in the page
-      const processorFunctions = [
-        window.processEmergencyData,
-        window.displayResponseTimeData,
-        window.displayIncidentData,
-        window.processIncidentData,
-        window.loadData,
-        window.processData,
-        window.displayData
+      // Clean up storage if everything worked
+      cleanupStorage(dataId);
+      
+      console.log('[FireEMS Framework] Emergency data display completed successfully');
+      return true;
+    } catch (error) {
+      console.error('[FireEMS Framework] Error filling emergency data display:', error);
+      
+      // Still show some basic info even if details fail
+      emergencyContainer.innerHTML = `
+        <h2 style="color: #2e7d32; margin-top: 0;">
+          <span style="color: #f44336;">⚠️</span> 
+          Emergency Data Loaded
+        </h2>
+        <p>
+          <strong>${preprocessedData.length}</strong> records were transferred from Data Formatter.
+        </p>
+        <p style="color: #f44336;">
+          Error creating detailed view: ${error.message}
+        </p>
+        <p>
+          Please refresh the page or try again.
+        </p>
+      `;
+      
+      cleanupStorage(dataId);
+      return true;
+    }
+  }
+  
+  /**
+   * Create a unit response time chart directly for emergency display
+   */
+  function createDirectUnitChart(data, canvasId) {
+    try {
+      // Get the canvas element
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) {
+        console.warn(`[FireEMS Framework] Canvas element not found: ${canvasId}`);
+        return false;
+      }
+      
+      // Group by unit
+      const unitGroups = {};
+      data.forEach(record => {
+        const unit = record.Unit || 'Unknown';
+        if (!unitGroups[unit]) {
+          unitGroups[unit] = [];
+        }
+        unitGroups[unit].push(record);
+      });
+      
+      // Calculate average response time per unit
+      const unitData = [];
+      const unitLabels = [];
+      
+      Object.entries(unitGroups).forEach(([unit, incidents]) => {
+        const responseTimes = calculateResponseTimes(incidents);
+        if (responseTimes.length > 0) {
+          const avgResponseTime = responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length;
+          unitLabels.push(unit);
+          unitData.push(avgResponseTime.toFixed(1));
+        }
+      });
+      
+      // Sort by response time (ascending)
+      const sortedData = unitLabels.map((unit, i) => ({ unit, time: parseFloat(unitData[i]) }))
+        .sort((a, b) => a.time - b.time)
+        .slice(0, 10); // Only show top 10
+        
+      // Create chart
+      new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: sortedData.map(d => d.unit),
+          datasets: [{
+            label: 'Avg. Response Time (min)',
+            data: sortedData.map(d => d.time),
+            backgroundColor: 'rgba(76, 175, 80, 0.6)',
+            borderColor: 'rgba(76, 175, 80, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          indexAxis: 'y', // Horizontal bar chart
+          scales: {
+            x: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Minutes'
+              }
+            }
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: 'Average Response Time by Unit',
+              font: {
+                size: 14
+              }
+            },
+            legend: {
+              display: false
+            }
+          },
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('[FireEMS Framework] Error creating unit chart:', error);
+      return false;
+    }
+  }
+  
+  /**
+   * Create a location chart directly for emergency display
+   */
+  function createDirectLocationChart(data, canvasId) {
+    try {
+      // Get the canvas element
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) {
+        console.warn(`[FireEMS Framework] Canvas element not found: ${canvasId}`);
+        return false;
+      }
+      
+      // Try to get location data (city, address, etc.)
+      const locationFields = [
+        'Incident City', 'City', 'city', 'incident_city',
+        'CITY', 'ADDRESS_CITY', 'EVENT_CITY'
       ];
       
-      // Try each function until one works
-      let processed = false;
-      for (const func of processorFunctions) {
-        if (typeof func === 'function') {
-          try {
-            console.log(`[FireEMS Framework] Trying processor function: ${func.name}`);
-            func(preprocessedData);
-            processed = true;
-            
-            // Show success message
-            showEmergencyDataSuccess('Data loaded successfully');
-            
-            // Clean up if successful
-            cleanupStorage(dataId);
+      // Count incidents by location
+      const locationCounts = {};
+      
+      data.forEach(record => {
+        let location = null;
+        
+        // Try each field
+        for (const field of locationFields) {
+          if (record[field]) {
+            location = record[field].toString().trim();
             break;
-          } catch (error) {
-            console.warn(`[FireEMS Framework] Processor ${func.name} failed:`, error);
           }
         }
+        
+        // If no location found, try to get it from coordinates or use Unknown
+        if (!location) {
+          if (record.latitude && record.longitude) {
+            location = `${parseFloat(record.latitude).toFixed(2)},${parseFloat(record.longitude).toFixed(2)}`;
+          } else {
+            location = 'Unknown';
+          }
+        }
+        
+        locationCounts[location] = (locationCounts[location] || 0) + 1;
+      });
+      
+      // Get top locations (by count)
+      const topLocations = Object.entries(locationCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 7); // Top 7 locations
+        
+      // Add "Other" category if there are more locations
+      const totalEvents = data.length;
+      const topEventsCount = topLocations.reduce((sum, [_, count]) => sum + count, 0);
+      
+      if (topEventsCount < totalEvents) {
+        topLocations.push(['Other', totalEvents - topEventsCount]);
       }
       
-      if (!processed) {
-        // Third try - render the data directly as a table as last resort
-        console.warn('[FireEMS Framework] All processor functions failed. Rendering fallback table.');
-        renderFallbackTable(preprocessedData);
-        showEmergencyDataSuccess('Data displayed in fallback mode');
-        processed = true;
-        
-        // Clean up if successful
-        cleanupStorage(dataId);
-      }
+      // Create chart
+      new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+          labels: topLocations.map(([location, _]) => location),
+          datasets: [{
+            data: topLocations.map(([_, count]) => count),
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.7)',
+              'rgba(54, 162, 235, 0.7)',
+              'rgba(255, 206, 86, 0.7)',
+              'rgba(75, 192, 192, 0.7)',
+              'rgba(153, 102, 255, 0.7)',
+              'rgba(255, 159, 64, 0.7)',
+              'rgba(199, 199, 199, 0.7)',
+              'rgba(83, 129, 53, 0.7)'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Incidents by Location',
+              font: {
+                size: 14
+              }
+            },
+            legend: {
+              position: 'right',
+              labels: {
+                boxWidth: 12,
+                font: {
+                  size: 11
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      return true;
     } catch (error) {
-      console.error('[FireEMS Framework] Error processing emergency data:', error);
-      showEmergencyDataError('Unable to process the emergency data: ' + error.message);
+      console.error('[FireEMS Framework] Error creating location chart:', error);
+      return false;
     }
   }
   

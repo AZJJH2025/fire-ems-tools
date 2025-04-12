@@ -4,7 +4,7 @@ FireEMS.ai - Fire & EMS Analytics Application
 This is the main application file that initializes the Flask app,
 registers blueprints, and sets up the database and other extensions.
 """
-from flask import Flask, jsonify, render_template, session, request
+from flask import Flask, jsonify, render_template, session, request, send_file
 from flask_cors import CORS
 from flask_wtf.csrf import CSRFProtect
 from flask_login import LoginManager
@@ -271,11 +271,28 @@ def create_app(config_name='default'):
             "timestamp": datetime.utcnow().isoformat(),
             "environment": app.config.get('ENV', 'development')
         })
+        
+    # Direct health check that doesn't rely on blueprint configuration
+    @app.route('/direct-health-check')
+    def direct_health_check():
+        """Direct health check endpoint for debugging"""
+        return jsonify({
+            "status": "healthy",
+            "timestamp": datetime.utcnow().isoformat(),
+            "environment": app.config.get('ENV', 'development'),
+            "note": "Direct health check - bypassing blueprints"
+        })
 
     @app.route('/static/health-check.txt')
     def static_health_check():
         """Static file health check endpoint for resilience monitoring"""
         return "healthy", 200, {"Content-Type": "text/plain"}
+    
+    # Emergency mode diagnostic endpoint
+    @app.route('/diagnostic/emergency')
+    def emergency_diagnostic():
+        """Interactive diagnostic page for testing emergency mode functionality"""
+        return send_file('static/test-emergency-fix.html')
     
     # Diagnostic endpoint to check static file serving
     @app.route('/diagnostic/static')
