@@ -946,31 +946,31 @@ function createTimeChart(data, stats) {
                             }
                         }
                     }
-                } catch (e) {
-                    console.warn("Failed to create Date object from Reported field:", e);
                 }
-                
-                // Try alternative timestamp fields if still no Date object
-                if (!record['Reported_obj']) {
-                    try {
-                        const timeFields = ['Incident Date', 'REPORTED_DT', 'CALL_DATE_TIME', 'EVENT_OPEN_DATETIME'];
-                        for (const field of timeFields) {
-                            if (record[field]) {
-                                try {
-                                    const timestamp = new Date(record[field]);
-                                    if (!isNaN(timestamp)) {
-                                        record['Reported_obj'] = timestamp;
-                                        console.log(`Created Date from ${field}: ${timestamp}`);
-                                        break;
-                                    }
-                                } catch (e) {
-                                    console.warn(`Failed to create Date from ${field}:`, e);
+            } catch (e) {
+                console.warn("Failed to create Date object from Reported field:", e);
+            }
+            
+            // Try alternative timestamp fields if still no Date object
+            if (!record['Reported_obj']) {
+                try {
+                    const timeFields = ['Incident Date', 'REPORTED_DT', 'CALL_DATE_TIME', 'EVENT_OPEN_DATETIME'];
+                    for (const field of timeFields) {
+                        if (record[field]) {
+                            try {
+                                const timestamp = new Date(record[field]);
+                                if (!isNaN(timestamp)) {
+                                    record['Reported_obj'] = timestamp;
+                                    console.log(`Created Date from ${field}: ${timestamp}`);
+                                    break;
                                 }
+                            } catch (e) {
+                                console.warn(`Failed to create Date from ${field}:`, e);
                             }
                         }
-                    } catch (e) {
-                        console.warn("Failed to process alternative timestamp fields:", e);
                     }
+                } catch (e) {
+                    console.warn("Failed to process alternative timestamp fields:", e);
                 }
             }
         });
