@@ -79,15 +79,21 @@ def serve_static(filename):
         
         # Direct file serving as a fallback mechanism
         try:
-            return send_from_directory(
+            # Get response from send_from_directory without passing headers
+            response = send_from_directory(
                 static_folder, 
                 filename,
                 mimetype=mimetype,
                 as_attachment=False,
                 download_name=None,
-                conditional=True,
-                headers=headers
+                conditional=True
             )
+            
+            # Add our custom headers to the response after it's created
+            for key, value in headers.items():
+                response.headers[key] = value
+                
+            return response
         except Exception as e:
             logger.error(f"Error using send_from_directory for {filename}: {str(e)}")
             logger.error(traceback.format_exc())
