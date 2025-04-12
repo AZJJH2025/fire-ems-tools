@@ -516,104 +516,598 @@
       data = data.data;
     }
     
-    // Preprocess data to ensure proper format and data types
-    const preprocessedData = preprocessEmergencyData(data);
-    
-    // Clean up any existing Chart.js instances to prevent reuse errors
-    cleanupChartInstances();
-    
-    // Then, try to find a suitable processor function
-    const processorFunctions = [
-      window.processEmergencyData,
-      window.displayResponseTimeData,
-      window.displayIncidentData,
-      window.processIncidentData,
-      window.loadData,
-      window.processData,
-      window.displayData
-    ];
-    
-    // Try each function until one works
-    let processed = false;
-    for (const func of processorFunctions) {
-      if (typeof func === 'function') {
-        try {
-          console.log(`[FireEMS Framework] Trying processor function: ${func.name}`);
-          func(preprocessedData);
-          processed = true;
-          
-          // Show success message
-          showEmergencyDataSuccess('Data loaded successfully');
-          
-          // Clean up if successful
-          setTimeout(() => {
-            try {
-              localStorage.removeItem(dataId);
-              console.log(`[FireEMS Framework] Removed emergency data ${dataId} from storage`);
-            } catch (e) {
-              console.warn(`[FireEMS Framework] Error removing data from storage:`, e);
-            }
-          }, 5000);
-          
-          break;
-        } catch (error) {
-          console.warn(`[FireEMS Framework] Processor ${func.name} failed:`, error);
+    // Ensure data is an array
+    if (!Array.isArray(data)) {
+      console.warn('[FireEMS Framework] Data is not an array, attempting to convert');
+      if (typeof data === 'object') {
+        // Try to extract an array from the object
+        const possibleArrays = Object.values(data).filter(val => Array.isArray(val));
+        if (possibleArrays.length > 0) {
+          // Use the largest array found
+          data = possibleArrays.reduce((a, b) => a.length > b.length ? a : b);
+          console.log('[FireEMS Framework] Extracted array with', data.length, 'items');
+        } else {
+          // Convert object to array with one element
+          data = [data];
+          console.log('[FireEMS Framework] Converted object to single-item array');
         }
+      } else if (data === null || data === undefined) {
+        console.error('[FireEMS Framework] Data is null or undefined');
+        showEmergencyDataError('Emergency data is empty or invalid');
+        return;
+      } else {
+        // Last resort - wrap primitive in array
+        data = [data];
+        console.log('[FireEMS Framework] Wrapped primitive in array');
       }
     }
     
-    if (!processed) {
-      console.error('[FireEMS Framework] All processor functions failed');
-      showEmergencyDataError('Unable to process the emergency data');
+    // Preprocess data to ensure proper format and data types
+    const preprocessedData = preprocessEmergencyData(data);
+    
+    // Safely clean up any existing Chart.js instances to prevent reuse errors
+    try {
+      cleanupChartInstances();
+    } catch (e) {
+      console.warn('[FireEMS Framework] Error during chart cleanup:', e);
+      // Continue anyway - this is just preparation
     }
+    
+    // Then, try to find a suitable processor function or implement direct processing
+    try {
+      // First try - use the direct chart creation approach for Response Time Analyzer
+      if (window.location.pathname.includes('fire-ems-dashboard') || 
+          window.location.pathname.includes('response-time')) {
+        
+        const result = directProcessResponseTimeData(preprocessedData);
+        if (result) {
+          console.log('[FireEMS Framework] Successfully processed data using direct Response Time implementation');
+          showEmergencyDataSuccess('Data loaded successfully');
+          
+          // Clean up after success
+          cleanupStorage(dataId);
+          return;
+        }
+      }
+      
+      // Second try - use any available processor function in the page
+      const processorFunctions = [
+        window.processEmergencyData,
+        window.displayResponseTimeData,
+        window.displayIncidentData,
+        window.processIncidentData,
+        window.loadData,
+        window.processData,
+        window.displayData
+      ];
+      
+      // Try each function until one works
+      let processed = false;
+      for (const func of processorFunctions) {
+        if (typeof func === 'function') {
+          try {
+            console.log(`[FireEMS Framework] Trying processor function: ${func.name}`);
+            func(preprocessedData);
+            processed = true;
+            
+            // Show success message
+            showEmergencyDataSuccess('Data loaded successfully');
+            
+            // Clean up if successful
+            cleanupStorage(dataId);
+            break;
+          } catch (error) {
+            console.warn(`[FireEMS Framework] Processor ${func.name} failed:`, error);
+          }
+        }
+      }
+      
+      if (!processed) {
+        // Third try - render the data directly as a table as last resort
+        console.warn('[FireEMS Framework] All processor functions failed. Rendering fallback table.');
+        renderFallbackTable(preprocessedData);
+        showEmergencyDataSuccess('Data displayed in fallback mode');
+        processed = true;
+        
+        // Clean up if successful
+        cleanupStorage(dataId);
+      }
+    } catch (error) {
+      console.error('[FireEMS Framework] Error processing emergency data:', error);
+      showEmergencyDataError('Unable to process the emergency data: ' + error.message);
+    }
+  }
+  
+  /**
+   * Direct implementation of Response Time Analyzer processing
+   * This function implements the core Response Time Analyzer functionality
+   * to handle the data without relying on external processor functions
+   */
+  function directProcessResponseTimeData(data) {
+    try {
+      console.log('[FireEMS Framework] Attempting direct Response Time processing');
+      
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        console.warn('[FireEMS Framework] No valid data for direct processing');
+        return false;
+      }
+      
+      // Get required canvas elements
+      const unitChartEl = document.getElementById('unit-chart');
+      const locationChartEl = document.getElementById('location-chart');
+      
+      if (!unitChartEl || !locationChartEl) {
+        console.warn('[FireEMS Framework] Required chart canvases not found');
+        return false;
+      }
+      
+      // Reset canvases safely
+      try {
+        resetCanvas('unit-chart');
+        resetCanvas('location-chart');
+      } catch (e) {
+        console.warn('[FireEMS Framework] Error resetting canvas:', e);
+        // Continue anyway
+      }
+      
+      // Check if Chart.js is available
+      if (!window.Chart) {
+        // Try to load Chart.js dynamically
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js';
+        document.head.appendChild(script);
+        
+        // Display a message to refresh after Chart.js loads
+        showEmergencyDataSuccess('Loading Chart.js. Please refresh the page in a few seconds.');
+        return false; // Chart.js isn't loaded yet
+      }
+      
+      // Process the data to extract relevant information for charts
+      // 1. Group by unit for the unit response time chart
+      const unitGroups = groupBy(data, 'Unit');
+      const unitLabels = Object.keys(unitGroups);
+      const unitData = [];
+      
+      unitLabels.forEach(unit => {
+        const incidents = unitGroups[unit];
+        const responseTimes = calculateResponseTimes(incidents);
+        const avgResponseTime = responseTimes.length > 0 
+          ? responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length 
+          : 0;
+          
+        unitData.push(avgResponseTime);
+      });
+      
+      // 2. Extract location data if available
+      const validLocationData = data.filter(incident => 
+        incident.latitude && incident.longitude && 
+        !isNaN(parseFloat(incident.latitude)) && 
+        !isNaN(parseFloat(incident.longitude))
+      );
+      
+      // Create the unit response time chart
+      new Chart(unitChartEl, {
+        type: 'bar',
+        data: {
+          labels: unitLabels,
+          datasets: [{
+            label: 'Average Response Time (minutes)',
+            data: unitData,
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Response Time by Unit'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Minutes'
+              }
+            }
+          }
+        }
+      });
+      
+      // Create a simple location data display
+      if (validLocationData.length > 0) {
+        // If we can't show a map, show a bar chart of incidents by location
+        const locationCounts = {};
+        validLocationData.forEach(incident => {
+          // Round coordinates to create location bins
+          const lat = parseFloat(incident.latitude).toFixed(2);
+          const lng = parseFloat(incident.longitude).toFixed(2);
+          const locKey = `${lat},${lng}`;
+          
+          locationCounts[locKey] = (locationCounts[locKey] || 0) + 1;
+        });
+        
+        // Sort by count and take top 10
+        const sortedLocations = Object.entries(locationCounts)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10);
+          
+        new Chart(locationChartEl, {
+          type: 'bar',
+          data: {
+            labels: sortedLocations.map(([loc]) => loc),
+            datasets: [{
+              label: 'Incident Count',
+              data: sortedLocations.map(([, count]) => count),
+              backgroundColor: 'rgba(255, 99, 132, 0.5)',
+              borderColor: 'rgba(255, 99, 132, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: 'Top Incident Locations'
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: 'Count'
+                }
+              }
+            }
+          }
+        });
+      }
+      
+      // Add a summary table to the page
+      renderDataSummary(data);
+      
+      return true;
+    } catch (error) {
+      console.error('[FireEMS Framework] Error in direct Response Time processing:', error);
+      return false;
+    }
+  }
+  
+  /**
+   * Group an array of objects by a specific property
+   */
+  function groupBy(array, key) {
+    return array.reduce((result, item) => {
+      const groupKey = item[key] || 'Unknown';
+      result[groupKey] = result[groupKey] || [];
+      result[groupKey].push(item);
+      return result;
+    }, {});
+  }
+  
+  /**
+   * Calculate response times from incident data
+   */
+  function calculateResponseTimes(incidents) {
+    return incidents.map(incident => {
+      // Try various field name formats that could contain time data
+      const dispatchTime = parseTimeField(incident['Unit Dispatched'] || 
+                                        incident['Dispatched'] || 
+                                        incident['dispatch_time'] || 
+                                        incident['dispatch time'] ||
+                                        '');
+                                        
+      const onSceneTime = parseTimeField(incident['Unit Onscene'] || 
+                                       incident['On Scene'] || 
+                                       incident['Arrived'] || 
+                                       incident['on_scene_time'] || 
+                                       incident['on scene time'] ||
+                                       '');
+      
+      if (dispatchTime && onSceneTime) {
+        // Calculate difference in minutes
+        return (onSceneTime - dispatchTime) / (1000 * 60);
+      }
+      return null;
+    }).filter(time => time !== null && !isNaN(time) && time >= 0 && time < 60); // Filter out invalid times
+  }
+  
+  /**
+   * Parse a time field into a Date object
+   */
+  function parseTimeField(timeStr) {
+    if (!timeStr) return null;
+    
+    // Remove any non-numeric or colon characters
+    timeStr = timeStr.toString().replace(/[^\d:]/g, '');
+    
+    try {
+      // Handle various time formats
+      if (timeStr.includes(':')) {
+        // Format: HH:MM or HH:MM:SS
+        const parts = timeStr.split(':');
+        const hours = parseInt(parts[0]);
+        const minutes = parseInt(parts[1]);
+        const seconds = parts.length > 2 ? parseInt(parts[2]) : 0;
+        
+        if (!isNaN(hours) && !isNaN(minutes)) {
+          const date = new Date();
+          date.setHours(hours, minutes, seconds, 0);
+          return date;
+        }
+      } else if (timeStr.length >= 3) {
+        // Format: HHMM or similar
+        const hours = parseInt(timeStr.substring(0, 2));
+        const minutes = parseInt(timeStr.substring(2, 4));
+        
+        if (!isNaN(hours) && !isNaN(minutes)) {
+          const date = new Date();
+          date.setHours(hours, minutes, 0, 0);
+          return date;
+        }
+      }
+    } catch (e) {
+      console.warn(`[FireEMS Framework] Error parsing time: ${timeStr}`, e);
+    }
+    
+    return null;
+  }
+  
+  /**
+   * Reset a canvas element by replacing it with a new one
+   */
+  function resetCanvas(id) {
+    const canvas = document.getElementById(id);
+    if (!canvas) return;
+    
+    // Create a replacement canvas
+    const newCanvas = document.createElement('canvas');
+    newCanvas.id = id;
+    
+    // Copy attributes
+    Array.from(canvas.attributes).forEach(attr => {
+      if (attr.name !== 'id') {
+        newCanvas.setAttribute(attr.name, attr.value);
+      }
+    });
+    
+    // Replace in the DOM
+    if (canvas.parentNode) {
+      canvas.parentNode.replaceChild(newCanvas, canvas);
+    }
+  }
+  
+  /**
+   * Clean up storage after successful processing
+   */
+  function cleanupStorage(dataId) {
+    setTimeout(() => {
+      try {
+        localStorage.removeItem(dataId);
+        console.log(`[FireEMS Framework] Removed emergency data ${dataId} from storage`);
+        
+        // Also clean up our backup copies
+        localStorage.removeItem('emergency_data_latest');
+        sessionStorage.removeItem('emergency_data_latest');
+        
+        // And diagnostic info
+        sessionStorage.removeItem('emergency_diagnostic');
+      } catch (e) {
+        console.warn(`[FireEMS Framework] Error removing data from storage:`, e);
+      }
+    }, 5000);
+  }
+  
+  /**
+   * Render a fallback table to display the data when charts fail
+   */
+  function renderFallbackTable(data) {
+    // Find a container for the table
+    const container = findNotificationContainer();
+    if (!container) return;
+    
+    // Create a table element
+    const tableContainer = document.createElement('div');
+    tableContainer.className = 'emergency-data-table';
+    tableContainer.style.cssText = 'margin: 20px 0; overflow-x: auto; max-height: 500px; overflow-y: auto;';
+    
+    // Limit to 100 records for performance
+    const displayData = data.slice(0, 100);
+    
+    // Get column headers from the first record
+    const headers = Object.keys(displayData[0] || {}).filter(h => h !== '_date_obj');
+    
+    // Create the table HTML
+    let tableHtml = `
+      <h3>Emergency Data (showing ${displayData.length} of ${data.length} records)</h3>
+      <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd;">
+        <thead>
+          <tr>
+            ${headers.map(h => `<th style="padding: 8px; text-align: left; border: 1px solid #ddd; background-color: #f2f2f2;">${h}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>
+    `;
+    
+    // Add rows
+    displayData.forEach((row, i) => {
+      tableHtml += `
+        <tr style="background-color: ${i % 2 === 0 ? '#fff' : '#f9f9f9'}">
+          ${headers.map(h => `<td style="padding: 8px; text-align: left; border: 1px solid #ddd;">${row[h] || ''}</td>`).join('')}
+        </tr>
+      `;
+    });
+    
+    tableHtml += `
+        </tbody>
+      </table>
+      <p style="margin-top: 10px; font-style: italic;">This is a fallback display when charts cannot be created.</p>
+    `;
+    
+    tableContainer.innerHTML = tableHtml;
+    container.appendChild(tableContainer);
+  }
+  
+  /**
+   * Render a summary of the data
+   */
+  function renderDataSummary(data) {
+    // Find a container for the summary
+    const container = findNotificationContainer();
+    if (!container) return;
+    
+    // Calculate some basic stats
+    const recordCount = data.length;
+    const incidentTypes = {};
+    const units = {};
+    let earliestDate = null;
+    let latestDate = null;
+    
+    data.forEach(incident => {
+      // Count incident types
+      const type = incident.incident_type || 'Unknown';
+      incidentTypes[type] = (incidentTypes[type] || 0) + 1;
+      
+      // Count units
+      const unit = incident.Unit || 'Unknown';
+      units[unit] = (units[unit] || 0) + 1;
+      
+      // Track date range
+      if (incident.incident_date) {
+        const date = new Date(incident.incident_date);
+        if (!isNaN(date.getTime())) {
+          if (!earliestDate || date < earliestDate) earliestDate = date;
+          if (!latestDate || date > latestDate) latestDate = date;
+        }
+      }
+    });
+    
+    // Format date range
+    const dateRange = earliestDate && latestDate 
+      ? `${earliestDate.toLocaleDateString()} to ${latestDate.toLocaleDateString()}`
+      : 'Unknown';
+    
+    // Get top incident types
+    const topTypes = Object.entries(incidentTypes)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+    
+    // Get top units
+    const topUnits = Object.entries(units)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+    
+    // Create the summary HTML
+    const summaryContainer = document.createElement('div');
+    summaryContainer.className = 'emergency-data-summary';
+    summaryContainer.style.cssText = 'margin: 20px 0; padding: 15px; background-color: #f9f9f9; border-radius: 4px;';
+    
+    summaryContainer.innerHTML = `
+      <h3 style="margin-top: 0;">Data Summary</h3>
+      <div style="display: flex; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 200px; margin-right: 20px;">
+          <p><strong>Total Records:</strong> ${recordCount}</p>
+          <p><strong>Date Range:</strong> ${dateRange}</p>
+          <p><strong>Top Incident Types:</strong></p>
+          <ul>
+            ${topTypes.map(([type, count]) => `<li>${type}: ${count}</li>`).join('')}
+          </ul>
+        </div>
+        <div style="flex: 1; min-width: 200px;">
+          <p><strong>Units Involved:</strong> ${Object.keys(units).length}</p>
+          <p><strong>Top Units:</strong></p>
+          <ul>
+            ${topUnits.map(([unit, count]) => `<li>${unit}: ${count}</li>`).join('')}
+          </ul>
+        </div>
+      </div>
+    `;
+    
+    container.appendChild(summaryContainer);
   }
   
   // Clean up any existing Chart.js instances
   function cleanupChartInstances() {
     console.log('[FireEMS Framework] Cleaning up Chart.js instances');
     
-    // If Chart.js is available, destroy any existing charts
-    if (window.Chart && window.Chart.instances) {
-      Object.keys(window.Chart.instances).forEach(id => {
-        try {
-          const chart = window.Chart.instances[id];
-          if (chart && typeof chart.destroy === 'function') {
-            chart.destroy();
-            console.log(`[FireEMS Framework] Destroyed Chart.js instance with ID: ${id}`);
+    // Destroy all Chart.js instances if possible
+    try {
+      // Modern Chart.js (v2+)
+      if (window.Chart && window.Chart.instances) {
+        const instances = window.Chart.instances;
+        // Make a copy of the keys to avoid modification during iteration
+        const instanceIds = Object.keys(instances);
+        
+        instanceIds.forEach(id => {
+          try {
+            const chart = instances[id];
+            if (chart && typeof chart.destroy === 'function') {
+              chart.destroy();
+              console.log(`[FireEMS Framework] Destroyed Chart.js instance with ID: ${id}`);
+            }
+          } catch (e) {
+            console.warn(`[FireEMS Framework] Error destroying chart ${id}:`, e);
           }
-        } catch (e) {
-          console.warn(`[FireEMS Framework] Error destroying chart ${id}:`, e);
+        });
+      }
+      
+      // Older Chart.js global charts
+      if (window.Chart && window.Chart.charts) {
+        const charts = window.Chart.charts;
+        for (let i = 0; i < charts.length; i++) {
+          if (charts[i]) {
+            try {
+              charts[i].destroy();
+              console.log(`[FireEMS Framework] Destroyed global chart at index ${i}`);
+            } catch (e) {
+              console.warn(`[FireEMS Framework] Error destroying global chart at index ${i}:`, e);
+            }
+          }
         }
-      });
+      }
+    } catch (e) {
+      console.warn('[FireEMS Framework] Error accessing Chart.js instances:', e);
     }
     
-    // Alternative approach for older Chart.js versions
-    const canvases = ['unit-chart', 'location-chart', 'time-chart', 'response-time-chart'];
-    canvases.forEach(id => {
+    // Reset all canvas elements we might use
+    const canvasIds = [
+      'unit-chart', 'location-chart', 'time-chart', 'response-time-chart',
+      'dispatch-chart', 'incident-chart', 'trend-chart', 'overview-chart',
+      'chart-container', 'main-chart', 'secondary-chart'
+    ];
+    
+    canvasIds.forEach(id => {
       try {
-        const canvas = document.getElementById(id);
-        if (canvas) {
-          // Clear the canvas
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-          }
-          
-          // Remove and re-add canvas to force a clean state
-          const parent = canvas.parentNode;
-          if (parent) {
-            const newCanvas = document.createElement('canvas');
-            newCanvas.id = id;
-            newCanvas.width = canvas.width;
-            newCanvas.height = canvas.height;
-            parent.replaceChild(newCanvas, canvas);
-            console.log(`[FireEMS Framework] Reset canvas with ID: ${id}`);
-          }
-        }
+        resetCanvas(id);
       } catch (e) {
         console.warn(`[FireEMS Framework] Error resetting canvas ${id}:`, e);
       }
     });
+    
+    // Also look for any canvas elements with class 'chart-canvas'
+    try {
+      const chartCanvases = document.querySelectorAll('canvas.chart-canvas');
+      chartCanvases.forEach((canvas, index) => {
+        try {
+          const id = canvas.id || `chart-canvas-${index}`;
+          // If canvas has no ID, set one for reference
+          if (!canvas.id) {
+            canvas.id = id;
+          }
+          resetCanvas(id);
+        } catch (e) {
+          console.warn(`[FireEMS Framework] Error resetting dynamic canvas:`, e);
+        }
+      });
+    } catch (e) {
+      console.warn('[FireEMS Framework] Error finding chart canvases:', e);
+    }
   }
   
   // Preprocess emergency data to ensure proper formats and data types
