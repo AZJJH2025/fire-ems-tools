@@ -144,7 +144,8 @@
         console.log("Loading Chart.js dynamically");
         const script = document.createElement('script');
         script.src = 'https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js';
-        script.integrity = "sha384-+uu/vNX0x7MJXcJo8fVf11iScFA6Ebjy5cmjbXsEVILpOj0pIg4G+no12tTxIL1Q";
+        // Remove integrity check which is causing resource blocking
+        // script.integrity = "sha384-+uu/vNX0x7MJXcJo8fVf11iScFA6Ebjy5cmjbXsEVILpOj0pIg4G+no12tTxIL1Q";
         script.crossOrigin = "anonymous";
         
         script.onload = function() {
@@ -844,7 +845,8 @@
         console.log("Chart.js not found, loading dynamically");
         const script = document.createElement('script');
         script.src = 'https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js';
-        script.integrity = "sha384-+uu/vNX0x7MJXcJo8fVf11iScFA6Ebjy5cmjbXsEVILpOj0pIg4G+no12tTxIL1Q";
+        // Remove integrity check which is causing resource blocking
+        // script.integrity = "sha384-+uu/vNX0x7MJXcJo8fVf11iScFA6Ebjy5cmjbXsEVILpOj0pIg4G+no12tTxIL1Q";
         script.crossOrigin = "anonymous";
         
         // Add event handlers to track loading status

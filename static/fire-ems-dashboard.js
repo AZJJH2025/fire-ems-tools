@@ -952,20 +952,24 @@ function createTimeChart(data, stats) {
                 
                 // Try alternative timestamp fields if still no Date object
                 if (!record['Reported_obj']) {
-                    const timeFields = ['Incident Date', 'REPORTED_DT', 'CALL_DATE_TIME', 'EVENT_OPEN_DATETIME'];
-                    for (const field of timeFields) {
-                        if (record[field]) {
-                            try {
-                                const timestamp = new Date(record[field]);
-                                if (!isNaN(timestamp)) {
-                                    record['Reported_obj'] = timestamp;
-                                    console.log(`Created Date from ${field}: ${timestamp}`);
-                                    break;
+                    try {
+                        const timeFields = ['Incident Date', 'REPORTED_DT', 'CALL_DATE_TIME', 'EVENT_OPEN_DATETIME'];
+                        for (const field of timeFields) {
+                            if (record[field]) {
+                                try {
+                                    const timestamp = new Date(record[field]);
+                                    if (!isNaN(timestamp)) {
+                                        record['Reported_obj'] = timestamp;
+                                        console.log(`Created Date from ${field}: ${timestamp}`);
+                                        break;
+                                    }
+                                } catch (e) {
+                                    console.warn(`Failed to create Date from ${field}:`, e);
                                 }
-                            } catch (e) {
-                                console.warn(`Failed to create Date from ${field}:`, e);
                             }
                         }
+                    } catch (e) {
+                        console.warn("Failed to process alternative timestamp fields:", e);
                     }
                 }
             }
