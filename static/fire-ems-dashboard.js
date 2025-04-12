@@ -1213,24 +1213,110 @@ function createUnitChart(data, stats) {
         .sort((a, b) => b[1] - a[1])
         .slice(0, 8);
     
-    // Use Chart Manager to handle chart creation and cleanup
-    FireEMS.ChartManager.create('unit-chart', 'bar', {
-        labels: topUnits.map(item => item[0]),
-        datasets: [{
-            label: 'Incidents',
-            data: topUnits.map(item => item[1]),
-            backgroundColor: 'rgba(76, 175, 80, 0.7)',
-            borderColor: 'rgba(76, 175, 80, 1)',
-            borderWidth: 1
-        }]
-    }, {
-        indexAxis: 'y',
-        scales: { x: { beginAtZero: true } },
-        plugins: { legend: { display: false } },
-        maintainAspectRatio: false
-    });
+    // Check if Chart.js and ChartManager are available
+    if (typeof Chart === 'undefined') {
+        console.error("Chart.js library not available for unit chart");
+        const container = canvas.parentElement;
+        container.innerHTML = `
+            <div style="padding: 20px; text-align: center; background-color: #f8f9fa; border-radius: 4px;">
+                <p style="margin-bottom: 10px;">Chart library not available in emergency mode.</p>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                    <thead>
+                        <tr>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Unit</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Incidents</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${topUnits.map(([unit, count]) => `
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 8px;">${unit}</td>
+                                <td style="border: 1px solid #ddd; padding: 8px;">${count}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        return;
+    }
     
-    console.log("Unit chart created using ChartManager");
+    try {
+        // Use Chart Manager to handle chart creation and cleanup if available
+        if (window.FireEMS && window.FireEMS.ChartManager) {
+            FireEMS.ChartManager.create('unit-chart', 'bar', {
+                labels: topUnits.map(item => item[0]),
+                datasets: [{
+                    label: 'Incidents',
+                    data: topUnits.map(item => item[1]),
+                    backgroundColor: 'rgba(76, 175, 80, 0.7)',
+                    borderColor: 'rgba(76, 175, 80, 1)',
+                    borderWidth: 1
+                }]
+            }, {
+                indexAxis: 'y',
+                scales: { x: { beginAtZero: true } },
+                plugins: { legend: { display: false } },
+                maintainAspectRatio: false
+            });
+            
+            console.log("Unit chart created using ChartManager");
+        } else {
+            // Fallback to direct Chart creation if ChartManager is not available
+            console.warn("ChartManager not available, using direct Chart creation");
+            
+            // Clean up any existing chart
+            if (window.unitChart instanceof Chart) {
+                window.unitChart.destroy();
+            }
+            
+            window.unitChart = new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: topUnits.map(item => item[0]),
+                    datasets: [{
+                        label: 'Incidents',
+                        data: topUnits.map(item => item[1]),
+                        backgroundColor: 'rgba(76, 175, 80, 0.7)',
+                        borderColor: 'rgba(76, 175, 80, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    scales: { x: { beginAtZero: true } },
+                    plugins: { legend: { display: false } },
+                    maintainAspectRatio: false
+                }
+            });
+            
+            console.log("Unit chart created directly with Chart.js");
+        }
+    } catch (error) {
+        console.error("Error creating unit chart:", error);
+        const container = canvas.parentElement;
+        container.innerHTML = `
+            <div style="padding: 20px; text-align: center; background-color: #ffebee; border-radius: 4px;">
+                <p style="color: #c62828; margin-bottom: 10px;">Error creating chart: ${error.message}</p>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                    <thead>
+                        <tr>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Unit</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Incidents</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${topUnits.map(([unit, count]) => `
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 8px;">${unit}</td>
+                                <td style="border: 1px solid #ddd; padding: 8px;">${count}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
 }
 
 /**
@@ -1309,36 +1395,136 @@ function createLocationChart(data, stats) {
         topLocations.push(['Other', otherIncidents]);
     }
     
-    // Use Chart Manager to handle chart creation and cleanup
-    FireEMS.ChartManager.create('location-chart', 'doughnut', {
-        labels: topLocations.map(item => item[0]),
-        datasets: [{
-            data: topLocations.map(item => item[1]),
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.7)',
-                'rgba(54, 162, 235, 0.7)',
-                'rgba(255, 206, 86, 0.7)',
-                'rgba(75, 192, 192, 0.7)',
-                'rgba(153, 102, 255, 0.7)',
-                'rgba(255, 159, 64, 0.7)',
-                'rgba(199, 199, 199, 0.7)'
-            ],
-            borderWidth: 1
-        }]
-    }, {
-        plugins: {
-            legend: {
-                position: 'right',
-                labels: {
-                    boxWidth: 12,
-                    font: { size: 10 }
-                }
-            }
-        },
-        maintainAspectRatio: false
-    });
+    // Check if Chart.js is available
+    if (typeof Chart === 'undefined') {
+        console.error("Chart.js library not available for location chart");
+        const container = canvas.parentElement;
+        container.innerHTML = `
+            <div style="padding: 20px; text-align: center; background-color: #f8f9fa; border-radius: 4px;">
+                <p style="margin-bottom: 10px;">Chart library not available in emergency mode.</p>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                    <thead>
+                        <tr>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Location</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Incidents</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${topLocations.map(([location, count]) => `
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 8px;">${location}</td>
+                                <td style="border: 1px solid #ddd; padding: 8px;">${count}</td>
+                                <td style="border: 1px solid #ddd; padding: 8px;">${Math.round((count / totalIncidents) * 100)}%</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        return;
+    }
     
-    console.log("Location chart created using ChartManager");
+    try {
+        // Use Chart Manager to handle chart creation and cleanup if available
+        if (window.FireEMS && window.FireEMS.ChartManager) {
+            FireEMS.ChartManager.create('location-chart', 'doughnut', {
+                labels: topLocations.map(item => item[0]),
+                datasets: [{
+                    data: topLocations.map(item => item[1]),
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)',
+                        'rgba(255, 159, 64, 0.7)',
+                        'rgba(199, 199, 199, 0.7)'
+                    ],
+                    borderWidth: 1
+                }]
+            }, {
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            boxWidth: 12,
+                            font: { size: 10 }
+                        }
+                    }
+                },
+                maintainAspectRatio: false
+            });
+            
+            console.log("Location chart created using ChartManager");
+        } else {
+            // Fallback to direct Chart creation if ChartManager is not available
+            console.warn("ChartManager not available, using direct Chart creation for location chart");
+            
+            // Clean up any existing chart
+            if (window.locationChart instanceof Chart) {
+                window.locationChart.destroy();
+            }
+            
+            window.locationChart = new Chart(canvas, {
+                type: 'doughnut',
+                data: {
+                    labels: topLocations.map(item => item[0]),
+                    datasets: [{
+                        data: topLocations.map(item => item[1]),
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                            'rgba(255, 159, 64, 0.7)',
+                            'rgba(199, 199, 199, 0.7)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 12,
+                                font: { size: 10 }
+                            }
+                        }
+                    },
+                    maintainAspectRatio: false
+                }
+            });
+            
+            console.log("Location chart created directly with Chart.js");
+        }
+    } catch (error) {
+        console.error("Error creating location chart:", error);
+        const container = canvas.parentElement;
+        container.innerHTML = `
+            <div style="padding: 20px; text-align: center; background-color: #ffebee; border-radius: 4px;">
+                <p style="color: #c62828; margin-bottom: 10px;">Error creating chart: ${error.message}</p>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                    <thead>
+                        <tr>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Location</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Incidents</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${topLocations.map(([location, count]) => `
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 8px;">${location}</td>
+                                <td style="border: 1px solid #ddd; padding: 8px;">${count}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
 }
 
 /**
