@@ -945,8 +945,9 @@ function createTimeChart(data, stats) {
                                 console.log(`Created Date from Reported field: ${timestamp}`);
                             }
                         }
-                    } catch (e) {
-                        console.warn("Failed to create Date object from Reported field:", e);
+                    }
+                } catch (e) {
+                    console.warn("Failed to create Date object from Reported field:", e);
                     }
                 }
                 

@@ -929,6 +929,10 @@
   <!-- File Upload Section -->
   <div class="file-upload-container">
     <h2>Upload Data File</h2>
+    <!-- Upload section class added for emergency mode notifications -->
+    <div class="upload-section">
+      <!-- Emergency data notifications will be injected here -->
+    </div>
     <div class="file-input-wrapper">
       <input type="file" id="fileInput">
       <button onclick="uploadFile()">Upload & Analyze</button>
@@ -958,6 +962,11 @@
       </ul>
       <p>The Data Formatter will help map these fields from your existing data.</p>
     </div>
+  </div>
+  
+  <!-- Results container for emergency mode data display -->
+  <div id="results-container" style="display: none;">
+    <!-- Emergency mode results will be displayed here -->
   </div>
   
   <!-- Dashboard Section - Initially Hidden -->
@@ -1017,12 +1026,11 @@
     crossorigin=""
   ></script>
   
-  <!-- Chart Manager Script -->
+  <!-- Chart Manager Script - Consolidated Chart.js handling -->
   <script src="/static/js/chart-manager.js"></script>
   
-  <!-- Emergency Mode Chart Fallback and Fixes -->
+  <!-- Emergency Mode Scripts -->
   <script src="/static/js/emergency/chart-fallback.js"></script>
-  <script src="/static/js/emergency/chart-loader-fix.js"></script>
   <script src="/static/js/emergency/prevent-mode-switch.js"></script>
   
   <!-- Your Custom Script -->
