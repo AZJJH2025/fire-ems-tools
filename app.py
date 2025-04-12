@@ -266,11 +266,23 @@ def create_app(config_name='default'):
     @app.route('/api/health-check')
     def api_health_check():
         """API health check endpoint for resilience monitoring"""
-        return jsonify({
+        health_data = {
             "status": "healthy",
             "timestamp": datetime.utcnow().isoformat(),
-            "environment": app.config.get('ENV', 'development')
-        })
+            "environment": app.config.get('ENV', 'development'),
+            "components": {
+                "database": check_database_health(),
+                "redis": check_redis_health()
+            }
+        }
+        
+        # Overall status is unhealthy if any component is unhealthy
+        for component, status in health_data["components"].items():
+            if not status["healthy"]:
+                health_data["status"] = "unhealthy"
+                break
+                
+        return jsonify(health_data)
         
     # Direct health check that doesn't rely on blueprint configuration
     @app.route('/direct-health-check')
@@ -282,6 +294,44 @@ def create_app(config_name='default'):
             "environment": app.config.get('ENV', 'development'),
             "note": "Direct health check - bypassing blueprints"
         })
+        
+    def check_database_health():
+        """Check if database is reachable and responding"""
+        try:
+            # Try a simple query
+            with app.app_context():
+                db.session.execute(db.select(db.text("1"))).scalar()
+            return {"healthy": True, "message": "Database connection successful"}
+        except Exception as e:
+            app.logger.error(f"Database health check failed: {str(e)}")
+            return {"healthy": False, "message": f"Database error: {str(e)}"}
+            
+    def check_redis_health():
+        """Check if Redis is reachable and responding"""
+        redis_url = app.config.get('REDIS_URL')
+        if not redis_url:
+            return {"healthy": True, "message": "Redis not configured, using in-memory storage"}
+            
+        try:
+            import redis
+            r = redis.from_url(redis_url)
+            # Set a test key
+            test_key = "health_check_test"
+            r.set(test_key, "ok")
+            # Verify we can read it back
+            value = r.get(test_key)
+            # Clean up
+            r.delete(test_key)
+            
+            if value == b"ok":
+                return {"healthy": True, "message": "Redis connection successful"}
+            else:
+                return {"healthy": False, "message": f"Redis value mismatch: {value}"}
+        except ImportError:
+            return {"healthy": False, "message": "Redis package not installed"}
+        except Exception as e:
+            app.logger.error(f"Redis health check failed: {str(e)}")
+            return {"healthy": False, "message": f"Redis error: {str(e)}"}
 
     @app.route('/static/health-check.txt')
     def static_health_check():

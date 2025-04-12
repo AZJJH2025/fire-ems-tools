@@ -14,6 +14,11 @@ services:
         fromDatabase:
           name: fire-ems-db
           property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: fire-ems-redis
+          property: connectionString
       - key: FLASK_ENV
         value: production
       - key: RENDER
@@ -28,3 +33,13 @@ databases:
     databaseName: fire_ems
     user: fire_ems_user
     plan: standard
+
+# Redis
+services:
+  - type: redis
+    name: fire-ems-redis
+    ipAllowList: # required
+      - source: 0.0.0.0/0
+        description: everywhere
+    plan: free # optional (defaults to starter)
+    maxmemoryPolicy: volatile-lru # optional (defaults to allkeys-lru)

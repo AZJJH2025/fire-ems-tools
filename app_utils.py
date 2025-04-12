@@ -15,19 +15,106 @@ logger = logging.getLogger(__name__)
 try:
     from flask_limiter import Limiter
     from flask_limiter.util import get_remote_address
+    from limits.storage import (
+        RedisStorage, 
+        MemoryStorage, 
+        RedisSentinelStorage,
+        RedisClusterStorage
+    )
+    import os
     
     # Define limiter as a global that will be initialized later
     limiter = None
     
+    def get_limiter_storage(app):
+        """
+        Determine the appropriate storage backend for rate limiting
+        based on environment variables.
+        
+        Priority:
+        1. Redis (if REDIS_URL is set)
+        2. Redis Sentinel (if REDIS_SENTINEL_HOSTS is set)
+        3. Redis Cluster (if REDIS_CLUSTER_HOSTS is set)
+        4. Memory storage (fallback, not recommended for production)
+        
+        Returns:
+            A storage backend instance for Flask-Limiter
+        """
+        redis_url = os.environ.get('REDIS_URL') or app.config.get('REDIS_URL')
+        redis_sentinel_hosts = os.environ.get('REDIS_SENTINEL_HOSTS') or app.config.get('REDIS_SENTINEL_HOSTS')
+        redis_cluster_hosts = os.environ.get('REDIS_CLUSTER_HOSTS') or app.config.get('REDIS_CLUSTER_HOSTS')
+        
+        storage = None
+        
+        # Try Redis direct connection
+        if redis_url:
+            try:
+                logger.info(f"Configuring rate limiter with Redis: {redis_url.split('@')[0]}...")
+                storage = RedisStorage(redis_url)
+                return storage
+            except Exception as e:
+                logger.error(f"Failed to configure Redis storage: {str(e)}")
+        
+        # Try Redis Sentinel
+        if redis_sentinel_hosts and not storage:
+            try:
+                logger.info(f"Configuring rate limiter with Redis Sentinel...")
+                sentinel_hosts = redis_sentinel_hosts.split(',')
+                sentinel_master = os.environ.get('REDIS_SENTINEL_MASTER', 'mymaster')
+                storage = RedisSentinelStorage(
+                    sentinel_hosts,
+                    sentinel_master,
+                    password=os.environ.get('REDIS_PASSWORD'),
+                    db=int(os.environ.get('REDIS_DB', 0))
+                )
+                return storage
+            except Exception as e:
+                logger.error(f"Failed to configure Redis Sentinel storage: {str(e)}")
+        
+        # Try Redis Cluster
+        if redis_cluster_hosts and not storage:
+            try:
+                logger.info(f"Configuring rate limiter with Redis Cluster...")
+                cluster_hosts = redis_cluster_hosts.split(',')
+                storage = RedisClusterStorage(
+                    cluster_hosts,
+                    password=os.environ.get('REDIS_PASSWORD')
+                )
+                return storage
+            except Exception as e:
+                logger.error(f"Failed to configure Redis Cluster storage: {str(e)}")
+        
+        # Fallback to memory storage with warning
+        logger.warning("Using in-memory storage for rate limiting. This is not recommended for production.")
+        return MemoryStorage()
+    
     def init_limiter(app):
         """Initialize the limiter with the Flask app"""
         global limiter
-        limiter = Limiter(
-            key_func=get_remote_address,
-            default_limits=["200 per hour", "50 per minute"]
-        )
-        limiter.init_app(app)
-        return limiter
+        
+        try:
+            # Get the appropriate storage backend
+            storage = get_limiter_storage(app)
+            
+            # Configure the limiter
+            limiter = Limiter(
+                key_func=get_remote_address,
+                default_limits=["200 per hour", "50 per minute"],
+                storage_uri=None,  # We are providing the storage instance directly
+                storage=storage
+            )
+            
+            # Initialize with the app
+            limiter.init_app(app)
+            
+            # Log the configuration
+            logger.info(f"Rate limiter initialized with storage type: {storage.__class__.__name__}")
+            
+            return limiter
+        except Exception as e:
+            logger.error(f"Failed to initialize rate limiter: {str(e)}")
+            # Return a dummy limiter that does nothing
+            return None
     
     # Create a safer limit decorator
     def safe_limit(limit_string, **kwargs):

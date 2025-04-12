@@ -43,6 +43,25 @@ class Config:
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
+    # Redis Configuration (for rate limiting and other services)
+    REDIS_URL = os.environ.get('REDIS_URL')
+    REDIS_SENTINEL_HOSTS = os.environ.get('REDIS_SENTINEL_HOSTS')
+    REDIS_SENTINEL_MASTER = os.environ.get('REDIS_SENTINEL_MASTER', 'mymaster')
+    REDIS_CLUSTER_HOSTS = os.environ.get('REDIS_CLUSTER_HOSTS')
+    REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
+    REDIS_DB = int(os.environ.get('REDIS_DB', 0))
+    
+    # Rate Limiting Configuration
+    RATELIMIT_DEFAULT = "200 per hour;50 per minute"
+    RATELIMIT_STORAGE_URL = REDIS_URL  # Use Redis if available
+    RATELIMIT_HEADERS_ENABLED = True
+    RATELIMIT_STRATEGY = "fixed-window"
+    RATELIMIT_IN_MEMORY_FALLBACK = True
+    RATELIMIT_STORAGE_OPTIONS = {
+        "password": REDIS_PASSWORD,
+        "db": REDIS_DB
+    } if REDIS_PASSWORD else None
+    
     # Security settings
     SECRET_KEY = os.environ.get('SECRET_KEY')
     if not SECRET_KEY:
