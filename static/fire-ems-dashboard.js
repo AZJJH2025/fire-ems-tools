@@ -973,8 +973,8 @@ function createTimeChart(data, stats) {
                     console.warn("Failed to process alternative timestamp fields:", e);
                 }
             }
-        });
-    }
+        }
+    });
     
     // Check if time data exists after attempts to create Date objects
     const hasTimeData = data.some(record => record['Reported_obj']);
