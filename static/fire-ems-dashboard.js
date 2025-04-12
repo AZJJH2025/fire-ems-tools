@@ -948,7 +948,6 @@ function createTimeChart(data, stats) {
                     }
                 } catch (e) {
                     console.warn("Failed to create Date object from Reported field:", e);
-                    }
                 }
                 
                 // Try alternative timestamp fields if still no Date object
