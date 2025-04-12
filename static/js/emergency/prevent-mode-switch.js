@@ -9,39 +9,114 @@
 (function() {
   console.log("🔒 Emergency Mode Lock: Preventing automatic mode switching");
   
+  // Track if we've already applied the lock
+  let lockApplied = false;
+  let retryCount = 0;
+  const MAX_RETRIES = 10;
+  
   // Function to override health checks to maintain emergency mode
   function lockEmergencyMode() {
-    // Check if FireEMS framework is available
-    if (window.FireEMS && window.FireEMS.Resilience) {
-      console.log("🔒 Emergency Mode Lock: FireEMS.Resilience found, applying lock");
+    // Stop retrying after max attempts
+    if (retryCount > MAX_RETRIES) {
+      console.log("🔒 Emergency Mode Lock: Giving up after max retries");
+      return;
+    }
+    
+    retryCount++;
+    
+    // Check if FireEMS framework is available using multiple paths
+    const resilienceService = 
+      (window.FireEMS && window.FireEMS.Resilience) || 
+      (window.FireEMS && window.FireEMS.Core && window.FireEMS.Core.getService && window.FireEMS.Core.getService('resilience')) ||
+      (window.fireems && window.fireems.resilience);
       
-      // Override health evaluation function to always stay in emergency mode
-      const originalEvaluateHealth = window.FireEMS.Resilience.evaluateHealth;
-      window.FireEMS.Resilience.evaluateHealth = function() {
-        console.log("🔒 Emergency Mode Lock: Intercepting health evaluation to maintain emergency mode");
-        return "emergency"; // Always return emergency to prevent auto-switching to normal
-      };
-      
-      // Register a custom event handler for mode changes
-      if (window.FireEMS.Core && window.FireEMS.Core.addEventListener) {
-        window.FireEMS.Core.addEventListener('mode:changed', function(event) {
-          if (event.detail && event.detail.mode === 'normal') {
-            console.log("🔒 Emergency Mode Lock: Detected attempt to switch to normal mode, forcing back to emergency");
-            // Force back to emergency mode
-            setTimeout(function() {
-              if (window.FireEMS.Core.setMode) {
-                window.FireEMS.Core.setMode('emergency');
-              }
-            }, 50);
-          }
-        });
+    if (resilienceService) {
+      // Don't apply twice
+      if (lockApplied) {
+        return;
       }
       
-      console.log("🔒 Emergency Mode Lock: Successfully applied");
+      console.log("🔒 Emergency Mode Lock: Resilience service found, applying lock");
+      lockApplied = true;
+      
+      // Direct approach - override evaluateHealth
+      if (typeof resilienceService.evaluateHealth === 'function') {
+        const originalEvaluateHealth = resilienceService.evaluateHealth;
+        resilienceService.evaluateHealth = function() {
+          console.log("🔒 Emergency Mode Lock: Intercepting health evaluation");
+          return "emergency"; // Always return emergency mode
+        };
+        console.log("🔒 Emergency Mode Lock: Applied evaluateHealth override");
+      }
+      
+      // Alternative approach - override evaluateHealthStatus
+      if (typeof resilienceService.evaluateHealthStatus === 'function') {
+        const originalEvaluateStatus = resilienceService.evaluateHealthStatus;
+        resilienceService.evaluateHealthStatus = function() {
+          console.log("🔒 Emergency Mode Lock: Intercepting health status evaluation");
+          return "emergency"; // Always return emergency mode
+        };
+        console.log("🔒 Emergency Mode Lock: Applied evaluateHealthStatus override");
+      }
+      
+      // Alternative approach - override enterMode to do nothing for normal mode
+      if (typeof resilienceService.enterMode === 'function') {
+        const originalEnterMode = resilienceService.enterMode;
+        resilienceService.enterMode = function(mode) {
+          console.log("🔒 Emergency Mode Lock: Intercepting mode change to: " + mode);
+          if (mode === 'normal') {
+            console.log("🔒 Emergency Mode Lock: Blocked switch to normal mode");
+            return false; // Block switching to normal mode
+          }
+          return originalEnterMode.apply(this, arguments);
+        };
+        console.log("🔒 Emergency Mode Lock: Applied enterMode override");
+      }
+      
+      // Also intercept core mode changes if possible
+      if (window.FireEMS && window.FireEMS.Core) {
+        const core = window.FireEMS.Core;
+        
+        // Register mode change event listener
+        if (typeof core.addEventListener === 'function') {
+          core.addEventListener('mode:changed', function(event) {
+            if (event.detail && event.detail.mode === 'normal') {
+              console.log("🔒 Emergency Mode Lock: Detected attempt to switch to normal mode, forcing back to emergency");
+              // Force back to emergency mode
+              setTimeout(function() {
+                if (core.setMode) {
+                  core.setMode('emergency');
+                }
+              }, 50);
+            }
+          });
+          console.log("🔒 Emergency Mode Lock: Added mode change listener");
+        }
+        
+        // Override setMode function if possible
+        if (typeof core.setMode === 'function' && !core._originalSetMode) {
+          core._originalSetMode = core.setMode;
+          core.setMode = function(mode) {
+            if (mode === 'normal') {
+              console.log("🔒 Emergency Mode Lock: Blocked attempt to set normal mode");
+              return false; // Block normal mode
+            }
+            return core._originalSetMode.apply(this, arguments);
+          };
+          console.log("🔒 Emergency Mode Lock: Applied Core.setMode override");
+        }
+      }
+      
+      console.log("🔒 Emergency Mode Lock: Successfully applied all locks");
+      
+      // Force emergency mode one more time for good measure
+      if (window.FireEMS && window.FireEMS.Core && window.FireEMS.Core.setMode) {
+        window.FireEMS.Core.setMode('emergency');
+      }
     } else {
-      console.log("🔒 Emergency Mode Lock: FireEMS.Resilience not found yet, will retry");
-      // Retry after a delay if framework isn't loaded yet
-      setTimeout(lockEmergencyMode, 500);
+      console.log(`🔒 Emergency Mode Lock: Resilience service not found yet (attempt ${retryCount}/${MAX_RETRIES}), will retry`);
+      // Retry with increasing delay
+      setTimeout(lockEmergencyMode, 200 * Math.pow(1.5, retryCount));
     }
   }
   

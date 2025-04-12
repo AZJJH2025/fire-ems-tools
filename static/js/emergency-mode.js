@@ -471,14 +471,13 @@ FireEMS.EmergencyMode = (function() {
     // Build target URL with careful formatting
     // CRITICAL FIX: Uses window.location.origin to ensure absolute path
     const origin = window.location.origin || '';
-    const queryParam = encodeURIComponent(dataId);
     
     // Make sure the route doesn't have extra slashes when composed
     const normalizedRoute = targetRoute.replace(/^\/+/, ''); // Remove leading slashes
     
     // Compose the URL with proper formatting
     // CRITICAL FIX: Ensure the data ID is properly URI encoded to prevent [object Object] issues
-    const targetUrl = `${origin}/${normalizedRoute}?emergency_data=${encodeURIComponent(queryParam)}&t=${timestamp}&source=emergency_mode`;
+    const targetUrl = `${origin}/${normalizedRoute}?emergency_data=${encodeURIComponent(dataId)}&t=${timestamp}&source=emergency_mode`;
     
     log(`Redirecting to: ${targetUrl}`, 'info');
     

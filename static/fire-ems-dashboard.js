@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log("Detected redirect from Data Formatter based on URL parameter");
     }
     
-    // Add our debug script to the page
+    // Add our debug script to the page - wrapped in try/catch for safety
     try {
         const debugScript = document.createElement('script');
         debugScript.src = '/static/debug-session-storage.js';
