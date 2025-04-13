@@ -443,8 +443,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.warn(`⚠️ ${missingFieldsCount} records are missing required fields after formatting`);
             }
             
-            // Process the formatted data
-            processData(formattedData);
+            // Process the data using the file format expected by the dashboard
+            console.log("Creating file-like object for dashboard processing");
+            
+            // This is what processData expects (see line 1199-1206 where it's called directly)
+            const fileData = { 
+                data: formattedData,
+                filename: 'formatter-data.json',
+                rows: formattedData.length,
+                first_reported_date: getFirstReportedDate(formattedData),
+                columns: getDataColumns(formattedData),
+                source: 'formatter' // Mark data source as formatter
+            };
+            
+            console.log("File-like object created:", fileData);
+            
+            // Process with the file-like object instead of just the array
+            processData(fileData);
             
             return true;
         };
