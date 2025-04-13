@@ -100,6 +100,61 @@ function createVisualizationsWithChartJs(formattedData, stats) {
                            
     console.log("Emergency mode detection:", isEmergencyMode);
     
+    // Define the processEmergencyData function that emergency-mode-debugging.js is looking for
+    if (isEmergencyMode && typeof window.processEmergencyData === 'undefined') {
+        window.processEmergencyData = function(data) {
+            console.log("Processing emergency data:", data.length, "records");
+            
+            // Handle emergency data (simplified version)
+            try {
+                // Display the data in the results container
+                const container = document.getElementById('results-container');
+                if (container) {
+                    container.style.display = 'block';
+                    container.innerHTML = `
+                        <div class="emergency-data-container">
+                            <h2>Emergency Data</h2>
+                            <p>Loaded ${data.length} records from emergency data source</p>
+                            <div class="data-table-wrapper"></div>
+                        </div>
+                    `;
+                    
+                    // Create a simple data table
+                    const tableWrapper = container.querySelector('.data-table-wrapper');
+                    if (tableWrapper && data.length > 0) {
+                        const headers = Object.keys(data[0]);
+                        const tableHTML = `
+                            <table class="emergency-data-table">
+                                <thead>
+                                    <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
+                                </thead>
+                                <tbody>
+                                    ${data.slice(0, 10).map(row => `
+                                        <tr>${headers.map(h => `<td>${row[h] || ''}</td>`).join('')}</tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                            ${data.length > 10 ? `<p>Showing 10 of ${data.length} records</p>` : ''}
+                        `;
+                        tableWrapper.innerHTML = tableHTML;
+                    }
+                    
+                    // Hide the upload section
+                    const uploadSection = document.querySelector('.file-upload-container');
+                    if (uploadSection) {
+                        uploadSection.style.display = 'none';
+                    }
+                    
+                    return true;
+                }
+            } catch (e) {
+                console.error("Error processing emergency data:", e);
+            }
+            return false;
+        };
+        console.log("Defined processEmergencyData function for emergency mode debugging");
+    }
+    
     // Check if we can access the ChartManager from the FireEMS namespace
     const hasChartManager = window.FireEMS && window.FireEMS.Charts;
     

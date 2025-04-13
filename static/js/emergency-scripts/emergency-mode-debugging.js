@@ -310,6 +310,78 @@ function monitorEmergencyData() {
   }
 })();
 
+// Function to monitor for processEmergencyData
+function monitorEmergencyData() {
+  // Check if processEmergencyData function exists
+  if (typeof window.processEmergencyData === 'function') {
+    logToDebug('processEmergencyData function found, ready to process', 'info');
+    
+    // Automatically process data
+    processStoredEmergencyData();
+  } else {
+    logToDebug('processEmergencyData function not found, waiting...', 'warning');
+    
+    // Give up after too many attempts
+    if (!window.emergencyDebugAttempts) {
+      window.emergencyDebugAttempts = 1;
+    } else {
+      window.emergencyDebugAttempts++;
+    }
+    
+    if (window.emergencyDebugAttempts > 15) {
+      logToDebug('Giving up after too many attempts', 'error');
+      return;
+    }
+    
+    // Try again
+    setTimeout(monitorEmergencyData, 1000);
+  }
+}
+
+// Automatically process emergency data
+function processStoredEmergencyData() {
+  // Get the emergency data ID from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const emergencyDataId = urlParams.get('emergency_data');
+  
+  if (emergencyDataId && typeof window.processEmergencyData === 'function') {
+    logToDebug('Automatically processing emergency data: ' + emergencyDataId, 'info');
+    
+    try {
+      // Try to get the data from localStorage or backup
+      let data = localStorage.getItem(emergencyDataId);
+      if (!data) {
+        // Try backup key
+        const backupKey = 'backup_' + emergencyDataId;
+        data = localStorage.getItem(backupKey);
+        if (data) {
+          logToDebug('Found data in backup storage: ' + backupKey, 'info');
+        }
+      }
+      
+      if (data) {
+        try {
+          const parsed = JSON.parse(data);
+          const dataToProcess = parsed.data || parsed;
+          
+          if (Array.isArray(dataToProcess)) {
+            logToDebug('Processing ' + dataToProcess.length + ' records', 'info');
+            window.processEmergencyData(dataToProcess);
+          } else {
+            logToDebug('Data format error: expected array but got ' + typeof dataToProcess, 'error');
+          }
+        } catch (e) {
+          logToDebug('Error parsing emergency data: ' + e.message, 'error');
+        }
+      } else {
+        logToDebug('No data found for ID: ' + emergencyDataId, 'error');
+      }
+    } catch (e) {
+      logToDebug('Error processing emergency data: ' + e.message, 'error');
+    }
+  }
+}
+
 // Initialize debugging tools
 document.addEventListener('DOMContentLoaded', function() {
   // Add debug overlay if emergency parameter is present
