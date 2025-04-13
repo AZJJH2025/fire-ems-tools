@@ -398,6 +398,57 @@ document.addEventListener('DOMContentLoaded', function() {
             allParams: window.location.search
         });
         
+        // Create or update processFormatterData function to handle enhanced data formats
+        window.processFormatterData = function(data, source) {
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                console.error("No valid data from formatter");
+                return false;
+            }
+            
+            console.log(`Processing ${data.length} records from ${source}`);
+            
+            // Check if data already has _source property from the formatter
+            const hasFormatterSource = data.some(item => item._source === 'formatter');
+            console.log(`Data has formatter source property: ${hasFormatterSource}`);
+            
+            // Check if data has Date objects already
+            const hasDateObjects = data.some(item => 
+                item.Reported_obj instanceof Date || 
+                item['Unit Dispatched_obj'] instanceof Date
+            );
+            console.log(`Data has Date objects: ${hasDateObjects}`);
+            
+            if (!hasFormatterSource) {
+                console.log("Adding formatter source to data");
+                data = data.map(item => ({
+                    ...item,
+                    _source: 'formatter'
+                }));
+            }
+            
+            // Format the data for visualization
+            const formattedData = formatFireEMSData(data);
+            console.log(`Formatted ${formattedData.length} records for visualization`);
+            
+            // Double check for required fields
+            const missingFieldsCount = formattedData.filter(item => 
+                !item.Unit || 
+                !item.Reported_obj || 
+                !item['Unit Dispatched_obj'] || 
+                !item['Unit Onscene_obj'] ||
+                !item.validCoordinates
+            ).length;
+            
+            if (missingFieldsCount > 0) {
+                console.warn(`⚠️ ${missingFieldsCount} records are missing required fields after formatting`);
+            }
+            
+            // Process the formatted data
+            processData(formattedData);
+            
+            return true;
+        };
+        
         // Add visual indicator that we're in formatter mode
         const formatterIndicator = document.createElement('div');
         formatterIndicator.style.cssText = "position: fixed; top: 0; right: 0; background: #4caf50; color: white; padding: 8px 12px; font-size: 12px; z-index: 9999;";
@@ -554,8 +605,39 @@ document.addEventListener('DOMContentLoaded', function() {
                             
                             // Store in sessionStorage for normal flow to handle
                             if (parsedLocalData.data) {
-                                sessionStorage.setItem('formattedData', JSON.stringify(parsedLocalData.data));
-                                console.log(`✅ Successfully transferred ${parsedLocalData.data.length} records from localStorage to sessionStorage`);
+                                // Log the metadata for debugging
+                                console.log("🔄 Data metadata:", parsedLocalData.metadata);
+                                
+                                // Check if data needs preprocessing (old version format)
+                                if (parsedLocalData.metadata && !parsedLocalData.metadata.version) {
+                                    console.log("⚠️ Found data in old format - applying compatibility transformation");
+                                    // Apply similar transformations as in data-formatter-integration.js
+                                    const transformedData = parsedLocalData.data.map(item => {
+                                        const transformed = { ...item };
+                                        
+                                        // Add _source property
+                                        transformed._source = 'formatter';
+                                        
+                                        // Ensure coordinates are numeric
+                                        if (transformed.Latitude !== undefined) transformed.Latitude = parseFloat(transformed.Latitude);
+                                        if (transformed.Longitude !== undefined) transformed.Longitude = parseFloat(transformed.Longitude);
+                                        
+                                        // Ensure standard field names exist
+                                        if (!transformed.Unit && transformed.UnitID) transformed.Unit = transformed.UnitID;
+                                        if (!transformed.Unit && transformed['Unit ID']) transformed.Unit = transformed['Unit ID'];
+                                        if (!transformed['Incident ID'] && transformed.RunNo) transformed['Incident ID'] = transformed.RunNo;
+                                        if (!transformed['Incident ID'] && transformed['Run No']) transformed['Incident ID'] = transformed['Run No'];
+                                        
+                                        return transformed;
+                                    });
+                                    sessionStorage.setItem('formattedData', JSON.stringify(transformedData));
+                                    console.log(`✅ Successfully transformed and transferred ${transformedData.length} records from localStorage to sessionStorage`);
+                                } else {
+                                    // It's in the new format, just transfer it
+                                    sessionStorage.setItem('formattedData', JSON.stringify(parsedLocalData.data));
+                                    console.log(`✅ Successfully transferred ${parsedLocalData.data.length} records from localStorage to sessionStorage`);
+                                }
+                                
                                 statusIndicator.innerHTML = `Successfully loaded ${parsedLocalData.data.length} records from localStorage`;
                                 statusIndicator.style.background = "#4caf50";
                                 
@@ -565,6 +647,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                     sessionStorage.setItem('formatterToolId', parsedLocalData.metadata.tool || 'response-time');
                                     sessionStorage.setItem('formatterTarget', parsedLocalData.metadata.tool || 'response-time');
                                     sessionStorage.setItem('formatterTimestamp', parsedLocalData.metadata.timestamp || new Date().toISOString());
+                                    if (parsedLocalData.metadata.version) {
+                                        sessionStorage.setItem('dataVersion', parsedLocalData.metadata.version);
+                                    }
                                 }
                                 
                                 // Process the data after a short delay

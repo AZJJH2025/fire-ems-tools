@@ -629,18 +629,42 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Direct approach using standard formatter flow (NOT emergency mode)
       try {
+        // Pre-process data to ensure compatibility with fire-ems-dashboard
+        const enhancedData = data.map(item => {
+          // Create a new object with enhanced fields
+          const enhanced = { ...item };
+          
+          // Add _source property to indicate data comes from formatter
+          enhanced._source = 'formatter';
+          
+          // Ensure coordinates are numeric
+          if (enhanced.Latitude !== undefined) enhanced.Latitude = parseFloat(enhanced.Latitude);
+          if (enhanced.Longitude !== undefined) enhanced.Longitude = parseFloat(enhanced.Longitude);
+          
+          // Ensure standard field names exist if alternate ones are used
+          if (!enhanced.Unit && enhanced.UnitID) enhanced.Unit = enhanced.UnitID;
+          if (!enhanced.Unit && enhanced['Unit ID']) enhanced.Unit = enhanced['Unit ID'];
+          if (!enhanced['Incident ID'] && enhanced.RunNo) enhanced['Incident ID'] = enhanced.RunNo;
+          if (!enhanced['Incident ID'] && enhanced['Run No']) enhanced['Incident ID'] = enhanced['Run No'];
+          
+          return enhanced;
+        });
+        
+        console.log("Enhanced data format for localStorage:", enhancedData[0]);
+        
         // Generate unique ID and store data in localStorage
         const timestamp = Date.now();
         const dataId = 'formatter_data_' + timestamp;
         
         // Verify data is properly serializable
         const serializedData = JSON.stringify({
-          data: data,
+          data: enhancedData,
           metadata: {
             source: 'formatter',
             tool: window.formatterState.selectedTool,
             timestamp: new Date().toISOString(),
-            recordCount: data.length
+            recordCount: enhancedData.length,
+            version: "v2.2"
           }
         });
         console.log(`Data serialized successfully, size: ${serializedData.length} bytes`);
@@ -650,12 +674,50 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Store in sessionStorage as well (direct approach)
         try {
-          sessionStorage.setItem('formattedData', JSON.stringify(data));
+          // Transform data format to match what fire-ems-dashboard.js expects
+          const transformedData = data.map(item => {
+            // Create a new object with transformed fields
+            const transformed = { ...item };
+            
+            // Add _source property to indicate data comes from formatter
+            transformed._source = 'formatter';
+            
+            // Ensure coordinates are numeric
+            if (transformed.Latitude !== undefined) transformed.Latitude = parseFloat(transformed.Latitude);
+            if (transformed.Longitude !== undefined) transformed.Longitude = parseFloat(transformed.Longitude);
+            
+            // Ensure Date objects exist for timestamps
+            const dateFields = ['Reported', 'Unit Dispatched', 'Unit Enroute', 'Unit Onscene'];
+            dateFields.forEach(field => {
+              if (transformed[field]) {
+                try {
+                  const date = new Date(transformed[field]);
+                  if (!isNaN(date.getTime())) {
+                    transformed[`${field}_obj`] = date;
+                  }
+                } catch (e) {
+                  console.warn(`Failed to create Date object for ${field}:`, e);
+                }
+              }
+            });
+            
+            // Ensure standard field names exist if alternate ones are used
+            if (!transformed.Unit && transformed.UnitID) transformed.Unit = transformed.UnitID;
+            if (!transformed.Unit && transformed['Unit ID']) transformed.Unit = transformed['Unit ID'];
+            if (!transformed['Incident ID'] && transformed.RunNo) transformed['Incident ID'] = transformed.RunNo;
+            if (!transformed['Incident ID'] && transformed['Run No']) transformed['Incident ID'] = transformed['Run No'];
+            
+            return transformed;
+          });
+          
+          console.log("Transformed data for fire-ems-dashboard compatibility:", transformedData[0]);
+          
+          sessionStorage.setItem('formattedData', JSON.stringify(transformedData));
           sessionStorage.setItem('dataSource', 'formatter');
           sessionStorage.setItem('formatterToolId', window.formatterState.selectedTool);
           sessionStorage.setItem('formatterTarget', window.formatterState.selectedTool);
           sessionStorage.setItem('formatterTimestamp', new Date().toISOString());
-          console.log("Data stored in sessionStorage as backup");
+          console.log("Data stored in sessionStorage as backup with enhanced format compatibility");
         } catch (e) {
           console.warn("Could not store in sessionStorage:", e);
         }
