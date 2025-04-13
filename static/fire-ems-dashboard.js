@@ -100,9 +100,9 @@ function createVisualizationsWithChartJs(formattedData, stats) {
                            
     console.log("Emergency mode detection:", isEmergencyMode);
     
-    // Define the processEmergencyData function that emergency-mode-debugging.js is looking for
-    if (isEmergencyMode && typeof window.processEmergencyData === 'undefined') {
-        window.processEmergencyData = function(data) {
+    // Define the processEmergencyData function immediately at page load
+    // This needs to be early enough for emergency-mode-debugging.js to find it
+    window.processEmergencyData = function(data) {
             console.log("Processing emergency data:", data.length, "records");
             
             // Handle emergency data (simplified version)
