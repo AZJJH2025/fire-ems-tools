@@ -72,6 +72,15 @@ function processData(data) {
         // For all other visualizations, we need to make sure Chart.js is available
         // or use fallbacks if it's not available or fails to load
         createVisualizationsWithChartJs(formattedData, stats);
+    } catch (error) {
+        console.error("❌ Error processing data:", error);
+        if (resultDiv) {
+            resultDiv.innerHTML = `
+                <div style="color: red; margin-bottom: 15px;">
+                    <p>❌ Error processing data: ${error.message}</p>
+                </div>
+            `;
+        }
     }
 }
 
