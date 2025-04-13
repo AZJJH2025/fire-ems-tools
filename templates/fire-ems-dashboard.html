@@ -14,14 +14,40 @@
 {% endblock %}
 
 {% block header_scripts %}
+<!-- Formatter Mode Detection -->
+<script>
+  // Check if we're coming from the Data Formatter
+  const urlParams = new URLSearchParams(window.location.search);
+  const fromFormatter = urlParams.has('from_formatter');
+  const hasEmergencyData = urlParams.has('emergency_data');
+  
+  // Set a flag for later scripts to know the source
+  window.dataSource = {
+    fromFormatter: fromFormatter,
+    isEmergency: hasEmergencyData,
+    source: fromFormatter ? 'formatter' : (hasEmergencyData ? 'emergency' : 'direct')
+  };
+  
+  console.log("Data source detected:", window.dataSource);
+</script>
+
 <!-- FireEMS Resilience Framework -->
 <script src="/static/js/emergency-scripts/framework-initialization.js"></script>
 
 <!-- Chart.js with better error handling -->
 <script src="/static/js/emergency-scripts/chartjs-loader.js"></script>
 
-<!-- EMERGENCY MODE DEBUGGING -->
-<script src="/static/js/emergency-scripts/emergency-mode-debugging.js"></script>
+<!-- EMERGENCY MODE DEBUGGING - Only load if not from formatter or in emergency mode -->
+<script>
+  if (!window.dataSource.fromFormatter || window.dataSource.isEmergency) {
+    const script = document.createElement('script');
+    script.src = "/static/js/emergency-scripts/emergency-mode-debugging.js";
+    document.head.appendChild(script);
+    console.log("Loading emergency debugging tools");
+  } else {
+    console.log("Skipping emergency debugging tools - data from formatter");
+  }
+</script>
 {% endblock %}
 
 {% block header %}
@@ -158,8 +184,17 @@
 {% endblock %}
 
 {% block scripts %}
-<!-- Emergency Mode Library -->
-<script src="/static/js/emergency-scripts/emergency-mode-library.js"></script>
+<!-- Emergency Mode Library - Only load if not from formatter or in emergency mode -->
+<script>
+  if (!window.dataSource || !window.dataSource.fromFormatter || window.dataSource.isEmergency) {
+    const script = document.createElement('script');
+    script.src = "/static/js/emergency-scripts/emergency-mode-library.js";
+    document.head.appendChild(script);
+    console.log("Loading emergency mode library");
+  } else {
+    console.log("Skipping emergency mode library - data from formatter");
+  }
+</script>
 
 <!-- Leaflet JS for Maps -->
 <script

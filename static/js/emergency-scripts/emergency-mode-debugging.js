@@ -314,6 +314,13 @@ function monitorEmergencyData() {
 document.addEventListener('DOMContentLoaded', function() {
   // Add debug overlay if emergency parameter is present
   const urlParams = new URLSearchParams(window.location.search);
+  
+  // IMPORTANT: Skip emergency mode if we're coming from the formatter but NOT in emergency mode
+  if (urlParams.has('from_formatter') && !urlParams.has('emergency_data') && !urlParams.has('emergency_mode')) {
+    console.log("IMPORTANT: Data coming from formatter, skipping emergency mode debugging");
+    return; // Exit early, don't initialize emergency debugging
+  }
+  
   if (urlParams.has('emergency_data') || urlParams.has('emergency_mode')) {
     console.log("Initializing emergency debug tools on DOMContentLoaded");
     

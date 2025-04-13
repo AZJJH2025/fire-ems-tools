@@ -65,6 +65,13 @@ document.addEventListener('DOMContentLoaded', function() {
     fullUrl: window.location.href
   });
   
+  // IMPORTANT: Skip emergency library initialization if we're explicitly coming from formatter
+  // and NOT in emergency mode
+  if (fromFormatter === 'true' && !emergencyData) {
+    console.log("IMPORTANT: Data coming from formatter (not emergency), skipping emergency library");
+    return; // Exit the library initialization
+  }
+  
   // Process emergency data directly if present (don't wait for library)
   if (emergencyData) {
     console.log("EMERGENCY DIRECT CHECK: Processing directly", emergencyData);
