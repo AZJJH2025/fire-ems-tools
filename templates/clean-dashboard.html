@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+
+{% block title %}🚒 Fire & EMS Response Time Analyzer{% endblock %}
+
+{% block styles %}
+<!-- Leaflet CSS for Map Visualization -->
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin=""
+/>
+<!-- Custom styles -->
+<style>
+  .file-input-wrapper {
+    border: 2px dashed #ccc;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+    transition: border-color 0.3s ease;
+  }
+  
+  .file-input-wrapper.highlight {
+    border-color: #2196f3;
+  }
+  
+  .file-input-wrapper input[type="file"] {
+    display: none;
+  }
+  
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  
+  .dashboard-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  
+  .dashboard-card {
+    flex: 1;
+    min-width: 300px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+  }
+  
+  .dashboard-card h3 {
+    margin-top: 0;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+  }
+  
+  .dashboard-card.full-width {
+    flex: 100%;
+  }
+  
+  #incident-map {
+    height: 400px;
+    border-radius: 4px;
+  }
+  
+  .chart-container {
+    height: 300px;
+    position: relative;
+  }
+  
+  .no-data {
+    text-align: center;
+    padding: 30px;
+    color: #666;
+    background: #f9f9f9;
+    border-radius: 4px;
+  }
+  
+  .error {
+    text-align: center;
+    padding: 15px;
+    color: #721c24;
+    background: #f8d7da;
+    border-radius: 4px;
+  }
+  
+  .time-heatmap {
+    width: 100%;
+  }
+  
+  .stat-box {
+    background: #f5f5f5;
+    border-radius: 6px;
+    padding: 10px;
+    text-align: center;
+    margin-right: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .stat-value {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .stat-label {
+    font-size: 0.8em;
+    color: #666;
+  }
+  
+  .stat-text {
+    font-size: 0.9em;
+    margin-top: 5px;
+  }
+  
+  #file-stats {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  
+  .table-responsive {
+    overflow-x: auto;
+  }
+  
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .data-table th, .data-table td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .data-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+  }
+  
+  .data-table tr:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .table-note {
+    font-size: 0.8em;
+    text-align: right;
+    color: #666;
+    margin-top: 8px;
+  }
+  
+  .map-popup {
+    font-size: 12px;
+  }
+  
+  .map-popup div {
+    margin-bottom: 4px;
+  }
+  
+  @media (max-width: 768px) {
+    .dashboard-row {
+      flex-direction: column;
+    }
+    
+    .dashboard-card {
+      min-width: 100%;
+    }
+    
+    #incident-map {
+      height: 300px;
+    }
+    
+    .chart-container {
+      height: 250px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block header_scripts %}
+<!-- Data Visualization Transfer Module -->
+<script src="/static/data-viz-transfer.js"></script>
+
+<!-- Simple Chart Manager -->
+<script src="/static/simple-chart-manager.js"></script>
+{% endblock %}
+
+{% block header %}
+<header class="tool-header">
+  <div class="container">
+    <h1><i class="fas fa-stopwatch"></i> Response Time Analyzer</h1>
+    <p>Upload your Fire/EMS data files for interactive visualization and analysis</p>
+  </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<!-- Troubleshooting Modal -->
+<div id="data-transfer-help" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 1000; overflow: auto;">
+  <div style="position: relative; width: 90%; max-width: 600px; margin: 20px auto; background-color: white; padding: 20px; border-radius: 5px; max-height: 90vh; overflow-y: auto;">
+    <button id="close-help-modal" style="position: sticky; top: 0; float: right; background: #cc0000; color: white; border: none; font-size: 18px; width: 30px; height: 30px; border-radius: 15px; cursor: pointer; z-index: 2;">×</button>
+    <h2>Data Transfer Troubleshooting</h2>
+    <p>If you're seeing this message, there may be an issue with data transfer between the Data Formatter and Response Time Analyzer.</p>
+    
+    <h3>Common Issues:</h3>
+    <ol>
+      <li><strong>Browser Privacy Settings:</strong> Some browsers or privacy extensions block storage between page navigations.</li>
+      <li><strong>Data Size:</strong> Very large datasets might exceed the browser's storage limits.</li>
+      <li><strong>Browser Compatibility:</strong> Some older browsers might have limited storage support.</li>
+    </ol>
+    
+    <h3>Troubleshooting Steps:</h3>
+    <ol>
+      <li>Try using a different browser (Chrome or Firefox recommended)</li>
+      <li>Disable privacy extensions temporarily</li>
+      <li>Clear your browser cache and cookies</li>
+      <li>Try downloading the file and uploading it directly to this tool</li>
+      <li>Reduce the size of your dataset if it's very large</li>
+    </ol>
+    
+    <button id="check-storage-btn" style="background-color: #0066cc; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin-top: 10px; width: 100%;">Check Storage Status</button>
+  </div>
+</div>
+
+<!-- File Upload Section -->
+<div class="file-upload-container">
+  <h2>Upload Data File</h2>
+  <div class="file-input-wrapper">
+    <input type="file" id="fileInput">
+    <p><i class="fas fa-upload"></i> Drag and drop a file here or click to browse</p>
+    <button>Upload & Analyze</button>
+  </div>
+  <p>Accepted formats: CSV, Excel (.xls, .xlsx)</p>
+</div>
+
+<!-- Loading Indicator -->
+<div id="loading" style="display: none; text-align: center; padding: 20px; background: #e3f2fd; border-radius: 4px; margin-bottom: 20px;">
+  <div class="spinner" style="display: inline-block; width: 24px; height: 24px; border: 3px solid rgba(33, 150, 243, 0.3); border-radius: 50%; border-top-color: #2196f3; animation: spin 1s linear infinite; margin-right: 10px;"></div>
+  Uploading and analyzing file... Please wait.
+  
+  <style>
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</div>
+
+<!-- Result Section -->
+<div id="result">
+  <!-- Results will be displayed here by the JavaScript -->
+  <p>Upload a file to view analytics and visualizations, or 
+  <a href="/data-formatter?tool=response-time" class="formatter-link">use the Data Formatter</a> to prepare your data first.</p>
+  <div class="formatter-info" style="background-color: #f3f9ff; padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 0.9em;">
+    <p><strong>🔍 Using the Response Time Analyzer with Data Formatter:</strong></p>
+    <p>For the best experience, ensure your data includes these key fields:</p>
+    <ul style="margin-top: 5px; padding-left: 25px;">
+      <li><strong>Unit</strong> - The responding vehicle or personnel unit</li>
+      <li><strong>Reported</strong> - When the incident was initially reported</li>
+      <li><strong>Unit Dispatched</strong> - When the unit was dispatched</li>
+      <li><strong>Unit Onscene</strong> - When the unit arrived on scene</li>
+      <li><strong>Latitude/Longitude</strong> - Coordinates for mapping</li>
+    </ul>
+    <p>The Data Formatter will help map these fields from your existing data.</p>
+  </div>
+</div>
+
+<!-- Dashboard Section - Initially Hidden -->
+<div id="dashboard" style="display: none;">
+  <div class="dashboard-header">
+    <h2>📊 Data Analysis Dashboard</h2>
+    <div id="file-stats"></div>
+  </div>
+  
+  <!-- First Row: Map and Time Heatmap -->
+  <div class="dashboard-row">
+    <!-- Map visualization -->
+    <div class="dashboard-card">
+      <h3>📍 Incident Map</h3>
+      <div id="incident-map"></div>
+    </div>
+    
+    <!-- Time patterns heatmap -->
+    <div class="dashboard-card">
+      <h3>⏰ Incidents by Time</h3>
+      <div id="time-chart"></div>
+    </div>
+  </div>
+  
+  <!-- Second Row: Unit Activity and Location Charts -->
+  <div class="dashboard-row">
+    <!-- Unit activity chart -->
+    <div class="dashboard-card">
+      <h3>🚒 Unit Activity</h3>
+      <div class="chart-container">
+        <canvas id="unit-chart"></canvas>
+      </div>
+    </div>
+    
+    <!-- Location/city chart -->
+    <div class="dashboard-card">
+      <h3>🏙️ Incidents by Location</h3>
+      <div class="chart-container">
+        <canvas id="location-chart"></canvas>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Data table section -->
+  <div class="dashboard-row">
+    <div class="dashboard-card full-width">
+      <h3>📋 Incident Data Table</h3>
+      <div id="data-table"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Leaflet JS for Maps -->
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""
+></script>
+
+<!-- Clean Dashboard Implementation -->
+<script src="/static/clean-dashboard.js"></script>
+{% endblock %}
