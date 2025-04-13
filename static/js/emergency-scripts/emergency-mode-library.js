@@ -68,6 +68,21 @@ document.addEventListener('DOMContentLoaded', function() {
   // Process emergency data directly if present (don't wait for library)
   if (emergencyData) {
     console.log("EMERGENCY DIRECT CHECK: Processing directly", emergencyData);
+    
+    // IMPORTANT: Create a safe copy of the data before processing
+    // This prevents other scripts from removing it prematurely
+    try {
+      const emergencyDataContent = localStorage.getItem(emergencyData);
+      if (emergencyDataContent) {
+        // Create a backup copy with a different key
+        const backupKey = 'backup_' + emergencyData;
+        localStorage.setItem(backupKey, emergencyDataContent);
+        console.log("Created backup copy of emergency data with key:", backupKey);
+      }
+    } catch (e) {
+      console.error("Error creating backup of emergency data:", e);
+    }
+    
     processEmergencyDataDirect(emergencyData);
   }
   
@@ -109,48 +124,61 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
       // Try to retrieve the data from localStorage - show more debug info
       console.log("Attempting to retrieve data from localStorage with key:", dataId);
-      const storedData = localStorage.getItem(dataId);
+      let storedData = localStorage.getItem(dataId);
       
       if (!storedData) {
         console.error("No data found with ID: " + dataId);
         
-        // DEBUG: List all localStorage keys to see what's available
-        console.log("Available localStorage keys:");
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          console.log(`- ${key} (${localStorage.getItem(key).length} bytes)`);
-        }
-        
-        // Try with variations of the key in case there was a formatting issue
-        console.log("Trying variations of the key...");
-        const possibleVariations = [
-          dataId, 
-          dataId.replace('emergency_data_', 'emergency_data_test_'),
-          dataId.replace('emergency_data_test_', 'emergency_data_'),
-          'emergency_data_' + dataId.split('_').pop()
-        ];
-        
-        let foundData = null;
-        let foundKey = null;
-        
-        for (const variant of possibleVariations) {
-          const data = localStorage.getItem(variant);
-          if (data) {
-            console.log("Found data with variation:", variant);
-            foundData = data;
-            foundKey = variant;
-            break;
-          }
-        }
-        
-        if (foundData) {
-          console.log("Processing with variation key:", foundKey);
-          processStoredData(foundData, foundKey);
+        // Check for backup copy first
+        const backupKey = 'backup_' + dataId;
+        const backupData = localStorage.getItem(backupKey);
+        if (backupData) {
+          console.log("Found backup data with key:", backupKey);
+          storedData = backupData;
         } else {
-          showEmergencyDataError("Data not found in browser storage. It may have expired or been cleared.");
+          // DEBUG: List all localStorage keys to see what's available
+          console.log("Available localStorage keys:");
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            try {
+              console.log(`- ${key} (${localStorage.getItem(key).length} bytes)`);
+            } catch (e) {
+              console.log(`- ${key} (error reading length)`);
+            }
+          }
+          
+          // Try with variations of the key in case there was a formatting issue
+          console.log("Trying variations of the key...");
+          const possibleVariations = [
+            dataId, 
+            dataId.replace('emergency_data_', 'emergency_data_test_'),
+            dataId.replace('emergency_data_test_', 'emergency_data_'),
+            'emergency_data_' + dataId.split('_').pop(),
+            'backup_' + dataId
+          ];
+          
+          let foundData = null;
+          let foundKey = null;
+          
+          for (const variant of possibleVariations) {
+            const data = localStorage.getItem(variant);
+            if (data) {
+              console.log("Found data with variation:", variant);
+              foundData = data;
+              foundKey = variant;
+              break;
+            }
+          }
+          
+          if (foundData) {
+            console.log("Processing with variation key:", foundKey);
+            processStoredData(foundData, foundKey);
+          } else {
+            showEmergencyDataError("Data not found in browser storage. It may have expired or been cleared.");
+          }
+          
+          return;
         }
-        
-        return;
       }
       
       // Process the data that was found
