@@ -197,6 +197,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
+    <!-- Data standardization and visualization utilities -->
+    <script src="{{ url_for('static', filename='js/utils/data-standardizer.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/components/data-display-components.js') }}"></script>
+    
     <!-- Page specific script -->
     <script src="{{ url_for('static', filename='call-density-heatmap.js') }}"></script>
+    
+    <!-- Data integration script - must load after main script -->
+    <script src="{{ url_for('static', filename='js/utils/integration/data-components-integration-heatmap.js') }}"></script>
 {% endblock %}

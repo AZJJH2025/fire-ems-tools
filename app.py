@@ -825,6 +825,18 @@ def create_app(config_name='default'):
         """Test page for MapFieldsManager availability detection"""
         return render_template('test-mapfields.html')
         
+    # Data Components Test Page
+    @app.route('/test-data-components')
+    def test_data_components():
+        """Test page for DataStandardizer and DataDisplayComponents"""
+        return send_file('static/test-data-standardizer.html')
+        
+    # Call Density Heatmap Integration Test Page
+    @app.route('/test-call-density-integration')
+    def test_call_density_integration():
+        """Test page for Call Density Heatmap integration with DataStandardizer"""
+        return send_file('static/test-call-density-integration.html')
+        
     # Call Density Heatmap File Upload Handler
     @app.route('/upload-call-data', methods=['POST'])
     def upload_call_data():

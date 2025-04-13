@@ -1,32 +1,168 @@
-/* Call Density Heatmap Specific Styles */
-#map {
-    width: 100%;
-    height: 500px; /* Fixed height instead of 100% */
-    border-radius: 5px;
-}
+/* Call Density Heatmap Styles */
 
+/* Map Container */
 #map-container {
     position: relative;
-    width: 100%;
-    height: 500px; /* Fixed height instead of 100% */
-    min-height: 500px; /* Match the height value */
-    border-radius: 5px;
+    border-radius: 4px;
     overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    height: 500px;
 }
 
-.map-overlay {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    z-index: 1000;
+/* Upload Status */
+.status-success {
+    color: #2e7d32;
+    background-color: #e8f5e9;
+    padding: 8px;
+    border-radius: 4px;
+    margin-top: 10px;
+    display: inline-block;
 }
 
-.legend {
-    background: white;
+.status-error {
+    color: #c62828;
+    background-color: #ffebee;
+    padding: 8px;
+    border-radius: 4px;
+    margin-top: 10px;
+    display: inline-block;
+}
+
+.status-info {
+    color: #0277bd;
+    background-color: #e1f5fe;
+    padding: 8px;
+    border-radius: 4px;
+    margin-top: 10px;
+    display: inline-block;
+}
+
+/* Filter Styles */
+.filter-section {
+    background-color: #f5f5f5;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 15px 0;
+}
+
+.filter-section h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 16px;
+    color: #333;
+}
+
+.filter-group {
+    margin-bottom: 12px;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.time-specific-filter {
+    margin-top: 10px;
     padding: 10px;
-    border-radius: 5px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    background-color: #f0f0f0;
+    border-radius: 4px;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Checkbox and radio groups */
+.checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    font-weight: normal;
+    margin-bottom: 0;
+}
+
+.checkbox-group input {
+    margin-right: 5px;
+}
+
+/* Slider styling */
+.slider-container {
+    display: flex;
+    align-items: center;
+}
+
+.slider {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+/* Hotspot Analysis Section */
+.analysis-section {
+    background-color: #f5f5f5;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 15px 0;
+}
+
+.analysis-section h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 16px;
+    color: #333;
+}
+
+.hotspot-stat {
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.hotspot-stat span {
+    font-weight: bold;
+}
+
+.hotspot-table {
+    margin-top: 15px;
+}
+
+.hotspot-table h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #555;
+}
+
+.heatmap-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.heatmap-table th, .heatmap-table td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.heatmap-table th {
+    background-color: #f9f9f9;
+    font-weight: bold;
+}
+
+/* Legend styling */
+.legend {
+    padding: 10px;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+    width: 160px;
 }
 
 .legend h4 {
@@ -34,240 +170,170 @@
     font-size: 14px;
 }
 
-.legend-scale {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
 .legend-item {
     display: flex;
     align-items: center;
-    font-size: 12px;
+    margin-bottom: 5px;
 }
 
 .color-box {
-    width: 20px;
-    height: 20px;
-    margin-right: 5px;
-    border-radius: 3px;
+    width: 15px;
+    height: 15px;
+    margin-right: 8px;
+    border: 1px solid #ccc;
+    display: inline-block;
 }
 
-/* Custom marker and cluster styles with mobile optimizations */
+/* Custom marker clusters */
 .call-density-marker {
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    z-index: 500 !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+    text-align: center;
 }
 
-.call-density-marker div {
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    border-radius: 50% !important;
-    text-align: center !important;
-    color: white !important;
-    font-weight: bold !important;
-    box-shadow: 0 0 5px rgba(0,0,0,0.5) !important;
-    font-size: 14px !important;
-    border: 2px solid white !important;
+.density-low {
+    background-color: #a6cee3;
 }
 
-/* Specific density styling */
-.density-low div {
-    background-color: #a6cee3 !important;
+.density-medium {
+    background-color: #6495ed;
 }
 
-.density-medium div {
-    background-color: #6495ed !important;
+.density-high {
+    background-color: #1f4eb0;
 }
 
-.density-high div {
-    background-color: #1f4eb0 !important;
+.density-critical {
+    background-color: #d73027;
 }
 
-.density-critical div {
-    background-color: #d73027 !important;
+/* Highlight marker for selected points */
+.highlight-marker {
+    z-index: 1000 !important;
 }
 
-/* Custom marker popup styling */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Popup customization */
 .call-density-popup .leaflet-popup-content-wrapper {
-    padding: 0 !important;
-    overflow: hidden !important;
-    border-radius: 8px !important;
+    border-radius: 8px;
 }
 
 .call-density-popup .leaflet-popup-content {
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100% !important;
+    margin: 12px;
 }
 
-/* Marker cluster custom styling */
-.custom-cluster {
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    border-radius: 50% !important;
-    text-align: center !important;
-    color: white !important;
-    font-weight: bold !important;
-    border: 2px solid white !important;
-    box-shadow: 0 0 5px rgba(0,0,0,0.5) !important;
-}
-
-.custom-cluster div {
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    width: 100% !important;
-    height: 100% !important;
-    font-size: inherit !important;
-}
-
-.filter-section {
-    margin-bottom: 20px;
-}
-
-.filter-group {
-    margin-bottom: 15px;
-}
-
-.slider-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.slider {
-    flex-grow: 1;
-}
-
-.checkbox-group {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 5px;
-    margin-top: 5px;
-}
-
-.checkbox-group label {
-    display: flex;
-    align-items: center;
-    font-size: 14px;
-    margin-right: 10px;
-}
-
-.checkbox-group input {
-    margin-right: 5px;
-}
-
-.time-specific-filter {
-    margin-top: 10px;
-    margin-bottom: 15px;
-    padding: 10px;
-    background-color: #f9f9f9;
-    border-radius: 5px;
-    border-left: 3px solid #4a89dc;
-}
-
-.hidden {
-    display: none;
-}
-
-.analysis-section {
-    margin-bottom: 20px;
-}
-
-#hotspot-results {
-    background: #f9f9f9;
-    padding: 15px;
-    border-radius: 5px;
-    font-size: 14px;
-}
-
-.hotspot-stat {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 5px;
-    padding-bottom: 5px;
-    border-bottom: 1px solid #eaeaea;
-}
-
-.hotspot-stat:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-
+/* Export Section */
 .export-section {
-    display: flex;
-    gap: 10px;
+    margin: 15px 0;
+    text-align: center;
 }
 
-.file-input-container {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
+.export-section button {
+    margin: 0 5px;
 }
 
-.file-input-label {
-    background-color: #f0f0f0;
-    color: #555;
-    padding: 8px 12px;
+/* Data Table Container */
+.data-table-container {
+    background-color: #fff;
+    padding: 15px;
     border-radius: 4px;
-    cursor: pointer;
-    margin-right: 10px;
-    font-size: 14px;
-    border: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
 }
 
-.file-input-label:hover {
-    background-color: #e0e0e0;
+.data-table-description {
+    margin-bottom: 15px;
 }
 
-#call-data-file {
-    display: none;
+.data-table-description h3 {
+    margin-top: 0;
+    font-size: 18px;
+    color: #333;
 }
 
-#file-name {
-    font-size: 14px;
+.data-table-description p {
+    margin-bottom: 0;
     color: #666;
 }
 
-#upload-status {
-    margin-top: 10px;
+/* Style the DataTable component */
+.fireems-datatable {
+    width: 100%;
+    border-collapse: collapse;
     font-size: 14px;
+    margin-bottom: 15px;
 }
 
-.status-success {
-    color: #2ecc71;
+.fireems-datatable th {
+    background-color: #f0f0f0;
+    padding: 10px;
+    text-align: left;
+    border-bottom: 2px solid #ddd;
+    position: sticky;
+    top: 0;
+    font-weight: bold;
+    color: #333;
 }
 
-.status-error {
-    color: #e74c3c;
+.fireems-datatable td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
 }
 
-/* Ensure the right panel has a fixed height as well */
-.right-panel {
-    height: 500px; /* Match the map height */
+.fireems-datatable tr:nth-child(even) {
+    background-color: #f9f9f9;
 }
 
-@media (max-width: 1024px) {
-    .panel-container {
-        flex-direction: column;
-    }
-    
-    .left-panel, .right-panel {
-        width: 100%;
-    }
-    
-    .right-panel {
-        height: 500px;
-        margin-top: 20px;
-    }
-    
-    .checkbox-group {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    }
+.fireems-datatable tr:hover {
+    background-color: #f0f0f0;
+}
+
+/* Search filter styling */
+#call-data-filter-container {
+    margin-bottom: 15px;
+}
+
+#call-data-filter-container input[type="text"] {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 300px;
+}
+
+#call-data-filter-container button {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+/* Export button styling */
+#call-data-export-container button {
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
 }
