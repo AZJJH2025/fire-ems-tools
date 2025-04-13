@@ -14,14 +14,30 @@
 {% endblock %}
 
 {% block header_scripts %}
-<!-- Formatter Mode Detection & Emergency Mode Bypass -->
+<!-- Formatter Mode Detection & Complete Emergency Mode Removal -->
 <script>
-  // Check if we're coming from the Data Formatter
+  // *** CRITICAL: Remove emergency parameter from URL immediately before any framework loads ***
   const urlParams = new URLSearchParams(window.location.search);
   const fromFormatter = urlParams.has('from_formatter');
+  const hadEmergencyData = urlParams.has('emergency_data');
   
-  // IMPORTANT: We're going to completely disable emergency mode for now
-  // to ensure the Send to Tool functionality works properly
+  // If there's an emergency_data parameter, remove it from the URL
+  if (hadEmergencyData) {
+    // Store the emergency data ID in a variable
+    const emergencyId = urlParams.get('emergency_data');
+    
+    // Create new URL params without the emergency parameter
+    urlParams.delete('emergency_data');
+    
+    // Create the new URL without emergency parameters
+    const newUrl = window.location.pathname + 
+                  (urlParams.toString() ? '?' + urlParams.toString() : '') +
+                  window.location.hash;
+    
+    // Replace the current URL without reloading the page
+    window.history.replaceState({}, document.title, newUrl);
+    console.log("IMPORTANT: Removed emergency_data parameter from URL to prevent framework-level emergency mode");
+  }
   
   // Force direct data source mode
   window.dataSource = {
@@ -31,11 +47,6 @@
   };
   
   console.log("Data source overridden:", window.dataSource);
-  
-  // If there's an emergency_data parameter, we'll handle it through the normal flow
-  if (urlParams.has('emergency_data')) {
-    console.log("NOTE: Emergency data detected but treating as normal data for stability");
-  }
 </script>
 
 <!-- FireEMS Resilience Framework -->
