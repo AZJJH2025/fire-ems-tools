@@ -852,10 +852,55 @@ FireEMS.StateService = (function() {
    */
   function retrieveEmergencyData(id, autoRemove = false) {
     try {
-      // Get the raw data
-      const raw = localStorage.getItem(id);
+      // First try with the exact ID
+      let raw = localStorage.getItem(id);
+      
+      // If not found, check for approximate timestamp matches
+      if (!raw && id.startsWith('emergency_data_')) {
+        console.log(`Exact key ${id} not found, trying approximate timestamp matching...`);
+        
+        // Extract timestamp if present in the ID
+        const timestamp = id.replace('emergency_data_', '');
+        if (!isNaN(parseInt(timestamp))) {
+          const targetTime = parseInt(timestamp);
+          
+          // Look for emergency data with similar timestamps (within 100ms)
+          let bestMatch = null;
+          let smallestDiff = Infinity;
+          
+          // Scan all localStorage keys
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('emergency_data_')) {
+              const keyTimestamp = key.replace('emergency_data_', '');
+              if (!isNaN(parseInt(keyTimestamp))) {
+                const keyTime = parseInt(keyTimestamp);
+                const timeDiff = Math.abs(keyTime - targetTime);
+                
+                // If within 100ms and better than previous matches
+                if (timeDiff < 100 && timeDiff < smallestDiff) {
+                  const keyData = localStorage.getItem(key);
+                  if (keyData) {
+                    console.log(`Found close timestamp match: ${key} (diff: ${timeDiff}ms)`);
+                    bestMatch = key;
+                    smallestDiff = timeDiff;
+                    raw = keyData;
+                  }
+                }
+              }
+            }
+          }
+          
+          if (bestMatch) {
+            console.log(`Using closest match: ${bestMatch} instead of ${id}`);
+            id = bestMatch; // Use the matched ID for removal if autoRemove is true
+          }
+        }
+      }
+      
+      // If still not found after approximate matching
       if (!raw) {
-        console.warn(`Emergency data with ID ${id} not found`);
+        console.warn(`Emergency data with ID ${id} not found, even after approximate matching`);
         return null;
       }
       

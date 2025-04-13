@@ -136,10 +136,56 @@ FireEMS.EmergencyMode = (function() {
     }
     
     try {
-      // Retrieve the raw data
-      const serializedData = localStorage.getItem(dataId);
+      // First try with the exact ID
+      let serializedData = localStorage.getItem(dataId);
+      let actualDataId = dataId;
+      
+      // If not found, try timestamp matching for emergency_data_XXX ids
+      if (!serializedData && dataId.startsWith('emergency_data_')) {
+        log(`Exact key ${dataId} not found, trying approximate timestamp matching...`);
+        
+        // Extract timestamp if present in the ID
+        const timestamp = dataId.replace('emergency_data_', '');
+        if (!isNaN(parseInt(timestamp))) {
+          const targetTime = parseInt(timestamp);
+          
+          // Look for emergency data with similar timestamps (within 100ms)
+          let bestMatch = null;
+          let smallestDiff = Infinity;
+          
+          // Scan all localStorage keys
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('emergency_data_')) {
+              const keyTimestamp = key.replace('emergency_data_', '');
+              if (!isNaN(parseInt(keyTimestamp))) {
+                const keyTime = parseInt(keyTimestamp);
+                const timeDiff = Math.abs(keyTime - targetTime);
+                
+                // If within 100ms and better than previous matches
+                if (timeDiff < 100 && timeDiff < smallestDiff) {
+                  const keyData = localStorage.getItem(key);
+                  if (keyData) {
+                    log(`Found close timestamp match: ${key} (diff: ${timeDiff}ms)`);
+                    bestMatch = key;
+                    smallestDiff = timeDiff;
+                    serializedData = keyData;
+                  }
+                }
+              }
+            }
+          }
+          
+          if (bestMatch) {
+            log(`Using closest match: ${bestMatch} instead of ${dataId}`);
+            actualDataId = bestMatch; // Use the matched ID for removal if autoCleanup is true
+          }
+        }
+      }
+      
+      // If still not found after approximate matching
       if (!serializedData) {
-        log(`No data found with ID ${dataId}`);
+        log(`No data found with ID ${dataId}, even after approximate matching`);
         return null;
       }
       
@@ -148,17 +194,17 @@ FireEMS.EmergencyMode = (function() {
       
       // Check expiration
       if (packagedData.metadata && packagedData.metadata.expires < Date.now()) {
-        log(`Data with ID ${dataId} has expired`);
-        localStorage.removeItem(dataId);
+        log(`Data with ID ${actualDataId} has expired`);
+        localStorage.removeItem(actualDataId);
         return null;
       }
       
-      log(`Retrieved data with ID ${dataId}`, packagedData.metadata);
+      log(`Retrieved data with ID ${actualDataId}`, packagedData.metadata);
       
       // Cleanup if requested
       if (autoCleanup) {
-        localStorage.removeItem(dataId);
-        log(`Removed data with ID ${dataId} after retrieval`);
+        localStorage.removeItem(actualDataId);
+        log(`Removed data with ID ${actualDataId} after retrieval`);
       }
       
       return packagedData.data;
