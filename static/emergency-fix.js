@@ -174,10 +174,17 @@
     let chartData;
     
     if (data && data.length) {
-      // Count incidents by unit
+      // Count incidents by unit with expanded field mappings
       data.forEach(item => {
-        const unit = item.Unit || item.UnitID || 'Unknown';
-        unitCounts[unit] = (unitCounts[unit] || 0) + 1;
+        // Try all possible unit field names
+        const unit = item.Unit || item.UnitID || item.unit || item.unit_id || 
+                     item['Unit ID'] || item.UnitName || item.unit_name || 'Unknown';
+        
+        // Skip empty values
+        if (unit && unit !== 'Unknown') {
+          unitCounts[unit] = (unitCounts[unit] || 0) + 1;
+          console.log(`Found unit: ${unit}, count: ${unitCounts[unit]}`);
+        }
       });
       
       // Sort and get top units
@@ -269,10 +276,18 @@
     let chartData;
     
     if (data && data.length) {
-      // Count incidents by location
+      // Count incidents by location with expanded field mappings
       data.forEach(item => {
-        const location = item['Incident City'] || item.City || 'Unknown';
-        locationCounts[location] = (locationCounts[location] || 0) + 1;
+        // Try all possible location field names
+        const location = item['Incident City'] || item.City || item.city || 
+                          item.location || item.Location || item.address || 
+                          item.Address || 'Unknown';
+        
+        // Skip empty or unknown values
+        if (location && location !== 'Unknown') {
+          locationCounts[location] = (locationCounts[location] || 0) + 1;
+          console.log(`Found location: ${location}, count: ${locationCounts[location]}`);
+        }
       });
       
       // Sort and get top locations
@@ -355,10 +370,27 @@
     // Process data
     let validDates = 0;
     data.forEach(item => {
-      // Try to get date from various possible fields
-      const dateStr = item.Reported || item['Reported Date'] || item['Incident Date'] || item.Date;
+      // Try to get date from various possible fields with more field name variations
+      const dateStr = item.Reported || item['Reported Date'] || item['Incident Date'] || 
+                      item.Date || item.date || item.incident_date || item['incident_date'] ||
+                      item.dispatch_time || item.reported_time || item.incident_time;
+                      
+      console.log("Checking date field:", dateStr, typeof dateStr);
+      
       if (dateStr) {
-        const date = new Date(dateStr);
+        // Add date prefix if it looks like just a time (HH:MM:SS)
+        let processedDateStr = dateStr;
+        if (typeof dateStr === 'string' && dateStr.match(/^\d{1,2}:\d{1,2}(:\d{1,2})?$/)) {
+          // Time only, try to combine with incident_date
+          if (item.incident_date) {
+            processedDateStr = `${item.incident_date} ${dateStr}`;
+            console.log("Combined date and time:", processedDateStr);
+          }
+        }
+        
+        const date = new Date(processedDateStr);
+        console.log("Parsed date:", date.toString(), !isNaN(date.getTime()));
+        
         if (!isNaN(date.getTime())) {
           const day = date.getDay();
           const hour = date.getHours();
@@ -667,6 +699,13 @@
   function renderDashboard() {
     console.log("🚀 Starting emergency fix dashboard render");
     
+    // Prevent multiple initializations
+    if (window.dashboardAlreadyRendered) {
+      console.log("Dashboard already rendered, skipping duplicate initialization");
+      return;
+    }
+    window.dashboardAlreadyRendered = true;
+    
     // Force dashboard to be visible
     const dashboard = document.getElementById('dashboard');
     if (dashboard) {
@@ -772,11 +811,32 @@
   document.addEventListener('DOMContentLoaded', function() {
     console.log("DOM ready, initializing emergency fix...");
     
+    // If we're continuing after a redirect (data already in URL)
+    // wait a bit longer to let the other scripts load
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromFormatter = urlParams.has('from_formatter');
+    const formatterDataKey = urlParams.get('formatter_data');
+    
+    // If we're coming with data, show the fix is running
+    if (fromFormatter && formatterDataKey) {
+      const fixNotification = document.createElement('div');
+      fixNotification.style.cssText = "position: fixed; bottom: 60px; right: 10px; background: rgba(25, 118, 210, 0.9); color: white; padding: 10px; font-size: 14px; z-index: 9999; border-radius: 4px;";
+      fixNotification.innerHTML = `
+        <strong>Emergency Fix Running</strong><br>
+        Rendering data from formatter
+      `;
+      document.body.appendChild(fixNotification);
+      setTimeout(() => fixNotification.style.opacity = "0.5", 5000);
+      setTimeout(() => fixNotification.remove(), 7000);
+    }
+    
     // Get data first
     getFormatterData();
     
-    // Render with a slight delay to ensure DOM is fully ready
-    setTimeout(renderDashboard, 500);
+    // Render with a longer delay if we're coming from a redirect
+    const renderDelay = fromFormatter ? 1500 : 500;
+    console.log(`Will render dashboard after ${renderDelay}ms delay`);
+    setTimeout(renderDashboard, renderDelay);
     
     // Add event listener for help modal
     const closeHelpButton = document.getElementById('close-help-modal');
