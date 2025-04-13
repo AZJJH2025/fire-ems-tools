@@ -385,9 +385,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const formatterDataKey = urlParams.get('formatter_data');
     const dataToken = urlParams.get('data_token');
     const storageMethod = urlParams.get('storage_method');
+    const recordCount = urlParams.get('records');
     
     if (fromFormatter) {
         console.log("✅ FORMATTER MODE: Detected redirect from Data Formatter based on URL parameter");
+        console.log("URL Parameters:", {
+            fromFormatter,
+            formatterDataKey,
+            dataToken,
+            storageMethod,
+            recordCount,
+            allParams: window.location.search
+        });
         
         // Add visual indicator that we're in formatter mode
         const formatterIndicator = document.createElement('div');
@@ -395,8 +404,8 @@ document.addEventListener('DOMContentLoaded', function() {
         formatterIndicator.textContent = `Formatter Mode: ${storageMethod || 'Unknown Method'}`;
         document.body.appendChild(formatterIndicator);
         
-        // Auto-remove after 8 seconds
-        setTimeout(() => formatterIndicator.remove(), 8000);
+        // Keep the indicator permanently for debugging
+        // setTimeout(() => formatterIndicator.remove(), 8000);
         
         // Create a status indicator
         const statusIndicator = document.createElement('div');
@@ -404,71 +413,121 @@ document.addEventListener('DOMContentLoaded', function() {
         statusIndicator.innerHTML = "Loading data from Data Formatter...";
         document.body.appendChild(statusIndicator);
         
-        // Try each method in sequence, starting with the recommended one
+        // IMPORTANT: Completely disable emergency mode when coming from formatter
+        window.isEmergencyMode = false;
+        window.skipEmergencyMode = true;
+        window.dataSource = {
+            fromFormatter: true,
+            isEmergency: false, 
+            source: 'formatter'
+        };
+        console.log("Emergency mode explicitly disabled for formatter data flow");
+        
+        // A single recovery function that logs all steps
+        function processFormatterData(data, source) {
+            // Store the data in sessionStorage for processing
+            try {
+                console.log(`Processing ${data.length} records from ${source}`);
+                
+                // Make sure it's a JSON string
+                const dataString = typeof data === 'string' ? data : JSON.stringify(data);
+                
+                sessionStorage.setItem('formattedData', dataString);
+                sessionStorage.setItem('dataSource', 'formatter');
+                sessionStorage.setItem('formatterToolId', 'response-time');
+                sessionStorage.setItem('formatterTarget', 'response-time');
+                sessionStorage.setItem('formatterTimestamp', new Date().toISOString());
+                
+                statusIndicator.innerHTML = `Successfully loaded ${data.length} records from ${source}`;
+                statusIndicator.style.background = "#4caf50";
+                
+                // Process the data after a short delay
+                setTimeout(() => {
+                    // Add this line to log the data right before processing
+                    console.log("About to process data, sessionStorage state:", {
+                        hasFormattedData: !!sessionStorage.getItem('formattedData'),
+                        formattedDataLength: sessionStorage.getItem('formattedData') ? sessionStorage.getItem('formattedData').length : 0,
+                        formattedDataSample: sessionStorage.getItem('formattedData') ? sessionStorage.getItem('formattedData').substring(0, 100) + "..." : null,
+                        dataSource: sessionStorage.getItem('dataSource')
+                    });
+                    
+                    const result = checkSessionStorageForData();
+                    console.log("Data processing result:", result);
+                    
+                    if (!result) {
+                        // If processing failed, show a visual error
+                        statusIndicator.innerHTML = "Failed to process data after storage. Check console logs.";
+                        statusIndicator.style.background = "#f44336";
+                    } else {
+                        // Remove status indicator on success
+                        setTimeout(() => {
+                            statusIndicator.style.opacity = "0";
+                            setTimeout(() => statusIndicator.remove(), 500);
+                        }, 2000);
+                    }
+                }, 300);
+                
+                return true;
+            } catch (error) {
+                console.error(`Error storing data from ${source}:`, error);
+                statusIndicator.innerHTML = `Error storing data from ${source}: ${error.message}`;
+                statusIndicator.style.background = "#f44336";
+                return false;
+            }
+        }
+        
+        // STEP 1: Try server method if specified
         if (storageMethod === 'server' && dataToken) {
-            // METHOD 1: Server-side API approach
             console.log("🌐 TRYING SERVER METHOD: Using API with token:", dataToken);
             statusIndicator.innerHTML = "Retrieving data from server...";
             
-            // Try to fetch data from server
             fetch(`/api/get-temp-data?token=${dataToken}`)
-                .then(response => response.json())
+                .then(response => {
+                    console.log("Server response status:", response.status);
+                    if (!response.ok) {
+                        throw new Error(`Server returned ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(result => {
                     console.log("Server data retrieval result:", result);
                     
                     if (result.success && result.data) {
                         console.log(`✅ SERVER METHOD SUCCESS: Retrieved ${result.data.length} records from server`);
-                        statusIndicator.innerHTML = `Successfully loaded ${result.data.length} records from server`;
-                        statusIndicator.style.background = "#4caf50";
                         
-                        // Store the data in sessionStorage for processing
-                        sessionStorage.setItem('formattedData', JSON.stringify(result.data));
-                        sessionStorage.setItem('dataSource', 'formatter');
-                        sessionStorage.setItem('formatterToolId', 'response-time');
-                        sessionStorage.setItem('formatterTarget', 'response-time');
-                        sessionStorage.setItem('formatterTimestamp', new Date().toISOString());
-                        
-                        // Remove the token parameter from URL for cleanliness
-                        urlParams.delete('data_token');
-                        const newUrl = window.location.pathname +
-                                      (urlParams.toString() ? '?' + urlParams.toString() : '') +
-                                      window.location.hash;
-                        window.history.replaceState({}, document.title, newUrl);
-                        
-                        // Process the data after a short delay
-                        setTimeout(() => {
-                            checkSessionStorageForData();
-                            
-                            // Remove status indicator
-                            setTimeout(() => {
-                                statusIndicator.style.opacity = "0";
-                                setTimeout(() => statusIndicator.remove(), 500);
-                            }, 2000);
-                        }, 300);
+                        // Process the data
+                        if (processFormatterData(result.data, 'server')) {
+                            // Clean up URL (optional)
+                            urlParams.delete('data_token');
+                            const newUrl = window.location.pathname +
+                                          (urlParams.toString() ? '?' + urlParams.toString() : '') +
+                                          window.location.hash;
+                            window.history.replaceState({}, document.title, newUrl);
+                        }
                     } else {
                         console.error("❌ SERVER METHOD FAILED:", result.error || "Unknown error");
-                        statusIndicator.innerHTML = "Server data retrieval failed, trying browser storage...";
+                        statusIndicator.innerHTML = "Server data retrieval failed, trying localStorage...";
                         statusIndicator.style.background = "#ff9800";
                         
-                        // Try browser storage methods next
-                        tryBrowserStorage();
+                        // Try localStorage next
+                        tryLocalStorage();
                     }
                 })
                 .catch(error => {
                     console.error("❌ SERVER METHOD ERROR:", error);
-                    statusIndicator.innerHTML = "Server error, trying browser storage...";
+                    statusIndicator.innerHTML = "Server error, trying localStorage...";
                     statusIndicator.style.background = "#ff9800";
                     
-                    // Try browser storage methods next
-                    tryBrowserStorage();
+                    // Try localStorage next
+                    tryLocalStorage();
                 });
         } else {
-            // No server token or not using server method - try browser storage
-            tryBrowserStorage();
+            // Skip to localStorage
+            tryLocalStorage();
         }
         
-        // Function to try browser storage methods
-        function tryBrowserStorage() {
+        // STEP 2: Try localStorage if we have a key
+        function tryLocalStorage() {
             // METHOD 2: Try localStorage with formatter_data key
             if (formatterDataKey) {
                 console.log("📦 TRYING LOCALSTORAGE: Using key:", formatterDataKey);
@@ -529,35 +588,92 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // METHOD 3: Check if data is already in sessionStorage
+            // STEP 3: Check sessionStorage directly as last resort
+            trySessionStorage();
+        }
+        
+        // STEP 3: Check sessionStorage directly as last resort
+        function trySessionStorage() {
             console.log("🔍 CHECKING SESSION STORAGE DIRECTLY");
-            const formattedData = sessionStorage.getItem('formattedData');
+            statusIndicator.innerHTML = "Checking sessionStorage...";
             
-            if (formattedData) {
-                console.log("📦 FOUND DATA DIRECTLY IN SESSIONSTORAGE");
-                statusIndicator.innerHTML = "Found data in sessionStorage, processing...";
-                statusIndicator.style.background = "#4caf50";
+            try {
+                const formattedData = sessionStorage.getItem('formattedData');
                 
-                // Ensure other sessionStorage items are set
-                sessionStorage.setItem('dataSource', 'formatter');
-                sessionStorage.setItem('formatterToolId', 'response-time');
-                sessionStorage.setItem('formatterTarget', 'response-time');
-                
-                // Process the data after a short delay
-                setTimeout(() => {
-                    checkSessionStorageForData();
+                if (formattedData) {
+                    console.log("📦 FOUND DATA DIRECTLY IN SESSIONSTORAGE");
                     
-                    // Remove status indicator
-                    setTimeout(() => {
-                        statusIndicator.style.opacity = "0";
-                        setTimeout(() => statusIndicator.remove(), 500);
-                    }, 2000);
-                }, 300);
+                    try {
+                        // Parse the data to check format and get length
+                        const parsedData = JSON.parse(formattedData);
+                        
+                        if (Array.isArray(parsedData)) {
+                            console.log(`✅ SESSIONSTORAGE SUCCESS: Found ${parsedData.length} records`);
+                            
+                            // Data is already in sessionStorage, just ensure metadata is set
+                            sessionStorage.setItem('dataSource', 'formatter');
+                            sessionStorage.setItem('formatterToolId', 'response-time');
+                            sessionStorage.setItem('formatterTarget', 'response-time');
+                            sessionStorage.setItem('formatterTimestamp', new Date().toISOString());
+                            
+                            statusIndicator.innerHTML = `Found ${parsedData.length} records in sessionStorage, processing...`;
+                            statusIndicator.style.background = "#4caf50";
+                            
+                            // Process the data
+                            setTimeout(() => {
+                                // Log the data right before processing
+                                console.log("About to process sessionStorage data, state:", {
+                                    formattedDataLength: formattedData.length,
+                                    sampleData: formattedData.substring(0, 100) + "..."
+                                });
+                                
+                                const result = checkSessionStorageForData();
+                                console.log("Direct sessionStorage processing result:", result);
+                                
+                                if (!result) {
+                                    statusIndicator.innerHTML = "Failed to process data from sessionStorage. Check console logs.";
+                                    statusIndicator.style.background = "#f44336";
+                                    allMethodsFailed();
+                                } else {
+                                    // Remove status indicator on success
+                                    setTimeout(() => {
+                                        statusIndicator.style.opacity = "0";
+                                        setTimeout(() => statusIndicator.remove(), 500);
+                                    }, 2000);
+                                }
+                            }, 300);
+                            
+                            return; // Successfully found data
+                        } else {
+                            console.error("❌ Data found in sessionStorage but not an array:", typeof parsedData);
+                            statusIndicator.innerHTML = "Data found in sessionStorage but in wrong format";
+                            statusIndicator.style.background = "#ff9800";
+                        }
+                    } catch (error) {
+                        console.error("Error parsing sessionStorage data:", error);
+                        statusIndicator.innerHTML = "Error parsing sessionStorage data";
+                        statusIndicator.style.background = "#ff9800";
+                    }
+                } else {
+                    console.log("❌ No data found in sessionStorage");
+                    statusIndicator.innerHTML = "No data found in sessionStorage";
+                    statusIndicator.style.background = "#ff9800";
+                }
                 
-                return; // Successfully loaded
+                // If we got here, all methods failed
+                allMethodsFailed();
+            } catch (e) {
+                console.error("Error accessing sessionStorage:", e);
+                statusIndicator.innerHTML = "Error accessing sessionStorage";
+                statusIndicator.style.background = "#f44336";
+                
+                // If we got here, all methods failed
+                allMethodsFailed();
             }
-            
-            // METHOD 4: All methods failed
+        }
+        
+        // STEP 4: All methods failed
+        function allMethodsFailed() {
             console.error("❌ ALL DATA RETRIEVAL METHODS FAILED");
             statusIndicator.innerHTML = "Failed to retrieve data. Please upload file directly.";
             statusIndicator.style.background = "#f44336";
@@ -570,11 +686,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 500);
             }
             
+            // Add a detailed error message in the page
+            const mainSection = document.querySelector('main') || document.body;
+            const errorMessage = document.createElement('div');
+            errorMessage.className = 'formatter-error-message';
+            errorMessage.style.cssText = "margin: 20px; padding: 15px; background-color: #ffebee; border-left: 4px solid #f44336; color: #b71c1c;";
+            
+            errorMessage.innerHTML = `
+                <h3>Data Transfer Failed</h3>
+                <p>We couldn't retrieve your data from the Data Formatter. This could be due to:</p>
+                <ul>
+                    <li>Browser privacy settings blocking storage access</li>
+                    <li>Data expired or was too large</li>
+                    <li>Connection issues with the server</li>
+                </ul>
+                <p>Please try uploading your file directly using the file uploader above.</p>
+                <p><strong>Debug Info:</strong> Method: ${storageMethod || 'Unknown'}, Key: ${formatterDataKey || 'None'}, Token: ${dataToken || 'None'}</p>
+            `;
+            
+            mainSection.insertBefore(errorMessage, mainSection.firstChild);
+            
             // Remove status indicator after a longer delay
             setTimeout(() => {
                 statusIndicator.style.opacity = "0";
                 setTimeout(() => statusIndicator.remove(), 500);
             }, 8000);
+        }
         }
     }
     
@@ -589,6 +726,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Function to check sessionStorage for data (used by both delayed and immediate checks)
+    // Returns true if successful, false otherwise
     function checkSessionStorageForData() {
         console.log("⏱️ Checking sessionStorage for formatter data...");
     
@@ -613,10 +751,61 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!formattedData && fromFormatter) {
             console.error("🔴 ERROR: Missing formatter data in sessionStorage! Browser might have restrictions on sessionStorage between pages.");
             
+            // Try to read from window object in case it was stored there as emergency fallback
+            if (window.emergencyFormatterData) {
+                console.log("Found emergency formatter data in window object, attempting to use it");
+                try {
+                    if (Array.isArray(window.emergencyFormatterData)) {
+                        // Store in sessionStorage for normal processing
+                        sessionStorage.setItem('formattedData', JSON.stringify(window.emergencyFormatterData));
+                        sessionStorage.setItem('dataSource', 'formatter');
+                        sessionStorage.setItem('formatterToolId', 'response-time');
+                        sessionStorage.setItem('formatterTarget', 'response-time');
+                        
+                        console.log(`Recovered ${window.emergencyFormatterData.length} records from window object`);
+                        return true; // Successfully recovered
+                    }
+                } catch (e) {
+                    console.error("Error processing window.emergencyFormatterData:", e);
+                }
+            }
+            
             // Show error message to user
             const errorMsg = document.createElement('div');
             errorMsg.style.cssText = "background-color: #ffebee; padding: 15px; border-radius: 4px; margin: 20px 0; border-left: 4px solid #f44336;";
             errorMsg.innerHTML = `
+                <h3>Data Transfer Error</h3>
+                <p>The data from the Data Formatter could not be accessed. This might be due to browser privacy settings or storage limitations.</p>
+                <p>Please try one of these solutions:</p>
+                <ol>
+                    <li>Upload your file directly using the file uploader above</li>
+                    <li>Try a different browser (Chrome or Firefox recommended)</li>
+                    <li>Check your browser's privacy settings and allow cookies/storage for this site</li>
+                </ol>
+            `;
+            
+            // Insert at the top of the page
+            const container = document.querySelector('.container') || document.body;
+            container.insertBefore(errorMsg, container.firstChild);
+            
+            return false; // Failed to process
+        }
+        
+        if (formattedData) {
+            try {
+                // Process the data - additional validation/checks could go here
+                const parsedData = JSON.parse(formattedData);
+                
+                console.log(`Success! Processed ${parsedData.length} records from sessionStorage`);
+                return true; // Successfully processed
+            } catch (e) {
+                console.error("Error parsing formattedData from sessionStorage:", e);
+                return false; // Failed to process
+            }
+        }
+        
+        return false; // No data found
+    }
                 <h3 style="margin-top: 0; color: #d32f2f;">Data Transfer Error</h3>
                 <p>Data from the formatter couldn't be accessed. This usually happens due to browser privacy settings.</p>
                 <div style="margin-top: 10px;">

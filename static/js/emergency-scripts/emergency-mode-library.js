@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const fromFormatter = urlParams.get('from_formatter');
   
   // Log the status of parameters to debug data flow paths
-  console.log("URL Parameters check:", {
+  console.log("URL Parameters check in emergency-mode-library.js:", {
     hasEmergencyData: !!emergencyData,
     emergencyData: emergencyData,
     fromFormatter: fromFormatter,
@@ -66,10 +66,20 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   
   // IMPORTANT: Skip emergency library initialization if we're explicitly coming from formatter
-  // and NOT in emergency mode
-  if (fromFormatter === 'true' && !emergencyData) {
-    console.log("IMPORTANT: Data coming from formatter (not emergency), skipping emergency library");
-    return; // Exit the library initialization
+  // in ANY mode - formatter data should ALWAYS use the normal flow
+  if (fromFormatter === 'true') {
+    console.log("CRITICAL: Data coming from formatter - COMPLETELY SKIPPING emergency library");
+    
+    // Set global flags to help other scripts know we're bypassing emergency mode
+    window.skipEmergencyMode = true;
+    window.isEmergencyMode = false;
+    window.dataSource = {
+      fromFormatter: true,
+      isEmergency: false,
+      source: 'formatter'
+    };
+    
+    return; // Exit the library initialization completely
   }
   
   // Process emergency data directly if present (don't wait for library)
