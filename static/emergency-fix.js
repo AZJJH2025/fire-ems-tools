@@ -643,10 +643,43 @@
             if (value.includes(' ')) {
               const date = new Date(value);
               if (!isNaN(date.getTime())) {
-                return date.toLocaleTimeString();
+                // Format as military time (24-hour format) - HH:MM:SS
+                return date.toLocaleTimeString('en-US', { hour12: false });
               }
             }
-            // If it's just a time string (HH:MM:SS), return as is
+            
+            // For simple time strings, convert to 24-hour format if possible
+            if (typeof value === 'string' && value.match(/^\d{1,2}:\d{2}(:\d{2})?(\s*[AP]M)?$/i)) {
+              // Parse time parts
+              const timeParts = value.split(':');
+              let hours = parseInt(timeParts[0], 10);
+              const minutes = timeParts[1].replace(/[^\d]/g, ''); // Remove non-digits
+              let seconds = "00";
+              
+              // Check for AM/PM
+              const isPM = value.toLowerCase().includes('pm');
+              const isAM = value.toLowerCase().includes('am');
+              
+              // Convert to 24-hour format
+              if (isPM && hours < 12) {
+                hours += 12;
+              } else if (isAM && hours === 12) {
+                hours = 0;
+              }
+              
+              // Format with leading zeros
+              const formattedHours = hours.toString().padStart(2, '0');
+              
+              // If we have seconds in the original string
+              if (timeParts.length > 2) {
+                seconds = timeParts[2].replace(/[^\d]/g, '').padStart(2, '0');
+                return `${formattedHours}:${minutes}:${seconds}`;
+              }
+              
+              return `${formattedHours}:${minutes}`;
+            }
+            
+            // If it's just a time string, return as is
             return value;
           } catch (e) {}
           return value;
@@ -692,7 +725,38 @@
             // If it's a full date/time
             const date = new Date(value);
             if (!isNaN(date.getTime())) {
-              return date.toLocaleTimeString();
+              return date.toLocaleTimeString('en-US', { hour12: false });
+            }
+            
+            // For simple time strings, convert to 24-hour format if possible
+            if (typeof value === 'string' && value.match(/^\d{1,2}:\d{2}(:\d{2})?(\s*[AP]M)?$/i)) {
+              // Parse time parts
+              const timeParts = value.split(':');
+              let hours = parseInt(timeParts[0], 10);
+              const minutes = timeParts[1].replace(/[^\d]/g, ''); // Remove non-digits
+              let seconds = "00";
+              
+              // Check for AM/PM
+              const isPM = value.toLowerCase().includes('pm');
+              const isAM = value.toLowerCase().includes('am');
+              
+              // Convert to 24-hour format
+              if (isPM && hours < 12) {
+                hours += 12;
+              } else if (isAM && hours === 12) {
+                hours = 0;
+              }
+              
+              // Format with leading zeros
+              const formattedHours = hours.toString().padStart(2, '0');
+              
+              // If we have seconds in the original string
+              if (timeParts.length > 2) {
+                seconds = timeParts[2].replace(/[^\d]/g, '').padStart(2, '0');
+                return `${formattedHours}:${minutes}:${seconds}`;
+              }
+              
+              return `${formattedHours}:${minutes}`;
             }
           } catch (e) {}
           return value;
@@ -706,7 +770,38 @@
             // If it's a full date/time
             const date = new Date(value);
             if (!isNaN(date.getTime())) {
-              return date.toLocaleTimeString();
+              return date.toLocaleTimeString('en-US', { hour12: false });
+            }
+            
+            // For simple time strings, convert to 24-hour format if possible
+            if (typeof value === 'string' && value.match(/^\d{1,2}:\d{2}(:\d{2})?(\s*[AP]M)?$/i)) {
+              // Parse time parts
+              const timeParts = value.split(':');
+              let hours = parseInt(timeParts[0], 10);
+              const minutes = timeParts[1].replace(/[^\d]/g, ''); // Remove non-digits
+              let seconds = "00";
+              
+              // Check for AM/PM
+              const isPM = value.toLowerCase().includes('pm');
+              const isAM = value.toLowerCase().includes('am');
+              
+              // Convert to 24-hour format
+              if (isPM && hours < 12) {
+                hours += 12;
+              } else if (isAM && hours === 12) {
+                hours = 0;
+              }
+              
+              // Format with leading zeros
+              const formattedHours = hours.toString().padStart(2, '0');
+              
+              // If we have seconds in the original string
+              if (timeParts.length > 2) {
+                seconds = timeParts[2].replace(/[^\d]/g, '').padStart(2, '0');
+                return `${formattedHours}:${minutes}:${seconds}`;
+              }
+              
+              return `${formattedHours}:${minutes}`;
             }
           } catch (e) {}
           return value;
