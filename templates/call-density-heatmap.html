@@ -1,19 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Call Density Heatmap | FireEMS.ai</title>
+{% extends "base.html" %}
+
+{% from "components/file_upload.html" import file_upload %}
+{% from "components/map_container.html" import map_container %}
+{% from "components/notification.html" import notification %}
+
+{% block title %}Call Density Heatmap | FireEMS.ai{% endblock %}
+
+{% block styles %}
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <!-- MarkerCluster CSS must come BEFORE other stylesheets to avoid being overridden -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='call-density-heatmap.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='fix-ready-status.css') }}">
-    <link rel="stylesheet" href="/static/mobile-responsive.css">
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     
     <style>
         /* Custom marker cluster styles */
@@ -55,59 +54,20 @@
             font-size: 20px !important;
         }
     </style>
-</head>
-<body>
-    <div class="navbar">
-        <div class="logo">
-            <a href="/">
-                <i class="fas fa-fire"></i> FireEMS.ai
-            </a>
-        </div>
-        <div class="nav-links">
-            <a href="/">Home</a>
-            <a href="/fire-ems-dashboard">Response Time Analyzer</a>
-            <a href="/isochrone-map">Isochrone Map</a>
-            <a href="/call-density-heatmap" class="active">Call Density</a>
-            <a href="/station-overview">Station Overview</a>
-            <a href="/incident-logger">Incident Logger</a>
-            <a href="/fire-map-pro">FireMapPro</a>
-            <a href="/data-formatter">Data Formatter</a>
-        </div>
-    </div>
-    
-    <header class="tool-header">
-        <div class="container">
-            <h1><i class="fas fa-fire"></i> Call Density Heatmap</h1>
-            <p>Visualize historical call data with customizable heatmaps</p>
-        </div>
-    </header>
+{% endblock %}
 
+{% block header_icon %}fas fa-fire{% endblock %}
+{% block header_title %}Call Density Heatmap{% endblock %}
+{% block header_subtitle %}Visualize historical call data with customizable heatmaps{% endblock %}
+
+{% block content %}
     <div class="container">
         <div class="panel-container">
             <div class="left-panel">
                 <h2>Call Density Heatmap</h2>
                 <p>Upload historical call data to visualize incident density patterns across your service area.</p>
                 
-                <div class="upload-section">
-                    <h3>Upload Call Data</h3>
-                    <form id="upload-form" enctype="multipart/form-data">
-                        <div class="file-input-container">
-                            <input type="file" id="call-data-file" name="file" accept=".csv, .xlsx, .xls">
-                            <label for="call-data-file" class="file-input-label">
-                                <i class="fas fa-file-upload"></i> Choose File
-                            </label>
-                            <span id="file-name">No file selected</span>
-                        </div>
-                        <button type="submit" class="primary-button">
-                            <i class="fas fa-upload"></i> Upload
-                        </button>
-                    </form>
-                    <div id="upload-status"></div>
-                    <div class="formatter-link" style="margin-top: 10px; font-size: 0.85rem;">
-                        <i class="fas fa-info-circle"></i>
-                        Need to format your data first? Use the <a href="/data-formatter?tool=call-density" style="color: #2196f3; text-decoration: underline;">Data Formatter</a> tool.
-                    </div>
-                </div>
+                {{ file_upload(form_id="upload-form", file_id="call-data-file", accept=".csv, .xlsx, .xls", btn_text="Upload", formatter_tool="call-density") }}
 
                 <div class="filter-section">
                     <h3>Data Filters</h3>
@@ -202,50 +162,41 @@
             </div>
 
             <div class="right-panel">
-                <div id="map-container">
-                    <div id="map"></div>
-                    <div class="map-overlay">
-                        <div id="legend" class="legend">
-                            <h4>Call Density</h4>
-                            <div class="legend-scale">
-                                <div class="legend-item">
-                                    <span class="color-box" style="background-color: rgba(0, 0, 255, 0.1);"></span>
-                                    <span>Low</span>
-                                </div>
-                                <div class="legend-item">
-                                    <span class="color-box" style="background-color: rgba(0, 0, 255, 0.4);"></span>
-                                    <span>Medium</span>
-                                </div>
-                                <div class="legend-item">
-                                    <span class="color-box" style="background-color: rgba(0, 0, 255, 0.7);"></span>
-                                    <span>High</span>
-                                </div>
-                                <div class="legend-item">
-                                    <span class="color-box" style="background-color: rgba(255, 0, 0, 0.7);"></span>
-                                    <span>Critical</span>
-                                </div>
-                            </div>
-                        </div>
+                {% call map_container(map_id="map", legend_title="Call Density") %}
+                    <div class="legend-item">
+                        <span class="color-box" style="background-color: rgba(0, 0, 255, 0.1);"></span>
+                        <span>Low</span>
                     </div>
-                </div>
+                    <div class="legend-item">
+                        <span class="color-box" style="background-color: rgba(0, 0, 255, 0.4);"></span>
+                        <span>Medium</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="color-box" style="background-color: rgba(0, 0, 255, 0.7);"></span>
+                        <span>High</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="color-box" style="background-color: rgba(255, 0, 0, 0.7);"></span>
+                        <span>Critical</span>
+                    </div>
+                {% endcall %}
             </div>
         </div>
     </div>
+{% endblock %}
 
-    <footer>
-        <div class="footer-content">
-            <p>&copy; 2025 FireEMS.ai - Analytics for Fire and Emergency Services</p>
-        </div>
-    </footer>
-
-    <!-- Scripts -->
+{% block scripts %}
+    <!-- Map libraries -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     <script src="https://unpkg.com/leaflet-image@0.4.0/leaflet-image.js"></script>
+    
+    <!-- Export libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- Page specific script -->
     <script src="{{ url_for('static', filename='call-density-heatmap.js') }}"></script>
-</body>
-</html>
+{% endblock %}

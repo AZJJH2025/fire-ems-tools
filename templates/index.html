@@ -1,16 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <link rel="stylesheet" href="/static/mobile-responsive.css">
-  <title>FireEMS.ai - Fire & EMS AI Analytics Tools</title>
-  <link rel="stylesheet" href="/static/styles.css">
+{% extends "base.html" %}
+
+{% block title %}FireEMS.ai - Fire & EMS AI Analytics Tools{% endblock %}
+
+{% block styles %}
   <link rel="stylesheet" href="/static/home-styles.css">
-  <!-- Font Awesome for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Favicon -->
-  <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
   <style>
     /* Developer Tools Section Styles */
     .dev-tools {
@@ -58,34 +51,13 @@
       color: #ecf0f1;
     }
   </style>
-</head>
-<body>
-  <div class="navbar">
-    <div class="logo">
-      <a href="/">
-        <i class="fas fa-fire"></i> FireEMS.ai
-      </a>
-    </div>
-    <div class="nav-links">
-      <a href="/" class="active">Home</a>
-      <a href="/fire-ems-dashboard">Response Time Analyzer</a>
-      <a href="/isochrone-map">Isochrone Map</a>
-      <a href="/call-density-heatmap">Call Density</a>
-      <a href="/station-overview">Station Overview</a>
-      <a href="/incident-logger">Incident Logger</a>
-      <a href="/coverage-gap-finder">Coverage Gap Finder</a>
-      <a href="/fire-map-pro">FireMapPro</a>
-      <a href="/data-formatter">Data Formatter</a>
-    </div>
-  </div>
+{% endblock %}
 
-  <header class="tool-header">
-    <div class="container">
-      <h1><i class="fas fa-tools"></i> FireEMS.ai</h1>
-      <p>Advanced AI-Powered Analytics Tools for Fire & EMS Agencies</p>
-    </div>
-  </header>
+{% block header_icon %}fas fa-tools{% endblock %}
+{% block header_title %}FireEMS.ai{% endblock %}
+{% block header_subtitle %}Advanced AI-Powered Analytics Tools for Fire & EMS Agencies{% endblock %}
 
+{% block content %}
   <main class="container">
     <section class="intro">
       <h2>Welcome to FireEMS.ai</h2>
@@ -336,11 +308,4 @@
       </div>
     </div>
   </section>
-
-  <footer>
-    <div class="container">
-      <p>&copy; 2025 FireEMS.ai - Advanced Analytics for Fire & EMS Agencies</p>
-    </div>
-  </footer>
-</body>
-</html>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% macro file_upload(form_id="upload-form", file_id="file-input", accept=".csv, .xlsx, .xls", btn_text="Upload", show_formatter_link=true, formatter_tool=None) %}
+<div class="upload-section">
+    <h3>Upload Data</h3>
+    <form id="{{ form_id }}" enctype="multipart/form-data">
+        <div class="file-input-container">
+            <input type="file" id="{{ file_id }}" name="file" accept="{{ accept }}">
+            <label for="{{ file_id }}" class="file-input-label">
+                <i class="fas fa-file-upload"></i> Choose File
+            </label>
+            <span id="file-name">No file selected</span>
+        </div>
+        <button type="submit" class="primary-button">
+            <i class="fas fa-upload"></i> {{ btn_text }}
+        </button>
+    </form>
+    <div id="upload-status"></div>
+    {% if show_formatter_link %}
+    <div class="formatter-link" style="margin-top: 10px; font-size: 0.85rem;">
+        <i class="fas fa-info-circle"></i>
+        Need to format your data first? Use the <a href="/data-formatter{% if formatter_tool %}?tool={{ formatter_tool }}{% endif %}" style="color: #2196f3; text-decoration: underline;">Data Formatter</a> tool.
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}

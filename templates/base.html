@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{% block title %}FireEMS.ai - Fire & EMS AI Analytics Tools{% endblock %}</title>
+    
+    <!-- Common CSS -->
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/mobile-responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
+    
+    <!-- Page specific CSS -->
+    {% block styles %}{% endblock %}
+    
+    <!-- Framework initialization -->
+    <script src="/static/js/fireems-framework.js"></script>
+    
+    <!-- Common scripts that need to load in header -->
+    {% block header_scripts %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <div class="logo">
+            <a href="/">
+                <i class="fas fa-fire"></i> FireEMS.ai
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="/" {% if active_page == 'home' %}class="active"{% endif %}>Home</a>
+            <a href="/fire-ems-dashboard" {% if active_page == 'response-time' %}class="active"{% endif %}>Response Time Analyzer</a>
+            <a href="/isochrone-map" {% if active_page == 'isochrone' %}class="active"{% endif %}>Isochrone Map</a>
+            <a href="/call-density-heatmap" {% if active_page == 'call-density' %}class="active"{% endif %}>Call Density</a>
+            <a href="/station-overview" {% if active_page == 'station-overview' %}class="active"{% endif %}>Station Overview</a>
+            <a href="/incident-logger" {% if active_page == 'incident-logger' %}class="active"{% endif %}>Incident Logger</a>
+            <a href="/fire-map-pro" {% if active_page == 'fire-map-pro' %}class="active"{% endif %}>FireMapPro</a>
+            <a href="/data-formatter" {% if active_page == 'data-formatter' %}class="active"{% endif %}>Data Formatter</a>
+        </div>
+    </div>
+
+    <!-- Header Section -->
+    {% block header %}
+    <header class="tool-header">
+        <div class="container">
+            <h1><i class="{% block header_icon %}fas fa-tools{% endblock %}"></i> {% block header_title %}FireEMS.ai Tools{% endblock %}</h1>
+            <p>{% block header_subtitle %}Advanced AI-Powered Analytics for Fire & EMS Agencies{% endblock %}</p>
+        </div>
+    </header>
+    {% endblock %}
+
+    <!-- Main Content -->
+    {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 FireEMS.ai - Advanced Analytics for Fire & EMS Agencies</p>
+        </div>
+    </footer>
+
+    <!-- Common scripts at the end of body -->
+    <script src="/static/js/utils/error-handler.js"></script>
+    <script src="/static/js/utils/script-loader.js"></script>
+    <script src="/static/js/utils/data-transformer.js"></script>
+    
+    <!-- Page specific scripts -->
+    {% block scripts %}{% endblock %}
+</body>
+</html>

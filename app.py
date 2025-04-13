@@ -77,6 +77,16 @@ def create_app(config_name='default'):
     # Apply configuration
     app.config.from_object(config[config_name])
     
+    # Set up template context processor for common template values
+    @app.context_processor
+    def inject_template_globals():
+        return {
+            'app_name': 'FireEMS.ai',
+            'current_year': datetime.now().year,
+            'version': app.config.get('VERSION', '1.0.0'),
+            'active_page': request.path.strip('/') or 'home'
+        }
+    
     # Configure security headers
     @app.after_request
     def add_security_headers(response):
@@ -796,6 +806,146 @@ def create_app(config_name='default'):
                                     static_files=static_files,
                                     file_status=file_status,
                                     url_rules=url_rules)
+    
+    # Data Transformer Utility Demo Page
+    @app.route('/data-transformer-demo')
+    def data_transformer_demo():
+        """Demo page for the Data Transformer Utility"""
+        return render_template('data-transformer-demo.html')
+        
+    # Call Density Heatmap File Upload Handler
+    @app.route('/upload-call-data', methods=['POST'])
+    def upload_call_data():
+        """Handle file upload for Call Density Heatmap"""
+        import pandas as pd
+        import io
+        import json
+        from datetime import datetime
+        
+        try:
+            if 'file' not in request.files:
+                return jsonify({"success": False, "error": "No file provided"}), 400
+                
+            file = request.files['file']
+            
+            if file.filename == '':
+                return jsonify({"success": False, "error": "No file selected"}), 400
+                
+            # Check file type
+            allowed_extensions = {'csv', 'xlsx', 'xls'}
+            if not any(file.filename.endswith(ext) for ext in allowed_extensions):
+                return jsonify({"success": False, "error": "File type not allowed"}), 400
+                
+            # Process file data
+            if file.filename.endswith('.csv'):
+                df = pd.read_csv(file)
+            else:
+                df = pd.read_excel(file)
+                
+            # Basic validation
+            if df.empty:
+                return jsonify({"success": False, "error": "File contains no data"}), 400
+                
+            # Try to identify coordinate columns
+            lat_col = None
+            lon_col = None
+            
+            for col in df.columns:
+                col_lower = col.lower()
+                if 'lat' in col_lower or 'y' == col_lower:
+                    lat_col = col
+                elif 'lon' in col_lower or 'long' in col_lower or 'x' == col_lower:
+                    lon_col = col
+            
+            # If coordinates not found, return error
+            if not lat_col or not lon_col:
+                return jsonify({"success": False, "error": "Could not find latitude/longitude columns"}), 400
+                
+            # Process data to extract point information
+            points = []
+            for _, row in df.iterrows():
+                try:
+                    lat = float(row[lat_col])
+                    lon = float(row[lon_col])
+                    
+                    # Skip invalid coordinates
+                    if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+                        continue
+                        
+                    # Create point data
+                    point = {
+                        "latitude": lat,
+                        "longitude": lon
+                    }
+                    
+                    # Try to identify call type
+                    for type_col in ['type', 'call_type', 'incident_type', 'nature', 'call_nature']:
+                        if type_col in df.columns and pd.notna(row[type_col]):
+                            point["type"] = str(row[type_col])
+                            break
+                    else:
+                        point["type"] = "Unknown"
+                    
+                    # Try to extract date/time information
+                    datetime_col = None
+                    for dt_col in ['datetime', 'date_time', 'timestamp', 'incident_datetime', 'call_datetime']:
+                        if dt_col in df.columns and pd.notna(row[dt_col]):
+                            datetime_col = dt_col
+                            break
+                    
+                    if datetime_col:
+                        try:
+                            dt = pd.to_datetime(row[datetime_col])
+                            point["hour"] = dt.hour
+                            point["dayOfWeek"] = dt.dayofweek  # 0=Monday, 6=Sunday
+                            point["month"] = dt.month  # 1=January, 12=December
+                        except:
+                            pass
+                    else:
+                        # Try separate date and time columns
+                        date_col = None
+                        for d_col in ['date', 'incident_date', 'call_date']:
+                            if d_col in df.columns and pd.notna(row[d_col]):
+                                date_col = d_col
+                                break
+                        
+                        if date_col:
+                            try:
+                                dt = pd.to_datetime(row[date_col])
+                                point["dayOfWeek"] = dt.dayofweek
+                                point["month"] = dt.month
+                                
+                                # Try to find hour from time column
+                                for t_col in ['time', 'call_time', 'incident_time']:
+                                    if t_col in df.columns and pd.notna(row[t_col]):
+                                        try:
+                                            time_str = str(row[t_col])
+                                            if ':' in time_str:
+                                                hour = int(time_str.split(':')[0])
+                                                if 0 <= hour <= 23:
+                                                    point["hour"] = hour
+                                        except:
+                                            pass
+                            except:
+                                pass
+                    
+                    points.append(point)
+                except (ValueError, TypeError):
+                    # Skip invalid data
+                    continue
+                    
+            # If no valid points found, return error
+            if not points:
+                return jsonify({"success": False, "error": "No valid points found in data"}), 400
+                
+            # Successfully processed data
+            return jsonify({
+                "success": True,
+                "points": points
+            })
+        except Exception as e:
+            app.logger.error(f"Error processing call density data: {str(e)}")
+            return jsonify({"success": False, "error": str(e)}), 500
     
     # Register blueprints from modular routes
     try:
