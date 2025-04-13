@@ -416,6 +416,129 @@ def test_data_formatter_api():
         "timestamp": datetime.now().isoformat()
     })
 
+# File upload endpoint for the Response Time Analyzer
+@bp.route('/upload', methods=['POST'])
+@safe_limit("10 per minute")
+@csrf.exempt
+def upload_analyzer_file():
+    """Upload a data file for processing in the Response Time Analyzer"""
+    try:
+        # Debug logging
+        logger.info(f"=== Response Time Analyzer Upload request received ===")
+        logger.info(f"Content-Type: {request.content_type}")
+        logger.info(f"Files in request: {list(request.files.keys()) if request.files else 'None'}")
+        logger.info(f"Form data: {list(request.form.keys()) if request.form else 'None'}")
+        
+        # Check if file was included in request
+        if 'file' not in request.files:
+            logger.error("No file part in the request")
+            logger.error(f"Available files: {list(request.files.keys())}")
+            logger.error(f"Available form fields: {list(request.form.keys())}")
+            return jsonify({
+                "error": "No file part in the request", 
+                "files": list(request.files.keys()),
+                "form_fields": list(request.form.keys())
+            }), 400
+            
+        file = request.files['file']
+        logger.info(f"File received: {file.filename}")
+        
+        # Check if a file was selected
+        if file.filename == '':
+            logger.error("No file selected (empty filename)")
+            return jsonify({"error": "No file selected"}), 400
+            
+        # Check file type
+        allowed_extensions = {'csv', 'xlsx', 'xls', 'json', 'xml'}
+        if not allowed_file(file.filename, allowed_extensions):
+            logger.error(f"File type not allowed: {file.filename}")
+            return jsonify({"error": f"File type not allowed. Must be one of: {', '.join(allowed_extensions)}"}), 400
+            
+        # Create a unique filename
+        filename = secure_filename(file.filename)
+        file_id = str(uuid.uuid4())
+        file_extension = filename.rsplit('.', 1)[1].lower()
+        unique_filename = f"{file_id}.{file_extension}"
+        
+        # Create upload directory if it doesn't exist
+        upload_dir = get_files_path()
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # Save the file
+        file_path = os.path.join(upload_dir, unique_filename)
+        file.save(file_path)
+        logger.info(f"File saved to: {file_path}")
+        
+        # Process file to get data for Response Time Analyzer
+        try:
+            # Load source data based on file type
+            source_df = None
+            if file_extension == 'csv':
+                source_df = pd.read_csv(file_path)
+                logger.info(f"CSV file loaded, shape: {source_df.shape}")
+            elif file_extension in ['xlsx', 'xls']:
+                source_df = pd.read_excel(file_path)
+                logger.info(f"Excel file loaded, shape: {source_df.shape}")
+            elif file_extension == 'json':
+                source_df = pd.read_json(file_path)
+                logger.info(f"JSON file loaded, shape: {source_df.shape}")
+            elif file_extension == 'xml':
+                source_df = pd.read_xml(file_path)
+                logger.info(f"XML file loaded, shape: {source_df.shape}")
+                
+            # Get columns and sample data
+            columns = list(source_df.columns)
+            rows = len(source_df)
+            # Convert DataFrame to list of dicts for response
+            data = source_df.head(50).to_dict('records')
+            
+            # Try to detect first reported date for display
+            first_reported_date = None
+            date_fields = ['Reported', 'Incident Date', 'Date', 'incident_date', 'datetime']
+            for field in date_fields:
+                if field in source_df.columns:
+                    try:
+                        date_values = source_df[field].dropna()
+                        if len(date_values) > 0:
+                            # Try to parse as date
+                            first_date = pd.to_datetime(date_values.iloc[0])
+                            if pd.notna(first_date):
+                                first_reported_date = first_date.strftime('%Y-%m-%d')
+                                break
+                    except Exception as e:
+                        logger.warning(f"Error parsing date field {field}: {str(e)}")
+            
+            # Log success
+            logger.info(f"File processed successfully. Columns: {columns}")
+            
+            # Return the file information with data
+            return jsonify({
+                "success": True,
+                "fileId": file_id,
+                "filename": filename,
+                "fileType": file_extension,
+                "columns": columns,
+                "rows": rows,
+                "data": data,
+                "first_reported_date": first_reported_date
+            })
+            
+        except Exception as e:
+            logger.error(f"Error processing file: {str(e)}")
+            logger.error(traceback.format_exc())
+            # Return error with file info
+            return jsonify({
+                "error": f"File uploaded but could not be processed: {str(e)}",
+                "fileId": file_id,
+                "filename": filename,
+                "fileType": file_extension
+            }), 500
+        
+    except Exception as e:
+        logger.error(f"Error in upload_analyzer_file: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({"error": str(e)}), 500
+
 # Data formatter transform endpoint
 @bp.route('/data-formatter/transform', methods=['POST'])
 @safe_limit("5 per minute")
