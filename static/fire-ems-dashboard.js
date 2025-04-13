@@ -444,12 +444,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Process the data after a short delay
                 setTimeout(() => {
                     // Add this line to log the data right before processing
+                    console.log("%c RESPONSE TIME ANALYZER DATA RECEPTION (v2.1) ", "background: #2196F3; color: white; font-size: 14px;");
                     console.log("About to process data, sessionStorage state:", {
                         hasFormattedData: !!sessionStorage.getItem('formattedData'),
                         formattedDataLength: sessionStorage.getItem('formattedData') ? sessionStorage.getItem('formattedData').length : 0,
                         formattedDataSample: sessionStorage.getItem('formattedData') ? sessionStorage.getItem('formattedData').substring(0, 100) + "..." : null,
-                        dataSource: sessionStorage.getItem('dataSource')
+                        dataSource: sessionStorage.getItem('dataSource'),
+                        diagnostic: JSON.parse(sessionStorage.getItem('formatter_diagnostic') || '{}')
                     });
+                    
+                    // Log all URL parameters for debugging
+                    const allParams = {};
+                    for (const [key, value] of urlParams.entries()) {
+                      allParams[key] = value;
+                    }
+                    console.log("📋 URL Parameters:", allParams);
                     
                     const result = checkSessionStorageForData();
                     console.log("Data processing result:", result);

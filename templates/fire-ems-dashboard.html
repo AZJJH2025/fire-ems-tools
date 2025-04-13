@@ -19,12 +19,26 @@
   // *** CRITICAL: Remove emergency parameter from URL immediately before any framework loads ***
   const urlParams = new URLSearchParams(window.location.search);
   const fromFormatter = urlParams.has('from_formatter');
+  const formatterDataKey = urlParams.get('formatter_data');
   const hadEmergencyData = urlParams.has('emergency_data');
+  
+  // Create diagnostic data we can track through the process
+  window.dataTransferDiagnostic = {
+    timestamp: Date.now(),
+    version: "v2.1",
+    urlParams: Object.fromEntries(urlParams.entries()),
+    hadEmergencyData: hadEmergencyData,
+    fromFormatter: fromFormatter,
+    formatterDataKey: formatterDataKey,
+    url: window.location.href
+  };
+  console.log("📊 Data Transfer Diagnostic:", window.dataTransferDiagnostic);
   
   // If there's an emergency_data parameter, remove it from the URL
   if (hadEmergencyData) {
     // Store the emergency data ID in a variable
     const emergencyId = urlParams.get('emergency_data');
+    window.dataTransferDiagnostic.emergencyId = emergencyId;
     
     // Create new URL params without the emergency parameter
     urlParams.delete('emergency_data');
@@ -37,6 +51,39 @@
     // Replace the current URL without reloading the page
     window.history.replaceState({}, document.title, newUrl);
     console.log("IMPORTANT: Removed emergency_data parameter from URL to prevent framework-level emergency mode");
+    
+    // If we have emergency_data but no formatter_data, add it as formatter_data to recover
+    if (!formatterDataKey && localStorage.getItem(emergencyId)) {
+      console.log("⚠️ Recovery: Converting emergency_data to formatter_data");
+      try {
+        // Get data from emergency key
+        const emergencyData = localStorage.getItem(emergencyId);
+        // Store it with formatter key prefix for normal flow
+        const newKey = 'formatter_data_' + Date.now();
+        localStorage.setItem(newKey, emergencyData);
+        
+        // Add to URL params
+        urlParams.set('formatter_data', newKey);
+        urlParams.set('from_formatter', 'true');
+        urlParams.set('storage_method', 'localStorage');
+        
+        // Create updated URL
+        const recoveryUrl = window.location.pathname + 
+                         (urlParams.toString() ? '?' + urlParams.toString() : '') +
+                         window.location.hash;
+        
+        console.log("🔄 Recovered formatter data. Redirecting to normal flow URL...");
+        window.dataTransferDiagnostic.recovery = { newKey, recoveryUrl };
+        
+        // Store diagnostic for debugging
+        sessionStorage.setItem('data_transfer_diagnostic', JSON.stringify(window.dataTransferDiagnostic));
+        
+        // Redirect to the recovery URL
+        window.location.href = recoveryUrl;
+      } catch (error) {
+        console.error("❌ Recovery failed:", error);
+      }
+    }
   }
   
   // Force direct data source mode
@@ -45,6 +92,9 @@
     isEmergency: false,  // Never treat as emergency
     source: 'formatter'  // Always use formatter flow
   };
+  
+  // Store diagnostic for debugging
+  sessionStorage.setItem('data_transfer_diagnostic', JSON.stringify(window.dataTransferDiagnostic));
   
   console.log("Data source overridden:", window.dataSource);
 </script>
@@ -207,17 +257,50 @@
   console.log("Emergency mode completely bypassed - v2");
 </script>
 
-<!-- Force reload data-formatter.js with a random version to break caching -->
+<!-- Force reload key files with a random version to break caching -->
 <script>
-  // This will force a reload of the data-formatter.js file
+  // This will force a reload of critical files for the data formatter flow
   setTimeout(function() {
-    if (window.location.pathname === '/data-formatter') {
-      console.log("Forcing reload of data-formatter.js to break caching");
-      const script = document.createElement('script');
-      script.src = "/static/data-formatter.js?v=" + Date.now();
-      document.head.appendChild(script);
+    // Always apply cache busting for emergency-related parameters
+    if (window.location.search.indexOf('from_formatter') !== -1 ||
+        window.location.search.indexOf('formatter_data') !== -1 ||
+        window.location.pathname === '/fire-ems-dashboard') {
+      
+      console.log("🧹 Cache busting for Fire-EMS dashboard components...");
+      
+      // Add a debug message to the page
+      const debugDiv = document.createElement('div');
+      debugDiv.style.cssText = "position: fixed; bottom: 10px; right: 10px; background: rgba(33, 150, 243, 0.8); color: white; padding: 8px; font-size: 12px; z-index: 9999; border-radius: 4px;";
+      debugDiv.innerHTML = `Response Time Analyzer v2.1 (${new Date().toLocaleTimeString()})`;
+      document.body.appendChild(debugDiv);
+      setTimeout(() => debugDiv.style.opacity = "0", 10000);
+      setTimeout(() => debugDiv.remove(), 12000);
     }
-  }, 1000);
+    
+    // Force reload data-formatter.js with random version if on data formatter page
+    if (window.location.pathname === '/data-formatter') {
+      console.log("🧹 Cache busting for Data Formatter components...");
+      const timestamp = Date.now();
+      
+      // Force reload data-formatter.js
+      const formatterScript = document.createElement('script');
+      formatterScript.src = "/static/data-formatter.js?v=" + timestamp;
+      document.head.appendChild(formatterScript);
+      
+      // Force reload data-formatter-integration.js 
+      const integrationScript = document.createElement('script');
+      integrationScript.src = "/static/data-formatter-integration.js?v=" + timestamp;
+      document.head.appendChild(integrationScript);
+      
+      // Add a debug message to the page
+      const debugDiv = document.createElement('div');
+      debugDiv.style.cssText = "position: fixed; bottom: 10px; right: 10px; background: rgba(76, 175, 80, 0.8); color: white; padding: 8px; font-size: 12px; z-index: 9999; border-radius: 4px;";
+      debugDiv.innerHTML = `Data Formatter v2.1 (${new Date().toLocaleTimeString()})`;
+      document.body.appendChild(debugDiv);
+      setTimeout(() => debugDiv.style.opacity = "0", 10000);
+      setTimeout(() => debugDiv.remove(), 12000);
+    }
+  }, 500);
 </script>
 
 <!-- SKIP EMERGENCY MODE LIBRARY -->
