@@ -422,35 +422,74 @@
     const heatmapData = Array(7).fill().map(() => Array(24).fill(0)); // [day][hour]
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     
-    // Process data
+    // Process data with better time handling
     let validDates = 0;
     data.forEach(item => {
-      // Try to get date from various possible fields with more field name variations
-      const dateStr = item.Reported || item['Reported Date'] || item['Incident Date'] || 
-                      item.Date || item.date || item.incident_date || item['incident_date'] ||
-                      item.dispatch_time || item.reported_time || item.incident_time;
-                      
-      console.log("Checking date field:", dateStr, typeof dateStr);
+      // First get the date part (MM/DD/YYYY)
+      const dateStr = item.incident_date || item['Incident Date'] || 
+                      item.Date || item.date || item['reported_date'];
       
+      // Then get the time part - prioritize these fields that typically have the incident time
+      const timeStr = item.incident_time || item.dispatch_time || item.reported_time ||
+                      item.Reported || item['Reported Time'];
+      
+      console.log("Date components:", { dateStr, timeStr });
+      
+      // We need at least a date to proceed
       if (dateStr) {
-        // Add date prefix if it looks like just a time (HH:MM:SS)
-        let processedDateStr = dateStr;
-        if (typeof dateStr === 'string' && dateStr.match(/^\d{1,2}:\d{1,2}(:\d{1,2})?$/)) {
-          // Time only, try to combine with incident_date
-          if (item.incident_date) {
-            processedDateStr = `${item.incident_date} ${dateStr}`;
-            console.log("Combined date and time:", processedDateStr);
+        let finalDateTime;
+        
+        // If we have both date and time, combine them
+        if (timeStr) {
+          // Check if timeStr is in HH:MM or HH:MM:SS format
+          if (typeof timeStr === 'string' && timeStr.match(/^\d{1,2}:\d{1,2}(:\d{1,2})?$/)) {
+            // Parse the time manually to get hours
+            const timeParts = timeStr.split(':');
+            const hours = parseInt(timeParts[0], 10);
+            const minutes = parseInt(timeParts[1], 10);
+            
+            // Create a date object from date string
+            const dateObj = new Date(dateStr);
+            if (!isNaN(dateObj.getTime())) {
+              // Set the hours and minutes
+              dateObj.setHours(hours, minutes, 0);
+              finalDateTime = dateObj;
+              console.log(`Combined date ${dateStr} and time ${timeStr} -> ${dateObj.toString()}`);
+            }
+          } else {
+            // Try standard combination
+            finalDateTime = new Date(`${dateStr} ${timeStr}`);
+          }
+        } else {
+          // If no time, try to see if we can extract it from other fields
+          if (item.dispatch_time && typeof item.dispatch_time === 'string' && 
+              item.dispatch_time.match(/^\d{1,2}:\d{1,2}(:\d{1,2})?$/)) {
+            // Use dispatch time 
+            const timeParts = item.dispatch_time.split(':');
+            const hours = parseInt(timeParts[0], 10);
+            const minutes = parseInt(timeParts[1], 10);
+            
+            const dateObj = new Date(dateStr);
+            if (!isNaN(dateObj.getTime())) {
+              dateObj.setHours(hours, minutes, 0);
+              finalDateTime = dateObj;
+              console.log(`Used dispatch_time: ${hours}:${minutes}`);
+            }
+          } else {
+            // Just use the date at midnight
+            finalDateTime = new Date(dateStr);
           }
         }
         
-        const date = new Date(processedDateStr);
-        console.log("Parsed date:", date.toString(), !isNaN(date.getTime()));
-        
-        if (!isNaN(date.getTime())) {
-          const day = date.getDay();
-          const hour = date.getHours();
+        // Now process the final date/time
+        if (finalDateTime && !isNaN(finalDateTime.getTime())) {
+          const day = finalDateTime.getDay();
+          const hour = finalDateTime.getHours();
+          console.log(`Adding incident on day ${day} at hour ${hour}`);
           heatmapData[day][hour]++;
           validDates++;
+        } else {
+          console.warn("Could not parse date/time:", { dateStr, timeStr });
         }
       }
     });
@@ -468,12 +507,21 @@
     table.className = 'heatmap-table';
     table.style.cssText = 'width: 100%; border-collapse: collapse; font-size: 12px;';
     
-    // Add header row with hours
+    // Add header row with hours using 12-hour format
     const headerRow = document.createElement('tr');
     headerRow.appendChild(document.createElement('th')); // Empty corner cell
     for (let hour = 0; hour < 24; hour++) {
       const th = document.createElement('th');
-      th.textContent = hour;
+      // Format hours in a more readable way
+      if (hour === 0) {
+        th.textContent = '12a';
+      } else if (hour === 12) {
+        th.textContent = '12p';
+      } else if (hour < 12) {
+        th.textContent = hour + 'a';
+      } else {
+        th.textContent = (hour - 12) + 'p';
+      }
       th.style.cssText = 'padding: 2px; text-align: center; font-weight: normal;';
       headerRow.appendChild(th);
     }
@@ -540,7 +588,7 @@
     console.log(`Time heatmap created with ${validDates} valid dates`);
   }
   
-  // Create incident data table
+  // Create incident data table with improved field mapping and display
   function createDataTable(data) {
     console.log("Creating data table with", data ? data.length : 0, "records");
     
@@ -550,10 +598,12 @@
       return;
     }
     
-    // Force container to be visible
+    // Force container to be visible with better responsive styling
     container.style.display = 'block';
-    container.style.maxHeight = '400px';
+    container.style.maxHeight = '500px'; // Increased height
     container.style.overflowY = 'auto';
+    container.style.marginTop = '15px';
+    container.style.marginBottom = '25px';
     
     // Clear existing content
     container.innerHTML = '';
@@ -563,97 +613,384 @@
       return;
     }
     
-    // Get fields to display (prioritize important ones)
-    const priorityFields = [
-      'Unit', 'UnitID', 
-      'Reported', 'ReportedDate', 'Incident Date',
-      'Dispatched', 'Unit Dispatched', 'Dispatch Time',
-      'Onscene', 'Unit Onscene', 'Arrival Time',
-      'Type', 'Incident Type', 'Call Type',
-      'Location', 'Address', 'Incident Location',
-      'City', 'Incident City',
-      'Response Time'
+    // Define field mappings with better labeling and priority
+    const fieldMappings = [
+      { 
+        label: 'Incident #', 
+        keys: ['Incident ID', 'incident_id', 'Run No', 'run_no', 'CallNo', 'call_no', 'id'],
+        formatter: (value) => value // No special formatting
+      },
+      { 
+        label: 'Date', 
+        keys: ['Incident Date', 'incident_date', 'Reported Date', 'Date', 'date', 'ReportedDate'],
+        formatter: (value) => {
+          try {
+            // Format as MM/DD/YYYY
+            const date = new Date(value);
+            if (!isNaN(date.getTime())) {
+              return date.toLocaleDateString();
+            }
+          } catch (e) {}
+          return value;
+        }
+      },
+      { 
+        label: 'Time', 
+        keys: ['Incident Time', 'incident_time', 'Reported Time', 'Reported', 'Time', 'time', 'reported_time'],
+        formatter: (value) => {
+          try {
+            // If it's a date object or date string with time
+            if (value.includes(' ')) {
+              const date = new Date(value);
+              if (!isNaN(date.getTime())) {
+                return date.toLocaleTimeString();
+              }
+            }
+            // If it's just a time string (HH:MM:SS), return as is
+            return value;
+          } catch (e) {}
+          return value;
+        }
+      },
+      { 
+        label: 'Unit', 
+        keys: ['Unit', 'UnitID', 'unit', 'unit_id', 'Unit ID', 'UnitName', 'unit_name'],
+        formatter: (value) => value
+      },
+      { 
+        label: 'Incident Type', 
+        keys: ['Type', 'Incident Type', 'Call Type', 'incident_type', 'call_type', 'nature'],
+        formatter: (value) => value
+      },
+      { 
+        label: 'Response Time (min)', 
+        keys: ['Response Time', 'response_time', 'ResponseTime', 'response'],
+        formatter: (value) => {
+          // Try to ensure it's a number with 1 decimal place
+          const num = parseFloat(value);
+          if (!isNaN(num)) {
+            return num.toFixed(1);
+          }
+          return value;
+        }
+      },
+      { 
+        label: 'Address', 
+        keys: ['Address', 'Location', 'Incident Location', 'address', 'location', 'incident_location', 'full_address'],
+        formatter: (value) => value
+      },
+      { 
+        label: 'City', 
+        keys: ['City', 'Incident City', 'city', 'incident_city'],
+        formatter: (value) => value
+      },
+      { 
+        label: 'Dispatched', 
+        keys: ['Dispatched', 'Unit Dispatched', 'Dispatch Time', 'dispatch_time', 'dispatched'],
+        formatter: (value) => {
+          try {
+            // If it's a full date/time
+            const date = new Date(value);
+            if (!isNaN(date.getTime())) {
+              return date.toLocaleTimeString();
+            }
+          } catch (e) {}
+          return value;
+        }
+      },
+      { 
+        label: 'Arrived', 
+        keys: ['Onscene', 'Unit Onscene', 'Arrival Time', 'arrive_time', 'arrival', 'arrived'],
+        formatter: (value) => {
+          try {
+            // If it's a full date/time
+            const date = new Date(value);
+            if (!isNaN(date.getTime())) {
+              return date.toLocaleTimeString();
+            }
+          } catch (e) {}
+          return value;
+        }
+      },
+      { 
+        label: 'Coordinates', 
+        keys: ['Latitude', 'Longitude', 'latitude', 'longitude', 'lat', 'lon', 'lng'],
+        formatter: (value, key, item) => {
+          // Special case - combine lat/lng if we have both
+          if (key.toLowerCase().includes('lat')) {
+            const lat = parseFloat(value);
+            let lng = null;
+            
+            // Try to find the matching longitude
+            for (const k of ['Longitude', 'longitude', 'lon', 'lng']) {
+              if (item[k]) {
+                lng = parseFloat(item[k]);
+                break;
+              }
+            }
+            
+            if (!isNaN(lat) && !isNaN(lng)) {
+              return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            }
+          }
+          return value;
+        },
+        specialCase: true // Flag this as requiring special handling
+      }
     ];
     
-    // Get all possible fields
-    const allFields = new Set();
-    data.forEach(item => {
-      Object.keys(item).forEach(key => allFields.add(key));
-    });
+    // Table header classes for styling
+    const tableStyles = 'width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 10px;';
+    const headerStyles = 'padding: 10px; text-align: left; border-bottom: 2px solid #ddd; position: sticky; top: 0; background-color: #f0f0f0; font-weight: bold; color: #333;';
+    const cellStyles = 'padding: 8px; text-align: left; border-bottom: 1px solid #ddd;';
+    const oddRowStyles = 'background-color: #f9f9f9;';
     
-    // Sort fields - priority ones first, then others alphabetically
-    const fields = [...priorityFields.filter(f => allFields.has(f))];
-    [...allFields].sort().forEach(field => {
-      if (!fields.includes(field) && !field.startsWith('_')) {
-        fields.push(field);
+    // Create table and header row
+    const table = document.createElement('table');
+    table.className = 'data-table';
+    table.style.cssText = tableStyles;
+    
+    // Add the header row
+    const headerRow = document.createElement('tr');
+    
+    // Collect mapped fields and actual columns to display
+    const displayColumns = [];
+    const foundFieldMappings = [];
+    
+    // Determine which fields we have in the data and map to our preferred labels
+    fieldMappings.forEach(mapping => {
+      // Skip coordinates if we're going to combine them
+      if (mapping.specialCase && mapping.label === 'Coordinates') {
+        // Check if we have both lat and lng
+        let hasLat = false;
+        let hasLng = false;
+        
+        for (const key of mapping.keys) {
+          if (key.toLowerCase().includes('lat')) {
+            hasLat = hasLat || data.some(item => item[key] !== undefined);
+          } else if (key.toLowerCase().includes('lon') || key.toLowerCase().includes('lng')) {
+            hasLng = hasLng || data.some(item => item[key] !== undefined);
+          }
+        }
+        
+        if (hasLat && hasLng) {
+          displayColumns.push(mapping.label);
+          foundFieldMappings.push(mapping);
+        }
+      } else {
+        // Normal field mapping
+        for (const key of mapping.keys) {
+          if (data.some(item => item[key] !== undefined)) {
+            displayColumns.push(mapping.label);
+            // Store the mapping and the actual key found
+            const mappingWithKey = {...mapping, matchedKey: key};
+            foundFieldMappings.push(mappingWithKey);
+            break; // Found a match, don't need to check other keys for this mapping
+          }
+        }
       }
     });
     
-    // Limit to first 10 fields to avoid too wide tables
-    const displayFields = fields.slice(0, 10);
+    // Add any other important fields we didn't already map (up to 5 extra)
+    const additionalFields = new Set();
+    data.forEach(item => {
+      Object.keys(item).forEach(key => {
+        // Skip fields already covered by our mappings
+        if (!fieldMappings.some(mapping => mapping.keys.includes(key))) {
+          additionalFields.add(key);
+        }
+      });
+    });
     
-    // Create table
-    const table = document.createElement('table');
-    table.className = 'data-table';
-    table.style.cssText = 'width: 100%; border-collapse: collapse; font-size: 12px;';
+    // Add up to 5 other fields (prioritizing non-metadata fields)
+    const extraFields = [...additionalFields]
+      .filter(field => !field.startsWith('_')) // Skip metadata fields
+      .sort() // Sort alphabetically 
+      .slice(0, 5);
     
-    // Add header row
-    const headerRow = document.createElement('tr');
-    headerRow.style.cssText = 'background-color: #f0f0f0;';
+    // Add extra fields to our display columns
+    extraFields.forEach(field => {
+      displayColumns.push(field);
+      foundFieldMappings.push({
+        label: field,
+        keys: [field],
+        formatter: (value) => value,
+        matchedKey: field
+      });
+    });
     
-    displayFields.forEach(field => {
+    // Create header cells
+    displayColumns.forEach(column => {
       const th = document.createElement('th');
-      th.textContent = field;
-      th.style.cssText = 'padding: 8px; text-align: left; border-bottom: 1px solid #ddd; position: sticky; top: 0; background-color: #f0f0f0;';
+      th.textContent = column;
+      th.style.cssText = headerStyles;
       headerRow.appendChild(th);
     });
     
     table.appendChild(headerRow);
     
-    // Add data rows (limit to first 100 for performance)
-    const displayData = data.slice(0, 100);
+    // Add data rows (paginate properly)
+    const rowsPerPage = 100;
+    const totalPages = Math.ceil(data.length / rowsPerPage);
+    const currentPage = 1;
+    
+    // Show the current page of data
+    const startIdx = (currentPage - 1) * rowsPerPage;
+    const endIdx = Math.min(startIdx + rowsPerPage, data.length);
+    const displayData = data.slice(startIdx, endIdx);
+    
+    // Create and add data rows
     displayData.forEach((item, index) => {
       const row = document.createElement('tr');
-      row.style.cssText = index % 2 === 0 ? 'background-color: #f9f9f9;' : '';
+      row.style.cssText = index % 2 === 0 ? oddRowStyles : '';
       
-      displayFields.forEach(field => {
+      // Add cells for each column
+      foundFieldMappings.forEach(mapping => {
         const cell = document.createElement('td');
-        let value = item[field];
+        cell.style.cssText = cellStyles;
         
-        // Format dates nicely
-        if (value && (field.includes('Date') || field.includes('Time') || field === 'Reported' || field === 'Dispatched' || field === 'Onscene')) {
-          try {
-            const date = new Date(value);
-            if (!isNaN(date.getTime())) {
-              value = date.toLocaleString();
+        // Handle special case for coordinates
+        if (mapping.specialCase && mapping.label === 'Coordinates') {
+          // Find lat/lng values
+          let lat = null, lng = null;
+          
+          for (const key of mapping.keys) {
+            if (key.toLowerCase().includes('lat') && item[key] !== undefined) {
+              lat = parseFloat(item[key]);
+            } else if ((key.toLowerCase().includes('lon') || key.toLowerCase().includes('lng')) && item[key] !== undefined) {
+              lng = parseFloat(item[key]);
             }
-          } catch (e) {
-            // Keep original value if date parsing fails
           }
+          
+          if (!isNaN(lat) && !isNaN(lng)) {
+            cell.textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+          } else {
+            cell.textContent = '';
+          }
+        } else if (mapping.matchedKey) {
+          // Normal field display with formatting
+          const value = item[mapping.matchedKey];
+          cell.textContent = value ? mapping.formatter(value, mapping.matchedKey, item) : '';
+        } else {
+          cell.textContent = '';
         }
         
-        cell.textContent = value || '';
-        cell.style.cssText = 'padding: 8px; text-align: left; border-bottom: 1px solid #ddd;';
         row.appendChild(cell);
       });
       
       table.appendChild(row);
     });
     
-    // Add record count and note if truncated
+    // Add pagination and record count
+    const paginationContainer = document.createElement('div');
+    paginationContainer.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 12px;';
+    
+    // Record count on the left
     const countInfo = document.createElement('div');
-    countInfo.style.cssText = 'margin-top: 10px; font-size: 12px; color: #666;';
+    countInfo.style.cssText = 'color: #666;';
     const recordCount = data.length;
-    if (recordCount > 100) {
-      countInfo.textContent = `Showing first 100 of ${recordCount} records`;
+    if (recordCount > rowsPerPage) {
+      countInfo.textContent = `Showing ${startIdx + 1}-${endIdx} of ${recordCount} records`;
     } else {
       countInfo.textContent = `${recordCount} records total`;
     }
     
-    container.appendChild(table);
-    container.appendChild(countInfo);
+    // Add export button
+    const exportButton = document.createElement('button');
+    exportButton.textContent = '📥 Export Data';
+    exportButton.style.cssText = 'background-color: #4CAF50; color: white; border: none; padding: 5px 10px; text-align: center; text-decoration: none; display: inline-block; font-size: 12px; margin: 0 10px; cursor: pointer; border-radius: 3px;';
+    exportButton.onclick = function() {
+      // Create CSV content
+      let csv = displayColumns.join(',') + '\n';
+      
+      // Add all data rows
+      data.forEach(item => {
+        const row = foundFieldMappings.map(mapping => {
+          if (mapping.specialCase && mapping.label === 'Coordinates') {
+            // Handle coordinates special case
+            let lat = null, lng = null;
+            for (const key of mapping.keys) {
+              if (key.toLowerCase().includes('lat') && item[key] !== undefined) {
+                lat = parseFloat(item[key]);
+              } else if ((key.toLowerCase().includes('lon') || key.toLowerCase().includes('lng')) && item[key] !== undefined) {
+                lng = parseFloat(item[key]);
+              }
+            }
+            return (!isNaN(lat) && !isNaN(lng)) ? `"${lat.toFixed(6)}, ${lng.toFixed(6)}"` : '""';
+          } else if (mapping.matchedKey) {
+            const value = item[mapping.matchedKey];
+            // Wrap in quotes and escape any quotes in the value
+            return value ? `"${value.toString().replace(/"/g, '""')}"` : '""';
+          } else {
+            return '""';
+          }
+        }).join(',');
+        csv += row + '\n';
+      });
+      
+      // Create and trigger download
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'incident_data.csv');
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
     
-    console.log(`Data table created with ${Math.min(100, recordCount)} of ${recordCount} records`);
+    // Add filter input
+    const filterContainer = document.createElement('div');
+    filterContainer.style.cssText = 'margin-bottom: 10px; display: flex; align-items: center;';
+    
+    const filterLabel = document.createElement('label');
+    filterLabel.textContent = 'Filter: ';
+    filterLabel.style.cssText = 'margin-right: 8px; font-size: 12px;';
+    
+    const filterInput = document.createElement('input');
+    filterInput.type = 'text';
+    filterInput.placeholder = 'Type to filter rows...';
+    filterInput.style.cssText = 'padding: 5px; border: 1px solid #ddd; border-radius: 3px; width: 200px; font-size: 12px;';
+    
+    // Add filter functionality
+    filterInput.addEventListener('input', function() {
+      const filterText = this.value.toLowerCase();
+      const rows = table.querySelectorAll('tr');
+      
+      // Skip header row (index 0)
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const cells = row.querySelectorAll('td');
+        let showRow = false;
+        
+        cells.forEach(cell => {
+          if (cell.textContent.toLowerCase().includes(filterText)) {
+            showRow = true;
+          }
+        });
+        
+        row.style.display = showRow ? '' : 'none';
+      }
+      
+      // Update count information based on visible rows
+      const visibleRowCount = Array.from(rows).slice(1).filter(row => row.style.display !== 'none').length;
+      countInfo.textContent = `Showing ${visibleRowCount} of ${recordCount} records ${filterText ? '(filtered)' : ''}`;
+    });
+    
+    filterContainer.appendChild(filterLabel);
+    filterContainer.appendChild(filterInput);
+    
+    // Add export button alongside count info
+    paginationContainer.appendChild(countInfo);
+    paginationContainer.appendChild(exportButton);
+    
+    // Append everything to container
+    container.appendChild(filterContainer);
+    container.appendChild(table);
+    container.appendChild(paginationContainer);
+    
+    console.log(`Data table created with ${Math.min(rowsPerPage, recordCount)} of ${recordCount} records using ${displayColumns.length} columns`);
   }
   
   // Create file stats
