@@ -818,6 +818,12 @@ def create_app(config_name='default'):
     def field_mapping_demo():
         """Demo page for the MapFieldsManager Utility"""
         return render_template('field-mapping-demo.html')
+    
+    # MapFields Availability Test Page
+    @app.route('/test-mapfields')
+    def test_mapfields():
+        """Test page for MapFieldsManager availability detection"""
+        return render_template('test-mapfields.html')
         
     # Call Density Heatmap File Upload Handler
     @app.route('/upload-call-data', methods=['POST'])

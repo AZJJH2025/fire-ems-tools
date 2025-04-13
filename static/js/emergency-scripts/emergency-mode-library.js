@@ -263,6 +263,36 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log("Processing emergency data...");
     
     try {
+      // First check if we should actually be in emergency mode
+      const shouldUseEmergencyMode = checkShouldUseEmergencyMode();
+      if (!shouldUseEmergencyMode) {
+        console.log("MapFieldsManager is available! We should not be using emergency mode.");
+        
+        // Add a visible indicator for debugging
+        const debugIndicator = document.createElement('div');
+        debugIndicator.style.cssText = "position: fixed; top: 0; right: 0; background: #ff9800; color: white; padding: 4px 8px; font-size: 12px; z-index: 9999;";
+        debugIndicator.textContent = "Attempted emergency mode while utilities are available!";
+        document.body.appendChild(debugIndicator);
+        
+        // Auto-remove after 10 seconds
+        setTimeout(() => debugIndicator.remove(), 10000);
+        
+        // Try to find a standard data processor that can use the advanced utilities
+        const advancedProcessor = findAdvancedProcessor();
+        if (advancedProcessor) {
+          console.log("Using advanced data processor instead of emergency mode");
+          
+          // Use the advanced processor
+          try {
+            advancedProcessor(data);
+            return true;
+          } catch (e) {
+            console.error("Error in advanced processor, falling back to emergency mode:", e);
+            // Fall through to emergency mode as a last resort
+          }
+        }
+      }
+      
       // Validate data format
       if (!Array.isArray(data) || data.length === 0) {
         throw new Error("Invalid data format: expected non-empty array");
@@ -353,7 +383,7 @@ document.addEventListener('DOMContentLoaded', function() {
         successMsg.innerHTML = `
           <div style="background-color: #e8f5e9; border-left: 4px solid #4caf50; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
             <h3 style="margin-top: 0; color: #2e7d32;">Data Loaded Successfully</h3>
-            <p>${data.length} records have been processed from emergency data storage.</p>
+            <p>${data.length} records have been processed${shouldUseEmergencyMode ? ' in emergency mode' : ''}.</p>
             <p><button id="download-emergency-backup" style="margin-top: 10px; background-color: #2196f3; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
               <i class="fas fa-download"></i> Download Backup Copy
             </button></p>
@@ -382,7 +412,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const indicator = document.querySelector('div[style*="position: fixed"][style*="top: 0"][style*="left: 0"]');
       if (indicator) {
         indicator.style.background = "#4caf50";
-        indicator.textContent = "Emergency data loaded successfully";
+        indicator.textContent = "Data loaded successfully";
         
         // Auto-remove after 5 seconds
         setTimeout(() => {
@@ -404,6 +434,85 @@ document.addEventListener('DOMContentLoaded', function() {
       
       return false;
     }
+  }
+  
+  /**
+   * Check if we should actually use emergency mode
+   * This prevents unnecessary emergency mode activation when utilities are available
+   * @returns {boolean} Whether emergency mode should be used
+   */
+  function checkShouldUseEmergencyMode() {
+    // Check for available utilities
+    
+    // 1. Check for the feature flag (added in MapFieldsManager.js)
+    if (window.FireEMS && 
+        window.FireEMS.features && 
+        window.FireEMS.features.mapFieldsManagerAvailable === true) {
+      console.log("MapFieldsManager availability flag is set to true");
+      return false; // No emergency mode needed
+    }
+    
+    // 2. Check for the direct utility check function
+    if (typeof window.checkMapFieldsManager === 'function') {
+      try {
+        const status = window.checkMapFieldsManager();
+        if (status && status.available === true) {
+          console.log("MapFieldsManager check function reports availability");
+          return false; // No emergency mode needed
+        }
+      } catch (e) {
+        console.warn("Error checking MapFieldsManager:", e);
+      }
+    }
+    
+    // 3. Check for the utility directly
+    if (window.FireEMS && 
+        window.FireEMS.Utils && 
+        window.FireEMS.Utils.MapFieldsManager &&
+        typeof window.FireEMS.Utils.MapFieldsManager.applyMappings === 'function') {
+      console.log("MapFieldsManager utility is directly available");
+      return false; // No emergency mode needed
+    }
+    
+    // 4. Check for older flag
+    if (window.FireEMS && 
+        window.FireEMS.Utils && 
+        window.FireEMS.Utils.mapFieldsAvailable === true) {
+      console.log("MapFieldsManager legacy flag is set to true");
+      return false; // No emergency mode needed
+    }
+    
+    // Log diagnostics
+    console.log("No MapFieldsManager found, emergency mode is appropriate");
+    return true; // Use emergency mode
+  }
+  
+  /**
+   * Find an advanced data processor that can use the MapFieldsManager
+   * @returns {Function|null} Advanced processor function or null if not found
+   */
+  function findAdvancedProcessor() {
+    // Check for the most advanced processor that uses MapFieldsManager
+    if (window.FireEMS && 
+        window.FireEMS.Utils && 
+        window.FireEMS.Utils.MapFieldsManager) {
+      
+      // Look for different advanced processors
+      if (typeof window.processDataWithMapping === 'function') {
+        return window.processDataWithMapping;
+      }
+      
+      if (typeof window.processDataAdvanced === 'function') {
+        return window.processDataAdvanced;
+      }
+      
+      // If no special processors, but we have the DataFormatterAPI
+      if (window.DataFormatterAPI && typeof window.DataFormatterAPI.processData === 'function') {
+        return window.DataFormatterAPI.processData;
+      }
+    }
+    
+    return null;
   }
   
   // Basic display function for emergency data

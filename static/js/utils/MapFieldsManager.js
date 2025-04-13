@@ -1105,3 +1105,43 @@ FireEMS.Utils.MapFieldsManager = (function() {
 // Add convenience aliases
 FireEMS.Utils.mapFields = FireEMS.Utils.MapFieldsManager.applyMappings;
 FireEMS.Utils.autoMap = FireEMS.Utils.MapFieldsManager.autoGenerateMappings;
+
+// Register availability for feature detection
+FireEMS.Utils.mapFieldsAvailable = true;
+
+// Add check function to the global space for emergency mode prevention
+window.checkMapFieldsManager = function() {
+  // Check if the MapFieldsManager is actually available and functioning
+  const fullyAvailable = window.FireEMS && 
+                         window.FireEMS.Utils && 
+                         window.FireEMS.Utils.MapFieldsManager &&
+                         typeof window.FireEMS.Utils.MapFieldsManager.applyMappings === 'function';
+  
+  return {
+    available: fullyAvailable,
+    utility: "MapFieldsManager",
+    version: "1.0.0",
+    methods: [
+      "applyMappings", 
+      "autoGenerateMappings", 
+      "validateMappedData",
+      "findMatchingField"
+    ],
+    status: fullyAvailable ? "loaded" : "unavailable"
+  };
+};
+
+// Immediate invocation to register availability in FireEMS global object
+(function() {
+  try {
+    // Set an emergency mode detection flag that gets checked before emergency mode activates
+    if (!window.FireEMS) window.FireEMS = {};
+    if (!window.FireEMS.features) window.FireEMS.features = {};
+    window.FireEMS.features.mapFieldsManagerAvailable = true;
+    
+    // Log successful registration for debugging
+    console.log("MapFieldsManager registered feature availability flag");
+  } catch (e) {
+    console.error("Failed to register MapFieldsManager availability:", e);
+  }
+})();
