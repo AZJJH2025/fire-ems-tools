@@ -712,7 +712,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(() => statusIndicator.remove(), 500);
             }, 8000);
         }
-        }
     }
     
     // Add our debug script to the page - wrapped in try/catch for safety
@@ -805,23 +804,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         return false; // No data found
-    }
-                <h3 style="margin-top: 0; color: #d32f2f;">Data Transfer Error</h3>
-                <p>Data from the formatter couldn't be accessed. This usually happens due to browser privacy settings.</p>
-                <div style="margin-top: 10px;">
-                    <strong>Recommended Solutions:</strong>
-                    <ul>
-                        <li>Try using a different browser (Chrome works best)</li>
-                        <li>Disable privacy extensions that might block sessionStorage</li>
-                        <li>Try downloading the data as a file and uploading it directly</li>
-                    </ul>
-                </div>
-            `;
-            
-            document.getElementById('result').appendChild(errorMsg);
-        }
-        
-        return !!formattedData;
     }
     
     // CRITICAL: Add a manual delay for sessionStorage to sync between pages
