@@ -376,6 +376,71 @@ document.addEventListener('DOMContentLoaded', function() {
         sessionStorage.removeItem('bypassValidation');
     });
     
+    // Add a direct fix for charts if they fail to load through the normal flow
+    // Wait for everything else to load first
+    setTimeout(() => {
+        console.log("Running final chart creation check...");
+        const hasCharts = document.querySelectorAll('canvas').length > 0;
+        console.log("Charts detected in final check:", hasCharts);
+        
+        if (!hasCharts && window.formattedData && window.stats) {
+            console.log("No charts found in final check, forcing chart creation");
+            
+            // Ensure Chart.js is loaded
+            if (typeof Chart === 'undefined') {
+                console.log("Chart.js not found, loading it directly");
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js';
+                script.onload = function() {
+                    console.log("Chart.js loaded directly, creating charts");
+                    createChartsDirectly();
+                };
+                document.head.appendChild(script);
+            } else {
+                createChartsDirectly();
+            }
+        }
+    }, 3000);
+    
+    // Direct chart creation function
+    function createChartsDirectly() {
+        try {
+            console.log("Creating charts directly from DOMContentLoaded handler");
+            
+            // Time chart (doesn't directly use Chart.js)
+            if (typeof createTimeChart === 'function') {
+                try {
+                    createTimeChart(window.formattedData, window.stats);
+                    console.log("✅ Time chart created directly");
+                } catch (e) {
+                    console.error("❌ Error creating time chart directly:", e);
+                }
+            }
+            
+            // Unit chart
+            if (typeof createUnitChart === 'function') {
+                try {
+                    createUnitChart(window.formattedData, window.stats);
+                    console.log("✅ Unit chart created directly");
+                } catch (e) {
+                    console.error("❌ Error creating unit chart directly:", e);
+                }
+            }
+            
+            // Location chart
+            if (typeof createLocationChart === 'function') {
+                try {
+                    createLocationChart(window.formattedData, window.stats);
+                    console.log("✅ Location chart created directly");
+                } catch (e) {
+                    console.error("❌ Error creating location chart directly:", e);
+                }
+            }
+        } catch (e) {
+            console.error("Error in direct chart creation:", e);
+        }
+    }
+    
     // Check if there's data from the Data Formatter
     console.log("Checking for formatter data in Response Time Analyzer");
     
@@ -458,8 +523,55 @@ document.addEventListener('DOMContentLoaded', function() {
             
             console.log("File-like object created:", fileData);
             
+            // Save the formatted data to a global variable for debugging and direct access
+            window.formattedData = formattedData;
+            window.fileData = fileData;
+            
             // Process with the file-like object instead of just the array
-            processData(fileData);
+            try {
+                console.log("Calling processData with file-like object");
+                processData(fileData);
+                console.log("processData called successfully");
+                
+                // If Chart.js failed to load or initialize properly, try direct chart creation
+                setTimeout(() => {
+                    console.log("Checking if charts were created...");
+                    
+                    const hasCharts = document.querySelectorAll('canvas').length > 0;
+                    console.log("Charts detected:", hasCharts);
+                    
+                    if (!hasCharts) {
+                        console.log("No charts found, attempting direct chart creation");
+                        
+                        try {
+                            // Try to create charts directly if window.stats is available
+                            if (window.stats) {
+                                console.log("Using available stats to create charts directly");
+                                
+                                // Try direct chart creation
+                                if (typeof createTimeChart === 'function') {
+                                    try { createTimeChart(formattedData, window.stats); } 
+                                    catch(e) { console.error("Error creating time chart:", e); }
+                                }
+                                
+                                if (typeof createUnitChart === 'function') {
+                                    try { createUnitChart(formattedData, window.stats); } 
+                                    catch(e) { console.error("Error creating unit chart:", e); }
+                                }
+                                
+                                if (typeof createLocationChart === 'function') {
+                                    try { createLocationChart(formattedData, window.stats); } 
+                                    catch(e) { console.error("Error creating location chart:", e); }
+                                }
+                            }
+                        } catch (chartError) {
+                            console.error("Error in direct chart creation:", chartError);
+                        }
+                    }
+                }, 2000);
+            } catch (processError) {
+                console.error("Error in processData:", processError);
+            }
             
             return true;
         };
@@ -487,6 +599,30 @@ document.addEventListener('DOMContentLoaded', function() {
             isEmergency: false, 
             source: 'formatter'
         };
+        
+        // Force Chart Manager to use normal mode
+        if (window.FireEMS && window.FireEMS.Charts) {
+            window.FireEMS.Charts.setMode('normal');
+        }
+        
+        // Make sure the ScriptLoader is available
+        if (!window.FireEMS) window.FireEMS = {};
+        if (!window.FireEMS.ScriptLoader) {
+            window.FireEMS.ScriptLoader = {
+                load: function(url, callback) {
+                    console.log("ScriptLoader polyfill loading:", url);
+                    const script = document.createElement('script');
+                    script.src = url;
+                    script.onload = callback;
+                    script.onerror = function() {
+                        console.error("Failed to load script:", url);
+                        callback(new Error("Failed to load script"));
+                    };
+                    document.head.appendChild(script);
+                }
+            };
+        }
+        
         console.log("Emergency mode explicitly disabled for formatter data flow");
         
         // A single recovery function that logs all steps
