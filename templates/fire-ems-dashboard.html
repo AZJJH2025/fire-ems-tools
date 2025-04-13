@@ -204,7 +204,20 @@
     return false;
   };
   
-  console.log("Emergency mode completely bypassed");
+  console.log("Emergency mode completely bypassed - v2");
+</script>
+
+<!-- Force reload data-formatter.js with a random version to break caching -->
+<script>
+  // This will force a reload of the data-formatter.js file
+  setTimeout(function() {
+    if (window.location.pathname === '/data-formatter') {
+      console.log("Forcing reload of data-formatter.js to break caching");
+      const script = document.createElement('script');
+      script.src = "/static/data-formatter.js?v=" + Date.now();
+      document.head.appendChild(script);
+    }
+  }, 1000);
 </script>
 
 <!-- SKIP EMERGENCY MODE LIBRARY -->
@@ -227,7 +240,9 @@
 
 <!-- Emergency Mode Scripts with multiple path options -->
 <script src="/static/js/emergency-scripts/fallback-loader.js"></script>
+<!-- DISABLED: This script was forcing emergency mode and interfering with formatter data flow 
 <script src="/static/js/emergency-scripts/prevent-mode-switch-loader.js"></script>
+-->
 
 <!-- Dashboard Script -->
 <script src="/static/js/emergency-scripts/dashboard-loader.js"></script>
