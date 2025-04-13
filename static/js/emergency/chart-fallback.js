@@ -347,12 +347,31 @@ FireEMS.ChartFallback = (function() {
   };
 })();
 
-// Auto-install polyfill if Chart.js not present after a timeout
-// This gives the normal Chart.js loading a chance to complete first
+// Load Chart.js using the centralized ScriptLoader service
+// Only install polyfill if loading fails
 document.addEventListener('DOMContentLoaded', function() {
-  setTimeout(function() {
-    if (typeof Chart === 'undefined') {
-      console.log("Chart.js not detected after timeout, installing polyfill");
+  // Check if Chart.js is already available
+  if (typeof Chart !== 'undefined' && Chart.defaults) {
+    console.log("Chart.js is already loaded, no need to load again");
+    return;
+  }
+  
+  // Check if ScriptLoader is available
+  if (!window.FireEMS || !window.FireEMS.ScriptLoader) {
+    console.warn("FireEMS.ScriptLoader not available, falling back to polyfill");
+    FireEMS.ChartFallback.installChartPolyfill();
+    return;
+  }
+  
+  // Use FireEMS.ScriptLoader to load Chart.js with fallbacks
+  FireEMS.ScriptLoader.loadScript({ library: 'chart.js' })
+    .then(function(result) {
+      console.log("Chart.js loaded successfully from: " + result.source);
+    })
+    .catch(function(error) {
+      console.warn("Chart.js loading failed, installing polyfill", error);
+      
+      // Install polyfill since Chart.js loading failed
       FireEMS.ChartFallback.installChartPolyfill();
       
       // Add a visual indicator for developers
@@ -369,6 +388,5 @@ document.addEventListener('DOMContentLoaded', function() {
         indicator.textContent = 'Using Chart Fallbacks';
         document.body.appendChild(indicator);
       }
-    }
-  }, 1500); // Wait 1.5 seconds for Chart.js to load normally
+    });
 });

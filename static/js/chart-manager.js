@@ -2,7 +2,7 @@
  * FireEMS.ai Chart Manager
  * 
  * This script handles all aspects of Chart.js integration:
- * - Loading the library with fallbacks
+ * - Loading the library with fallbacks using FireEMS.ScriptLoader
  * - Common chart configuration
  * - Data utilities for charts
  * - Resilience mechanisms for charts
@@ -24,23 +24,13 @@ window.FireEMS.Charts = window.FireEMS.Charts || {};
   let chartJsLoaded = false;
   let loadingPromise = null;
   let readyCallbacks = [];
-  
-  // CDN URLs for Chart.js in priority order
-  const CHART_CDN_URLS = [
-    'https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js',
-    'https://unpkg.com/chart.js@3.9.1/dist/chart.min.js'
-  ];
-  
-  // Local fallback URL for Chart.js
-  const CHART_LOCAL_URL = '/static/js/vendor/chart.min.js';
 
   /**
    * Chart manager public API
    */
   const ChartManager = {
     /**
-     * Load Chart.js with automatic fallbacks and retry logic.
+     * Load Chart.js with automatic fallbacks and retry logic using FireEMS.ScriptLoader.
      * Returns a promise that resolves when Chart.js is ready.
      */
     loadChartJs: function() {
@@ -59,23 +49,35 @@ window.FireEMS.Charts = window.FireEMS.Charts || {};
         return loadingPromise;
       }
       
-      // Create new loading promise
+      // Check if ScriptLoader is available
+      if (!window.FireEMS || !window.FireEMS.ScriptLoader) {
+        console.error('📊 Chart Manager: FireEMS.ScriptLoader not available');
+        return Promise.reject(new Error('FireEMS.ScriptLoader not available'));
+      }
+      
+      // Create new loading promise using the centralized ScriptLoader
       chartJsLoading = true;
-      loadingPromise = this._loadChartJsWithFallbacks()
-        .then(chartJs => {
-          chartJsLoaded = true;
-          chartJsLoading = false;
-          
-          // Notify all waiting callbacks
-          readyCallbacks.forEach(callback => callback(chartJs));
-          readyCallbacks = [];
-          
-          // Dispatch global event
-          document.dispatchEvent(new CustomEvent('chartjs:ready', { 
-            detail: { chart: chartJs } 
-          }));
-          
-          return chartJs;
+      loadingPromise = FireEMS.ScriptLoader.loadScript({ library: 'chart.js' })
+        .then(() => {
+          // Verify Chart.js is properly loaded
+          if (typeof Chart !== 'undefined' && Chart.defaults) {
+            console.log('📊 Chart Manager: Successfully loaded Chart.js');
+            chartJsLoaded = true;
+            chartJsLoading = false;
+            
+            // Notify all waiting callbacks
+            readyCallbacks.forEach(callback => callback(Chart));
+            readyCallbacks = [];
+            
+            // Dispatch global event
+            document.dispatchEvent(new CustomEvent('chartjs:ready', { 
+              detail: { chart: Chart } 
+            }));
+            
+            return Chart;
+          } else {
+            throw new Error('Chart.js failed to initialize properly');
+          }
         })
         .catch(error => {
           console.error('📊 Chart Manager: All loading attempts failed', error);
@@ -145,84 +147,6 @@ window.FireEMS.Charts = window.FireEMS.Charts || {};
           data: data,
           options: mergedOptions
         });
-      });
-    },
-    
-    /**
-     * Internal method to load Chart.js with fallbacks
-     * @private
-     */
-    _loadChartJsWithFallbacks: function() {
-      const loadFromUrls = (urls, index = 0) => {
-        // If we've tried all URLs, reject
-        if (index >= urls.length) {
-          return Promise.reject(new Error('All Chart.js loading attempts failed'));
-        }
-        
-        // Try current URL
-        const url = urls[index];
-        console.log(`📊 Chart Manager: Loading Chart.js from ${url}`);
-        
-        return this._loadScript(url)
-          .then(() => {
-            // Verify Chart.js is properly loaded
-            if (typeof Chart !== 'undefined' && Chart.defaults) {
-              console.log(`📊 Chart Manager: Successfully loaded Chart.js from ${url}`);
-              return Chart;
-            }
-            
-            // Chart not properly defined, try next URL
-            console.warn(`📊 Chart Manager: Script loaded from ${url} but Chart is not defined properly`);
-            return loadFromUrls(urls, index + 1);
-          })
-          .catch(error => {
-            console.warn(`📊 Chart Manager: Failed to load from ${url}`, error);
-            return loadFromUrls(urls, index + 1);
-          });
-      };
-      
-      // Start with CDN URLs, then try local fallback
-      return loadFromUrls(CHART_CDN_URLS)
-        .catch(() => {
-          console.log('📊 Chart Manager: All CDN attempts failed, trying local fallback');
-          return this._loadScript(CHART_LOCAL_URL);
-        })
-        .then(() => {
-          // Final verification
-          if (typeof Chart !== 'undefined' && Chart.defaults) {
-            return Chart;
-          }
-          throw new Error('Chart.js failed to initialize properly');
-        });
-    },
-    
-    /**
-     * Load a script from a URL
-     * @private
-     */
-    _loadScript: function(url) {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = url;
-        script.crossOrigin = 'anonymous';
-        
-        // Set timeout for loading
-        const timeoutId = setTimeout(() => {
-          reject(new Error(`Loading timed out for ${url}`));
-        }, 7000);
-        
-        script.onload = () => {
-          clearTimeout(timeoutId);
-          // Slight delay to ensure script is processed
-          setTimeout(resolve, 50);
-        };
-        
-        script.onerror = (error) => {
-          clearTimeout(timeoutId);
-          reject(error);
-        };
-        
-        document.head.appendChild(script);
       });
     },
     
