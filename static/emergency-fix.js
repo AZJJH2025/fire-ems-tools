@@ -174,16 +174,33 @@
     let chartData;
     
     if (data && data.length) {
-      // Count incidents by unit with expanded field mappings
+      // Count incidents by unit with expanded field mappings and fallbacks
       data.forEach(item => {
         // Try all possible unit field names
-        const unit = item.Unit || item.UnitID || item.unit || item.unit_id || 
-                     item['Unit ID'] || item.UnitName || item.unit_name || 'Unknown';
+        let unit = item.Unit || item.UnitID || item.unit || item.unit_id || 
+                   item['Unit ID'] || item.UnitName || item.unit_name;
+        
+        // If no unit found, try to derive from incident_type or incident_id
+        if (!unit) {
+          if (item.incident_type) {
+            // Use incident type as fallback (MED, ALM, 901, STRU)
+            unit = `Type: ${item.incident_type}`;
+            console.log(`Using incident_type as unit: ${unit}`);
+          } else if (item.incident_id && item.incident_id.length > 4) {
+            // Extract prefix from incident ID (e.g., "GY" from "GY250408001")
+            const prefix = item.incident_id.substring(0, 2);
+            unit = `Unit ${prefix}`;
+            console.log(`Extracted unit from incident_id: ${unit}`);
+          }
+        }
         
         // Skip empty values
         if (unit && unit !== 'Unknown') {
           unitCounts[unit] = (unitCounts[unit] || 0) + 1;
           console.log(`Found unit: ${unit}, count: ${unitCounts[unit]}`);
+        } else {
+          // Use a generic fallback if truly nothing found
+          unitCounts['Unspecified'] = (unitCounts['Unspecified'] || 0) + 1;
         }
       });
       
@@ -276,17 +293,55 @@
     let chartData;
     
     if (data && data.length) {
-      // Count incidents by location with expanded field mappings
+      // Count incidents by location with expanded field mappings and address extraction
       data.forEach(item => {
         // Try all possible location field names
-        const location = item['Incident City'] || item.City || item.city || 
-                          item.location || item.Location || item.address || 
-                          item.Address || 'Unknown';
+        let location = item['Incident City'] || item.City || item.city || 
+                        item.location || item.Location;
+        
+        // If no location found but we have an address, extract a simplified location
+        if (!location && item.address) {
+          try {
+            // Try to extract a meaningful part from the address
+            // First clean up the address - remove quotes and extra spaces
+            const cleanAddress = item.address.replace(/['"]/g, '').trim();
+            
+            // Extract the first part of the address that looks like a street name
+            // Use a reasonable approach based on actual data format
+            if (cleanAddress.includes('/')) {
+              // Handle intersection format "STREET1 / STREET2"
+              location = cleanAddress.split('/')[1].trim() + " Area";
+              console.log(`Extracted location from intersection: ${location}`);
+            } else if (cleanAddress.includes(' ')) {
+              // Get the last word as it might be a road type (RD, AVE, etc.)
+              const parts = cleanAddress.split(' ');
+              const lastWord = parts[parts.length - 1];
+              
+              if (['RD', 'AVE', 'ST', 'PKWY', 'DR', 'LN', 'BLVD'].includes(lastWord)) {
+                // Use the last 2-3 words if it ends with a road type
+                location = parts.slice(-2).join(' ') + " Area";
+              } else {
+                // Just use the first 3 words
+                location = parts.slice(0, Math.min(3, parts.length)).join(' ') + " Area";
+              }
+              
+              console.log(`Extracted location from address: ${location}`);
+            } else {
+              location = cleanAddress + " Area";
+            }
+          } catch(e) {
+            console.error("Error extracting location from address:", e);
+            location = "Address Area";
+          }
+        }
         
         // Skip empty or unknown values
         if (location && location !== 'Unknown') {
           locationCounts[location] = (locationCounts[location] || 0) + 1;
           console.log(`Found location: ${location}, count: ${locationCounts[location]}`);
+        } else {
+          // Use a generic fallback if truly nothing found
+          locationCounts['Other Areas'] = (locationCounts['Other Areas'] || 0) + 1;
         }
       });
       
