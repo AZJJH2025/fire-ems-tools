@@ -1,88 +1,111 @@
-# Testing the Data Formatter Integration
+# FireEMS.ai - Fire & EMS Analytics Tools
 
-This document provides instructions for testing the Data Formatter with Column Mapping UI integration.
+FireEMS.ai is a comprehensive suite of analytics tools designed for Fire and Emergency Medical Services agencies. The platform provides data visualization, incident logging, response time analysis, and more to help emergency services improve operations and decision-making.
 
-## Integration Overview
+## Features
 
-We've implemented a comprehensive integration between the React-based Column Mapping UI and the backend API endpoints. The key components are:
+- **Response Time Analyzer**: Visualize and analyze emergency response times
+- **Call Density Heatmap**: Map call volumes across service areas
+- **Isochrone Map**: Visualize response time coverage areas 
+- **Incident Logger**: Document incidents with HIPAA compliance and CAD integration
+- **Data Formatter**: Transform and standardize data from various sources
+- **Station Overview**: Analyze station performance and coverage
+- **FireMapPro**: Advanced mapping tools for incident analysis
 
-1. **Backend API Endpoints**:
-   - `/api/data-formatter/upload`: Handles file uploads and returns a fileId
-   - `/api/data-formatter/transform`: Processes data using mapping configurations
-   - `/api/data-formatter/download/{transformId}`: Download transformed data
-   - `/api/data-formatter/send-to-tool`: Send data to other tools
+## Technical Overview
 
-2. **Frontend Components**:
-   - `ColumnMappingUI.jsx`: React component for field mapping
-   - `data-formatter-api.js`: Client API for backend communication
-   - `data-formatter-api-integration.js`: Integration with UI buttons
+The application is built using:
 
-## Testing Instructions
+- **Backend**: Flask (Python)
+- **Frontend**: HTML, CSS, JavaScript, Jinja2 templates
+- **Data Visualization**: Chart.js, Leaflet.js
+- **Data Processing**: Pandas, SQLAlchemy
 
-1. Start the Flask server:
-   ```
-   python3 test_app.py
-   ```
+## Template Inheritance System
 
-2. Access the Data Formatter in your browser:
-   ```
-   http://127.0.0.1:5000/data-formatter
-   ```
+We've implemented a comprehensive template inheritance system to improve code organization and maintainability. This system includes:
 
-3. Upload a test file (CSV, Excel, or JSON)
+### Base Template
 
-4. Click "Map Fields" to open the Column Mapping UI
+A common base template (`base.html`) provides:
+- HTML document structure
+- Common CSS and JavaScript imports
+- Navigation bar
+- Common header
+- Footer
+- Template blocks that can be overridden by child templates
 
-5. Drag source columns to target fields
+### Components
 
-6. Configure transformations using the settings icon
+Reusable UI components in the `components/` directory:
+- `file_upload.html`: Standardized file upload UI
+- `map_container.html`: Leaflet map container with legend
+- `notification.html`: Toast-style notification component
 
-7. Click "Apply & Preview Transformation"
+### Template Documentation
 
-8. Download the transformed data or send to another tool
+For developers working on the frontend, we've created comprehensive documentation in `templates/TEMPLATE_GUIDE.md` that covers:
+- Available template blocks
+- How to use components
+- Best practices for creating new pages
+- Active page navigation system
 
-## Testing Alternative
+### Emergency Scripts
 
-If you're having trouble with the browser access, you can test the API endpoints directly:
+The application includes a resilience framework with emergency mode functionality to handle edge cases when resources fail to load:
+- Extracted inline scripts to `/static/js/emergency-scripts/`
+- Created dedicated emergency-mode CSS
+- Documented the emergency scripts system
 
-1. For file upload:
-   ```
-   POST http://127.0.0.1:5000/data-formatter/upload
-   Content-Type: multipart/form-data
-   Body: form-data with 'file' field containing your test file
-   ```
+## Project Status
 
-2. For data transformation:
-   ```
-   POST http://127.0.0.1:5000/data-formatter/transform
-   Content-Type: application/json
-   Body: 
-   {
-     "fileId": "your-file-id-from-upload",
-     "mappings": [
-       {
-         "sourceField": "source_column_name",
-         "targetField": "target_field_name",
-         "required": true,
-         "transformConfig": {
-           "type": "text",
-           "textTransform": "uppercase"
-         }
-       }
-     ]
-   }
-   ```
+### Template Inheritance Implementation
 
-3. For downloading transformed data:
-   ```
-   GET http://127.0.0.1:5000/data-formatter/download/{transform_id}?format=csv
-   ```
+✅ **Complete** - All main templates now use the template inheritance system:
+- ✅ index.html
+- ✅ call-density-heatmap.html
+- ✅ isochrone-map.html
+- ✅ fire-ems-dashboard.html (with emergency mode scripts extracted)
+- ✅ incident-logger.html
 
-## Troubleshooting
+### Next Steps
 
-If you encounter HTTP 403 errors:
-- Try a different browser
-- Check if your browser blocks localhost connections
-- Try using 127.0.0.1 instead of localhost
-- Check system firewall settings
-- Try a different port (modify the port in test_app.py)
+- Additional component extraction
+- Further modularization of JavaScript
+- Enhanced resilience testing
+- Mobile UI improvements
+
+## Installation
+
+1. Clone the repository
+```bash
+git clone https://github.com/your-org/fire-ems-tools.git
+cd fire-ems-tools
+```
+
+2. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+3. Run the application
+```bash
+python app.py
+```
+
+4. Access the application
+```
+http://localhost:5005
+```
+
+## Data Formatter Testing
+
+For testing the Data Formatter specifically, refer to [DATA_FORMATTER_TESTING.md](DATA_FORMATTER_TESTING.md).
+
+## Contributing
+
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to contribute to this project.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
