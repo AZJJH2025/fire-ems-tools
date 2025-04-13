@@ -1,1251 +1,183 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🚒 Fire & EMS Data Uploader 🚑</title>
-  
-  <!-- FireEMS Resilience Framework -->
-  <script>
-    // Load the framework initialization script
-    (function() {
-      function loadFramework() {
-        console.log("Loading FireEMS Framework");
-        const script = document.createElement('script');
-        script.src = '/static/js/fireems-framework.js';
-        
-        script.onerror = function() {
-          console.warn("Failed to load framework from primary path, trying fallback...");
-          const fallbackScript = document.createElement('script');
-          fallbackScript.src = '/app-static/js/fireems-framework.js';
-          
-          fallbackScript.onerror = function() {
-            console.error("Failed to load framework from all paths");
-          };
-          
-          document.head.appendChild(fallbackScript);
-        };
-        
-        document.head.appendChild(script);
-      }
-      
-      // Load the framework when the document is ready
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', loadFramework);
-      } else {
-        loadFramework();
-      }
-    })();
-  </script>
-  
-  <!-- External CSS for your project -->
-  <link rel="stylesheet" href="/static/styles.css" />
-  <!-- Mobile responsive styles -->
-  <link rel="stylesheet" href="/static/mobile-responsive.css" />
-  <!-- Emergency mode styles - directly embedded to avoid MIME type issues -->
-  <style>
-  /* Emergency mode styles */
-  .emergency-notification {
-    margin-bottom: 20px;
-    border-radius: 4px;
-    padding: 15px;
-  }
-  
-  .info-notification {
-    background-color: #e3f2fd;
-    border-left: 4px solid #2196f3;
-  }
-  
-  .success-notification {
-    background-color: #e8f5e9;
-    border-left: 4px solid #4caf50;
-  }
-  
-  .warning-notification {
-    background-color: #fff3e0;
-    border-left: 4px solid #ff9800;
-  }
-  
-  .error-notification {
-    background-color: #ffebee;
-    border-left: 4px solid #f44336;
-  }
-  
-  /* Emergency test panel */
-  .emergency-test-panel {
-    background: #fff3e0;
-    border-left: 4px solid #ff9800;
-    padding: 15px;
-    margin-top: 20px;
-    border-radius: 4px;
-  }
-  
-  /* Emergency data table */
-  .emergency-data-table {
-    margin: 20px 0;
-    overflow-x: auto;
-    max-height: 500px;
-    overflow-y: auto;
-  }
-  
-  .emergency-data-table table {
-    width: 100%;
-    border-collapse: collapse;
-    border: 1px solid #ddd;
-  }
-  
-  .emergency-data-table th {
-    padding: 8px;
-    text-align: left;
-    border: 1px solid #ddd;
-    background-color: #f2f2f2;
-    position: sticky;
-    top: 0;
-  }
-  
-  .emergency-data-table td {
-    padding: 8px;
-    text-align: left;
-    border: 1px solid #ddd;
-  }
-  
-  .emergency-data-table tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
-  
-  /* Emergency data summary */
-  .emergency-data-summary {
-    margin: 20px 0;
-    padding: 15px;
-    background-color: #f9f9f9;
-    border-radius: 4px;
-  }
-  </style>
-  <!-- Font Awesome for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Leaflet CSS for Map Visualization -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin=""
-  />
-  <!-- Chart.js for Charts with error handling -->
-  <script>
-    // Load Chart.js with better error handling
-    (function() {
-      function loadChartJs() {
-        // Only load if not already loaded
-        if (typeof Chart !== 'undefined') {
-          console.log("Chart.js already loaded, skipping dynamic load");
-          return;
-        }
-        
-        console.log("Loading Chart.js dynamically");
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js';
-        // Remove integrity check which is causing resource blocking
-        // script.integrity = "sha384-+uu/vNX0x7MJXcJo8fVf11iScFA6Ebjy5cmjbXsEVILpOj0pIg4G+no12tTxIL1Q";
-        script.crossOrigin = "anonymous";
-        
-        script.onload = function() {
-          console.log("Chart.js loaded successfully");
-          // Broadcast an event for other scripts to know Chart.js is ready
-          const event = new CustomEvent('chartjs:loaded');
-          document.dispatchEvent(event);
-        };
-        
-        script.onerror = function(error) {
-          console.error("Failed to load Chart.js:", error);
-          // Set a global indicator that Chart.js failed to load
-          window.chartJsLoadFailed = true;
-          
-          // Broadcast failure event
-          const event = new CustomEvent('chartjs:error', { detail: { error } });
-          document.dispatchEvent(event);
-        };
-        
-        document.head.appendChild(script);
-      }
-      
-      // Try to load as soon as possible
-      loadChartJs();
-      
-      // Also ensure it's loaded when DOM is ready
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
-          if (typeof Chart === 'undefined') {
-            loadChartJs();
-          }
-        });
-      }
-      
-      // Create a global fallback mechanism
-      window.ensureChartJsLoaded = function() {
-        return new Promise((resolve, reject) => {
-          if (typeof Chart !== 'undefined') {
-            resolve(Chart);
-          } else if (window.chartJsLoadFailed) {
-            reject(new Error("Chart.js failed to load"));
-          } else {
-            document.addEventListener('chartjs:loaded', function() {
-              resolve(Chart);
-            }, { once: true });
-            document.addEventListener('chartjs:error', function(event) {
-              reject(event.detail.error);
-            }, { once: true });
-            loadChartJs();
-          }
-        });
-      };
-    })();
-  </script>
-  
-  <!-- EMERGENCY MODE DEBUGGING -->
-  <script>
-    console.log("EMERGENCY INIT: Starting emergency mode checks");
-    
-    // Immediately check for emergency data in URL
-    (function() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const emergencyData = urlParams.get('emergency_data');
-      if (emergencyData) {
-        console.log("EMERGENCY DATA DETECTED IN URL: " + emergencyData);
-        // Add visual indicator that we've detected emergency data in URL
-        setTimeout(function() {
-          const body = document.body;
-          const indicator = document.createElement('div');
-          indicator.style.cssText = "position: fixed; top: 0; left: 0; background: #ff9800; color: white; padding: 5px; z-index: 9999;";
-          indicator.textContent = "Emergency data detected: " + emergencyData;
-          body.appendChild(indicator);
-          
-          // Try immediate retrieval from localStorage
-          try {
-            const storedData = localStorage.getItem(emergencyData);
-            if (storedData) {
-              console.log("EMERGENCY DATA FOUND IN STORAGE: " + emergencyData.substring(0, 20) + "...");
-              indicator.style.background = "#4caf50";
-              indicator.textContent = "Emergency data ready: " + emergencyData;
-            } else {
-              console.error("EMERGENCY DATA NOT FOUND IN STORAGE");
-              indicator.style.background = "#f44336";
-              indicator.textContent = "Emergency data missing: " + emergencyData;
-            }
-          } catch (e) {
-            console.error("EMERGENCY STORAGE ERROR:", e);
-          }
-        }, 500);
-        
-        // Load diagnostic tools for emergency mode with path fallbacks
-        setTimeout(function() {
-          console.log("Loading emergency diagnostic tools...");
-          
-          function loadDiagnosticTools() {
-            const paths = [
-              '/static/js/emergency-diagnostic.js',
-              '/app-static/js/emergency-diagnostic.js',
-              '/direct-static/js/emergency-diagnostic.js'
-            ];
-            
-            function tryNextPath(index) {
-              if (index >= paths.length) {
-                console.error("Failed to load emergency diagnostic tools from all paths");
-                return;
-              }
-              
-              const script = document.createElement('script');
-              script.src = paths[index];
-              
-              script.onload = function() {
-                console.log("Diagnostic tools loaded successfully from " + paths[index]);
-              };
-              
-              script.onerror = function() {
-                console.warn("Failed to load diagnostic tools from " + paths[index] + ", trying next path");
-                tryNextPath(index + 1);
-              };
-              
-              document.head.appendChild(script);
-            }
-            
-            tryNextPath(0);
-          }
-          
-          loadDiagnosticTools();
-        }, 1000);
-      }
-    })();
-  </script>
-  
-  <!-- Emergency Mode Library -->
-  <script>
-    // Load the emergency mode library
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log("EMERGENCY DOM LOADED: Starting proper initialization");
-      
-      // Try to load the emergency mode library
-      function loadEmergencyLibrary() {
-        return new Promise((resolve, reject) => {
-          // If already loaded
-          if (window.FireEMS && window.FireEMS.EmergencyMode) {
-            console.log('Emergency mode library already loaded');
-            resolve(window.FireEMS.EmergencyMode);
-            return;
-          }
-          
-          // Try to load it with multiple path fallbacks
-          function tryLoadFromPath(paths, index = 0) {
-            if (index >= paths.length) {
-              console.error('Failed to load emergency mode library from all paths');
-              reject(new Error('Failed to load emergency mode library from all paths'));
-              return;
-            }
-            
-            const script = document.createElement('script');
-            script.src = paths[index];
-            
-            script.onload = function() {
-              console.log('Emergency mode library loaded successfully from ' + paths[index]);
-              if (window.FireEMS && window.FireEMS.EmergencyMode) {
-                resolve(window.FireEMS.EmergencyMode);
-              } else {
-                console.warn('Library loaded but not initialized, trying next path');
-                tryLoadFromPath(paths, index + 1);
-              }
-            };
-            
-            script.onerror = function() {
-              console.warn('Failed to load emergency mode library from ' + paths[index] + ', trying next path');
-              tryLoadFromPath(paths, index + 1);
-            };
-            
-            document.body.appendChild(script);
-          }
-          
-          // Try multiple paths in order
-          const paths = [
-            '/static/js/emergency-mode.js',
-            '/app-static/js/emergency-mode.js',
-            '/direct-static/js/emergency-mode.js'
-          ];
-          
-          tryLoadFromPath(paths);
-        });
-      }
-      
-      // Get URL parameters immediately
-      const urlParams = new URLSearchParams(window.location.search);
-      const emergencyData = urlParams.get('emergency_data');
-      const fromFormatter = urlParams.get('from_formatter');
-      
-      // Process emergency data directly if present (don't wait for library)
-      if (emergencyData) {
-        console.log("EMERGENCY DIRECT CHECK: Processing directly", emergencyData);
-        processEmergencyDataDirect(emergencyData);
-      }
-      
-      // Also try the library approach in parallel
-      loadEmergencyLibrary().then(emergencyMode => {
-        console.log("EMERGENCY LIBRARY LOADED: Checking via library");
-        // Use the library to check for emergency data
-        emergencyMode.checkForData({
-          onData: processEmergencyData,
-          queryParam: 'emergency_data',
-          notificationContainer: '.upload-section, .tool-header, main'
-        });
-      }).catch(error => {
-        console.error("Failed to load emergency library:", error);
-        
-        // Show help button if we came from formatter - only if data not already loaded
-        setTimeout(function() {
-          const dataLoaded = document.querySelector('.dashboard-grid');
-          const resultsVisible = dataLoaded && window.getComputedStyle(dataLoaded).display !== 'none';
-          
-          if (fromFormatter === 'true' && !resultsVisible) {
-            const storageHelp = document.getElementById('data-transfer-help');
-            if (storageHelp) {
-              storageHelp.style.display = 'block';
-            }
-          }
-        }, 3000);
-      });
-      
-      // Function to directly process emergency data (fallback)
-      function processEmergencyDataDirect(dataId) {
-        console.log("Direct emergency data processing with ID: " + dataId);
-        
-        try {
-          // Try to retrieve the data from localStorage - show more debug info
-          console.log("Attempting to retrieve data from localStorage with key:", dataId);
-          const storedData = localStorage.getItem(dataId);
-          
-          if (!storedData) {
-            console.error("No data found with ID: " + dataId);
-            
-            // DEBUG: List all localStorage keys to see what's available
-            console.log("Available localStorage keys:");
-            for (let i = 0; i < localStorage.length; i++) {
-              const key = localStorage.key(i);
-              console.log(`- ${key} (${localStorage.getItem(key).length} bytes)`);
-            }
-            
-            // Try with variations of the key in case there was a formatting issue
-            console.log("Trying variations of the key...");
-            const possibleVariations = [
-              dataId, 
-              dataId.replace('emergency_data_', 'emergency_data_test_'),
-              dataId.replace('emergency_data_test_', 'emergency_data_'),
-              'emergency_data_' + dataId.split('_').pop()
-            ];
-            
-            let foundData = null;
-            let foundKey = null;
-            
-            for (const variant of possibleVariations) {
-              const data = localStorage.getItem(variant);
-              if (data) {
-                console.log("Found data with variation:", variant);
-                foundData = data;
-                foundKey = variant;
-                break;
-              }
-            }
-            
-            if (foundData) {
-              console.log("Processing with variation key:", foundKey);
-              processStoredData(foundData, foundKey);
-            } else {
-              showEmergencyDataError("Data not found in browser storage. It may have expired or been cleared.");
-            }
-            
-            return;
-          }
-          
-          // Process the data that was found
-          processStoredData(storedData, dataId);
-          
-        } catch (error) {
-          console.error("Error processing emergency data directly:", error);
-          showEmergencyDataError("Error loading emergency data: " + error.message);
-        }
-      }
-      
-      // Helper function to process stored data from localStorage
-      function processStoredData(storedData, storageKey) {
-        try {
-          console.log("Processing stored data, first 100 chars:", storedData.substring(0, 100));
-          
-          // Parse the JSON data
-          const parsedData = JSON.parse(storedData);
-          let data = parsedData;
-          
-          // Check if this is a wrapped data object with metadata (from library)
-          if (parsedData.metadata && parsedData.data) {
-            data = parsedData.data;
-            console.log("Found library-formatted data:", parsedData.metadata);
-          }
-          
-          // DEBUG: Verify the data structure
-          if (Array.isArray(data)) {
-            console.log("Data is an array with", data.length, "items");
-            if (data.length > 0) {
-              console.log("Sample first item:", JSON.stringify(data[0]).substring(0, 100) + "...");
-            }
-          } else {
-            console.log("Data is not an array but an object:", typeof data);
-            // Try to convert to array if possible
-            if (typeof data === 'object' && data !== null) {
-              const keys = Object.keys(data);
-              if (keys.length > 0 && !isNaN(parseInt(keys[0]))) {
-                console.log("Converting object with numeric keys to array");
-                data = Object.values(data);
-              }
-            }
-          }
-          
-          if (!Array.isArray(data) || data.length === 0) {
-            throw new Error("Invalid data format: expected non-empty array");
-          }
-          
-          console.log("Successfully retrieved emergency data:", data.length, "records");
-          
-          // Show notification
-          const uploadSection = document.querySelector('.upload-section');
-          if (uploadSection) {
-            const notification = document.createElement('div');
-            notification.id = "emergency-data-notification"; // Add ID for easier reference
-            notification.className = 'emergency-data-notification';
-            notification.innerHTML = `
-              <div style="background-color: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
-                <h3 style="margin-top: 0; color: #0d47a1;">Emergency Data Available</h3>
-                <p>Data has been transferred from the Data Formatter in emergency mode.</p>
-                <p><strong>${data.length}</strong> records are available.</p>
-                <button id="load-emergency-data" style="background-color: #2196f3; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
-                  <i class="fas fa-download"></i> Load Data
-                </button>
-                <button id="inspect-data" style="background-color: #4caf50; color: white; border: none; padding: 8px 16px; border-radius: 4px; margin-left: 10px; cursor: pointer;">
-                  Inspect Data
-                </button>
-                <button id="dismiss-emergency-data" style="background-color: #f5f5f5; color: #333; border: 1px solid #ddd; padding: 8px 16px; border-radius: 4px; margin-left: 10px; cursor: pointer;">
-                  Dismiss
-                </button>
-              </div>
-            `;
-            uploadSection.prepend(notification);
-            
-            // Add event listeners for buttons
-            document.getElementById('load-emergency-data').addEventListener('click', function() {
-              console.log("Load button clicked, processing emergency data...");
-              // Process the data
-              const success = processEmergencyData(data);
-              
-              if (success) {
-                // Remove the notification
-                notification.remove();
-                
-                // Clean up localStorage to free space
-                localStorage.removeItem(storageKey);
-                console.log("Emergency data processed and localStorage cleaned up");
-              } else {
-                console.error("Failed to process emergency data");
-              }
-            });
-            
-            // Add inspect button for debugging
-            document.getElementById('inspect-data').addEventListener('click', function() {
-              console.log("Full data inspection:", data);
-              alert("Data inspection logged to console. Check browser developer tools.");
-              
-              // Add visual data preview
-              const previewDiv = document.createElement('div');
-              previewDiv.style.cssText = "max-height: 200px; overflow: auto; background: #f5f5f5; padding: 10px; margin-top: 10px; font-family: monospace; font-size: 12px;";
-              previewDiv.innerHTML = `<strong>Data Preview:</strong><br>` + 
-                  JSON.stringify(data[0], null, 2).replace(/\n/g, '<br>').replace(/ /g, '&nbsp;');
-              
-              notification.querySelector('div').appendChild(previewDiv);
-            });
-            
-            document.getElementById('dismiss-emergency-data').addEventListener('click', function() {
-              notification.remove();
-            });
-          } else {
-            console.error("Could not find upload section to show notification");
-            // Try immediate processing if UI elements are not ready
-            processEmergencyData(data);
-          }
-        } catch (error) {
-          console.error("Error processing stored data:", error);
-          showEmergencyDataError("Error parsing data: " + error.message);
-        }
-      }
-      
-      // Process incoming emergency data
-      function processEmergencyData(data) {
-        console.log("Processing emergency data...");
-        
-        try {
-          // Validate data format
-          if (!Array.isArray(data) || data.length === 0) {
-            throw new Error("Invalid data format: expected non-empty array");
-          }
-          
-          // Check required fields
-          const requiredFields = ['incident_id', 'incident_date', 'incident_time', 'latitude', 'longitude'];
-          const sampleRecord = data[0];
-          
-          // Log data structure for debugging
-          console.log("Data structure check:", Object.keys(sampleRecord));
-          
-          // Try to determine field mappings or apply transformations if needed
-          // Some fields might have variant names (e.g., incident_id vs incidentId)
-          const normalizedData = data.map(item => {
-            // Create a new normalized record
-            const normalized = {};
-            
-            // Handle common field variations
-            normalized.incident_id = item.incident_id || item.incidentId || item.id || '';
-            normalized.incident_date = item.incident_date || item.incidentDate || item.date || '';
-            normalized.incident_time = item.incident_time || item.incidentTime || item.time || '';
-            normalized.latitude = item.latitude || item.lat || 0;
-            normalized.longitude = item.longitude || item.lng || item.lon || 0;
-            normalized.incident_type = item.incident_type || item.incidentType || item.type || 'Unknown';
-            
-            // Copy all other fields directly
-            for (const [key, value] of Object.entries(item)) {
-              if (!normalized[key]) {
-                normalized[key] = value;
-              }
-            }
-            
-            return normalized;
-          });
-          
-          // Re-check required fields after normalization
-          const missingFields = requiredFields.filter(field => 
-            !normalizedData[0].hasOwnProperty(field) || !normalizedData[0][field]
-          );
-          
-          if (missingFields.length > 0) {
-            console.warn(`Missing required fields after normalization: ${missingFields.join(', ')}`);
-            // Continue anyway - the display function will handle missing fields
-          }
-          
-          // Display the data using existing methods if available
-          const displayFunctions = [
-            'displayResponseTimeData',
-            'displayIncidentData',
-            'processIncidentData',
-            'loadData',
-            'processData',
-            'displayData'
-          ];
-          
-          let displayMethod = null;
-          let displayMethodName = null;
-          
-          // Try to find a suitable display method
-          for (const methodName of displayFunctions) {
-            if (typeof window[methodName] === 'function') {
-              displayMethod = window[methodName];
-              displayMethodName = methodName;
-              console.log(`Found display method: ${methodName}`);
-              break;
-            }
-          }
-          
-          if (displayMethod) {
-            console.log(`Using ${displayMethodName} to display data`);
-            try {
-              displayMethod(normalizedData);
-            } catch (displayError) {
-              console.error(`Error using ${displayMethodName}:`, displayError);
-              displayEmergencyData(normalizedData);
-            }
-          } else {
-            console.log("No standard display method found, using emergency display");
-            displayEmergencyData(normalizedData);
-          }
-          
-          // Show success message
-          const uploadSection = document.querySelector('.upload-section');
-          if (uploadSection) {
-            const successMsg = document.createElement('div');
-            successMsg.className = 'success-message';
-            successMsg.innerHTML = `
-              <div style="background-color: #e8f5e9; border-left: 4px solid #4caf50; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
-                <h3 style="margin-top: 0; color: #2e7d32;">Data Loaded Successfully</h3>
-                <p>${data.length} records have been processed from emergency data storage.</p>
-                <p><button id="download-emergency-backup" style="margin-top: 10px; background-color: #2196f3; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
-                  <i class="fas fa-download"></i> Download Backup Copy
-                </button></p>
-              </div>
-            `;
-            uploadSection.prepend(successMsg);
-            
-            // Add event listener for download backup button
-            setTimeout(() => {
-              const downloadBtn = document.getElementById('download-emergency-backup');
-              if (downloadBtn) {
-                downloadBtn.addEventListener('click', function() {
-                  console.log("Creating backup download of emergency data");
-                  downloadEmergencyData(normalizedData);
-                });
-              }
-            }, 100);
-            
-            // Auto-remove after 8 seconds
-            setTimeout(() => {
-              successMsg.remove();
-            }, 8000);
-          }
-          
-          // Mark any debugging indicator as success
-          const indicator = document.querySelector('div[style*="position: fixed"][style*="top: 0"][style*="left: 0"]');
-          if (indicator) {
-            indicator.style.background = "#4caf50";
-            indicator.textContent = "Emergency data loaded successfully";
-            
-            // Auto-remove after 5 seconds
-            setTimeout(() => {
-              indicator.remove();
-            }, 5000);
-          }
-          
-          return true;
-        } catch (error) {
-          console.error("Error processing emergency data:", error);
-          showEmergencyDataError("Error processing data: " + error.message);
-          
-          // Mark any debugging indicator as failed
-          const indicator = document.querySelector('div[style*="position: fixed"][style*="top: 0"][style*="left: 0"]');
-          if (indicator) {
-            indicator.style.background = "#f44336";
-            indicator.textContent = "Emergency data processing failed: " + error.message;
-          }
-          
-          return false;
-        }
-      }
-      
-      // Basic display function for emergency data
-      function displayEmergencyData(data) {
-        console.log("Using emergency display function for data");
-        
-        // Hide upload section
-        const uploadSection = document.querySelector('.upload-section');
-        if (uploadSection) {
-          uploadSection.style.display = 'none';
-        }
-        
-        // Find main content container
-        const mainContent = document.querySelector('.dashboard-grid') || 
-                            document.querySelector('#results-container') || 
-                            document.querySelector('main');
-        
-        if (!mainContent) {
-          console.error("Could not find a suitable container for displaying results");
-          return;
-        }
-        
-        // Clear existing content
-        mainContent.innerHTML = '';
-        mainContent.style.display = 'block';
-        
-        // Create a simple data table
-        const tableContainer = document.createElement('div');
-        tableContainer.className = 'emergency-data-table';
-        
-        // Generate HTML for the table
-        const tableHtml = `
-          <h2>Emergency Data View</h2>
-          <p>Showing ${data.length} records loaded from Data Formatter in emergency mode.</p>
-          <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-              <thead>
-                <tr>
-                  ${Object.keys(data[0]).map(key => 
-                    `<th style="padding: 8px; text-align: left; border-bottom: 2px solid #ddd;">${key}</th>`
-                  ).join('')}
-                </tr>
-              </thead>
-              <tbody>
-                ${data.slice(0, 50).map(row => `
-                  <tr>
-                    ${Object.values(row).map(value => 
-                      `<td style="padding: 8px; text-align: left; border-bottom: 1px solid #eee;">${value}</td>`
-                    ).join('')}
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-            ${data.length > 50 ? `<p>Showing first 50 of ${data.length} records.</p>` : ''}
-          </div>
-          
-          <div style="margin-top: 20px;">
-            <button id="download-emergency-data" style="background-color: #2196f3; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-right: 10px;">
-              <i class="fas fa-download"></i> Download as CSV
-            </button>
-            <button id="clear-emergency-data" style="background-color: #f5f5f5; color: #333; border: 1px solid #ddd; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
-              Clear View
-            </button>
-          </div>
-        `;
-        
-        // Set the HTML
-        tableContainer.innerHTML = tableHtml;
-        mainContent.appendChild(tableContainer);
-        
-        // Add event listeners for buttons
-        document.getElementById('download-emergency-data').addEventListener('click', function() {
-          // Try to use the library for download if available
-          if (window.FireEMS && window.FireEMS.EmergencyMode) {
-            window.FireEMS.EmergencyMode.downloadData(data, {
-              format: 'csv',
-              filename: 'emergency-data-export'
-            });
-          } else {
-            // Fallback direct download
-            downloadEmergencyData(data);
-          }
-        });
-        
-        document.getElementById('clear-emergency-data').addEventListener('click', function() {
-          // Show the upload section again
-          if (uploadSection) {
-            uploadSection.style.display = 'block';
-          }
-          
-          // Clear the data view
-          tableContainer.remove();
-        });
-      }
-      
-      // Fallback function to download data as CSV
-      function downloadEmergencyData(data) {
-        try {
-          if (!data || data.length === 0) {
-            console.error("No data to download");
-            return;
-          }
-          
-          // Generate CSV content
-          const headers = Object.keys(data[0]);
-          let csvContent = headers.join(',') + '\n';
-          
-          data.forEach(row => {
-            const values = headers.map(header => {
-              const value = row[header] || '';
-              return value.toString().includes(',') ? `"${value}"` : value;
-            });
-            csvContent += values.join(',') + '\n';
-          });
-          
-          // Create a download link
-          const blob = new Blob([csvContent], { type: 'text/csv' });
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          
-          link.href = url;
-          link.download = 'emergency-data-export.csv';
-          document.body.appendChild(link);
-          link.click();
-          
-          // Clean up
-          setTimeout(() => {
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-          }, 100);
-          
-        } catch (error) {
-          console.error("Error downloading emergency data:", error);
-          alert("Error creating download file: " + error.message);
-        }
-      }
-      
-      // Function to show error messages
-      function showEmergencyDataError(message) {
-        const uploadSection = document.querySelector('.upload-section');
-        if (uploadSection) {
-          const errorMsg = document.createElement('div');
-          errorMsg.className = 'error-message';
-          errorMsg.innerHTML = `
-            <div style="background-color: #ffebee; border-left: 4px solid #f44336; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
-              <h3 style="margin-top: 0; color: #c62828;">Error Loading Emergency Data</h3>
-              <p>${message}</p>
-              <p>Please try uploading your data file directly.</p>
-            </div>
-          `;
-          uploadSection.prepend(errorMsg);
-          
-          // Auto-remove after 10 seconds
-          setTimeout(() => {
-            errorMsg.remove();
-          }, 10000);
-        }
-      }
-    
-      // Close button for the help modal
-      const closeHelpBtn = document.getElementById('close-help-modal');
-      if (closeHelpBtn) {
-        closeHelpBtn.addEventListener('click', function() {
-          const storageHelp = document.getElementById('data-transfer-help');
-          if (storageHelp) {
-            storageHelp.style.display = 'none';
-          }
-        });
-      }
-      
-      // Check storage button - Fixed implementation
-      const checkStorageBtn = document.getElementById('check-storage-btn');
-      if (checkStorageBtn) {
-        checkStorageBtn.addEventListener('click', function() {
-          try {
-            // Load the debug script dynamically
-            const script = document.createElement('script');
-            script.src = '/static/debug-session-storage.js';
-            script.onload = function() {
-              console.log('Storage debugger loaded successfully');
-              // Hide the modal after script is loaded
-              const storageHelp = document.getElementById('data-transfer-help');
-              if (storageHelp) {
-                storageHelp.style.display = 'none';
-              }
-            };
-            script.onerror = function() {
-              alert('Error: Could not load the storage debugger script.');
-            };
-            document.body.appendChild(script);
-          } catch (e) {
-            alert('Error loading debug script: ' + e.message);
-          }
-        });
-      }
-    });
-  </script>
-  
-  <!-- Fix for syntax errors in dashboard script -->
-  <script>
-    // Load Chart.js for rendering charts
-    document.addEventListener('DOMContentLoaded', function() {
-      // Load Chart.js if not already present
-      if (typeof Chart === 'undefined') {
-        console.log("Chart.js not found, loading dynamically");
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js';
-        // Remove integrity check which is causing resource blocking
-        // script.integrity = "sha384-+uu/vNX0x7MJXcJo8fVf11iScFA6Ebjy5cmjbXsEVILpOj0pIg4G+no12tTxIL1Q";
-        script.crossOrigin = "anonymous";
-        
-        // Add event handlers to track loading status
-        script.onload = function() {
-          console.log("Chart.js loaded successfully");
-          // Initialize chart manager if available
-          if (window.FireEMS && window.FireEMS.ChartManager) {
-            console.log("Initializing ChartManager after Chart.js load");
-            window.FireEMS.ChartManager.configure({ debug: true });
-          }
-        };
-        
-        script.onerror = function(error) {
-          console.error("Failed to load Chart.js:", error);
-          // Show error message in chart containers
-          document.querySelectorAll('.chart-container').forEach(container => {
-            container.innerHTML = '<div class="chart-error">Failed to load Chart.js library. Charts unavailable.</div>';
-          });
-        };
-        
-        document.head.appendChild(script);
-      }
-    });
-  </script>
-</head>
-<body>
-  <div class="navbar">
-    <div class="logo">
-      <a href="/">
-        <i class="fas fa-fire"></i> FireEMS.ai
-      </a>
-    </div>
-    <div class="nav-links">
-      <a href="/">Home</a>
-      <a href="/fire-ems-dashboard" class="active">Response Time Analyzer</a>
-      <a href="/isochrone-map">Isochrone Map</a>
-      <a href="/call-density-heatmap">Call Density</a>
-      <a href="/station-overview">Station Overview</a>
-      <a href="/incident-logger">Incident Logger</a>
-      <a href="/fire-map-pro">FireMapPro</a>
-      <a href="/data-formatter">Data Formatter</a>
-    </div>
-  </div>
-  
-  <!-- Troubleshooting Modal - Mobile-friendly with scrolling -->
-  <div id="data-transfer-help" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 1000; overflow: auto;">
-    <div style="position: relative; width: 90%; max-width: 600px; margin: 20px auto; background-color: white; padding: 20px; border-radius: 5px; max-height: 90vh; overflow-y: auto;">
-      <button id="close-help-modal" style="position: sticky; top: 0; float: right; background: #cc0000; color: white; border: none; font-size: 18px; width: 30px; height: 30px; border-radius: 15px; cursor: pointer; z-index: 2;">×</button>
-      <h2>Data Transfer Troubleshooting</h2>
-      <p>If you're seeing this message, there may be an issue with data transfer between the Data Formatter and Response Time Analyzer.</p>
-      
-      <h3>Common Issues:</h3>
-      <ol>
-        <li><strong>Browser Privacy Settings:</strong> Some browsers or privacy extensions block sessionStorage or clear it between page navigations.</li>
-        <li><strong>Data Size:</strong> Very large datasets might exceed the browser's storage limits.</li>
-        <li><strong>Browser Compatibility:</strong> Some older browsers might have limited support for sessionStorage.</li>
-      </ol>
-      
-      <h3>Troubleshooting Steps:</h3>
-      <ol>
-        <li>Try using a different browser (Chrome or Firefox recommended)</li>
-        <li>Disable privacy extensions temporarily</li>
-        <li>Clear your browser cache and cookies</li>
-        <li>If using the Data Formatter, try downloading the file and uploading it directly to this tool</li>
-        <li>Reduce the size of your dataset (if it's very large)</li>
-      </ol>
-      
-      <p>For technical users: Check the browser console for specific error messages that might help identify the issue.</p>
-      
-      <button id="check-storage-btn" style="background-color: #0066cc; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin-top: 10px; width: 100%;">Check Storage Status</button>
-    </div>
-  </div>
+{% extends "base.html" %}
 
-  <header class="tool-header">
-    <div class="container">
-      <h1><i class="fas fa-stopwatch"></i> Response Time Analyzer</h1>
-      <p>Upload your Fire/EMS data files for interactive visualization and analysis</p>
-    </div>
-  </header>
-  
-  <!-- File Upload Section -->
-  <div class="file-upload-container">
-    <h2>Upload Data File</h2>
-    <!-- Upload section class added for emergency mode notifications -->
-    <div class="upload-section">
-      <!-- Emergency data notifications will be injected here -->
-    </div>
-    <div class="file-input-wrapper">
-      <input type="file" id="fileInput">
-      <button onclick="uploadFile()">Upload & Analyze</button>
-    </div>
-    <p>Accepted formats: CSV, Excel (.xls, .xlsx)</p>
-  </div>
-  
-  <!-- Loading Indicator -->
-  <div id="loading" style="display: none;">
-    ⏳ Uploading and analyzing file... Please wait.
-  </div>
-  
-  <!-- Result Section (for any messages or quick output) -->
-  <div id="result">
-    <!-- Results will be displayed here by the JavaScript -->
-    <p>Upload a file to view analytics and visualizations, or 
-    <a href="/data-formatter?tool=response-time" class="formatter-link">use the Data Formatter</a> to prepare your data first.</p>
-    <div class="formatter-info" style="background-color: #f3f9ff; padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 0.9em;">
-      <p><strong>🔍 Using the Response Time Analyzer with Data Formatter:</strong></p>
-      <p>For the best experience, ensure your data includes these key fields:</p>
-      <ul style="margin-top: 5px; padding-left: 25px;">
-        <li><strong>Unit</strong> - The responding vehicle or personnel unit</li>
-        <li><strong>Reported</strong> - When the incident was initially reported</li>
-        <li><strong>Unit Dispatched</strong> - When the unit was dispatched</li>
-        <li><strong>Unit Onscene</strong> - When the unit arrived on scene</li>
-        <li><strong>Latitude/Longitude</strong> - Coordinates for mapping</li>
-      </ul>
-      <p>The Data Formatter will help map these fields from your existing data.</p>
-    </div>
-  </div>
-  
-  <!-- Results container for emergency mode data display -->
-  <div id="results-container" style="display: none;">
-    <!-- Emergency mode results will be displayed here -->
-  </div>
-  
-  <!-- Dashboard Section - Initially Hidden -->
-  <div id="dashboard" style="display: none;">
-    <div class="dashboard-header">
-      <h2>📊 Data Analysis Dashboard</h2>
-      <div id="file-stats"></div>
-    </div>
-    
-    <!-- First Row: Map and Time Heatmap -->
-    <div class="dashboard-row">
-      <!-- Map visualization -->
-      <div class="dashboard-card">
-        <h3>📍 Incident Map</h3>
-        <div id="incident-map"></div>
-      </div>
-      
-      <!-- Time patterns heatmap -->
-      <div class="dashboard-card">
-        <h3>⏰ Incidents by Time (Day/Hour)</h3>
-        <div id="time-chart"></div>
-      </div>
-    </div>
-    
-    <!-- Second Row: Unit Activity and Location Charts -->
-    <div class="dashboard-row">
-      <!-- Unit activity chart -->
-      <div class="dashboard-card">
-        <h3>🚒 Unit Activity</h3>
-        <div class="chart-container">
-          <canvas id="unit-chart"></canvas>
-        </div>
-      </div>
-      
-      <!-- Location/city chart -->
-      <div class="dashboard-card">
-        <h3>🏙️ Incidents by Location</h3>
-        <div class="chart-container">
-          <canvas id="location-chart"></canvas>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Data table section -->
-    <div class="dashboard-row">
-      <div class="dashboard-card full-width">
-        <h3>📋 Incident Data Table</h3>
-        <div id="data-table"></div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Leaflet JS for Maps -->
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""
-  ></script>
-  
-  <!-- Chart Manager Script with multi-path support -->
-  <script>
-    // Load chart manager with multi-path support
-    (function() {
-      function loadChartManager() {
-        console.log("Loading chart manager script");
-        const paths = [
-          '/static/js/chart-manager.js',
-          '/app-static/js/chart-manager.js',
-          '/direct-static/js/chart-manager.js'
-        ];
-        
-        function tryLoadFromPath(index) {
-          if (index >= paths.length) {
-            console.error("Failed to load chart manager from all paths");
-            return;
-          }
-          
-          const script = document.createElement('script');
-          script.src = paths[index];
-          
-          script.onload = function() {
-            console.log("Chart manager loaded successfully from " + paths[index]);
-          };
-          
-          script.onerror = function() {
-            console.warn("Failed to load chart manager from " + paths[index] + ", trying next path");
-            tryLoadFromPath(index + 1);
-          };
-          
-          document.head.appendChild(script);
-        }
-        
-        tryLoadFromPath(0);
-      }
-      
-      // Load now
-      loadChartManager();
-    })();
-  </script>
-  
-  <!-- Emergency Mode Scripts with multiple path options -->
-  <script>
-    // Load emergency chart fallback with multi-path support
-    (function() {
-      function loadFallbackScript() {
-        console.log("Loading chart fallback script");
-        const paths = [
-          '/static/js/emergency/chart-fallback.js',
-          '/app-static/js/emergency/chart-fallback.js',
-          '/direct-static/js/emergency/chart-fallback.js'
-        ];
-        
-        function tryLoadFromPath(index) {
-          if (index >= paths.length) {
-            console.error("Failed to load chart fallback from all paths");
-            return;
-          }
-          
-          const script = document.createElement('script');
-          script.src = paths[index];
-          
-          script.onload = function() {
-            console.log("Chart fallback loaded successfully from " + paths[index]);
-          };
-          
-          script.onerror = function() {
-            console.warn("Failed to load chart fallback from " + paths[index] + ", trying next path");
-            tryLoadFromPath(index + 1);
-          };
-          
-          document.head.appendChild(script);
-        }
-        
-        tryLoadFromPath(0);
-      }
-      
-      // Load now
-      loadFallbackScript();
-    })();
-  </script>
-  
-  <script>
-    // Load prevent mode switch with multi-path support
-    (function() {
-      function loadPreventModeScript() {
-        console.log("Loading prevent mode switch script");
-        const paths = [
-          '/static/js/emergency/prevent-mode-switch.js',
-          '/app-static/js/emergency/prevent-mode-switch.js',
-          '/direct-static/js/emergency/prevent-mode-switch.js'
-        ];
-        
-        function tryLoadFromPath(index) {
-          if (index >= paths.length) {
-            console.error("Failed to load prevent mode switch from all paths");
-            return;
-          }
-          
-          const script = document.createElement('script');
-          script.src = paths[index];
-          
-          script.onload = function() {
-            console.log("Prevent mode switch loaded successfully from " + paths[index]);
-          };
-          
-          script.onerror = function() {
-            console.warn("Failed to load prevent mode switch from " + paths[index] + ", trying next path");
-            tryLoadFromPath(index + 1);
-          };
-          
-          document.head.appendChild(script);
-        }
-        
-        tryLoadFromPath(0);
-      }
-      
-      // Load now
-      loadPreventModeScript();
-    })();
-  </script>
+{% block title %}🚒 Fire & EMS Data Uploader 🚑{% endblock %}
 
-  <!-- Your Custom Script (with version and multi-path support) -->
-  <script>
-    // Load dashboard script with multi-path support
-    (function() {
-      function loadDashboardScript() {
-        console.log("Loading dashboard script");
-        const version = "v=20250413"; // Update version for cache busting
-        const paths = [
-          '/static/fire-ems-dashboard.js?' + version,
-          '/app-static/fire-ems-dashboard.js?' + version,
-          '/direct-static/fire-ems-dashboard.js?' + version
-        ];
-        
-        function tryLoadFromPath(index) {
-          if (index >= paths.length) {
-            console.error("Failed to load dashboard script from all paths");
-            // Add visual indicator for user
-            const errorNote = document.createElement('div');
-            errorNote.style.background = '#fff0f0';
-            errorNote.style.color = '#cc0000';
-            errorNote.style.padding = '15px';
-            errorNote.style.margin = '15px 0';
-            errorNote.style.borderRadius = '4px';
-            errorNote.innerHTML = '<strong>Error:</strong> Failed to load essential scripts. ' + 
-                                  'Try refreshing the page or check your internet connection.';
-            document.body.insertBefore(errorNote, document.body.firstChild);
-            return;
-          }
-          
-          const script = document.createElement('script');
-          script.src = paths[index];
-          
-          script.onload = function() {
-            console.log("Dashboard script loaded successfully from " + paths[index]);
-          };
-          
-          script.onerror = function() {
-            console.warn("Failed to load dashboard script from " + paths[index] + ", trying next path");
-            tryLoadFromPath(index + 1);
-          };
-          
-          document.head.appendChild(script);
-        }
-        
-        tryLoadFromPath(0);
-      }
-      
-      // Load now
-      loadDashboardScript();
-    })();
-  </script>
-</body>
-</html>
+{% block styles %}
+<link rel="stylesheet" href="/static/emergency-mode.css" />
+<!-- Leaflet CSS for Map Visualization -->
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin=""
+/>
+{% endblock %}
+
+{% block header_scripts %}
+<!-- FireEMS Resilience Framework -->
+<script src="/static/js/emergency-scripts/framework-initialization.js"></script>
+
+<!-- Chart.js with better error handling -->
+<script src="/static/js/emergency-scripts/chartjs-loader.js"></script>
+
+<!-- EMERGENCY MODE DEBUGGING -->
+<script src="/static/js/emergency-scripts/emergency-mode-debugging.js"></script>
+{% endblock %}
+
+{% block header %}
+<header class="tool-header">
+  <div class="container">
+    <h1><i class="fas fa-stopwatch"></i> Response Time Analyzer</h1>
+    <p>Upload your Fire/EMS data files for interactive visualization and analysis</p>
+  </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<!-- Troubleshooting Modal - Mobile-friendly with scrolling -->
+<div id="data-transfer-help" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 1000; overflow: auto;">
+  <div style="position: relative; width: 90%; max-width: 600px; margin: 20px auto; background-color: white; padding: 20px; border-radius: 5px; max-height: 90vh; overflow-y: auto;">
+    <button id="close-help-modal" style="position: sticky; top: 0; float: right; background: #cc0000; color: white; border: none; font-size: 18px; width: 30px; height: 30px; border-radius: 15px; cursor: pointer; z-index: 2;">×</button>
+    <h2>Data Transfer Troubleshooting</h2>
+    <p>If you're seeing this message, there may be an issue with data transfer between the Data Formatter and Response Time Analyzer.</p>
+    
+    <h3>Common Issues:</h3>
+    <ol>
+      <li><strong>Browser Privacy Settings:</strong> Some browsers or privacy extensions block sessionStorage or clear it between page navigations.</li>
+      <li><strong>Data Size:</strong> Very large datasets might exceed the browser's storage limits.</li>
+      <li><strong>Browser Compatibility:</strong> Some older browsers might have limited support for sessionStorage.</li>
+    </ol>
+    
+    <h3>Troubleshooting Steps:</h3>
+    <ol>
+      <li>Try using a different browser (Chrome or Firefox recommended)</li>
+      <li>Disable privacy extensions temporarily</li>
+      <li>Clear your browser cache and cookies</li>
+      <li>If using the Data Formatter, try downloading the file and uploading it directly to this tool</li>
+      <li>Reduce the size of your dataset (if it's very large)</li>
+    </ol>
+    
+    <p>For technical users: Check the browser console for specific error messages that might help identify the issue.</p>
+    
+    <button id="check-storage-btn" style="background-color: #0066cc; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin-top: 10px; width: 100%;">Check Storage Status</button>
+  </div>
+</div>
+
+<!-- File Upload Section -->
+<div class="file-upload-container">
+  <h2>Upload Data File</h2>
+  <!-- Upload section class added for emergency mode notifications -->
+  <div class="upload-section">
+    <!-- Emergency data notifications will be injected here -->
+  </div>
+  <div class="file-input-wrapper">
+    <input type="file" id="fileInput">
+    <button onclick="uploadFile()">Upload & Analyze</button>
+  </div>
+  <p>Accepted formats: CSV, Excel (.xls, .xlsx)</p>
+</div>
+
+<!-- Loading Indicator -->
+<div id="loading" style="display: none;">
+  ⏳ Uploading and analyzing file... Please wait.
+</div>
+
+<!-- Result Section (for any messages or quick output) -->
+<div id="result">
+  <!-- Results will be displayed here by the JavaScript -->
+  <p>Upload a file to view analytics and visualizations, or 
+  <a href="/data-formatter?tool=response-time" class="formatter-link">use the Data Formatter</a> to prepare your data first.</p>
+  <div class="formatter-info" style="background-color: #f3f9ff; padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 0.9em;">
+    <p><strong>🔍 Using the Response Time Analyzer with Data Formatter:</strong></p>
+    <p>For the best experience, ensure your data includes these key fields:</p>
+    <ul style="margin-top: 5px; padding-left: 25px;">
+      <li><strong>Unit</strong> - The responding vehicle or personnel unit</li>
+      <li><strong>Reported</strong> - When the incident was initially reported</li>
+      <li><strong>Unit Dispatched</strong> - When the unit was dispatched</li>
+      <li><strong>Unit Onscene</strong> - When the unit arrived on scene</li>
+      <li><strong>Latitude/Longitude</strong> - Coordinates for mapping</li>
+    </ul>
+    <p>The Data Formatter will help map these fields from your existing data.</p>
+  </div>
+</div>
+
+<!-- Results container for emergency mode data display -->
+<div id="results-container" style="display: none;">
+  <!-- Emergency mode results will be displayed here -->
+</div>
+
+<!-- Dashboard Section - Initially Hidden -->
+<div id="dashboard" style="display: none;">
+  <div class="dashboard-header">
+    <h2>📊 Data Analysis Dashboard</h2>
+    <div id="file-stats"></div>
+  </div>
+  
+  <!-- First Row: Map and Time Heatmap -->
+  <div class="dashboard-row">
+    <!-- Map visualization -->
+    <div class="dashboard-card">
+      <h3>📍 Incident Map</h3>
+      <div id="incident-map"></div>
+    </div>
+    
+    <!-- Time patterns heatmap -->
+    <div class="dashboard-card">
+      <h3>⏰ Incidents by Time (Day/Hour)</h3>
+      <div id="time-chart"></div>
+    </div>
+  </div>
+  
+  <!-- Second Row: Unit Activity and Location Charts -->
+  <div class="dashboard-row">
+    <!-- Unit activity chart -->
+    <div class="dashboard-card">
+      <h3>🚒 Unit Activity</h3>
+      <div class="chart-container">
+        <canvas id="unit-chart"></canvas>
+      </div>
+    </div>
+    
+    <!-- Location/city chart -->
+    <div class="dashboard-card">
+      <h3>🏙️ Incidents by Location</h3>
+      <div class="chart-container">
+        <canvas id="location-chart"></canvas>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Data table section -->
+  <div class="dashboard-row">
+    <div class="dashboard-card full-width">
+      <h3>📋 Incident Data Table</h3>
+      <div id="data-table"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Emergency Mode Library -->
+<script src="/static/js/emergency-scripts/emergency-mode-library.js"></script>
+
+<!-- Leaflet JS for Maps -->
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""
+></script>
+
+<!-- Chart syntax fix -->
+<script src="/static/js/emergency-scripts/chart-syntax-fix.js"></script>
+
+<!-- Chart Manager Script with multi-path support -->
+<script src="/static/js/emergency-scripts/chart-manager-loader.js"></script>
+
+<!-- Emergency Mode Scripts with multiple path options -->
+<script src="/static/js/emergency-scripts/fallback-loader.js"></script>
+<script src="/static/js/emergency-scripts/prevent-mode-switch-loader.js"></script>
+
+<!-- Dashboard Script -->
+<script src="/static/js/emergency-scripts/dashboard-loader.js"></script>
+{% endblock %}

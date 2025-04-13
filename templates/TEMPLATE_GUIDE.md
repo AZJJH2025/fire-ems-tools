@@ -141,9 +141,58 @@ The following variables are available in all templates:
 - `version`: The application version
 - `active_page`: The current route path
 
+## Emergency Mode Scripts
+
+The application features a resilience framework with emergency mode functionality to handle edge cases when resources fail to load. These scripts have been extracted from inline code into separate files for better maintainability:
+
+### Location
+
+Emergency mode scripts are stored in `/static/js/emergency-scripts/` directory.
+
+### Available Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `framework-initialization.js` | Loads the FireEMS framework with fallback paths |
+| `chartjs-loader.js` | Loads Chart.js with error handling and fallbacks |
+| `emergency-mode-debugging.js` | Handles emergency mode detection and diagnostics |
+| `emergency-mode-library.js` | Processes emergency data from localStorage |
+| `chart-syntax-fix.js` | Fixes Chart.js initialization problems |
+| `chart-manager-loader.js` | Loads the chart manager with fallback paths |
+| `fallback-loader.js` | Loads chart fallback scripts for resilience |
+| `prevent-mode-switch-loader.js` | Prevents mode switching during emergency |
+| `dashboard-loader.js` | Loads dashboard scripts with version control |
+
+A complementary CSS file is also provided at `/static/emergency-mode.css` with styles for emergency notifications and data displays.
+
+### Using Emergency Scripts
+
+In templates that require emergency mode functionality, reference the scripts in appropriate blocks:
+
+```html
+{% block header_scripts %}
+<!-- FireEMS Resilience Framework -->
+<script src="/static/js/emergency-scripts/framework-initialization.js"></script>
+
+<!-- Chart.js with better error handling -->
+<script src="/static/js/emergency-scripts/chartjs-loader.js"></script>
+
+<!-- EMERGENCY MODE DEBUGGING -->
+<script src="/static/js/emergency-scripts/emergency-mode-debugging.js"></script>
+{% endblock %}
+
+{% block scripts %}
+<!-- Add emergency libraries at the end of body -->
+<script src="/static/js/emergency-scripts/emergency-mode-library.js"></script>
+<!-- Other emergency scripts as needed -->
+{% endblock %}
+```
+
 ## Future Enhancements
 
 - Add more specialized components
 - Create section-specific layouts extending the base template
 - Implement better mobile responsiveness
 - Add theme switching capabilities
+- Extract more inline scripts to external files
+- Centralize resilience logic in a core library
