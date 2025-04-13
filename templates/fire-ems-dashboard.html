@@ -236,12 +236,42 @@
           }
         }, 500);
         
-        // Load diagnostic tools for emergency mode
+        // Load diagnostic tools for emergency mode with path fallbacks
         setTimeout(function() {
           console.log("Loading emergency diagnostic tools...");
-          const script = document.createElement('script');
-          script.src = '/static/js/emergency-diagnostic.js';
-          document.head.appendChild(script);
+          
+          function loadDiagnosticTools() {
+            const paths = [
+              '/static/js/emergency-diagnostic.js',
+              '/app-static/js/emergency-diagnostic.js',
+              '/direct-static/js/emergency-diagnostic.js'
+            ];
+            
+            function tryNextPath(index) {
+              if (index >= paths.length) {
+                console.error("Failed to load emergency diagnostic tools from all paths");
+                return;
+              }
+              
+              const script = document.createElement('script');
+              script.src = paths[index];
+              
+              script.onload = function() {
+                console.log("Diagnostic tools loaded successfully from " + paths[index]);
+              };
+              
+              script.onerror = function() {
+                console.warn("Failed to load diagnostic tools from " + paths[index] + ", trying next path");
+                tryNextPath(index + 1);
+              };
+              
+              document.head.appendChild(script);
+            }
+            
+            tryNextPath(0);
+          }
+          
+          loadDiagnosticTools();
         }, 1000);
       }
     })();
@@ -263,25 +293,43 @@
             return;
           }
           
-          // Try to load it
-          const script = document.createElement('script');
-          script.src = '/app-static/js/emergency-mode.js';
-          
-          script.onload = function() {
-            console.log('Emergency mode library loaded successfully');
-            if (window.FireEMS && window.FireEMS.EmergencyMode) {
-              resolve(window.FireEMS.EmergencyMode);
-            } else {
-              reject(new Error('Emergency mode library failed to initialize'));
+          // Try to load it with multiple path fallbacks
+          function tryLoadFromPath(paths, index = 0) {
+            if (index >= paths.length) {
+              console.error('Failed to load emergency mode library from all paths');
+              reject(new Error('Failed to load emergency mode library from all paths'));
+              return;
             }
-          };
+            
+            const script = document.createElement('script');
+            script.src = paths[index];
+            
+            script.onload = function() {
+              console.log('Emergency mode library loaded successfully from ' + paths[index]);
+              if (window.FireEMS && window.FireEMS.EmergencyMode) {
+                resolve(window.FireEMS.EmergencyMode);
+              } else {
+                console.warn('Library loaded but not initialized, trying next path');
+                tryLoadFromPath(paths, index + 1);
+              }
+            };
+            
+            script.onerror = function() {
+              console.warn('Failed to load emergency mode library from ' + paths[index] + ', trying next path');
+              tryLoadFromPath(paths, index + 1);
+            };
+            
+            document.body.appendChild(script);
+          }
           
-          script.onerror = function() {
-            console.error('Failed to load emergency mode library');
-            reject(new Error('Failed to load emergency mode library'));
-          };
+          // Try multiple paths in order
+          const paths = [
+            '/static/js/emergency-mode.js',
+            '/app-static/js/emergency-mode.js',
+            '/direct-static/js/emergency-mode.js'
+          ];
           
-          document.body.appendChild(script);
+          tryLoadFromPath(paths);
         });
       }
       
@@ -1026,14 +1074,178 @@
     crossorigin=""
   ></script>
   
-  <!-- Chart Manager Script - Consolidated Chart.js handling -->
-  <script src="/static/js/chart-manager.js"></script>
+  <!-- Chart Manager Script with multi-path support -->
+  <script>
+    // Load chart manager with multi-path support
+    (function() {
+      function loadChartManager() {
+        console.log("Loading chart manager script");
+        const paths = [
+          '/static/js/chart-manager.js',
+          '/app-static/js/chart-manager.js',
+          '/direct-static/js/chart-manager.js'
+        ];
+        
+        function tryLoadFromPath(index) {
+          if (index >= paths.length) {
+            console.error("Failed to load chart manager from all paths");
+            return;
+          }
+          
+          const script = document.createElement('script');
+          script.src = paths[index];
+          
+          script.onload = function() {
+            console.log("Chart manager loaded successfully from " + paths[index]);
+          };
+          
+          script.onerror = function() {
+            console.warn("Failed to load chart manager from " + paths[index] + ", trying next path");
+            tryLoadFromPath(index + 1);
+          };
+          
+          document.head.appendChild(script);
+        }
+        
+        tryLoadFromPath(0);
+      }
+      
+      // Load now
+      loadChartManager();
+    })();
+  </script>
   
-  <!-- Emergency Mode Scripts -->
-  <script src="/static/js/emergency/chart-fallback.js"></script>
-  <script src="/static/js/emergency/prevent-mode-switch.js"></script>
+  <!-- Emergency Mode Scripts with multiple path options -->
+  <script>
+    // Load emergency chart fallback with multi-path support
+    (function() {
+      function loadFallbackScript() {
+        console.log("Loading chart fallback script");
+        const paths = [
+          '/static/js/emergency/chart-fallback.js',
+          '/app-static/js/emergency/chart-fallback.js',
+          '/direct-static/js/emergency/chart-fallback.js'
+        ];
+        
+        function tryLoadFromPath(index) {
+          if (index >= paths.length) {
+            console.error("Failed to load chart fallback from all paths");
+            return;
+          }
+          
+          const script = document.createElement('script');
+          script.src = paths[index];
+          
+          script.onload = function() {
+            console.log("Chart fallback loaded successfully from " + paths[index]);
+          };
+          
+          script.onerror = function() {
+            console.warn("Failed to load chart fallback from " + paths[index] + ", trying next path");
+            tryLoadFromPath(index + 1);
+          };
+          
+          document.head.appendChild(script);
+        }
+        
+        tryLoadFromPath(0);
+      }
+      
+      // Load now
+      loadFallbackScript();
+    })();
+  </script>
   
-  <!-- Your Custom Script (with version to prevent caching) -->
-  <script src="/static/fire-ems-dashboard.js?v=20250412"></script>
+  <script>
+    // Load prevent mode switch with multi-path support
+    (function() {
+      function loadPreventModeScript() {
+        console.log("Loading prevent mode switch script");
+        const paths = [
+          '/static/js/emergency/prevent-mode-switch.js',
+          '/app-static/js/emergency/prevent-mode-switch.js',
+          '/direct-static/js/emergency/prevent-mode-switch.js'
+        ];
+        
+        function tryLoadFromPath(index) {
+          if (index >= paths.length) {
+            console.error("Failed to load prevent mode switch from all paths");
+            return;
+          }
+          
+          const script = document.createElement('script');
+          script.src = paths[index];
+          
+          script.onload = function() {
+            console.log("Prevent mode switch loaded successfully from " + paths[index]);
+          };
+          
+          script.onerror = function() {
+            console.warn("Failed to load prevent mode switch from " + paths[index] + ", trying next path");
+            tryLoadFromPath(index + 1);
+          };
+          
+          document.head.appendChild(script);
+        }
+        
+        tryLoadFromPath(0);
+      }
+      
+      // Load now
+      loadPreventModeScript();
+    })();
+  </script>
+
+  <!-- Your Custom Script (with version and multi-path support) -->
+  <script>
+    // Load dashboard script with multi-path support
+    (function() {
+      function loadDashboardScript() {
+        console.log("Loading dashboard script");
+        const version = "v=20250413"; // Update version for cache busting
+        const paths = [
+          '/static/fire-ems-dashboard.js?' + version,
+          '/app-static/fire-ems-dashboard.js?' + version,
+          '/direct-static/fire-ems-dashboard.js?' + version
+        ];
+        
+        function tryLoadFromPath(index) {
+          if (index >= paths.length) {
+            console.error("Failed to load dashboard script from all paths");
+            // Add visual indicator for user
+            const errorNote = document.createElement('div');
+            errorNote.style.background = '#fff0f0';
+            errorNote.style.color = '#cc0000';
+            errorNote.style.padding = '15px';
+            errorNote.style.margin = '15px 0';
+            errorNote.style.borderRadius = '4px';
+            errorNote.innerHTML = '<strong>Error:</strong> Failed to load essential scripts. ' + 
+                                  'Try refreshing the page or check your internet connection.';
+            document.body.insertBefore(errorNote, document.body.firstChild);
+            return;
+          }
+          
+          const script = document.createElement('script');
+          script.src = paths[index];
+          
+          script.onload = function() {
+            console.log("Dashboard script loaded successfully from " + paths[index]);
+          };
+          
+          script.onerror = function() {
+            console.warn("Failed to load dashboard script from " + paths[index] + ", trying next path");
+            tryLoadFromPath(index + 1);
+          };
+          
+          document.head.appendChild(script);
+        }
+        
+        tryLoadFromPath(0);
+      }
+      
+      // Load now
+      loadDashboardScript();
+    })();
+  </script>
 </body>
 </html>
