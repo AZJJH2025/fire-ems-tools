@@ -194,8 +194,8 @@
   <!-- Emergency mode results will be displayed here -->
 </div>
 
-<!-- Dashboard Section - Initially Hidden -->
-<div id="dashboard" style="display: none;">
+<!-- Dashboard Section - Force visible when from formatter -->
+<div id="dashboard" {% if request.args.get('from_formatter') %}style="display: block;"{% else %}style="display: none;"{% endif %}>
   <div class="dashboard-header">
     <h2>📊 Data Analysis Dashboard</h2>
     <div id="file-stats"></div>
@@ -222,7 +222,7 @@
     <div class="dashboard-card">
       <h3>🚒 Unit Activity</h3>
       <div class="chart-container">
-        <canvas id="unit-chart"></canvas>
+        <canvas id="unit-chart" width="400" height="200"></canvas>
       </div>
     </div>
     
@@ -230,7 +230,7 @@
     <div class="dashboard-card">
       <h3>🏙️ Incidents by Location</h3>
       <div class="chart-container">
-        <canvas id="location-chart"></canvas>
+        <canvas id="location-chart" width="400" height="200"></canvas>
       </div>
     </div>
   </div>
@@ -243,6 +243,35 @@
     </div>
   </div>
 </div>
+
+<!-- Force dashboard visible script -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Check if coming from formatter
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('from_formatter') || urlParams.has('formatter_data')) {
+      console.log("🔍 Formatter data detected - forcing dashboard visible");
+      document.getElementById('dashboard').style.display = 'block';
+      
+      // Also hide file upload container
+      const uploadContainer = document.querySelector('.file-upload-container');
+      if (uploadContainer) {
+        uploadContainer.style.display = 'none';
+      }
+      
+      // Add data message in result area
+      const resultContainer = document.getElementById('result');
+      if (resultContainer) {
+        resultContainer.innerHTML = `
+          <div style="background-color: #e3f2fd; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+            <strong>📊 Data received from Data Formatter</strong><br>
+            Charts are being created below. If they don't appear, please check console for errors.
+          </div>
+        `;
+      }
+    }
+  });
+</script>
 {% endblock %}
 
 {% block scripts %}
