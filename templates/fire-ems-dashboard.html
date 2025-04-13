@@ -329,4 +329,207 @@
 
 <!-- Dashboard Script -->
 <script src="/static/js/emergency-scripts/dashboard-loader.js"></script>
+
+<!-- Direct Chart.js injection -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+
+<!-- CRITICAL: Direct chart rendering fix for formatter data -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Wait a bit to ensure all resources are loaded
+    setTimeout(function() {
+      console.log("🔄 Running direct chart rendering fix...");
+      
+      // Check if there are any canvas elements with no visible charts
+      const canvases = document.querySelectorAll('canvas');
+      const emptyCanvases = Array.from(canvases).filter(canvas => {
+        const computed = window.getComputedStyle(canvas);
+        return computed.display !== 'none' && !canvas.getContext('2d').getImageData(0, 0, 1, 1).data[3];
+      });
+      
+      console.log(`Found ${emptyCanvases.length} empty canvases of ${canvases.length} total`);
+      
+      // If we found empty canvases, try to recreate charts
+      if (emptyCanvases.length > 0 || canvases.length === 0) {
+        console.log("Attempting to recreate charts directly...");
+        
+        // Check if we have data to work with
+        if (window.formattedData && Array.isArray(window.formattedData)) {
+          console.log(`Found formatted data with ${window.formattedData.length} records`);
+          
+          // Try to create unit chart
+          const unitChart = document.getElementById('unit-chart');
+          if (unitChart) {
+            try {
+              // Collect unit data
+              const unitCounts = {};
+              window.formattedData.forEach(record => {
+                if (record.Unit) {
+                  unitCounts[record.Unit] = (unitCounts[record.Unit] || 0) + 1;
+                }
+              });
+              
+              // Get top units
+              const sortedUnits = Object.entries(unitCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 8);
+                
+              if (sortedUnits.length > 0) {
+                // Create chart
+                new Chart(unitChart, {
+                  type: 'bar',
+                  data: {
+                    labels: sortedUnits.map(u => u[0]),
+                    datasets: [{
+                      label: 'Incident Count',
+                      data: sortedUnits.map(u => u[1]),
+                      backgroundColor: [
+                        'rgba(54, 162, 235, 0.6)',
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(255, 159, 64, 0.6)',
+                        'rgba(153, 102, 255, 0.6)',
+                        'rgba(255, 99, 132, 0.6)',
+                        'rgba(255, 205, 86, 0.6)',
+                        'rgba(201, 203, 207, 0.6)',
+                        'rgba(100, 120, 140, 0.6)'
+                      ]
+                    }]
+                  },
+                  options: {
+                    responsive: true,
+                    plugins: {
+                      title: {
+                        display: true,
+                        text: 'Incidents by Unit'
+                      }
+                    }
+                  }
+                });
+                console.log("✅ Unit chart created directly");
+              }
+            } catch(e) {
+              console.error("❌ Error creating unit chart:", e);
+            }
+          }
+          
+          // Try to create location chart
+          const locationChart = document.getElementById('location-chart');
+          if (locationChart) {
+            try {
+              // Collect location data
+              const locationCounts = {};
+              window.formattedData.forEach(record => {
+                const location = record['Incident City'] || 'Unknown';
+                if (location !== 'Unknown') {
+                  locationCounts[location] = (locationCounts[location] || 0) + 1;
+                }
+              });
+              
+              // Get top locations
+              const sortedLocations = Object.entries(locationCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+                
+              if (sortedLocations.length > 0) {
+                // Create chart
+                new Chart(locationChart, {
+                  type: 'pie',
+                  data: {
+                    labels: sortedLocations.map(l => l[0]),
+                    datasets: [{
+                      data: sortedLocations.map(l => l[1]),
+                      backgroundColor: [
+                        'rgba(54, 162, 235, 0.6)',
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(255, 159, 64, 0.6)',
+                        'rgba(153, 102, 255, 0.6)',
+                        'rgba(255, 99, 132, 0.6)'
+                      ]
+                    }]
+                  },
+                  options: {
+                    responsive: true,
+                    plugins: {
+                      title: {
+                        display: true,
+                        text: 'Incidents by Location'
+                      }
+                    }
+                  }
+                });
+                console.log("✅ Location chart created directly");
+              }
+            } catch(e) {
+              console.error("❌ Error creating location chart:", e);
+            }
+          }
+        } else {
+          // Try to create dummy charts to verify Chart.js is working
+          console.log("No data found, creating dummy charts to test Chart.js...");
+          
+          // Unit chart
+          const unitChart = document.getElementById('unit-chart');
+          if (unitChart) {
+            try {
+              new Chart(unitChart, {
+                type: 'bar',
+                data: {
+                  labels: ['Example Unit 1', 'Example Unit 2', 'Example Unit 3'],
+                  datasets: [{
+                    label: 'Example Data',
+                    data: [12, 19, 3],
+                    backgroundColor: ['rgba(54, 162, 235, 0.6)', 'rgba(75, 192, 192, 0.6)', 'rgba(255, 159, 64, 0.6)']
+                  }]
+                },
+                options: {
+                  responsive: true,
+                  plugins: {
+                    title: {
+                      display: true,
+                      text: 'Example Chart - No Data'
+                    }
+                  }
+                }
+              });
+              console.log("✅ Example unit chart created");
+            } catch(e) {
+              console.error("❌ Error creating example unit chart:", e);
+            }
+          }
+          
+          // Location chart
+          const locationChart = document.getElementById('location-chart');
+          if (locationChart) {
+            try {
+              new Chart(locationChart, {
+                type: 'pie',
+                data: {
+                  labels: ['Example Location 1', 'Example Location 2', 'Example Location 3'],
+                  datasets: [{
+                    data: [5, 10, 3],
+                    backgroundColor: ['rgba(54, 162, 235, 0.6)', 'rgba(75, 192, 192, 0.6)', 'rgba(255, 159, 64, 0.6)']
+                  }]
+                },
+                options: {
+                  responsive: true,
+                  plugins: {
+                    title: {
+                      display: true,
+                      text: 'Example Chart - No Data'
+                    }
+                  }
+                }
+              });
+              console.log("✅ Example location chart created");
+            } catch(e) {
+              console.error("❌ Error creating example location chart:", e);
+            }
+          }
+        }
+      } else {
+        console.log("✅ Charts appear to be rendered properly, no fix needed");
+      }
+    }, 3000); // Wait 3 seconds to ensure everything is loaded
+  });
+</script>
 {% endblock %}
