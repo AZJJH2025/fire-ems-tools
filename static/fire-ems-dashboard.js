@@ -93,8 +93,12 @@ function createVisualizationsWithChartJs(formattedData, stats) {
     console.log("🔄 Setting up chart visualizations with proper handling...");
     
     // Flag to track if we're in emergency mode
+    // NOTE: We don't consider from_formatter as emergency mode anymore
+    // It's a separate flow that uses sessionStorage, not emergency localStorage
     const isEmergencyMode = window.location.search.includes('emergency') || 
-                           window.location.search.includes('from_formatter');
+                           window.location.search.includes('emergency_data');
+                           
+    console.log("Emergency mode detection:", isEmergencyMode);
     
     // Check if we can access the ChartManager from the FireEMS namespace
     const hasChartManager = window.FireEMS && window.FireEMS.Charts;
@@ -426,7 +430,9 @@ document.addEventListener('DOMContentLoaded', function() {
         formatterToolId === 'fire-ems-dashboard' || 
         formatterTarget === 'fire-ems-dashboard';
     
-    if ((formattedData && isValidJson && dataSource === 'formatter' && (isResponseTool || !formatterToolId)) || (fromFormatter && formattedData && isValidJson)) {
+    // First check if we have valid formatted data from sessionStorage
+    if (formattedData && isValidJson && 
+       ((dataSource === 'formatter' && (isResponseTool || !formatterToolId)) || fromFormatter)) {
         console.log("📦 Data received from Data Formatter tool");
         try {
             // Parse the data

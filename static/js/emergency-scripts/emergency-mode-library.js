@@ -57,11 +57,22 @@ document.addEventListener('DOMContentLoaded', function() {
   const emergencyData = urlParams.get('emergency_data');
   const fromFormatter = urlParams.get('from_formatter');
   
+  // Log the status of parameters to debug data flow paths
+  console.log("URL Parameters check:", {
+    hasEmergencyData: !!emergencyData,
+    emergencyData: emergencyData,
+    fromFormatter: fromFormatter,
+    fullUrl: window.location.href
+  });
+  
   // Process emergency data directly if present (don't wait for library)
   if (emergencyData) {
     console.log("EMERGENCY DIRECT CHECK: Processing directly", emergencyData);
     processEmergencyDataDirect(emergencyData);
   }
+  
+  // IMPORTANT: We do NOT process from_formatter data through the emergency path anymore
+  // This data should be handled by the normal sessionStorage flow in fire-ems-dashboard.js
   
   // Also try the library approach in parallel
   loadEmergencyLibrary().then(emergencyMode => {
@@ -80,7 +91,9 @@ document.addEventListener('DOMContentLoaded', function() {
       const dataLoaded = document.querySelector('.dashboard-grid');
       const resultsVisible = dataLoaded && window.getComputedStyle(dataLoaded).display !== 'none';
       
+      // Only show the help if we're from the formatter AND no data is visible yet
       if (fromFormatter === 'true' && !resultsVisible) {
+        console.log("No data visible yet from formatter, showing help");
         const storageHelp = document.getElementById('data-transfer-help');
         if (storageHelp) {
           storageHelp.style.display = 'block';
