@@ -14,21 +14,28 @@
 {% endblock %}
 
 {% block header_scripts %}
-<!-- Formatter Mode Detection -->
+<!-- Formatter Mode Detection & Emergency Mode Bypass -->
 <script>
   // Check if we're coming from the Data Formatter
   const urlParams = new URLSearchParams(window.location.search);
   const fromFormatter = urlParams.has('from_formatter');
-  const hasEmergencyData = urlParams.has('emergency_data');
   
-  // Set a flag for later scripts to know the source
+  // IMPORTANT: We're going to completely disable emergency mode for now
+  // to ensure the Send to Tool functionality works properly
+  
+  // Force direct data source mode
   window.dataSource = {
-    fromFormatter: fromFormatter,
-    isEmergency: hasEmergencyData,
-    source: fromFormatter ? 'formatter' : (hasEmergencyData ? 'emergency' : 'direct')
+    fromFormatter: true, // Always treat as coming from formatter
+    isEmergency: false,  // Never treat as emergency
+    source: 'formatter'  // Always use formatter flow
   };
   
-  console.log("Data source detected:", window.dataSource);
+  console.log("Data source overridden:", window.dataSource);
+  
+  // If there's an emergency_data parameter, we'll handle it through the normal flow
+  if (urlParams.has('emergency_data')) {
+    console.log("NOTE: Emergency data detected but treating as normal data for stability");
+  }
 </script>
 
 <!-- FireEMS Resilience Framework -->
@@ -37,16 +44,10 @@
 <!-- Chart.js with better error handling -->
 <script src="/static/js/emergency-scripts/chartjs-loader.js"></script>
 
-<!-- EMERGENCY MODE DEBUGGING - Only load if not from formatter or in emergency mode -->
+<!-- DISABLE EMERGENCY MODE DEBUGGING COMPLETELY -->
 <script>
-  if (!window.dataSource.fromFormatter || window.dataSource.isEmergency) {
-    const script = document.createElement('script');
-    script.src = "/static/js/emergency-scripts/emergency-mode-debugging.js";
-    document.head.appendChild(script);
-    console.log("Loading emergency debugging tools");
-  } else {
-    console.log("Skipping emergency debugging tools - data from formatter");
-  }
+  // Completely skip emergency mode debugging
+  console.log("Skipping emergency debugging tools - disabled for stability");
 </script>
 {% endblock %}
 
@@ -184,72 +185,20 @@
 {% endblock %}
 
 {% block scripts %}
-<!-- Process Emergency Data Function - Define it early before any other scripts try to use it -->
+<!-- DISABLE EMERGENCY MODE COMPLETELY -->
 <script>
-  // Define processEmergencyData globally so it's available immediately
+  // Dummy process function that does nothing
   window.processEmergencyData = function(data) {
-    console.log("Global processEmergencyData called with", data ? data.length : 0, "records");
-    
-    try {
-      // Display the data in a simple format
-      const container = document.getElementById('results-container');
-      if (container) {
-        container.style.display = 'block';
-        container.innerHTML = `
-          <div class="emergency-data-container">
-            <h2>Emergency Data</h2>
-            <p>Loaded ${data.length} records from emergency data source</p>
-            <div class="data-table-wrapper"></div>
-          </div>
-        `;
-        
-        // Create a simple data table
-        const tableWrapper = container.querySelector('.data-table-wrapper');
-        if (tableWrapper && data.length > 0) {
-          const headers = Object.keys(data[0]);
-          const tableHTML = `
-            <table class="emergency-data-table">
-              <thead>
-                <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
-              </thead>
-              <tbody>
-                ${data.slice(0, 10).map(row => `
-                  <tr>${headers.map(h => `<td>${row[h] || ''}</td>`).join('')}</tr>
-                `).join('')}
-              </tbody>
-            </table>
-            ${data.length > 10 ? `<p>Showing 10 of ${data.length} records</p>` : ''}
-          `;
-          tableWrapper.innerHTML = tableHTML;
-        }
-        
-        // Hide the upload section
-        const uploadSection = document.querySelector('.file-upload-container');
-        if (uploadSection) {
-          uploadSection.style.display = 'none';
-        }
-        
-        return true;
-      }
-    } catch (e) {
-      console.error("Error in global processEmergencyData:", e);
-    }
+    console.log("Emergency data processing disabled - data will be loaded through normal flow");
     return false;
   };
   
-  console.log("Global processEmergencyData function defined");
+  console.log("Emergency mode completely bypassed");
 </script>
 
-<!-- Emergency Mode Library - Only load if not from formatter or in emergency mode -->
+<!-- SKIP EMERGENCY MODE LIBRARY -->
 <script>
-  if (!window.dataSource || !window.dataSource.fromFormatter || window.dataSource.isEmergency) {
-    const script = document.createElement('script');
-    script.src = "/static/js/emergency-scripts/emergency-mode-library.js";
-    document.head.appendChild(script);
-    console.log("Loading emergency mode library");
-  } else {
-    console.log("Skipping emergency mode library - data from formatter");
-  }
+  console.log("Skipping emergency mode library - disabled for stability");
 </script>
 
 <!-- Leaflet JS for Maps -->
