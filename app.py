@@ -959,6 +959,104 @@ def create_app(config_name='default'):
             app.logger.error(f"Error processing call density data: {str(e)}")
             return jsonify({"success": False, "error": str(e)}), 500
     
+    # API endpoint for storing temporary data
+    @app.route('/api/store-temp-data', methods=['POST'])
+    def store_temp_data():
+        """Store temporary data for transfer between tools
+        
+        This endpoint provides a server-side solution for data transfer
+        between tools, avoiding browser storage limitations.
+        """
+        if not request.is_json:
+            return jsonify({"success": False, "error": "Request must be JSON"}), 400
+            
+        try:
+            data = request.json
+            
+            # Require token and data
+            if 'token' not in data or 'data' not in data:
+                return jsonify({"success": False, "error": "Missing required fields (token, data)"}), 400
+                
+            # Get expiry time (default 10 minutes)
+            expiry = data.get('expiry', int(datetime.now().timestamp() + 600))
+            
+            # Create temp storage if it doesn't exist
+            if not hasattr(app, 'temp_data_store'):
+                app.temp_data_store = {}
+                
+            # Store the data with token as key
+            app.temp_data_store[data['token']] = {
+                'data': data['data'],
+                'created': int(datetime.now().timestamp()),
+                'expiry': expiry
+            }
+            
+            # Clean up expired data
+            current_time = int(datetime.now().timestamp())
+            expired_keys = [k for k, v in app.temp_data_store.items() 
+                            if v.get('expiry', 0) < current_time]
+            
+            for key in expired_keys:
+                app.logger.info(f"Removing expired temp data: {key}")
+                app.temp_data_store.pop(key, None)
+                
+            app.logger.info(f"Stored temp data with token: {data['token']} (expires in {(expiry - current_time)/60:.1f} minutes)")
+            
+            return jsonify({
+                "success": True,
+                "token": data['token'],
+                "expires_in": expiry - current_time
+            })
+            
+        except Exception as e:
+            app.logger.error(f"Error storing temp data: {str(e)}")
+            return jsonify({"success": False, "error": str(e)}), 500
+    
+    # API endpoint for retrieving temporary data
+    @app.route('/api/get-temp-data', methods=['GET'])
+    def get_temp_data():
+        """Retrieve temporary data by token"""
+        token = request.args.get('token')
+        
+        if not token:
+            return jsonify({"success": False, "error": "Missing token parameter"}), 400
+            
+        try:
+            # Check if temp storage exists
+            if not hasattr(app, 'temp_data_store'):
+                return jsonify({"success": False, "error": "No temporary data available"}), 404
+                
+            # Look for the token
+            if token not in app.temp_data_store:
+                return jsonify({"success": False, "error": "Token not found or expired"}), 404
+                
+            # Get the data
+            data_entry = app.temp_data_store[token]
+            
+            # Check expiry
+            current_time = int(datetime.now().timestamp())
+            if data_entry.get('expiry', 0) < current_time:
+                # Remove expired data
+                app.temp_data_store.pop(token, None)
+                return jsonify({"success": False, "error": "Data has expired"}), 410
+                
+            # Return the data
+            app.logger.info(f"Retrieved temp data with token: {token}")
+            
+            # Mark as accessed (optional)
+            data_entry['last_accessed'] = current_time
+            
+            return jsonify({
+                "success": True,
+                "data": data_entry['data'],
+                "created": data_entry['created'],
+                "expires_at": data_entry['expiry']
+            })
+            
+        except Exception as e:
+            app.logger.error(f"Error retrieving temp data: {str(e)}")
+            return jsonify({"success": False, "error": str(e)}), 500
+    
     # Register blueprints from modular routes
     try:
         # Import blueprints

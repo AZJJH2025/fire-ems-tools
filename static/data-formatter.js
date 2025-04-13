@@ -504,73 +504,157 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log("Total records:", transformedData.length);
         
         try {
-            // Try two different approaches for maximum reliability:
-            // 1. Store in sessionStorage (traditional approach)
-            sessionStorage.setItem('formattedData', JSON.stringify(transformedData));
-            sessionStorage.setItem('dataSource', 'formatter');
-            sessionStorage.setItem('formatterToolId', selectedTool);
-            sessionStorage.setItem('formatterTarget', selectedTool);
-            sessionStorage.setItem('formatterTimestamp', new Date().toISOString());
-            
-            // Add debug info to storage
-            sessionStorage.setItem('debug_info', JSON.stringify({
-                browser: navigator.userAgent,
-                timestamp: new Date().toISOString(),
-                tool: selectedTool,
-                recordCount: transformedData.length,
-                sampleKeys: Object.keys(transformedData[0] || {})
-            }));
-            
-            // 2. Store in localStorage as well as a fallback
-            // Use a timestamp-based key that will be passed in the URL
+            // Generate a unique token for server storage
             const timestamp = Date.now();
-            const storageKey = 'formatter_data_' + timestamp;
+            const token = 'token_' + timestamp + '_' + Math.random().toString(36).substring(2, 10);
             
-            localStorage.setItem(storageKey, JSON.stringify({
+            // Show loading indicator
+            const loadingIndicator = document.createElement('div');
+            loadingIndicator.style.cssText = "position: fixed; top: 20px; right: 20px; background: #2196f3; color: white; padding: 10px 20px; border-radius: 4px; z-index: 9999;";
+            loadingIndicator.innerHTML = "Sending data to server...";
+            document.body.appendChild(loadingIndicator);
+            
+            // Use both approaches in parallel for maximum reliability:
+            
+            // 1. Server-side approach (primary)
+            // Prepare data with token
+            const serverData = {
+                token: token,
                 data: transformedData,
-                metadata: {
-                    source: 'formatter',
-                    tool: selectedTool,
-                    timestamp: new Date().toISOString(),
-                    recordCount: transformedData.length,
-                    browser: navigator.userAgent,
-                    expiration: new Date(Date.now() + 1000 * 60 * 10).toISOString() // 10 minutes expiration
-                }
-            }));
-            
-            appendLog(`Data prepared for ${getToolName(selectedTool)} (${transformedData.length} records) with key: ${storageKey}`);
-            console.log("Created data storage with key:", storageKey);
-            
-            // Redirect to the selected tool
-            const toolUrls = {
-                'response-time': '/fire-ems-dashboard',
-                'isochrone': '/isochrone-map',
-                'isochrone-stations': '/isochrone-map?type=stations',
-                'isochrone-incidents': '/isochrone-map?type=incidents',
-                'call-density': '/call-density-heatmap',
-                'incident-logger': '/incident-logger',
-                'coverage-gap': '/coverage-gap-finder',
-                'station-overview': '/station-overview',
-                'fire-map-pro': '/fire-map-pro'
+                expiry: Date.now() + (10 * 60 * 1000) // 10 minute expiry
             };
             
-            if (toolUrls[selectedTool]) {
-                appendLog(`Sending data to ${getToolName(selectedTool)}...`);
+            // Send data to server endpoint
+            fetch('/api/store-temp-data', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(serverData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log("Server data storage result:", result);
                 
-                // Add debug parameter to URL and a timestamp to prevent caching issues
-                // Also include the localStorage key for direct access
-                const url = toolUrls[selectedTool] + 
-                          (toolUrls[selectedTool].includes('?') ? '&' : '?') + 
-                          `from_formatter=true&formatter_data=${storageKey}&t=${timestamp}&records=${transformedData.length}`;
-                          
-                console.log("Redirecting to:", url);
-                window.location.href = url;
-            } else {
-                appendLog(`Error: No URL defined for ${selectedTool}`, 'error');
+                if (result.success) {
+                    // Server storage successful - Use server token
+                    redirectToTool(token, 'server');
+                } else {
+                    console.error("Server data storage failed:", result.error);
+                    // Fall back to browser storage
+                    useBrowserStorageFallback(token);
+                }
+            })
+            .catch(error => {
+                console.error("Server data storage error:", error);
+                // Fall back to browser storage
+                useBrowserStorageFallback(token);
+            });
+            
+            // 2. Browser storage fallback function (if server-side fails)
+            function useBrowserStorageFallback(token) {
+                try {
+                    // Store in sessionStorage (traditional approach)
+                    sessionStorage.setItem('formattedData', JSON.stringify(transformedData));
+                    sessionStorage.setItem('dataSource', 'formatter');
+                    sessionStorage.setItem('formatterToolId', selectedTool);
+                    sessionStorage.setItem('formatterTarget', selectedTool);
+                    sessionStorage.setItem('formatterTimestamp', new Date().toISOString());
+                    
+                    // Add debug info to storage
+                    sessionStorage.setItem('debug_info', JSON.stringify({
+                        browser: navigator.userAgent,
+                        timestamp: new Date().toISOString(),
+                        tool: selectedTool,
+                        recordCount: transformedData.length,
+                        sampleKeys: Object.keys(transformedData[0] || {})
+                    }));
+                    
+                    // Store in localStorage as well as a deeper fallback
+                    const storageKey = 'formatter_data_' + timestamp;
+                    
+                    localStorage.setItem(storageKey, JSON.stringify({
+                        data: transformedData,
+                        metadata: {
+                            source: 'formatter',
+                            tool: selectedTool,
+                            timestamp: new Date().toISOString(),
+                            recordCount: transformedData.length,
+                            browser: navigator.userAgent,
+                            expiration: new Date(Date.now() + 1000 * 60 * 10).toISOString() // 10 minutes expiration
+                        }
+                    }));
+                    
+                    appendLog(`Data prepared for ${getToolName(selectedTool)} (${transformedData.length} records) with key: ${storageKey}`);
+                    
+                    // Redirect using browser storage approach
+                    redirectToTool(storageKey, 'browser');
+                } catch (error) {
+                    console.error("Browser storage fallback failed:", error);
+                    appendLog(`Browser storage fallback failed: ${error.message}`, 'error');
+                    
+                    // Try one last approach - direct URL with minimal data
+                    if (loadingIndicator) {
+                        loadingIndicator.innerHTML = "All storage methods failed! Trying minimal data transfer...";
+                        loadingIndicator.style.background = "#ff9800";
+                    }
+                    
+                    // Last resort - just redirect with a flag, tool will prompt for file upload
+                    redirectToTool('failed', 'minimal');
+                }
+            }
+            
+            // Common redirect function
+            function redirectToTool(dataKey, method) {
+                const toolUrls = {
+                    'response-time': '/fire-ems-dashboard',
+                    'isochrone': '/isochrone-map',
+                    'isochrone-stations': '/isochrone-map?type=stations',
+                    'isochrone-incidents': '/isochrone-map?type=incidents',
+                    'call-density': '/call-density-heatmap',
+                    'incident-logger': '/incident-logger',
+                    'coverage-gap': '/coverage-gap-finder',
+                    'station-overview': '/station-overview',
+                    'fire-map-pro': '/fire-map-pro'
+                };
+                
+                if (toolUrls[selectedTool]) {
+                    appendLog(`Sending data to ${getToolName(selectedTool)} using ${method} method...`);
+                    
+                    // Update loading indicator
+                    if (loadingIndicator) {
+                        loadingIndicator.innerHTML = `Redirecting using ${method} method...`;
+                        loadingIndicator.style.background = "#4caf50";
+                    }
+                    
+                    // Build URL based on the method
+                    let url = toolUrls[selectedTool];
+                    
+                    if (method === 'server') {
+                        // Server-side storage - pass the token
+                        url += (url.includes('?') ? '&' : '?') + 
+                               `from_formatter=true&data_token=${dataKey}&storage_method=${method}&t=${timestamp}&records=${transformedData.length}`;
+                    } else if (method === 'browser') {
+                        // Browser storage - pass localStorage key
+                        url += (url.includes('?') ? '&' : '?') + 
+                               `from_formatter=true&formatter_data=${dataKey}&storage_method=${method}&t=${timestamp}&records=${transformedData.length}`;
+                    } else {
+                        // Minimal approach - just pass the flag
+                        url += (url.includes('?') ? '&' : '?') + 
+                               `from_formatter=true&storage_method=failed&t=${timestamp}`;
+                    }
+                    
+                    console.log(`Redirecting to: ${url} (${method} method)`);
+                    window.location.href = url;
+                } else {
+                    appendLog(`Error: No URL defined for ${selectedTool}`, 'error');
+                    if (loadingIndicator) {
+                        loadingIndicator.innerHTML = "Error: Unknown tool specified";
+                        loadingIndicator.style.background = "#f44336";
+                    }
+                }
             }
         } catch (error) {
-            console.error("Error storing data for transfer:", error);
-            appendLog(`Error storing data: ${error.message}`, 'error');
+            console.error("Error in data transfer process:", error);
+            appendLog(`Error preparing data transfer: ${error.message}`, 'error');
             alert("Error preparing data for transfer. Check browser console for details.");
             return;
         }

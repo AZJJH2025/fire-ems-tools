@@ -376,61 +376,205 @@ document.addEventListener('DOMContentLoaded', function() {
         sessionStorage.removeItem('bypassValidation');
     });
     
-    // Check if there's data in sessionStorage from the Data Formatter
+    // Check if there's data from the Data Formatter
     console.log("Checking for formatter data in Response Time Analyzer");
     
-    // Check if we came from the Data Formatter - check for both parameters
-    const fromFormatter = window.location.search.includes('from_formatter=true');
-    const formatterDataKey = new URLSearchParams(window.location.search).get('formatter_data');
+    // Parse URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromFormatter = urlParams.has('from_formatter');
+    const formatterDataKey = urlParams.get('formatter_data');
+    const dataToken = urlParams.get('data_token');
+    const storageMethod = urlParams.get('storage_method');
     
     if (fromFormatter) {
         console.log("✅ FORMATTER MODE: Detected redirect from Data Formatter based on URL parameter");
         
         // Add visual indicator that we're in formatter mode
         const formatterIndicator = document.createElement('div');
-        formatterIndicator.style.cssText = "position: fixed; top: 0; right: 0; background: #4caf50; color: white; padding: 4px 8px; font-size: 12px; z-index: 9999;";
-        formatterIndicator.textContent = "Formatter Mode Active";
+        formatterIndicator.style.cssText = "position: fixed; top: 0; right: 0; background: #4caf50; color: white; padding: 8px 12px; font-size: 12px; z-index: 9999;";
+        formatterIndicator.textContent = `Formatter Mode: ${storageMethod || 'Unknown Method'}`;
         document.body.appendChild(formatterIndicator);
         
-        // Auto-remove after 5 seconds
-        setTimeout(() => formatterIndicator.remove(), 5000);
+        // Auto-remove after 8 seconds
+        setTimeout(() => formatterIndicator.remove(), 8000);
         
-        // If we have a formatter_data parameter, try to get data from localStorage
-        if (formatterDataKey) {
-            console.log("📦 FORMATTER DATA KEY FOUND:", formatterDataKey);
+        // Create a status indicator
+        const statusIndicator = document.createElement('div');
+        statusIndicator.style.cssText = "position: fixed; bottom: 20px; right: 20px; background: #2196f3; color: white; padding: 10px 20px; border-radius: 4px; z-index: 9998; transition: all 0.5s;";
+        statusIndicator.innerHTML = "Loading data from Data Formatter...";
+        document.body.appendChild(statusIndicator);
+        
+        // Try each method in sequence, starting with the recommended one
+        if (storageMethod === 'server' && dataToken) {
+            // METHOD 1: Server-side API approach
+            console.log("🌐 TRYING SERVER METHOD: Using API with token:", dataToken);
+            statusIndicator.innerHTML = "Retrieving data from server...";
             
-            try {
-                // Try to get data from localStorage
-                const localData = localStorage.getItem(formatterDataKey);
-                if (localData) {
-                    console.log("📦 FOUND DATA IN LOCALSTORAGE WITH KEY:", formatterDataKey);
+            // Try to fetch data from server
+            fetch(`/api/get-temp-data?token=${dataToken}`)
+                .then(response => response.json())
+                .then(result => {
+                    console.log("Server data retrieval result:", result);
                     
-                    try {
-                        // Parse the data
-                        const parsedLocalData = JSON.parse(localData);
+                    if (result.success && result.data) {
+                        console.log(`✅ SERVER METHOD SUCCESS: Retrieved ${result.data.length} records from server`);
+                        statusIndicator.innerHTML = `Successfully loaded ${result.data.length} records from server`;
+                        statusIndicator.style.background = "#4caf50";
                         
-                        // Store in sessionStorage for normal flow to handle
-                        if (parsedLocalData.data) {
-                            sessionStorage.setItem('formattedData', JSON.stringify(parsedLocalData.data));
-                            console.log(`✅ Successfully transferred ${parsedLocalData.data.length} records from localStorage to sessionStorage`);
-                        }
+                        // Store the data in sessionStorage for processing
+                        sessionStorage.setItem('formattedData', JSON.stringify(result.data));
+                        sessionStorage.setItem('dataSource', 'formatter');
+                        sessionStorage.setItem('formatterToolId', 'response-time');
+                        sessionStorage.setItem('formatterTarget', 'response-time');
+                        sessionStorage.setItem('formatterTimestamp', new Date().toISOString());
                         
-                        // Set other sessionStorage items
-                        if (parsedLocalData.metadata) {
-                            sessionStorage.setItem('dataSource', 'formatter');
-                            sessionStorage.setItem('formatterToolId', parsedLocalData.metadata.tool || 'response-time');
-                            sessionStorage.setItem('formatterTarget', parsedLocalData.metadata.tool || 'response-time');
-                            sessionStorage.setItem('formatterTimestamp', parsedLocalData.metadata.timestamp || new Date().toISOString());
-                        }
-                    } catch (e) {
-                        console.error("Error parsing localStorage data:", e);
+                        // Remove the token parameter from URL for cleanliness
+                        urlParams.delete('data_token');
+                        const newUrl = window.location.pathname +
+                                      (urlParams.toString() ? '?' + urlParams.toString() : '') +
+                                      window.location.hash;
+                        window.history.replaceState({}, document.title, newUrl);
+                        
+                        // Process the data after a short delay
+                        setTimeout(() => {
+                            checkSessionStorageForData();
+                            
+                            // Remove status indicator
+                            setTimeout(() => {
+                                statusIndicator.style.opacity = "0";
+                                setTimeout(() => statusIndicator.remove(), 500);
+                            }, 2000);
+                        }, 300);
+                    } else {
+                        console.error("❌ SERVER METHOD FAILED:", result.error || "Unknown error");
+                        statusIndicator.innerHTML = "Server data retrieval failed, trying browser storage...";
+                        statusIndicator.style.background = "#ff9800";
+                        
+                        // Try browser storage methods next
+                        tryBrowserStorage();
                     }
-                } else {
-                    console.error("❌ Data not found in localStorage with key:", formatterDataKey);
+                })
+                .catch(error => {
+                    console.error("❌ SERVER METHOD ERROR:", error);
+                    statusIndicator.innerHTML = "Server error, trying browser storage...";
+                    statusIndicator.style.background = "#ff9800";
+                    
+                    // Try browser storage methods next
+                    tryBrowserStorage();
+                });
+        } else {
+            // No server token or not using server method - try browser storage
+            tryBrowserStorage();
+        }
+        
+        // Function to try browser storage methods
+        function tryBrowserStorage() {
+            // METHOD 2: Try localStorage with formatter_data key
+            if (formatterDataKey) {
+                console.log("📦 TRYING LOCALSTORAGE: Using key:", formatterDataKey);
+                
+                try {
+                    // Try to get data from localStorage
+                    const localData = localStorage.getItem(formatterDataKey);
+                    if (localData) {
+                        console.log("📦 FOUND DATA IN LOCALSTORAGE WITH KEY:", formatterDataKey);
+                        statusIndicator.innerHTML = "Retrieved data from localStorage, processing...";
+                        
+                        try {
+                            // Parse the data
+                            const parsedLocalData = JSON.parse(localData);
+                            
+                            // Store in sessionStorage for normal flow to handle
+                            if (parsedLocalData.data) {
+                                sessionStorage.setItem('formattedData', JSON.stringify(parsedLocalData.data));
+                                console.log(`✅ Successfully transferred ${parsedLocalData.data.length} records from localStorage to sessionStorage`);
+                                statusIndicator.innerHTML = `Successfully loaded ${parsedLocalData.data.length} records from localStorage`;
+                                statusIndicator.style.background = "#4caf50";
+                                
+                                // Set other sessionStorage items
+                                if (parsedLocalData.metadata) {
+                                    sessionStorage.setItem('dataSource', 'formatter');
+                                    sessionStorage.setItem('formatterToolId', parsedLocalData.metadata.tool || 'response-time');
+                                    sessionStorage.setItem('formatterTarget', parsedLocalData.metadata.tool || 'response-time');
+                                    sessionStorage.setItem('formatterTimestamp', parsedLocalData.metadata.timestamp || new Date().toISOString());
+                                }
+                                
+                                // Process the data after a short delay
+                                setTimeout(() => {
+                                    checkSessionStorageForData();
+                                    
+                                    // Remove status indicator
+                                    setTimeout(() => {
+                                        statusIndicator.style.opacity = "0";
+                                        setTimeout(() => statusIndicator.remove(), 500);
+                                    }, 2000);
+                                }, 300);
+                                
+                                return; // Successfully loaded
+                            }
+                        } catch (e) {
+                            console.error("Error parsing localStorage data:", e);
+                            statusIndicator.innerHTML = "Error parsing localStorage data...";
+                            statusIndicator.style.background = "#f44336";
+                        }
+                    } else {
+                        console.error("❌ Data not found in localStorage with key:", formatterDataKey);
+                        statusIndicator.innerHTML = "Data not found in localStorage, checking sessionStorage...";
+                        statusIndicator.style.background = "#ff9800";
+                    }
+                } catch (e) {
+                    console.error("Error accessing localStorage:", e);
+                    statusIndicator.innerHTML = "Error accessing localStorage, checking sessionStorage...";
+                    statusIndicator.style.background = "#ff9800";
                 }
-            } catch (e) {
-                console.error("Error accessing localStorage:", e);
             }
+            
+            // METHOD 3: Check if data is already in sessionStorage
+            console.log("🔍 CHECKING SESSION STORAGE DIRECTLY");
+            const formattedData = sessionStorage.getItem('formattedData');
+            
+            if (formattedData) {
+                console.log("📦 FOUND DATA DIRECTLY IN SESSIONSTORAGE");
+                statusIndicator.innerHTML = "Found data in sessionStorage, processing...";
+                statusIndicator.style.background = "#4caf50";
+                
+                // Ensure other sessionStorage items are set
+                sessionStorage.setItem('dataSource', 'formatter');
+                sessionStorage.setItem('formatterToolId', 'response-time');
+                sessionStorage.setItem('formatterTarget', 'response-time');
+                
+                // Process the data after a short delay
+                setTimeout(() => {
+                    checkSessionStorageForData();
+                    
+                    // Remove status indicator
+                    setTimeout(() => {
+                        statusIndicator.style.opacity = "0";
+                        setTimeout(() => statusIndicator.remove(), 500);
+                    }, 2000);
+                }, 300);
+                
+                return; // Successfully loaded
+            }
+            
+            // METHOD 4: All methods failed
+            console.error("❌ ALL DATA RETRIEVAL METHODS FAILED");
+            statusIndicator.innerHTML = "Failed to retrieve data. Please upload file directly.";
+            statusIndicator.style.background = "#f44336";
+            
+            // Show troubleshooting modal
+            const storageHelp = document.getElementById('data-transfer-help');
+            if (storageHelp) {
+                setTimeout(() => {
+                    storageHelp.style.display = 'block';
+                }, 500);
+            }
+            
+            // Remove status indicator after a longer delay
+            setTimeout(() => {
+                statusIndicator.style.opacity = "0";
+                setTimeout(() => statusIndicator.remove(), 500);
+            }, 8000);
         }
     }
     
@@ -444,12 +588,9 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error("Failed to add debug script:", e);
     }
     
-    // CRITICAL: Add a manual delay for sessionStorage to sync between pages
-    // This solves a race condition where sessionStorage data isn't immediately 
-    // available after navigation
-    console.log("⏱️ Adding delay for sessionStorage synchronization between pages...");
-    setTimeout(function() {
-        console.log("⏱️ Checking sessionStorage after delay (500ms)...");
+    // Function to check sessionStorage for data (used by both delayed and immediate checks)
+    function checkSessionStorageForData() {
+        console.log("⏱️ Checking sessionStorage for formatter data...");
     
         const formattedData = sessionStorage.getItem('formattedData');
         const dataSource = sessionStorage.getItem('dataSource');
@@ -491,8 +632,25 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('result').appendChild(errorMsg);
         }
         
+        return !!formattedData;
+    }
+    
+    // CRITICAL: Add a manual delay for sessionStorage to sync between pages
+    // This solves a race condition where sessionStorage data isn't immediately 
+    // available after navigation
+    console.log("⏱️ Adding delay for sessionStorage synchronization between pages...");
+    setTimeout(function() {
+        console.log("⏱️ Checking sessionStorage after delay (500ms)...");
+        const formattedData = sessionStorage.getItem('formattedData');
+        const dataSource = sessionStorage.getItem('dataSource');
+        const formatterToolId = sessionStorage.getItem('formatterToolId');
+        const formatterTarget = sessionStorage.getItem('formatterTarget');
+        
+        // Call the check function to validate data
+        const hasData = checkSessionStorageForData();
+        
         // Check if formattedData is too large for console logging
-        if (formattedData && formattedData.length < 1000) {
+        if (hasData && formattedData && formattedData.length < 1000) {
             console.log("Formatted data preview:", formattedData.substring(0, 500) + "...");
         }
         
@@ -507,19 +665,24 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (e) {
             console.error("formattedData is not valid JSON:", e);
         }
+        
+        // Check multiple possible matches to ensure compatibility with different naming conventions
+        const isResponseTool = 
+            formatterToolId === 'response-time' || 
+            formatterToolId === 'response_time' || 
+            formatterTarget === 'response-time' || 
+            formatterTarget === 'response_time' || 
+            formatterToolId === 'fire-ems-dashboard' || 
+            formatterTarget === 'fire-ems-dashboard';
+        
+        // Continue with checking if we need to process the data
+        if (hasData && isValidJson) {
+            processDataFromStorage(formattedData, dataSource, isResponseTool);
+        }
+    }, 500);
     
-    // Check multiple possible matches to ensure compatibility with different naming conventions
-    const isResponseTool = 
-        formatterToolId === 'response-time' || 
-        formatterToolId === 'response_time' || 
-        formatterTarget === 'response-time' || 
-        formatterTarget === 'response_time' || 
-        formatterToolId === 'fire-ems-dashboard' || 
-        formatterTarget === 'fire-ems-dashboard';
-    
-    // First check if we have valid formatted data from sessionStorage
-    if (formattedData && isValidJson && 
-       ((dataSource === 'formatter' && (isResponseTool || !formatterToolId)) || fromFormatter)) {
+    // Separate function to process data from storage
+    function processDataFromStorage(formattedData, dataSource, isResponseTool) {
         console.log("📦 SUCCESS: Data received from Data Formatter tool and is valid");
         try {
             // Parse the data
@@ -772,10 +935,16 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Hide the file upload section since we already have data
             document.querySelector('.file-upload-container').style.display = 'none';
+            
+            // Determine the storage method that was used
+            const method = window.location.search.includes('data_token') ? 'server-side API' : 
+                          window.location.search.includes('formatter_data') ? 'localStorage' :
+                          'sessionStorage';
+            
             document.getElementById('result').innerHTML = 
                 '<div class="notice" style="background-color: #e3f2fd; padding: 15px; border-radius: 4px; margin-bottom: 20px;">' +
                 '<strong>📊 Data successfully received from Data Formatter tool</strong><br>' +
-                `${dataToProcess.length} records loaded. File upload has been bypassed.<br>` +
+                `${dataToProcess.length} records loaded using ${method} storage. File upload has been bypassed.<br>` +
                 '<small>Refresh the page if you want to upload a new file.</small></div>';
         } catch (error) {
             console.error("Error processing data from Data Formatter:", error);
