@@ -382,7 +382,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check if we came from the Data Formatter
     const fromFormatter = window.location.search.includes('from_formatter=true');
     if (fromFormatter) {
-        console.log("Detected redirect from Data Formatter based on URL parameter");
+        console.log("✅ FORMATTER MODE: Detected redirect from Data Formatter based on URL parameter");
+        
+        // Add visual indicator that we're in formatter mode
+        const formatterIndicator = document.createElement('div');
+        formatterIndicator.style.cssText = "position: fixed; top: 0; right: 0; background: #4caf50; color: white; padding: 4px 8px; font-size: 12px; z-index: 9999;";
+        formatterIndicator.textContent = "Formatter Mode Active";
+        document.body.appendChild(formatterIndicator);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => formatterIndicator.remove(), 5000);
     }
     
     // Add our debug script to the page - wrapped in try/catch for safety
@@ -395,39 +404,69 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error("Failed to add debug script:", e);
     }
     
-    const formattedData = sessionStorage.getItem('formattedData');
-    const dataSource = sessionStorage.getItem('dataSource');
-    const formatterToolId = sessionStorage.getItem('formatterToolId');
-    const formatterTarget = sessionStorage.getItem('formatterTarget');
-    const bypassValidation = sessionStorage.getItem('bypassValidation');
-    const debugInfo = sessionStorage.getItem('debug_info');
+    // CRITICAL: Add a manual delay for sessionStorage to sync between pages
+    // This solves a race condition where sessionStorage data isn't immediately 
+    // available after navigation
+    console.log("⏱️ Adding delay for sessionStorage synchronization between pages...");
+    setTimeout(function() {
+        console.log("⏱️ Checking sessionStorage after delay (500ms)...");
     
-    console.log("SessionStorage state:", {
-        dataSource,
-        formatterToolId,
-        formatterTarget,
-        bypassValidation,
-        hasFormattedData: !!formattedData,
-        formattedDataLength: formattedData ? formattedData.length : 0,
-        debugInfo: debugInfo ? JSON.parse(debugInfo) : null
-    });
-    
-    // Check if formattedData is too large for console logging
-    if (formattedData && formattedData.length < 1000) {
-        console.log("Formatted data preview:", formattedData.substring(0, 500) + "...");
-    }
-    
-    // Try to parse the formatted data to see if it's valid JSON
-    let isValidJson = false;
-    try {
-        if (formattedData) {
-            JSON.parse(formattedData);
-            isValidJson = true;
-            console.log("formattedData is valid JSON");
+        const formattedData = sessionStorage.getItem('formattedData');
+        const dataSource = sessionStorage.getItem('dataSource');
+        const formatterToolId = sessionStorage.getItem('formatterToolId');
+        const formatterTarget = sessionStorage.getItem('formatterTarget');
+        const bypassValidation = sessionStorage.getItem('bypassValidation');
+        const debugInfo = sessionStorage.getItem('debug_info');
+        
+        console.log("SessionStorage state:", {
+            dataSource,
+            formatterToolId,
+            formatterTarget,
+            bypassValidation,
+            hasFormattedData: !!formattedData,
+            formattedDataLength: formattedData ? formattedData.length : 0,
+            debugInfo: debugInfo ? JSON.parse(debugInfo) : null
+        });
+        
+        // If no data is found but we came from formatter, show a helpful message
+        if (!formattedData && fromFormatter) {
+            console.error("🔴 ERROR: Missing formatter data in sessionStorage! Browser might have restrictions on sessionStorage between pages.");
+            
+            // Show error message to user
+            const errorMsg = document.createElement('div');
+            errorMsg.style.cssText = "background-color: #ffebee; padding: 15px; border-radius: 4px; margin: 20px 0; border-left: 4px solid #f44336;";
+            errorMsg.innerHTML = `
+                <h3 style="margin-top: 0; color: #d32f2f;">Data Transfer Error</h3>
+                <p>Data from the formatter couldn't be accessed. This usually happens due to browser privacy settings.</p>
+                <div style="margin-top: 10px;">
+                    <strong>Recommended Solutions:</strong>
+                    <ul>
+                        <li>Try using a different browser (Chrome works best)</li>
+                        <li>Disable privacy extensions that might block sessionStorage</li>
+                        <li>Try downloading the data as a file and uploading it directly</li>
+                    </ul>
+                </div>
+            `;
+            
+            document.getElementById('result').appendChild(errorMsg);
         }
-    } catch (e) {
-        console.error("formattedData is not valid JSON:", e);
-    }
+        
+        // Check if formattedData is too large for console logging
+        if (formattedData && formattedData.length < 1000) {
+            console.log("Formatted data preview:", formattedData.substring(0, 500) + "...");
+        }
+        
+        // Try to parse the formatted data to see if it's valid JSON
+        let isValidJson = false;
+        try {
+            if (formattedData) {
+                JSON.parse(formattedData);
+                isValidJson = true;
+                console.log("formattedData is valid JSON");
+            }
+        } catch (e) {
+            console.error("formattedData is not valid JSON:", e);
+        }
     
     // Check multiple possible matches to ensure compatibility with different naming conventions
     const isResponseTool = 
@@ -441,7 +480,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // First check if we have valid formatted data from sessionStorage
     if (formattedData && isValidJson && 
        ((dataSource === 'formatter' && (isResponseTool || !formatterToolId)) || fromFormatter)) {
-        console.log("📦 Data received from Data Formatter tool");
+        console.log("📦 SUCCESS: Data received from Data Formatter tool and is valid");
         try {
             // Parse the data
             const parsedData = JSON.parse(formattedData);

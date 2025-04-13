@@ -545,8 +545,20 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (toolUrls[selectedTool]) {
             appendLog(`Sending data to ${getToolName(selectedTool)}...`);
-            // Add debug parameter to URL
-            const url = toolUrls[selectedTool] + (toolUrls[selectedTool].includes('?') ? '&' : '?') + 'from_formatter=true';
+            
+            // Add additional debugging to confirm data was stored correctly
+            console.log("DATA TRANSFER CHECK:", {
+                storedData: sessionStorage.getItem('formattedData') ? "OK" : "MISSING",
+                dataLength: sessionStorage.getItem('formattedData') ? 
+                    JSON.parse(sessionStorage.getItem('formattedData')).length + " records" : "UNKNOWN",
+                source: sessionStorage.getItem('dataSource'),
+                toolId: sessionStorage.getItem('formatterToolId')
+            });
+            
+            // Add debug parameter to URL and a timestamp to prevent caching issues
+            const url = toolUrls[selectedTool] + 
+                      (toolUrls[selectedTool].includes('?') ? '&' : '?') + 
+                      'from_formatter=true&t=' + Date.now();
             window.location.href = url;
         } else {
             appendLog(`Error: No URL defined for ${selectedTool}`, 'error');
@@ -698,6 +710,25 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Helper function to identify CAD system from field names
     function identifyCADSystem(sampleRecord) {
+        // Check if we can use the new DataTransformer utility
+        if (window.FireEMS && window.FireEMS.Utils && window.FireEMS.Utils.DataTransformer) {
+            try {
+                console.log("Using FireEMS.Utils.DataTransformer for CAD system detection");
+                const cadSystem = window.FireEMS.Utils.DataTransformer.detectCADSystem(sampleRecord);
+                
+                if (cadSystem) {
+                    console.log(`Detected CAD system using DataTransformer: ${cadSystem}`);
+                    return cadSystem;
+                } else {
+                    console.log("DataTransformer did not detect a CAD system, falling back to legacy detection");
+                }
+            } catch (error) {
+                console.error("Error using DataTransformer for CAD system detection:", error);
+                console.warn("Falling back to legacy CAD system detection");
+            }
+        }
+        
+        // Legacy fallback detection
         if (!sampleRecord) return null;
         
         const fields = Object.keys(sampleRecord);
@@ -773,7 +804,39 @@ document.addEventListener('DOMContentLoaded', function() {
     function processCADSystemData(data, cadSystem, toolId) {
         if (!data || !cadSystem) return data;
         
-        appendLog(`Applying ${cadSystem} specific transformations...`);
+        // Check if we can use the new DataTransformer utility
+        if (window.FireEMS && window.FireEMS.Utils && window.FireEMS.Utils.DataTransformer) {
+            try {
+                console.log(`Using FireEMS.Utils.DataTransformer for ${cadSystem} transformations`);
+                appendLog(`Using DataTransformer to handle ${cadSystem} data...`);
+                
+                const transformedResult = window.FireEMS.Utils.DataTransformer.applyCADSystemMappings(data, cadSystem);
+                
+                if (transformedResult && transformedResult.length > 0) {
+                    // Apply additional tool-specific transformations
+                    const finalResult = window.FireEMS.Utils.DataTransformer.transformForTool(transformedResult, toolId);
+                    
+                    if (finalResult && finalResult.length > 0) {
+                        appendLog(`Data transformed successfully for ${toolId} using DataTransformer`);
+                        return finalResult;
+                    }
+                    
+                    // At least return the CAD system mappings if tool-specific transform fails
+                    appendLog(`Applied ${cadSystem} mappings with DataTransformer`);
+                    return transformedResult;
+                } else {
+                    console.warn("DataTransformer returned no results for CAD system mappings, falling back to legacy processor");
+                    appendLog(`Falling back to legacy processor for ${cadSystem} data`, 'warning');
+                }
+            } catch (error) {
+                console.error(`Error using DataTransformer for ${cadSystem} transformations:`, error);
+                console.warn("Falling back to legacy CAD system processor");
+                appendLog(`Error in DataTransformer, using legacy processor: ${error.message}`, 'warning');
+            }
+        }
+        
+        // Legacy fallback processing
+        appendLog(`Applying ${cadSystem} specific transformations using legacy processor...`);
         
         switch(cadSystem) {
             case 'Motorola PremierOne':
@@ -1312,8 +1375,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function parseCSV(csvText) {
-        console.log("🔧 IMPROVED: Starting CSV parsing with robust parser");
+        console.log("🔧 IMPROVED: Starting CSV parsing");
         
+        // Check if we can use the new DataTransformer utility
+        if (window.FireEMS && window.FireEMS.Utils && window.FireEMS.Utils.DataTransformer) {
+            try {
+                console.log("Using FireEMS.Utils.DataTransformer for CSV parsing");
+                const result = window.FireEMS.Utils.DataTransformer.parseCSV(csvText);
+                
+                if (result && result.length > 0) {
+                    console.log(`Successfully parsed ${result.length} records from CSV using DataTransformer`);
+                    return result;
+                } else {
+                    console.warn("DataTransformer returned no results for CSV parsing, falling back to legacy parser");
+                }
+            } catch (error) {
+                console.error("Error using DataTransformer for CSV parsing:", error);
+                console.warn("Falling back to legacy CSV parser");
+            }
+        }
+        
+        // Legacy fallback parser
         try {
             // Handle different line endings
             const lines = csvText.split(/\r\n|\n/);
@@ -1372,7 +1454,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            console.log(`Successfully parsed ${result.length} records from CSV`);
+            console.log(`Successfully parsed ${result.length} records from CSV using legacy parser`);
             return result;
         } catch (err) {
             console.error("CSV parsing error:", err);
@@ -1418,6 +1500,30 @@ document.addEventListener('DOMContentLoaded', function() {
         // Deep copy to avoid modifying original
         const transformedData = JSON.parse(JSON.stringify(data));
         
+        // Check if we can use the new DataTransformer utility
+        if (window.FireEMS && window.FireEMS.Utils && window.FireEMS.Utils.DataTransformer) {
+            try {
+                appendLog(`Using FireEMS.Utils.DataTransformer for ${toolId}`);
+                console.log("Using DataTransformer utility");
+                
+                // Use the new utility to transform the data
+                const transformedResult = window.FireEMS.Utils.DataTransformer.transformForTool(transformedData, toolId);
+                
+                if (transformedResult && transformedResult.length > 0) {
+                    appendLog(`Data transformed successfully using DataTransformer`);
+                    return transformedResult;
+                } else {
+                    appendLog(`DataTransformer returned no results, falling back to legacy transform`, 'warning');
+                }
+            } catch (error) {
+                console.error("Error using DataTransformer:", error);
+                appendLog(`Error using DataTransformer: ${error.message}, falling back to legacy transform`, 'warning');
+            }
+        }
+        
+        // Legacy fallback path
+        console.log("Using legacy transformation path");
+        
         // Auto-detect CAD system based on field names
         const cadSystem = identifyCADSystem(transformedData[0]);
         if (cadSystem) {
@@ -1435,6 +1541,30 @@ document.addEventListener('DOMContentLoaded', function() {
         const requirements = toolRequirements[toolId];
         if (!requirements) return data;
         
+        // Check if we can use the new DataTransformer utility
+        if (window.FireEMS && window.FireEMS.Utils && window.FireEMS.Utils.DataTransformer) {
+            try {
+                console.log(`Using FireEMS.Utils.DataTransformer for ${toolId} tool-specific transformations`);
+                appendLog(`Using DataTransformer to prepare data for ${toolId}...`);
+                
+                const transformedResult = window.FireEMS.Utils.DataTransformer.transformForTool(data, toolId);
+                
+                if (transformedResult && transformedResult.length > 0) {
+                    appendLog(`Data transformed successfully for ${toolId} using DataTransformer`);
+                    return transformedResult;
+                } else {
+                    console.warn(`DataTransformer returned no results for ${toolId} transformations, falling back to legacy processor`);
+                    appendLog(`Falling back to legacy processor for ${toolId} data`, 'warning');
+                }
+            } catch (error) {
+                console.error(`Error using DataTransformer for ${toolId} transformations:`, error);
+                console.warn("Falling back to legacy tool-specific processor");
+                appendLog(`Error in DataTransformer, using legacy processor: ${error.message}`, 'warning');
+            }
+        }
+        
+        // Legacy fallback processing
+        appendLog(`Applying ${toolId} transformations using legacy processor...`);
         const transformedData = JSON.parse(JSON.stringify(data));
         
         // Process based on tool type (generic processing if no CAD system detected)
@@ -1666,6 +1796,25 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Helper functions
     function convertToCSV(objArray) {
+        // Check if we can use the new DataTransformer utility
+        if (window.FireEMS && window.FireEMS.Utils && window.FireEMS.Utils.DataTransformer) {
+            try {
+                console.log("Using FireEMS.Utils.DataTransformer for CSV conversion");
+                const result = window.FireEMS.Utils.DataTransformer.toCSV(objArray);
+                
+                if (result) {
+                    console.log("Successfully converted to CSV using DataTransformer");
+                    return result;
+                } else {
+                    console.warn("DataTransformer returned empty result for CSV conversion, falling back to legacy converter");
+                }
+            } catch (error) {
+                console.error("Error using DataTransformer for CSV conversion:", error);
+                console.warn("Falling back to legacy CSV converter");
+            }
+        }
+        
+        // Legacy fallback converter
         const array = typeof objArray !== 'object' ? JSON.parse(objArray) : objArray;
         let str = '';
 
