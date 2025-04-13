@@ -59,7 +59,8 @@ function processData(data) {
         // Show dashboard
         dashboardDiv.style.display = 'block';
         
-        // Create visualizations
+        // Create visualizations with proper Chart.js loading checks
+        // First create the map which doesn't depend on Chart.js
         try {
             createIncidentMap(formattedData);
             console.log("✅ Map created successfully");
@@ -68,32 +69,276 @@ function processData(data) {
             document.getElementById('incident-map').innerHTML = `<p style="color: red;">Error creating map: ${error.message}</p>`;
         }
         
-        try {
-            createTimeChart(formattedData, stats);
-            console.log("✅ Time chart created successfully");
-        } catch (error) {
-            console.error("❌ Error creating time chart:", error);
-            document.getElementById('time-chart').innerHTML = `<p style="color: red;">Error creating time chart: ${error.message}</p>`;
-        }
+        // For all other visualizations, we need to make sure Chart.js is available
+        // or use fallbacks if it's not available or fails to load
+        createVisualizationsWithChartJs(formattedData, stats);
+    }
+}
+
+/**
+ * Create chart visualizations with proper Chart.js loading and fallbacks
+ * @param {Array} formattedData - The formatted incident data
+ * @param {Object} stats - The calculated statistics
+ */
+function createVisualizationsWithChartJs(formattedData, stats) {
+    console.log("🔄 Setting up chart visualizations with proper handling...");
+    
+    // Flag to track if we're in emergency mode
+    const isEmergencyMode = window.location.search.includes('emergency') || 
+                           window.location.search.includes('from_formatter');
+    
+    // Check if we can access the ChartManager from the FireEMS namespace
+    const hasChartManager = window.FireEMS && window.FireEMS.Charts;
+    
+    if (hasChartManager) {
+        console.log("📊 Using FireEMS.Charts manager for chart creation");
         
-        try {
-            createUnitChart(formattedData, stats);
-            console.log("✅ Unit chart created successfully");
-        } catch (error) {
-            console.error("❌ Error creating unit chart:", error);
-            document.getElementById('unit-chart').parentElement.innerHTML = `<p style="color: red;">Error creating unit chart: ${error.message}</p>`;
-        }
+        // Function to create time chart once Chart.js is ready
+        const createTimeChartWhenReady = function(chart) {
+            try {
+                createTimeChart(formattedData, stats);
+                console.log("✅ Time chart created successfully with ChartManager");
+            } catch (error) {
+                console.error("❌ Error creating time chart:", error);
+                document.getElementById('time-chart').innerHTML = `<p style="color: red;">Error creating time chart: ${error.message}</p>`;
+            }
+        };
         
-        try {
-            createLocationChart(formattedData, stats);
-            console.log("✅ Location chart created successfully");
-        } catch (error) {
-            console.error("❌ Error creating location chart:", error);
-            document.getElementById('location-chart').parentElement.innerHTML = `<p style="color: red;">Error creating location chart: ${error.message}</p>`;
-        }
-    } catch (error) {
-        console.error("❌ Processing error:", error);
-        resultDiv.innerHTML = `<p style="color: red;">Processing error: ${error.message}</p>`;
+        // Function to create unit chart once Chart.js is ready
+        const createUnitChartWhenReady = function(chart) {
+            try {
+                createUnitChart(formattedData, stats);
+                console.log("✅ Unit chart created successfully with ChartManager");
+            } catch (error) {
+                console.error("❌ Error creating unit chart:", error);
+                document.getElementById('unit-chart').parentElement.innerHTML = `<p style="color: red;">Error creating unit chart: ${error.message}</p>`;
+                
+                // Try fallback if available
+                if (window.FireEMS && window.FireEMS.ChartFallback) {
+                    console.log("🔄 Trying chart fallback for unit chart");
+                    try {
+                        const unitCounts = {};
+                        formattedData.forEach(record => {
+                            const unitValue = record['Unit'] || record['unit'] || record['Unit ID'] || 
+                                           record['UnitID'] || record['unit_id'] || record['apparatus'];
+                            if (unitValue) {
+                                unitCounts[unitValue] = (unitCounts[unitValue] || 0) + 1;
+                            }
+                        });
+                        
+                        const topUnits = Object.entries(unitCounts)
+                            .sort((a, b) => b[1] - a[1])
+                            .slice(0, 8);
+                        
+                        window.FireEMS.ChartFallback.createBarChartFallback('unit-chart', 
+                            topUnits.map(item => item[0]), 
+                            topUnits.map(item => item[1]), 
+                            {
+                                title: 'Unit Activity',
+                                labelHeader: 'Unit',
+                                valueHeader: 'Incidents',
+                                showPercentages: false
+                            }
+                        );
+                        console.log("✅ Unit chart fallback created successfully");
+                    } catch (fallbackError) {
+                        console.error("❌ Error creating unit chart fallback:", fallbackError);
+                    }
+                }
+            }
+        };
+        
+        // Function to create location chart once Chart.js is ready
+        const createLocationChartWhenReady = function(chart) {
+            try {
+                createLocationChart(formattedData, stats);
+                console.log("✅ Location chart created successfully with ChartManager");
+            } catch (error) {
+                console.error("❌ Error creating location chart:", error);
+                document.getElementById('location-chart').parentElement.innerHTML = `<p style="color: red;">Error creating location chart: ${error.message}</p>`;
+                
+                // Try fallback if available
+                if (window.FireEMS && window.FireEMS.ChartFallback) {
+                    console.log("🔄 Trying chart fallback for location chart");
+                    try {
+                        // Find location data
+                        const locationFields = ['Incident City', 'City', 'ADDR_CITY', 'EVENT_CITY', 'CITY', 'Location City'];
+                        let locationField = null;
+                        
+                        for (const field of locationFields) {
+                            if (formattedData.some(record => record[field])) {
+                                locationField = field;
+                                break;
+                            }
+                        }
+                        
+                        if (locationField) {
+                            const locationCounts = {};
+                            formattedData.forEach(record => {
+                                const location = record[locationField] || record['Incident City'];
+                                if (location) {
+                                    locationCounts[location] = (locationCounts[location] || 0) + 1;
+                                }
+                            });
+                            
+                            const topLocations = Object.entries(locationCounts)
+                                .sort((a, b) => b[1] - a[1])
+                                .slice(0, 6);
+                            
+                            window.FireEMS.ChartFallback.createPieChartFallback('location-chart', 
+                                topLocations.map(item => item[0]), 
+                                topLocations.map(item => item[1]), 
+                                {
+                                    title: 'Incidents by Location',
+                                    labelHeader: 'Location',
+                                    valueHeader: 'Incidents',
+                                    showPercentages: true
+                                }
+                            );
+                            console.log("✅ Location chart fallback created successfully");
+                        }
+                    } catch (fallbackError) {
+                        console.error("❌ Error creating location chart fallback:", fallbackError);
+                    }
+                }
+            }
+        };
+        
+        // Use the ChartManager to register callbacks for when Chart.js is ready
+        window.FireEMS.Charts.onChartJsReady(function(chart) {
+            if (chart) {
+                console.log("📊 Chart.js is ready, creating visualizations");
+                // Create all charts now that Chart.js is loaded
+                createTimeChartWhenReady(chart);
+                createUnitChartWhenReady(chart);
+                createLocationChartWhenReady(chart);
+            } else {
+                console.error("❌ Chart.js failed to load, trying fallbacks");
+                // If Chart.js failed to load, try to use fallbacks
+                if (window.FireEMS && window.FireEMS.ChartFallback) {
+                    console.log("📊 Using ChartFallback for visualizations");
+                    window.FireEMS.ChartFallback.installChartPolyfill();
+                    // The chart functions will detect the polyfill and use fallbacks
+                    setTimeout(() => {
+                        createTimeChartWhenReady(null);
+                        createUnitChartWhenReady(null);
+                        createLocationChartWhenReady(null);
+                    }, 100);
+                }
+            }
+        });
+        
+        // Start loading Chart.js - the callbacks will be invoked when it's ready
+        window.FireEMS.Charts.loadChartJs();
+        
+    } else {
+        console.log("📊 ChartManager not available, using direct Chart.js loading");
+        
+        // Define a function to handle direct loading of Chart.js
+        const loadChartJs = function(callback) {
+            // If Chart.js is already available, use it immediately
+            if (typeof Chart !== 'undefined' && Chart.defaults) {
+                console.log("📊 Chart.js already available");
+                callback(Chart);
+                return;
+            }
+            
+            console.log("📊 Loading Chart.js directly");
+            // Try to use the global helper if available
+            if (typeof window.ensureChartJsLoaded === 'function') {
+                window.ensureChartJsLoaded()
+                    .then(chart => {
+                        console.log("📊 Chart.js loaded successfully via ensureChartJsLoaded");
+                        callback(chart);
+                    })
+                    .catch(error => {
+                        console.error("❌ Chart.js failed to load:", error);
+                        // Try fallback if available
+                        if (window.FireEMS && window.FireEMS.ChartFallback) {
+                            console.log("📊 Installing Chart.js polyfill");
+                            window.FireEMS.ChartFallback.installChartPolyfill();
+                            callback(window.Chart);
+                        } else {
+                            callback(null);
+                        }
+                    });
+            } else {
+                // Direct loading approach
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js';
+                script.crossOrigin = "anonymous";
+                
+                // Set a timeout to prevent waiting forever
+                const timeoutId = setTimeout(() => {
+                    console.error("❌ Chart.js loading timed out");
+                    handleChartJsFailure();
+                }, 5000);
+                
+                script.onload = function() {
+                    clearTimeout(timeoutId);
+                    console.log("📊 Chart.js loaded successfully");
+                    // Slight delay to ensure Chart.js is fully initialized
+                    setTimeout(() => {
+                        if (typeof Chart !== 'undefined' && Chart.defaults) {
+                            callback(Chart);
+                        } else {
+                            console.error("❌ Chart.js loaded but not initialized properly");
+                            handleChartJsFailure();
+                        }
+                    }, 50);
+                };
+                
+                script.onerror = function(error) {
+                    clearTimeout(timeoutId);
+                    console.error("❌ Failed to load Chart.js:", error);
+                    handleChartJsFailure();
+                };
+                
+                // Handle Chart.js loading failure
+                function handleChartJsFailure() {
+                    // Try fallback if available
+                    if (window.FireEMS && window.FireEMS.ChartFallback) {
+                        console.log("📊 Installing Chart.js polyfill after failure");
+                        window.FireEMS.ChartFallback.installChartPolyfill();
+                        callback(window.Chart);
+                    } else {
+                        callback(null);
+                    }
+                }
+                
+                document.head.appendChild(script);
+            }
+        };
+        
+        // Load Chart.js and create charts when ready
+        loadChartJs(function(chart) {
+            // Create time chart (doesn't directly use Chart.js)
+            try {
+                createTimeChart(formattedData, stats);
+                console.log("✅ Time chart created successfully");
+            } catch (error) {
+                console.error("❌ Error creating time chart:", error);
+                document.getElementById('time-chart').innerHTML = `<p style="color: red;">Error creating time chart: ${error.message}</p>`;
+            }
+            
+            // Create unit chart
+            try {
+                createUnitChart(formattedData, stats);
+                console.log("✅ Unit chart created successfully");
+            } catch (error) {
+                console.error("❌ Error creating unit chart:", error);
+                document.getElementById('unit-chart').parentElement.innerHTML = `<p style="color: red;">Error creating unit chart: ${error.message}</p>`;
+            }
+            
+            // Create location chart
+            try {
+                createLocationChart(formattedData, stats);
+                console.log("✅ Location chart created successfully");
+            } catch (error) {
+                console.error("❌ Error creating location chart:", error);
+                document.getElementById('location-chart').parentElement.innerHTML = `<p style="color: red;">Error creating location chart: ${error.message}</p>`;
+            }
+        });
     }
 }
 
@@ -1584,102 +1829,6 @@ function renderDataTable(data, container) {
     container.innerHTML = '';
     container.appendChild(table);
     console.log("✅ Table rendered successfully!");
-}
-
-// ----------------------------------------------------------------------------
-// Process data function - used by both file upload and Data Formatter
-// ----------------------------------------------------------------------------
-/**
- * Process and display data from either file upload or Data Formatter
- * @param {Object} data - Data object including records and metadata
- */
-function processData(data) {
-    console.log("🔄 Processing data...", data);
-    const resultDiv = document.getElementById('result');
-    const dashboardDiv = document.getElementById('dashboard');
-    
-    try {
-        // Format and process data
-        const formattedData = formatFireEMSData(data.data);
-        const stats = calculateDataStatistics(formattedData);
-        
-        // Display basic file stats
-        if (data.source !== 'formatter') {
-            resultDiv.innerHTML = `
-                <div style="color: green; margin-bottom: 15px;">
-                    <p>✅ ${data.filename ? `File uploaded: ${data.filename}` : 'Data processed successfully'}</p>
-                    <p>📊 Incidents: ${data.rows || (data.data ? data.data.length : 'Unknown')}</p>
-                    <p>📅 First reported date: ${data.first_reported_date || 'N/A'}</p>
-                </div>
-            `;
-        }
-        
-        // Optionally update file stats container if available
-        const fileStatsElement = document.getElementById('file-stats');
-        if (fileStatsElement) {
-            let statsHtml = `
-                <div style="margin-bottom: 10px;">📄 Data source: ${data.filename || 'Data Formatter'}</div>
-                <div style="margin-bottom: 10px;">📊 Incidents: ${stats.totalIncidents}</div>
-                <div style="margin-bottom: 10px;">📅 First Date: ${data.first_reported_date || 'N/A'}</div>
-            `;
-            if (stats.avgResponseTime !== null) {
-                statsHtml += `<div style="margin-bottom: 10px;">⏱️ Avg Response: ${stats.avgResponseTime} min</div>`;
-            }
-            if (stats.busyHours && stats.busyHours.length > 0) {
-                statsHtml += `<div style="margin-bottom: 10px;">🔥 Busiest Hour: ${stats.busyHours[0].hour}</div>`;
-            }
-            if (stats.topUnit) {
-                statsHtml += `<div style="margin-bottom: 10px;">🚒 Top Unit: ${stats.topUnit.unit} (${stats.topUnit.count})</div>`;
-            }
-            fileStatsElement.innerHTML = statsHtml;
-        }
-        
-        // Render data table
-        renderDataTable({ 
-            ...data, 
-            data: formattedData,
-            columns: data.columns || getDataColumns(formattedData)
-        }, document.getElementById('data-table'));
-        
-        // Show dashboard
-        dashboardDiv.style.display = 'block';
-        
-        // Create visualizations
-        try {
-            createIncidentMap(formattedData);
-            console.log("✅ Map created successfully");
-        } catch (error) {
-            console.error("❌ Error creating map:", error);
-            document.getElementById('incident-map').innerHTML = `<p style="color: red;">Error creating map: ${error.message}</p>`;
-        }
-        
-        try {
-            createTimeChart(formattedData, stats);
-            console.log("✅ Time chart created successfully");
-        } catch (error) {
-            console.error("❌ Error creating time chart:", error);
-            document.getElementById('time-chart').innerHTML = `<p style="color: red;">Error creating time chart: ${error.message}</p>`;
-        }
-        
-        try {
-            createUnitChart(formattedData, stats);
-            console.log("✅ Unit chart created successfully");
-        } catch (error) {
-            console.error("❌ Error creating unit chart:", error);
-            document.getElementById('unit-chart').parentElement.innerHTML = `<p style="color: red;">Error creating unit chart: ${error.message}</p>`;
-        }
-        
-        try {
-            createLocationChart(formattedData, stats);
-            console.log("✅ Location chart created successfully");
-        } catch (error) {
-            console.error("❌ Error creating location chart:", error);
-            document.getElementById('location-chart').parentElement.innerHTML = `<p style="color: red;">Error creating location chart: ${error.message}</p>`;
-        }
-    } catch (error) {
-        console.error("❌ Processing error:", error);
-        resultDiv.innerHTML = `<p style="color: red;">Processing error: ${error.message}</p>`;
-    }
 }
 
 // ----------------------------------------------------------------------------
