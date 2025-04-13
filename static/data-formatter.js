@@ -504,9 +504,8 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log("Total records:", transformedData.length);
         
         try {
-            // Store in sessionStorage for the target tool to use
-            // Make sure the data is properly formatted for the Response Time Analyzer
-            // It expects data as an array, not wrapped in an object
+            // Try two different approaches for maximum reliability:
+            // 1. Store in sessionStorage (traditional approach)
             sessionStorage.setItem('formattedData', JSON.stringify(transformedData));
             sessionStorage.setItem('dataSource', 'formatter');
             sessionStorage.setItem('formatterToolId', selectedTool);
@@ -522,46 +521,58 @@ document.addEventListener('DOMContentLoaded', function() {
                 sampleKeys: Object.keys(transformedData[0] || {})
             }));
             
-            appendLog(`Data prepared for ${getToolName(selectedTool)} (${transformedData.length} records)`);
+            // 2. Store in localStorage as well as a fallback
+            // Use a timestamp-based key that will be passed in the URL
+            const timestamp = Date.now();
+            const storageKey = 'formatter_data_' + timestamp;
+            
+            localStorage.setItem(storageKey, JSON.stringify({
+                data: transformedData,
+                metadata: {
+                    source: 'formatter',
+                    tool: selectedTool,
+                    timestamp: new Date().toISOString(),
+                    recordCount: transformedData.length,
+                    browser: navigator.userAgent,
+                    expiration: new Date(Date.now() + 1000 * 60 * 10).toISOString() // 10 minutes expiration
+                }
+            }));
+            
+            appendLog(`Data prepared for ${getToolName(selectedTool)} (${transformedData.length} records) with key: ${storageKey}`);
+            console.log("Created data storage with key:", storageKey);
+            
+            // Redirect to the selected tool
+            const toolUrls = {
+                'response-time': '/fire-ems-dashboard',
+                'isochrone': '/isochrone-map',
+                'isochrone-stations': '/isochrone-map?type=stations',
+                'isochrone-incidents': '/isochrone-map?type=incidents',
+                'call-density': '/call-density-heatmap',
+                'incident-logger': '/incident-logger',
+                'coverage-gap': '/coverage-gap-finder',
+                'station-overview': '/station-overview',
+                'fire-map-pro': '/fire-map-pro'
+            };
+            
+            if (toolUrls[selectedTool]) {
+                appendLog(`Sending data to ${getToolName(selectedTool)}...`);
+                
+                // Add debug parameter to URL and a timestamp to prevent caching issues
+                // Also include the localStorage key for direct access
+                const url = toolUrls[selectedTool] + 
+                          (toolUrls[selectedTool].includes('?') ? '&' : '?') + 
+                          `from_formatter=true&formatter_data=${storageKey}&t=${timestamp}&records=${transformedData.length}`;
+                          
+                console.log("Redirecting to:", url);
+                window.location.href = url;
+            } else {
+                appendLog(`Error: No URL defined for ${selectedTool}`, 'error');
+            }
         } catch (error) {
-            console.error("Error storing data in sessionStorage:", error);
+            console.error("Error storing data for transfer:", error);
             appendLog(`Error storing data: ${error.message}`, 'error');
             alert("Error preparing data for transfer. Check browser console for details.");
             return;
-        }
-        
-        // Redirect to the selected tool
-        const toolUrls = {
-            'response-time': '/fire-ems-dashboard',
-            'isochrone': '/isochrone-map',
-            'isochrone-stations': '/isochrone-map?type=stations',
-            'isochrone-incidents': '/isochrone-map?type=incidents',
-            'call-density': '/call-density-heatmap',
-            'incident-logger': '/incident-logger',
-            'coverage-gap': '/coverage-gap-finder',
-            'station-overview': '/station-overview',
-            'fire-map-pro': '/fire-map-pro'
-        };
-        
-        if (toolUrls[selectedTool]) {
-            appendLog(`Sending data to ${getToolName(selectedTool)}...`);
-            
-            // Add additional debugging to confirm data was stored correctly
-            console.log("DATA TRANSFER CHECK:", {
-                storedData: sessionStorage.getItem('formattedData') ? "OK" : "MISSING",
-                dataLength: sessionStorage.getItem('formattedData') ? 
-                    JSON.parse(sessionStorage.getItem('formattedData')).length + " records" : "UNKNOWN",
-                source: sessionStorage.getItem('dataSource'),
-                toolId: sessionStorage.getItem('formatterToolId')
-            });
-            
-            // Add debug parameter to URL and a timestamp to prevent caching issues
-            const url = toolUrls[selectedTool] + 
-                      (toolUrls[selectedTool].includes('?') ? '&' : '?') + 
-                      'from_formatter=true&t=' + Date.now();
-            window.location.href = url;
-        } else {
-            appendLog(`Error: No URL defined for ${selectedTool}`, 'error');
         }
     });
     

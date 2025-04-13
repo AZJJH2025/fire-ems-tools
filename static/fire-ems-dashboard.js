@@ -379,8 +379,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check if there's data in sessionStorage from the Data Formatter
     console.log("Checking for formatter data in Response Time Analyzer");
     
-    // Check if we came from the Data Formatter
+    // Check if we came from the Data Formatter - check for both parameters
     const fromFormatter = window.location.search.includes('from_formatter=true');
+    const formatterDataKey = new URLSearchParams(window.location.search).get('formatter_data');
+    
     if (fromFormatter) {
         console.log("✅ FORMATTER MODE: Detected redirect from Data Formatter based on URL parameter");
         
@@ -392,6 +394,44 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Auto-remove after 5 seconds
         setTimeout(() => formatterIndicator.remove(), 5000);
+        
+        // If we have a formatter_data parameter, try to get data from localStorage
+        if (formatterDataKey) {
+            console.log("📦 FORMATTER DATA KEY FOUND:", formatterDataKey);
+            
+            try {
+                // Try to get data from localStorage
+                const localData = localStorage.getItem(formatterDataKey);
+                if (localData) {
+                    console.log("📦 FOUND DATA IN LOCALSTORAGE WITH KEY:", formatterDataKey);
+                    
+                    try {
+                        // Parse the data
+                        const parsedLocalData = JSON.parse(localData);
+                        
+                        // Store in sessionStorage for normal flow to handle
+                        if (parsedLocalData.data) {
+                            sessionStorage.setItem('formattedData', JSON.stringify(parsedLocalData.data));
+                            console.log(`✅ Successfully transferred ${parsedLocalData.data.length} records from localStorage to sessionStorage`);
+                        }
+                        
+                        // Set other sessionStorage items
+                        if (parsedLocalData.metadata) {
+                            sessionStorage.setItem('dataSource', 'formatter');
+                            sessionStorage.setItem('formatterToolId', parsedLocalData.metadata.tool || 'response-time');
+                            sessionStorage.setItem('formatterTarget', parsedLocalData.metadata.tool || 'response-time');
+                            sessionStorage.setItem('formatterTimestamp', parsedLocalData.metadata.timestamp || new Date().toISOString());
+                        }
+                    } catch (e) {
+                        console.error("Error parsing localStorage data:", e);
+                    }
+                } else {
+                    console.error("❌ Data not found in localStorage with key:", formatterDataKey);
+                }
+            } catch (e) {
+                console.error("Error accessing localStorage:", e);
+            }
+        }
     }
     
     // Add our debug script to the page - wrapped in try/catch for safety
