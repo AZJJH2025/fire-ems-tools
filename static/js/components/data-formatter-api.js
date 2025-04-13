@@ -58,7 +58,11 @@ const DataFormatterAPI = {
             
             const requestBody = {
                 fileId: fileId,
-                mappings: mappings
+                mappings: mappings,
+                // Let the server know if we have the DataTransformer utility available
+                clientCapabilities: {
+                    hasDataTransformer: !!(window.FireEMS && window.FireEMS.Utils && window.FireEMS.Utils.DataTransformer)
+                }
             };
             
             console.log('Full request body:', JSON.stringify(requestBody, null, 2));
@@ -84,6 +88,71 @@ const DataFormatterAPI = {
             // Log the successful response
             const responseData = await response.json();
             console.log('API Response:', responseData);
+            
+            // Check for available utilities for client-side data enhancement
+            const hasDataTransformer = window.FireEMS && window.FireEMS.Utils && window.FireEMS.Utils.DataTransformer;
+            const hasMapFieldsManager = window.FireEMS && window.FireEMS.Utils && window.FireEMS.Utils.MapFieldsManager;
+            
+            // Apply additional transformations on the client side if needed
+            if ((hasDataTransformer || hasMapFieldsManager) && 
+                responseData.data && Array.isArray(responseData.data)) {
+                console.log('Applying client-side data enhancement to API response');
+                
+                // Check if there's a targetTool specified
+                if (responseData.targetTool) {
+                    try {
+                        let enhancedData;
+                        
+                        // Prefer MapFieldsManager if available
+                        if (hasMapFieldsManager) {
+                            console.log('Using MapFieldsManager for data enhancement');
+                            
+                            if (responseData.mappings) {
+                                // If mappings are provided, apply them with MapFieldsManager
+                                enhancedData = window.FireEMS.Utils.MapFieldsManager.applyMappings(
+                                    responseData.data,
+                                    responseData.mappings,
+                                    responseData.transformConfigs || {}
+                                );
+                                
+                                // Validate the mapped data for the target tool
+                                if (enhancedData && enhancedData.length > 0) {
+                                    const validationResult = window.FireEMS.Utils.MapFieldsManager.validateMappedData(
+                                        enhancedData[0],
+                                        responseData.targetTool
+                                    );
+                                    
+                                    // Add validation info to the response
+                                    responseData.validation = validationResult;
+                                    
+                                    // Log any validation issues
+                                    if (!validationResult.valid) {
+                                        console.warn('Data validation issues:', validationResult);
+                                    }
+                                }
+                            }
+                        }
+                        // Fall back to DataTransformer if MapFieldsManager is not available
+                        else if (hasDataTransformer) {
+                            console.log('Using DataTransformer for data enhancement');
+                            enhancedData = window.FireEMS.Utils.DataTransformer.transformForTool(
+                                responseData.data, 
+                                responseData.targetTool
+                            );
+                        }
+                        
+                        if (enhancedData && enhancedData.length > 0) {
+                            console.log('Enhanced data with client-side processing');
+                            responseData.data = enhancedData;
+                            responseData.clientEnhanced = true;
+                        }
+                    } catch (enhanceError) {
+                        console.warn('Error enhancing data with client-side processing:', enhanceError);
+                        // Continue with original data
+                    }
+                }
+            }
+            
             return responseData;
         } catch (error) {
             console.error('Error transforming data:', error);

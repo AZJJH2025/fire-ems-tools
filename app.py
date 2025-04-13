@@ -813,6 +813,12 @@ def create_app(config_name='default'):
         """Demo page for the Data Transformer Utility"""
         return render_template('data-transformer-demo.html')
         
+    # Field Mapping Demo Page
+    @app.route('/field-mapping-demo')
+    def field_mapping_demo():
+        """Demo page for the MapFieldsManager Utility"""
+        return render_template('field-mapping-demo.html')
+        
     # Call Density Heatmap File Upload Handler
     @app.route('/upload-call-data', methods=['POST'])
     def upload_call_data():
