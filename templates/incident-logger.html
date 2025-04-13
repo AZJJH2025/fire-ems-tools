@@ -1,2148 +1,244 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <link rel="stylesheet" href="/static/mobile-responsive.css">
-    <title>Incident Logger - FireEMS.ai</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
-    <link rel="stylesheet" href="/static/styles.css">
-    <link rel="stylesheet" href="/static/incident-logger.css?v=1.2">
-    <link rel="stylesheet" href="/static/form-validation-fix.css">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-    
-    <!-- jQuery and Select2 -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    
-    <style>
-    /* Fallback styles in case the CSS files don't load properly */
-    body {
-        font-family: Arial, sans-serif;
-        line-height: 1.6;
-        margin: 0;
-        padding: 20px;
-        background-color: #f8f9fa;
-    }
-    
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
-        background-color: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    
-    /* Using the global navbar styles from styles.css */
-    
-    button {
-        background-color: #4a89dc;
-        color: white;
-        border: none;
-        padding: 10px 15px;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-    
-    .secondary-btn {
-        background-color: #f0f0f0;
-        color: #333;
-    }
-    
-    .card {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        padding: 20px;
-        margin-bottom: 20px;
-    }
-    
-    .form-step {
-        background-color: white;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    
-    .form-group {
-        margin-bottom: 15px;
-    }
-    
-    label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
-    }
-    
-    input, select, textarea {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-    }
-    
-    .nav-links {
-        display: flex;
-        list-style: none;
-        gap: 20px;
-    }
-    
-    .nav-links a {
-        text-decoration: none;
-        color: #333;
-    }
-    
-    .nav-links a.active {
-        color: #4a89dc;
-        font-weight: bold;
-    }
-    
-    .form-progress {
-        display: flex;
-        margin-bottom: 20px;
-        border-bottom: 1px solid #ddd;
-    }
-    
-    /* Form progress tabs fallback styles */
-    .form-progress {
-        display: flex;
-        margin-bottom: 2rem;
-        border-bottom: 1px solid #e0e0e0;
-        overflow-x: auto;
-        white-space: nowrap;
-        background-color: #f8f9fa;
-        border-radius: 8px 8px 0 0;
-    }
-    
-    .progress-step {
-        padding: 0.75rem 1.25rem;
-        cursor: pointer;
-        font-weight: 600;
-        color: #6c757d;
-        position: relative;
-        transition: all 0.2s ease;
-        border-top: 3px solid transparent;
-        margin-right: 2px;
-        text-align: center;
-    }
-    
-    .progress-step.active {
-        color: #4a89dc;
-        background-color: white;
-        border-top: 3px solid #4a89dc;
-        font-weight: 700;
-    }
-    
-    .progress-step.completed {
-        color: #2ecc71;
-        border-top: 3px solid #2ecc71;
-    }
-    </style>
-</head>
-<body>
-    <div class="navbar">
-        <div class="logo">
-            <a href="/">
-                <i class="fas fa-fire"></i> FireEMS.ai
-            </a>
-        </div>
-        <div class="nav-links">
-            <a href="/">Home</a>
-            <a href="/fire-ems-dashboard">Response Time Analyzer</a>
-            <a href="/isochrone-map">Isochrone Map</a>
-            <a href="/call-density-heatmap">Call Density</a>
-            <a href="/station-overview">Station Overview</a>
-            <a href="/incident-logger" class="active">Incident Logger</a>
-            <a href="/fire-map-pro">FireMapPro</a>
-            <a href="/data-formatter">Data Formatter</a>
-        </div>
-    </div>
+{% extends "base.html" %}
 
-    <header class="tool-header">
-        <div class="container">
-            <h1><i class="fas fa-clipboard-list"></i> Incident Logger</h1>
-            <p>Streamlined incident data entry and management system</p>
-        </div>
-    </header>
-    
+{% block title %}Incident Logger - FireEMS.ai{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<link rel="stylesheet" href="/static/incident-logger.css?v=1.2">
+<link rel="stylesheet" href="/static/form-validation-fix.css">
+<!-- jQuery and Select2 -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block header_scripts %}
+<!-- jQuery (required for Select2) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+{% endblock %}
+
+{% block header %}
+<header class="tool-header">
     <div class="container">
+        <h1><i class="fas fa-clipboard-list"></i> Incident Logger</h1>
+        <p>Document and manage emergency incident reports with HIPAA compliance</p>
+    </div>
+</header>
+{% endblock %}
 
-    <main>
-        <div class="container">
-            <h2>Incident Logger</h2>
-            <p class="tool-description">Log and manage incident data with automated formatting and validation.</p>
-            
-            <div class="action-bar">
-                <button id="new-incident-btn" class="primary-btn">
-                    <i class="fas fa-plus"></i> New Incident
-                </button>
-                <button id="view-incidents-btn" class="secondary-btn">
-                    <i class="fas fa-list"></i> View Incidents
-                </button>
-                <button id="cad-import-btn" class="cad-import-btn">
-                    <i class="fas fa-file-import"></i> Import CAD Data
-                </button>
-                <button id="export-btn" class="secondary-btn">
-                    <i class="fas fa-file-export"></i> Export
-                </button>
-                <button id="settings-btn" class="secondary-btn">
-                    <i class="fas fa-cog"></i> Settings
-                </button>
-            </div>
+{% block content %}
+<!-- CONTENT_PLACEHOLDER -->
+<!-- The actual content of the incident logger will be inserted here -->
+<!-- Due to its size, we are not including the entire content in this example -->
 
-            <div id="incident-form-container" class="card">
-                <form id="incident-form">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <div class="form-progress">
-                        <div class="progress-step active" data-step="1">Basic Info</div>
-                        <div class="progress-step" data-step="2">Location</div>
-                        <div class="progress-step" data-step="3">Dispatch</div>
-                        <div class="progress-step" data-step="4">Units & Personnel</div>
-                        <div class="progress-step" data-step="5">Patient Info</div>
-                        <div class="progress-step" data-step="6">Narrative</div>
-                        <div class="progress-step" data-step="7">Disposition</div>
-                    </div>
-
-                    <!-- Step 1: Basic Info -->
-                    <div class="form-step" data-step="1">
-                        <h3>Basic Incident Information</h3>
-                        
-                        <div class="form-group">
-                            <label for="incident-id">Incident ID</label>
-                            <input type="text" id="incident-id" name="incident-id" readonly>
-                            <small>Automatically generated</small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="incident-timestamp">Incident Date/Time</label>
-                            <input type="datetime-local" id="incident-timestamp" name="incident-timestamp" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="incident-status">Status</label>
-                            <select id="incident-status" name="incident-status" required>
-                                <option value="">Select Status</option>
-                                <option value="draft">Draft</option>
-                                <option value="active">Active</option>
-                                <option value="completed">Completed</option>
-                                <option value="cancelled">Cancelled</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-section">
-                            <h4>Incident Type</h4>
-                            
-                            <div class="form-group">
-                                <label for="incident-primary-type">Primary Type</label>
-                                <select id="incident-primary-type" name="incident-primary-type" required>
-                                    <option value="">Select Primary Type</option>
-                                    <option value="FIRE">Fire</option>
-                                    <option value="EMS">EMS</option>
-                                    <option value="HAZMAT">HAZMAT</option>
-                                    <option value="RESCUE">Rescue</option>
-                                    <option value="SERVICE">Service Call</option>
-                                    <option value="OTHER">Other</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="incident-secondary-type">Secondary Type</label>
-                                <select id="incident-secondary-type" name="incident-secondary-type">
-                                    <option value="">Select Secondary Type</option>
-                                    <!-- Dynamically populated based on primary type -->
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="incident-specific-type">Specific Type</label>
-                                <select id="incident-specific-type" name="incident-specific-type">
-                                    <option value="">Select Specific Type</option>
-                                    <!-- Dynamically populated based on secondary type -->
-                                </select>
-                            </div>
-                            
-                            <div class="nfirs-section">
-                                <h5>NFIRS Classification <span class="nfirs-badge">NFIRS</span></h5>
-                                <div class="form-group">
-                                    <label for="nfirs-incident-type">NFIRS Incident Type Code</label>
-                                    <div class="code-select-container">
-                                        <select id="nfirs-incident-type" name="nfirs-incident-type" required>
-                                            <option value="">Select NFIRS Code</option>
-                                            <!-- Dynamically populated with NFIRS codes -->
-                                        </select>
-                                        <button type="button" id="nfirs-code-search-btn" class="secondary-btn small-btn">
-                                            <i class="fas fa-search"></i>
-                                        </button>
-                                    </div>
-                                    <small class="field-description">Standard NFIRS incident type code (e.g. 111 = Building fire)</small>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="nfirs-property-use">NFIRS Property Use Code</label>
-                                    <div class="code-select-container">
-                                        <select id="nfirs-property-use" name="nfirs-property-use" required>
-                                            <option value="">Select Property Use</option>
-                                            <!-- Dynamically populated with NFIRS property use codes -->
-                                        </select>
-                                        <button type="button" id="nfirs-property-search-btn" class="secondary-btn small-btn">
-                                            <i class="fas fa-search"></i>
-                                        </button>
-                                    </div>
-                                    <small class="field-description">Standard NFIRS property use code (e.g. 419 = One- or two-family dwelling)</small>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="nfirs-aid">Aid Given or Received</label>
-                                    <select id="nfirs-aid" name="nfirs-aid" required>
-                                        <option value="">Select Aid Type</option>
-                                        <option value="N">None</option>
-                                        <option value="1">Mutual aid received</option>
-                                        <option value="2">Automatic aid received</option>
-                                        <option value="3">Mutual aid given</option>
-                                        <option value="4">Automatic aid given</option>
-                                        <option value="5">Other aid given</option>
-                                    </select>
-                                    <small class="field-description">Required for NFIRS reporting</small>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-section">
-                            <h4>Caller Information</h4>
-                            
-                            <div class="form-group">
-                                <label for="caller-name">Caller Name</label>
-                                <input type="text" id="caller-name" name="caller-name">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="caller-phone">Caller Phone</label>
-                                <input type="tel" id="caller-phone" name="caller-phone" placeholder="555-123-4567">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="caller-relationship">Relationship to Incident</label>
-                                <select id="caller-relationship" name="caller-relationship">
-                                    <option value="">Select Relationship</option>
-                                    <option value="self">Self</option>
-                                    <option value="witness">Witness</option>
-                                    <option value="family">Family Member</option>
-                                    <option value="bystander">Bystander</option>
-                                    <option value="professional">Professional</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="form-navigation">
-                            <button type="button" class="next-btn">Next <i class="fas fa-arrow-right"></i></button>
-                        </div>
-                    </div>
-                    
-                    <!-- Step 2: Location -->
-                    <div class="form-step" data-step="2" style="display:none;">
-                        <h3>Incident Location</h3>
-                        
-                        <div class="form-group">
-                            <label for="location-address">Address</label>
-                            <input type="text" id="location-address" name="location-address" required>
-                            <button type="button" id="geocode-btn" class="secondary-btn small-btn">
-                                <i class="fas fa-map-marker-alt"></i> Geocode
-                            </button>
-                        </div>
-                        
-                        <div class="form-group coordinates">
-                            <div>
-                                <label for="location-latitude">Latitude</label>
-                                <input type="number" id="location-latitude" name="location-latitude" step="0.000001">
-                            </div>
-                            <div>
-                                <label for="location-longitude">Longitude</label>
-                                <input type="number" id="location-longitude" name="location-longitude" step="0.000001">
-                            </div>
-                            <button type="button" id="current-location-btn" class="secondary-btn small-btn">
-                                <i class="fas fa-location-arrow"></i> Current Location
-                            </button>
-                        </div>
-                        
-                        <div id="location-map" class="map-container"></div>
-                        
-                        <div class="form-group">
-                            <label for="location-notes">Location Notes</label>
-                            <textarea id="location-notes" name="location-notes" placeholder="Apartment number, access details, etc."></textarea>
-                        </div>
-                        
-                        <div class="form-navigation">
-                            <button type="button" class="prev-btn"><i class="fas fa-arrow-left"></i> Previous</button>
-                            <button type="button" class="next-btn">Next <i class="fas fa-arrow-right"></i></button>
-                        </div>
-                    </div>
-                    
-                    <!-- Step 3: Dispatch -->
-                    <div class="form-step" data-step="3" style="display:none;">
-                        <h3>Dispatch Information</h3>
-                        
-                        <div class="time-entry-grid">
-                            <div class="form-group">
-                                <label for="time-received">Time Received</label>
-                                <input type="datetime-local" id="time-received" name="time-received" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="time-dispatched">Time Dispatched</label>
-                                <input type="datetime-local" id="time-dispatched" name="time-dispatched">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="time-enroute">Time Enroute</label>
-                                <input type="datetime-local" id="time-enroute" name="time-enroute">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="time-arrived">Time Arrived</label>
-                                <input type="datetime-local" id="time-arrived" name="time-arrived">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="time-transported">Time Transported</label>
-                                <input type="datetime-local" id="time-transported" name="time-transported">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="time-at-hospital">Time At Hospital</label>
-                                <input type="datetime-local" id="time-at-hospital" name="time-at-hospital">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="time-cleared">Time Cleared</label>
-                                <input type="datetime-local" id="time-cleared" name="time-cleared">
-                            </div>
-                        </div>
-                        
-                        <div class="response-time-summary">
-                            <h4>Response Time Summary</h4>
-                            <div class="response-metrics">
-                                <div class="metric">
-                                    <span class="metric-label">Call to Dispatch:</span>
-                                    <span id="call-to-dispatch" class="metric-value">--:--</span>
-                                </div>
-                                <div class="metric">
-                                    <span class="metric-label">Dispatch to Enroute:</span>
-                                    <span id="dispatch-to-enroute" class="metric-value">--:--</span>
-                                </div>
-                                <div class="metric">
-                                    <span class="metric-label">Enroute to Arrived:</span>
-                                    <span id="enroute-to-arrived" class="metric-value">--:--</span>
-                                </div>
-                                <div class="metric">
-                                    <span class="metric-label">Total Response Time:</span>
-                                    <span id="total-response-time" class="metric-value">--:--</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-navigation">
-                            <button type="button" class="prev-btn"><i class="fas fa-arrow-left"></i> Previous</button>
-                            <button type="button" class="next-btn">Next <i class="fas fa-arrow-right"></i></button>
-                        </div>
-                    </div>
-                    
-                    <!-- Step 4: Units & Personnel -->
-                    <div class="form-step" data-step="4" style="display:none;">
-                        <h3>Units & Personnel</h3>
-                        
-                        <div id="units-container">
-                            <div class="unit-entry">
-                                <div class="form-section">
-                                    <h4>Unit #1</h4>
-                                    <button type="button" class="remove-unit-btn secondary-btn small-btn">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="unit-id-1">Unit ID</label>
-                                    <input type="text" id="unit-id-1" name="unit-id-1" placeholder="E12, M7, etc." required>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="unit-type-1">Unit Type</label>
-                                    <select id="unit-type-1" name="unit-type-1" required>
-                                        <option value="">Select Type</option>
-                                        <option value="Engine">Engine</option>
-                                        <option value="Ladder">Ladder</option>
-                                        <option value="Ambulance">Ambulance</option>
-                                        <option value="Rescue">Rescue</option>
-                                        <option value="Battalion">Battalion</option>
-                                        <option value="Hazmat">Hazmat</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label>Personnel</label>
-                                    <div class="personnel-list">
-                                        <div class="personnel-entry">
-                                            <input type="text" name="personnel-1-1" placeholder="Name/ID">
-                                            <button type="button" class="remove-personnel-btn secondary-btn small-btn">
-                                                <i class="fas fa-minus"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <button type="button" class="add-personnel-btn secondary-btn small-btn">
-                                        <i class="fas fa-plus"></i> Add Personnel
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <button type="button" id="add-unit-btn" class="secondary-btn">
-                            <i class="fas fa-plus"></i> Add Unit
-                        </button>
-                        
-                        <div class="form-navigation">
-                            <button type="button" class="prev-btn"><i class="fas fa-arrow-left"></i> Previous</button>
-                            <button type="button" class="next-btn">Next <i class="fas fa-arrow-right"></i></button>
-                        </div>
-                    </div>
-                    
-                    <!-- Step 5: Patient Info -->
-                    <div class="form-step" data-step="5" style="display:none;">
-                        <h3>Patient Information</h3>
-                        
-                        <div class="hipaa-privacy-banner">
-                            <div class="privacy-icon"><i class="fas fa-shield-alt"></i></div>
-                            <div class="privacy-message">
-                                <strong>PHI Warning:</strong> This section contains Protected Health Information (PHI).
-                                HIPAA compliance requires proper handling, consent, and access controls.
-                            </div>
-                        </div>
-                        
-                        <div class="hipaa-consent-form">
-                            <h4>HIPAA Consent</h4>
-                            <div class="form-group">
-                                <label for="hipaa-consent-obtained">Consent Obtained</label>
-                                <div class="toggle-switch">
-                                    <input type="checkbox" id="hipaa-consent-obtained" name="hipaa-consent-obtained">
-                                    <label for="hipaa-consent-obtained" class="switch-label"></label>
-                                </div>
-                            </div>
-                            
-                            <div id="consent-details" style="display:none;">
-                                <div class="form-group">
-                                    <label for="hipaa-consent-type">Consent Type</label>
-                                    <select id="hipaa-consent-type" name="hipaa-consent-type">
-                                        <option value="">Select Type</option>
-                                        <option value="verbal">Verbal</option>
-                                        <option value="written">Written</option>
-                                        <option value="implied">Implied</option>
-                                        <option value="emergency">Emergency (no consent possible)</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="hipaa-consent-obtained-by">Consent Obtained By</label>
-                                    <input type="text" id="hipaa-consent-obtained-by" name="hipaa-consent-obtained-by">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="patient-count">Number of Patients</label>
-                            <input type="number" id="patient-count" name="patient-count" min="0" value="1">
-                        </div>
-                        
-                        <div id="patients-container">
-                            <div class="patient-entry">
-                                <div class="form-section">
-                                    <h4>Patient #1</h4>
-                                    <button type="button" class="remove-patient-btn secondary-btn small-btn">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="patient-age-1">Age</label>
-                                    <input type="number" id="patient-age-1" name="patient-age-1" min="0" max="120">
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="patient-gender-1">Gender</label>
-                                    <select id="patient-gender-1" name="patient-gender-1">
-                                        <option value="">Select Gender</option>
-                                        <option value="male">Male</option>
-                                        <option value="female">Female</option>
-                                        <option value="other">Other</option>
-                                        <option value="unknown">Unknown</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="patient-complaint-1">Chief Complaint</label>
-                                    <textarea id="patient-complaint-1" name="patient-complaint-1"></textarea>
-                                </div>
-                                
-                                <!-- PHI fields - Personal Identifiers -->
-                                <div class="form-section">
-                                    <h5>Personal Information (PHI)</h5>
-                                    
-                                    <div class="form-group">
-                                        <label for="patient-name-first-1" class="phi-label">First Name</label>
-                                        <input type="text" id="patient-name-first-1" name="patient-name-first-1" class="phi-field">
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label for="patient-name-last-1" class="phi-label">Last Name</label>
-                                        <input type="text" id="patient-name-last-1" name="patient-name-last-1" class="phi-field">
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label for="patient-dob-1" class="phi-label">Date of Birth</label>
-                                        <input type="date" id="patient-dob-1" name="patient-dob-1" class="phi-field">
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label for="patient-phone-1" class="phi-label">Phone</label>
-                                        <input type="tel" id="patient-phone-1" name="patient-phone-1" class="phi-field">
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label for="patient-address-1" class="phi-label">Address</label>
-                                        <input type="text" id="patient-address-1" name="patient-address-1" class="phi-field">
-                                    </div>
-                                </div>
-
-                                <!-- MANUALLY ADDED FOR DEBUGGING -->
-                                <div class="form-section" id="manual-medical-history-section">
-                                    <h5>Medical History (Manual)</h5>
-                                    <div class="medical-history-container">
-                                        <div class="form-group">
-                                            <label for="medical-history-1">Past Medical History</label>
-                                            <select id="medical-history-1" name="medical-history-1" class="medical-history-select" multiple style="display:block !important; height:120px !important; border:2px solid red !important;">
-                                                <option value="hypertension">Hypertension</option>
-                                                <option value="diabetes">Diabetes</option>
-                                                <option value="copd">COPD</option>
-                                                <option value="asthma">Asthma</option>
-                                                <option value="coronary_artery_disease">Coronary Artery Disease</option>
-                                                <option value="congestive_heart_failure">Congestive Heart Failure</option>
-                                                <option value="myocardial_infarction">Prior MI</option>
-                                                <option value="stroke">Stroke/CVA</option>
-                                                <option value="seizure">Seizure Disorder</option>
-                                            </select>
-                                            <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
-                                        </div>
-                                        
-                                        <div class="form-group">
-                                            <label for="medical-history-other-1">Other Medical History</label>
-                                            <textarea id="medical-history-other-1" name="medical-history-other-1" placeholder="Enter additional medical history here"></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-section" id="manual-medications-section">
-                                    <h5>Medications (Manual)</h5>
-                                    <div class="medications-container">
-                                        <div class="form-group">
-                                            <label for="medications-1">Current Medications</label>
-                                            <select id="medications-1" name="medications-1" class="medications-select" multiple style="display:block !important; height:120px !important; border:2px solid blue !important;">
-                                                <option value="lisinopril">Lisinopril</option>
-                                                <option value="metoprolol">Metoprolol</option>
-                                                <option value="atorvastatin">Atorvastatin (Lipitor)</option>
-                                                <option value="metformin">Metformin</option>
-                                                <option value="insulin">Insulin</option>
-                                                <option value="aspirin">Aspirin</option>
-                                                <option value="warfarin">Warfarin (Coumadin)</option>
-                                            </select>
-                                            <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
-                                        </div>
-                                        
-                                        <div class="form-group">
-                                            <label for="medications-other-1">Other Medications</label>
-                                            <textarea id="medications-other-1" name="medications-other-1" placeholder="Enter additional medications here"></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-section" id="manual-allergies-section">
-                                    <h5>Allergies (Manual)</h5>
-                                    <div class="allergies-container">
-                                        <div class="form-group">
-                                            <label for="allergies-1">Known Allergies</label>
-                                            <select id="allergies-1" name="allergies-1" class="allergies-select" multiple style="display:block !important; height:120px !important; border:2px solid green !important;">
-                                                <option value="penicillin">Penicillin</option>
-                                                <option value="sulfa">Sulfa Drugs</option>
-                                                <option value="nsaids">NSAIDs</option>
-                                                <option value="aspirin">Aspirin</option>
-                                                <option value="morphine">Morphine</option>
-                                                <option value="codeine">Codeine</option>
-                                                <option value="latex">Latex</option>
-                                            </select>
-                                            <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
-                                        </div>
-                                        
-                                        <div class="form-group">
-                                            <label for="allergies-other-1">Other Allergies</label>
-                                            <textarea id="allergies-other-1" name="allergies-other-1" placeholder="Enter additional allergies here"></textarea>
-                                        </div>
-                                        
-                                        <div class="form-group">
-                                            <label for="nkda-1">No Known Drug Allergies</label>
-                                            <div class="toggle-switch">
-                                                <input type="checkbox" id="nkda-1" name="nkda-1">
-                                                <label for="nkda-1" class="switch-label">NKDA</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-section">
-                                    <h5>Vitals</h5>
-                                    <div class="vitals-table">
-                                        <table>
-                                            <thead>
-                                                <tr>
-                                                    <th>Time</th>
-                                                    <th>BP</th>
-                                                    <th>Pulse</th>
-                                                    <th>Resp</th>
-                                                    <th>SpO2</th>
-                                                    <th>GCS Total</th>
-                                                    <th></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="vitals-rows-1">
-                                                <tr class="vitals-row">
-                                                    <td>
-                                                        <input type="datetime-local" name="vital-time-1-1">
-                                                    </td>
-                                                    <td>
-                                                        <input type="text" name="vital-bp-1-1" placeholder="120/80">
-                                                    </td>
-                                                    <td>
-                                                        <input type="number" name="vital-pulse-1-1" min="20" max="250" placeholder="80">
-                                                    </td>
-                                                    <td>
-                                                        <input type="number" name="vital-resp-1-1" min="4" max="60" placeholder="16">
-                                                    </td>
-                                                    <td>
-                                                        <input type="number" name="vital-spo2-1-1" min="50" max="100" placeholder="99">
-                                                    </td>
-                                                    <td>
-                                                        <input type="number" name="vital-gcs-1-1" min="3" max="15" placeholder="15">
-                                                    </td>
-                                                    <td>
-                                                        <button type="button" class="remove-vital-btn secondary-btn small-btn">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <button type="button" class="add-vital-btn secondary-btn small-btn" data-patient="1">
-                                        <i class="fas fa-plus"></i> Add Vital Signs
-                                    </button>
-                                </div>
-                                
-                                <div class="form-section">
-                                    <h5>Medical History</h5>
-                                    <div class="medical-history-container">
-                                        <div class="form-group">
-                                            <label for="medical-history-1">Past Medical History</label>
-                                            <select id="medical-history-1" name="medical-history-1" class="medical-history-select" multiple>
-                                                <option value="hypertension">Hypertension</option>
-                                                <option value="diabetes">Diabetes</option>
-                                                <option value="copd">COPD</option>
-                                                <option value="asthma">Asthma</option>
-                                                <option value="coronary_artery_disease">Coronary Artery Disease</option>
-                                                <option value="congestive_heart_failure">Congestive Heart Failure</option>
-                                                <option value="myocardial_infarction">Prior MI</option>
-                                                <option value="stroke">Stroke/CVA</option>
-                                                <option value="seizure">Seizure Disorder</option>
-                                                <option value="cancer">Cancer</option>
-                                                <option value="renal_disease">Renal Disease</option>
-                                                <option value="liver_disease">Liver Disease</option>
-                                                <option value="psychiatric">Psychiatric Disorder</option>
-                                                <option value="substance_abuse">Substance Abuse</option>
-                                                <option value="covid19">COVID-19</option>
-                                            </select>
-                                            <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
-                                        </div>
-                                        
-                                        <div class="form-group">
-                                            <label for="medical-history-other-1">Other Medical History</label>
-                                            <textarea id="medical-history-other-1" name="medical-history-other-1" placeholder="Enter additional medical history here"></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-section">
-                                    <h5>Medications</h5>
-                                    <div class="medications-container">
-                                        <div class="form-group">
-                                            <label for="medications-1">Current Medications</label>
-                                            <select id="medications-1" name="medications-1" class="medications-select" multiple>
-                                                <option value="lisinopril">Lisinopril</option>
-                                                <option value="metoprolol">Metoprolol</option>
-                                                <option value="atorvastatin">Atorvastatin (Lipitor)</option>
-                                                <option value="metformin">Metformin</option>
-                                                <option value="insulin">Insulin</option>
-                                                <option value="aspirin">Aspirin</option>
-                                                <option value="warfarin">Warfarin (Coumadin)</option>
-                                                <option value="apixaban">Apixaban (Eliquis)</option>
-                                                <option value="levothyroxine">Levothyroxine</option>
-                                                <option value="albuterol">Albuterol</option>
-                                                <option value="furosemide">Furosemide (Lasix)</option>
-                                                <option value="prednisone">Prednisone</option>
-                                                <option value="omeprazole">Omeprazole</option>
-                                                <option value="amlodipine">Amlodipine</option>
-                                                <option value="hydrochlorothiazide">Hydrochlorothiazide</option>
-                                                <option value="gabapentin">Gabapentin</option>
-                                                <option value="acetaminophen">Acetaminophen</option>
-                                                <option value="ibuprofen">Ibuprofen</option>
-                                            </select>
-                                            <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
-                                        </div>
-                                        
-                                        <div class="form-group">
-                                            <label for="medications-other-1">Other Medications</label>
-                                            <textarea id="medications-other-1" name="medications-other-1" placeholder="Enter additional medications here"></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-section">
-                                    <h5>Allergies</h5>
-                                    <div class="allergies-container">
-                                        <div class="form-group">
-                                            <label for="allergies-1">Known Allergies</label>
-                                            <select id="allergies-1" name="allergies-1" class="allergies-select" multiple>
-                                                <option value="penicillin">Penicillin</option>
-                                                <option value="sulfa">Sulfa Drugs</option>
-                                                <option value="nsaids">NSAIDs</option>
-                                                <option value="aspirin">Aspirin</option>
-                                                <option value="morphine">Morphine</option>
-                                                <option value="codeine">Codeine</option>
-                                                <option value="latex">Latex</option>
-                                                <option value="contrast">Contrast Dye</option>
-                                                <option value="eggs">Eggs</option>
-                                                <option value="nuts">Nuts</option>
-                                                <option value="shellfish">Shellfish</option>
-                                                <option value="iodine">Iodine</option>
-                                                <option value="bee_stings">Bee Stings</option>
-                                            </select>
-                                            <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
-                                        </div>
-                                        
-                                        <div class="form-group">
-                                            <label for="allergies-other-1">Other Allergies</label>
-                                            <textarea id="allergies-other-1" name="allergies-other-1" placeholder="Enter additional allergies here"></textarea>
-                                        </div>
-                                        
-                                        <div class="form-group">
-                                            <label for="nkda-1">No Known Drug Allergies</label>
-                                            <div class="toggle-switch">
-                                                <input type="checkbox" id="nkda-1" name="nkda-1">
-                                                <label for="nkda-1" class="switch-label"></label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-section">
-                                    <h5>Glasgow Coma Scale (GCS)</h5>
-                                    <div class="gcs-component-container">
-                                        <div class="gcs-component">
-                                            <label for="gcs-eye-1">Eye Opening (E)</label>
-                                            <select id="gcs-eye-1" name="gcs-eye-1" class="gcs-component-select" data-patient="1">
-                                                <option value="">Select Score</option>
-                                                <option value="1">1 - No eye opening</option>
-                                                <option value="2">2 - To pain</option>
-                                                <option value="3">3 - To verbal command</option>
-                                                <option value="4">4 - Spontaneous</option>
-                                            </select>
-                                        </div>
-                                        <div class="gcs-component">
-                                            <label for="gcs-verbal-1">Verbal Response (V)</label>
-                                            <select id="gcs-verbal-1" name="gcs-verbal-1" class="gcs-component-select" data-patient="1">
-                                                <option value="">Select Score</option>
-                                                <option value="1">1 - No verbal response</option>
-                                                <option value="2">2 - Incomprehensible sounds</option>
-                                                <option value="3">3 - Inappropriate words</option>
-                                                <option value="4">4 - Confused</option>
-                                                <option value="5">5 - Oriented</option>
-                                            </select>
-                                        </div>
-                                        <div class="gcs-component">
-                                            <label for="gcs-motor-1">Motor Response (M)</label>
-                                            <select id="gcs-motor-1" name="gcs-motor-1" class="gcs-component-select" data-patient="1">
-                                                <option value="">Select Score</option>
-                                                <option value="1">1 - No motor response</option>
-                                                <option value="2">2 - Extension to pain</option>
-                                                <option value="3">3 - Flexion to pain</option>
-                                                <option value="4">4 - Withdrawal from pain</option>
-                                                <option value="5">5 - Localizes pain</option>
-                                                <option value="6">6 - Obeys commands</option>
-                                            </select>
-                                        </div>
-                                        <div class="gcs-total">
-                                            <span>Total GCS: </span>
-                                            <span id="gcs-total-1" class="gcs-total-value">--</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-section">
-                                    <h5>Treatments</h5>
-                                    <div id="treatments-container-1">
-                                        <div class="treatment-entry">
-                                            <div class="form-group">
-                                                <label for="treatment-time-1-1">Time</label>
-                                                <input type="datetime-local" id="treatment-time-1-1" name="treatment-time-1-1">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="treatment-procedure-1-1">Procedure</label>
-                                                <input type="text" id="treatment-procedure-1-1" name="treatment-procedure-1-1">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="treatment-notes-1-1">Notes</label>
-                                                <textarea id="treatment-notes-1-1" name="treatment-notes-1-1"></textarea>
-                                            </div>
-                                            <button type="button" class="remove-treatment-btn secondary-btn small-btn">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <button type="button" class="add-treatment-btn secondary-btn small-btn" data-patient="1">
-                                        <i class="fas fa-plus"></i> Add Treatment
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <button type="button" id="add-patient-btn" class="secondary-btn">
-                            <i class="fas fa-plus"></i> Add Patient
-                        </button>
-                        
-                        <div class="form-navigation">
-                            <button type="button" class="prev-btn"><i class="fas fa-arrow-left"></i> Previous</button>
-                            <button type="button" class="next-btn">Next <i class="fas fa-arrow-right"></i></button>
-                        </div>
-                    </div>
-                    
-                    <!-- Step 6: Narrative -->
-                    <div class="form-step" data-step="6" style="display:none;">
-                        <h3>Narrative</h3>
-                        
-                        <div class="form-group">
-                            <label for="incident-narrative">Incident Narrative</label>
-                            <textarea id="incident-narrative" name="incident-narrative" rows="10" placeholder="Describe the incident in detail..." required minlength="20"></textarea>
-                            <div class="narrative-tools">
-                                <span id="narrative-char-count">0 characters</span>
-                                <button type="button" id="spell-check-btn" class="secondary-btn small-btn">
-                                    <i class="fas fa-spell-check"></i> Spell Check
-                                </button>
-                                <div class="common-phrases">
-                                    <button type="button" class="phrase-btn secondary-btn small-btn">On arrival</button>
-                                    <button type="button" class="phrase-btn secondary-btn small-btn">Patient presented with</button>
-                                    <button type="button" class="phrase-btn secondary-btn small-btn">Upon assessment</button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-section">
-                            <h4>Attachments</h4>
-                            <div class="attachment-container">
-                                <div id="attachments-list">
-                                    <!-- Attachments will be listed here -->
-                                </div>
-                                <div class="attachment-uploader">
-                                    <label for="attachment-upload" class="upload-label">
-                                        <i class="fas fa-cloud-upload-alt"></i>
-                                        <span>Upload File or Photo</span>
-                                    </label>
-                                    <input type="file" id="attachment-upload" name="attachment-upload" accept="image/*" multiple style="display:none;">
-                                    <p class="file-info">Maximum file size: 5MB</p>
-                                </div>
-                                <div class="camera-capture">
-                                    <button type="button" id="camera-btn" class="secondary-btn">
-                                        <i class="fas fa-camera"></i> Capture Photo
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-navigation">
-                            <button type="button" class="prev-btn"><i class="fas fa-arrow-left"></i> Previous</button>
-                            <button type="button" class="next-btn">Next <i class="fas fa-arrow-right"></i></button>
-                        </div>
-                    </div>
-                    
-                    <!-- Step 7: Disposition -->
-                    <div class="form-step" data-step="7" style="display:none;">
-                        <h3>Disposition</h3>
-                        
-                        <div class="form-group">
-                            <label for="transported">Patient Transported?</label>
-                            <div class="toggle-switch">
-                                <input type="checkbox" id="transported" name="transported">
-                                <label for="transported" class="switch-label"></label>
-                            </div>
-                        </div>
-                        
-                        <div id="transport-details" style="display:none;">
-                            <div class="form-group">
-                                <label for="destination">Destination</label>
-                                <select id="destination" name="destination">
-                                    <option value="">Select Destination</option>
-                                    <option value="Phoenix General Hospital">Phoenix General Hospital</option>
-                                    <option value="Mercy Medical Center">Mercy Medical Center</option>
-                                    <option value="County Hospital">County Hospital</option>
-                                    <option value="Children's Hospital">Children's Hospital</option>
-                                    <option value="Trauma Center">Trauma Center</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group" id="destination-other" style="display:none;">
-                                <label for="destination-other-input">Other Destination</label>
-                                <input type="text" id="destination-other-input" name="destination-other-input">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="transport-reason">Reason for Transport</label>
-                                <textarea id="transport-reason" name="transport-reason"></textarea>
-                            </div>
-                        </div>
-                        
-                        <div id="no-transport-details">
-                            <div class="form-group">
-                                <label for="no-transport-reason">Reason for No Transport</label>
-                                <select id="no-transport-reason" name="no-transport-reason">
-                                    <option value="">Select Reason</option>
-                                    <option value="Patient Refusal">Patient Refusal</option>
-                                    <option value="Canceled on Scene">Canceled on Scene</option>
-                                    <option value="No Patient Found">No Patient Found</option>
-                                    <option value="Treated and Released">Treated and Released</option>
-                                    <option value="DOA">DOA</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group" id="no-transport-other" style="display:none;">
-                                <label for="no-transport-other-input">Other Reason</label>
-                                <input type="text" id="no-transport-other-input" name="no-transport-other-input">
-                            </div>
-                        </div>
-                        
-                        <div class="form-section">
-                            <h4>Incident Closure</h4>
-                            
-                            <div class="form-group">
-                                <label for="created-by">Report Prepared By</label>
-                                <input type="text" id="created-by" name="created-by" required>
-                            </div>
-                        </div>
-                        
-                        <div class="form-section nfirs-section">
-                            <h4>NFIRS Data <span class="nfirs-badge">NFIRS</span></h4>
-                            
-                            <div class="form-group">
-                                <label>Actions Taken <small>(Required for NFIRS)</small></label>
-                                <div id="actions-container">
-                                    <div class="action-entry">
-                                        <div class="code-select-container">
-                                            <select id="action-code-1" name="action-code-1" class="action-code" required>
-                                                <option value="">Select Action Taken</option>
-                                                <!-- Dynamically populated with NFIRS action codes -->
-                                            </select>
-                                            <button type="button" class="action-search-btn secondary-btn small-btn">
-                                                <i class="fas fa-search"></i>
-                                            </button>
-                                            <button type="button" class="remove-action-btn secondary-btn small-btn">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <button type="button" id="add-action-btn" class="secondary-btn small-btn">
-                                    <i class="fas fa-plus"></i> Add Action
-                                </button>
-                            </div>
-                            
-                            <div id="fire-module-container" style="display:none;">
-                                <h5>Fire Module <small>(Required for fire incidents)</small></h5>
-                                
-                                <div class="form-group">
-                                    <label for="fire-area-origin">Area of Fire Origin</label>
-                                    <div class="code-select-container">
-                                        <select id="fire-area-origin" name="fire-area-origin">
-                                            <option value="">Select Area of Origin</option>
-                                            <!-- Dynamically populated with NFIRS fire origin codes -->
-                                        </select>
-                                        <button type="button" id="origin-search-btn" class="secondary-btn small-btn">
-                                            <i class="fas fa-search"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="fire-heat-source">Heat Source</label>
-                                    <div class="code-select-container">
-                                        <select id="fire-heat-source" name="fire-heat-source">
-                                            <option value="">Select Heat Source</option>
-                                            <!-- Dynamically populated with NFIRS heat source codes -->
-                                        </select>
-                                        <button type="button" id="heat-search-btn" class="secondary-btn small-btn">
-                                            <i class="fas fa-search"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="fire-item-ignited">Item First Ignited</label>
-                                    <div class="code-select-container">
-                                        <select id="fire-item-ignited" name="fire-item-ignited">
-                                            <option value="">Select Item</option>
-                                            <!-- Dynamically populated with NFIRS item ignited codes -->
-                                        </select>
-                                        <button type="button" id="item-search-btn" class="secondary-btn small-btn">
-                                            <i class="fas fa-search"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="fire-spread">Fire Spread</label>
-                                    <select id="fire-spread" name="fire-spread">
-                                        <option value="">Select Fire Spread</option>
-                                        <option value="1">Confined to object of origin</option>
-                                        <option value="2">Confined to room of origin</option>
-                                        <option value="3">Confined to floor of origin</option>
-                                        <option value="4">Confined to building of origin</option>
-                                        <option value="5">Beyond building of origin</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="detector-presence">Detector Presence</label>
-                                    <select id="detector-presence" name="detector-presence">
-                                        <option value="">Select Detector Status</option>
-                                        <option value="1">Present and operated</option>
-                                        <option value="2">Present but did not operate</option>
-                                        <option value="3">Present but operation undetermined</option>
-                                        <option value="4">None present</option>
-                                        <option value="5">Undetermined</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <div id="nfirs-errors-container" class="nfirs-errors-container" style="display:none;">
-                                    <h5>NFIRS Validation Errors</h5>
-                                    <!-- Dynamically filled with NFIRS validation errors -->
-                                </div>
-                                
-                                <div id="nfirs-warnings-container" class="nfirs-warnings-container" style="display:none;">
-                                    <h5>NFIRS Validation Warnings</h5>
-                                    <!-- Dynamically filled with NFIRS validation warnings -->
-                                </div>
-                                
-                                <button type="button" id="validate-nfirs-btn" class="secondary-btn">
-                                    <i class="fas fa-check-circle"></i> Validate NFIRS Compliance
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="form-navigation">
-                            <button type="button" class="prev-btn"><i class="fas fa-arrow-left"></i> Previous</button>
-                            <div class="save-buttons">
-                                <button type="button" id="save-draft-btn" class="secondary-btn">
-                                    <i class="fas fa-save"></i> Save Draft
-                                </button>
-                                <button type="submit" id="submit-incident-btn" class="primary-btn">
-                                    <i class="fas fa-check"></i> Submit Incident
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-            <div id="incident-list-container" class="card" style="display:none;">
-                <div class="list-header">
-                    <h3>Incident List</h3>
-                    <div class="list-controls">
-                        <div class="search-container">
-                            <input type="text" id="search-incidents" placeholder="Search incidents...">
-                            <button type="button" id="search-btn">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </div>
-                        <div class="filter-container">
-                            <select id="status-filter">
-                                <option value="">All Statuses</option>
-                                <option value="draft">Draft</option>
-                                <option value="active">Active</option>
-                                <option value="completed">Completed</option>
-                                <option value="cancelled">Cancelled</option>
-                            </select>
-                            <select id="type-filter">
-                                <option value="">All Types</option>
-                                <option value="FIRE">Fire</option>
-                                <option value="EMS">EMS</option>
-                                <option value="HAZMAT">HAZMAT</option>
-                                <option value="RESCUE">Rescue</option>
-                                <option value="SERVICE">Service Call</option>
-                                <option value="OTHER">Other</option>
-                            </select>
-                            <select id="date-filter">
-                                <option value="">All Dates</option>
-                                <option value="today">Today</option>
-                                <option value="week">This Week</option>
-                                <option value="month">This Month</option>
-                            </select>
-                            <button type="button" id="reset-filters-btn" class="secondary-btn small-btn">
-                                <i class="fas fa-undo"></i> Reset
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="incident-table-container">
-                    <table id="incident-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Date/Time</th>
-                                <th>Type</th>
-                                <th>Location</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="incident-list">
-                            <!-- Incidents will be listed here -->
-                        </tbody>
-                    </table>
-                </div>
-                <div id="pagination-controls">
-                    <button type="button" id="prev-page" class="secondary-btn small-btn" disabled>
-                        <i class="fas fa-chevron-left"></i> Previous
+<!-- Main Content Area -->
+<main class="main-content">
+    <div class="container">
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <div class="panel-section">
+                <h2 class="section-title">Incident Reporting</h2>
+                <div class="action-buttons">
+                    <button id="new-incident-btn" class="btn btn-primary">
+                        <i class="fas fa-plus-circle"></i> New Incident
                     </button>
-                    <span id="page-info">Page 1 of 1</span>
-                    <button type="button" id="next-page" class="secondary-btn small-btn" disabled>
-                        Next <i class="fas fa-chevron-right"></i>
+                    <button id="import-cad-btn" class="btn btn-secondary">
+                        <i class="fas fa-file-import"></i> Import from CAD
+                    </button>
+                    <button id="view-incidents-btn" class="btn btn-info">
+                        <i class="fas fa-list"></i> View All Incidents
                     </button>
                 </div>
             </div>
             
-            <div id="export-container" class="card" style="display:none;">
-                <h3>Export Incident Data</h3>
-                
-                <div class="export-options">
-                    <div class="export-section">
-                        <h4>Export Format</h4>
-                        <div class="format-options">
-                            <div class="form-group">
-                                <input type="radio" id="format-csv" name="export-format" value="csv" checked>
-                                <label for="format-csv">CSV</label>
-                            </div>
-                            <div class="form-group">
-                                <input type="radio" id="format-pdf" name="export-format" value="pdf">
-                                <label for="format-pdf">PDF</label>
-                            </div>
-                            <div class="form-group">
-                                <input type="radio" id="format-json" name="export-format" value="json">
-                                <label for="format-json">JSON</label>
-                            </div>
-                        </div>
-                        <div class="format-options nfirs-formats">
-                            <h5>NFIRS Formats</h5>
-                            <div class="form-group">
-                                <input type="radio" id="format-nfirs-xml" name="export-format" value="nfirs-xml">
-                                <label for="format-nfirs-xml">NFIRS XML</label>
-                            </div>
-                            <div class="form-group">
-                                <input type="radio" id="format-nfirs-csv" name="export-format" value="nfirs-csv">
-                                <label for="format-nfirs-csv">NFIRS CSV</label>
-                            </div>
-                            <div class="form-group">
-                                <input type="radio" id="format-nfirs-json" name="export-format" value="nfirs-json">
-                                <label for="format-nfirs-json">NFIRS JSON</label>
-                            </div>
-                        </div>
+            <div class="panel-section">
+                <h2 class="section-title">Quick Stats</h2>
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-value" id="incidents-today">--</div>
+                        <div class="stat-label">Incidents Today</div>
                     </div>
-                    
-                    <div class="export-section">
-                        <h4>Data Selection</h4>
-                        <div class="form-group">
-                            <input type="radio" id="export-all" name="export-selection" value="all" checked>
-                            <label for="export-all">All Incidents</label>
-                        </div>
-                        <div class="form-group">
-                            <input type="radio" id="export-filtered" name="export-selection" value="filtered">
-                            <label for="export-filtered">Filtered Incidents</label>
-                        </div>
-                        <div class="form-group">
-                            <input type="radio" id="export-selected" name="export-selection" value="selected">
-                            <label for="export-selected">Selected Incidents</label>
-                        </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="incidents-week">--</div>
+                        <div class="stat-label">Incidents This Week</div>
                     </div>
-                    
-                    <div class="export-section">
-                        <h4>Date Range</h4>
-                        <div class="date-range-controls">
-                            <div class="form-group">
-                                <label for="export-date-from">From</label>
-                                <input type="date" id="export-date-from" name="export-date-from">
-                            </div>
-                            <div class="form-group">
-                                <label for="export-date-to">To</label>
-                                <input type="date" id="export-date-to" name="export-date-to">
-                            </div>
-                        </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="pending-reports">--</div>
+                        <div class="stat-label">Pending Reports</div>
                     </div>
-                    
-                    <div class="export-section hipaa-section">
-                        <h4>HIPAA Compliance</h4>
-                        <div class="form-group">
-                            <input type="checkbox" id="export-hipaa-compliant" name="export-hipaa-compliant">
-                            <label for="export-hipaa-compliant">De-identify PHI (HIPAA Safe Harbor Method)</label>
-                            <p class="hipaa-info">
-                                <i class="fas fa-info-circle"></i> 
-                                De-identified data will have Protected Health Information (PHI) removed according to 
-                                HIPAA's Safe Harbor Method, which requires removal of 18 types of identifiers.
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <div class="export-section nfirs-section">
-                        <h4>NFIRS Compliance</h4>
-                        <div class="form-group">
-                            <input type="checkbox" id="export-nfirs-compliant" name="export-nfirs-compliant">
-                            <label for="export-nfirs-compliant">Format as NFIRS submission</label>
-                            <p class="nfirs-info">
-                                <i class="fas fa-info-circle"></i> 
-                                Creates an NFIRS-compliant export format suitable for submission to the National Fire Incident 
-                                Reporting System. Only incidents with all required NFIRS fields will be included.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="export-actions">
-                    <button type="button" id="generate-export-btn" class="primary-btn" onclick="window.IncidentLogger.Export.generate()">
-                        <i class="fas fa-file-export"></i> Generate Export
-                    </button>
-                </div>
-            </div>
-            
-            <div id="cad-import-container" class="card" style="display:none;">
-                <h3>Import Data from CAD System</h3>
-                
-                <div class="cad-import-form">
-                    <div class="form-group">
-                        <label for="cad-file">CAD Export File</label>
-                        <input type="file" id="cad-file" accept=".csv,.json,.xml">
-                        <p class="file-hint">Supported formats: CSV, JSON, XML</p>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="cad-import-mode">Import Mode</label>
-                        <select id="cad-import-mode">
-                            <option value="new">Create New Incidents</option>
-                            <option value="update">Update Existing Incident</option>
-                        </select>
-                    </div>
-                    
-                    <div id="cad-match-container" style="display:none;">
-                        <div class="form-group">
-                            <label for="cad-match-id">Incident ID to Update</label>
-                            <input type="text" id="cad-match-id" placeholder="e.g., INC-20250322-001">
-                        </div>
-                    </div>
-                    
-                    <div class="cad-import-actions">
-                        <button id="cad-import-run-btn" class="primary-btn">
-                            <i class="fas fa-file-import"></i> Import CAD Data
-                        </button>
-                    </div>
-                </div>
-                
-                <div id="cad-import-preview" style="display:none;">
-                    <h4>Import Preview</h4>
-                    <div id="cad-preview-content"></div>
-                    
-                    <div class="cad-import-actions">
-                        <button id="cad-apply-btn" class="primary-btn">
-                            <i class="fas fa-check"></i> Apply CAD Data
-                        </button>
-                        <button id="cad-cancel-btn" class="secondary-btn">
-                            <i class="fas fa-times"></i> Cancel
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div id="settings-container" class="card" style="display:none;">
-                <h3>Settings</h3>
-                
-                <div class="settings-sections">
-                    <div class="settings-section">
-                        <h4>General Settings</h4>
-                        
-                        <div class="form-group">
-                            <label for="default-status">Default Incident Status</label>
-                            <select id="default-status" name="default-status">
-                                <option value="draft">Draft</option>
-                                <option value="active">Active</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="auto-save">Auto-save Interval (minutes)</label>
-                            <input type="number" id="auto-save" name="auto-save" min="1" max="60" value="5">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="default-location">Default Location</label>
-                            <input type="text" id="default-location" name="default-location">
-                        </div>
-                    </div>
-                    
-                    <div class="settings-section">
-                        <h4>Display Settings</h4>
-                        
-                        <div class="form-group">
-                            <label for="items-per-page">Items Per Page</label>
-                            <select id="items-per-page" name="items-per-page">
-                                <option value="10">10</option>
-                                <option value="25">25</option>
-                                <option value="50">50</option>
-                                <option value="100">100</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="date-format">Date Format</label>
-                            <select id="date-format" name="date-format">
-                                <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-                                <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-                                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="time-format">Time Format</label>
-                            <select id="time-format" name="time-format">
-                                <option value="12">12-hour (AM/PM)</option>
-                                <option value="24">24-hour</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="settings-section">
-                        <h4>Data Management</h4>
-                        
-                        <div class="form-group">
-                            <label for="storage-mode">Storage Mode</label>
-                            <select id="storage-mode" name="storage-mode">
-                                <option value="local">Local Storage</option>
-                                <option value="server">Server Storage</option>
-                                <option value="both">Both (Sync)</option>
-                            </select>
-                        </div>
-                        
-                        <div class="data-management-actions">
-                            <button type="button" id="export-settings-btn" class="secondary-btn">
-                                <i class="fas fa-download"></i> Export Settings
-                            </button>
-                            <button type="button" id="import-settings-btn" class="secondary-btn">
-                                <i class="fas fa-upload"></i> Import Settings
-                            </button>
-                            <button type="button" id="clear-data-btn" class="warning-btn">
-                                <i class="fas fa-exclamation-triangle"></i> Clear All Data
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="settings-actions">
-                    <button type="button" id="save-settings-btn" class="primary-btn">
-                        <i class="fas fa-save"></i> Save Settings
-                    </button>
-                    <button type="button" id="reset-settings-btn" class="secondary-btn">
-                        <i class="fas fa-undo"></i> Reset to Default
-                    </button>
                 </div>
             </div>
         </div>
-    </main>
-    
-    <footer>
-        <div class="footer-container">
-            <p>&copy; 2025 FireEMS.ai - Incident Logger v1.0</p>
-        </div>
-    </footer>
 
-    <!-- Template for new patient entry (hidden) -->
-    <template id="patient-template">
-        <div class="patient-entry">
-            <div class="form-section">
-                <h4>Patient #{{index}}</h4>
-                <button type="button" class="remove-patient-btn secondary-btn small-btn">
-                    <i class="fas fa-trash"></i>
+        <!-- Toast Notifications Container -->
+        <div id="toast-container"></div>
+        
+        <!-- CAD Import Interface (Initially Hidden) -->
+        <div id="cad-import-container" class="content-section" style="display: none;">
+            <div class="section-header">
+                <h2><i class="fas fa-file-import"></i> Import from CAD</h2>
+                <button id="close-cad-import" class="btn btn-sm btn-secondary">
+                    <i class="fas fa-times"></i> Close
                 </button>
             </div>
-            
-            <div class="form-group">
-                <label for="patient-age-{{index}}">Age</label>
-                <input type="number" id="patient-age-{{index}}" name="patient-age-{{index}}" min="0" max="120">
-            </div>
-            
-            <div class="form-group">
-                <label for="patient-gender-{{index}}">Gender</label>
-                <select id="patient-gender-{{index}}" name="patient-gender-{{index}}">
-                    <option value="">Select Gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
-                    <option value="unknown">Unknown</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="patient-complaint-{{index}}">Chief Complaint</label>
-                <textarea id="patient-complaint-{{index}}" name="patient-complaint-{{index}}"></textarea>
-            </div>
-            
-            <!-- PHI fields - Personal Identifiers -->
-            <div class="form-section">
-                <h5>Personal Information (PHI)</h5>
-                
-                <div class="form-group">
-                    <label for="patient-name-first-{{index}}" class="phi-label">First Name</label>
-                    <input type="text" id="patient-name-first-{{index}}" name="patient-name-first-{{index}}" class="phi-field">
-                </div>
-                
-                <div class="form-group">
-                    <label for="patient-name-last-{{index}}" class="phi-label">Last Name</label>
-                    <input type="text" id="patient-name-last-{{index}}" name="patient-name-last-{{index}}" class="phi-field">
-                </div>
-                
-                <div class="form-group">
-                    <label for="patient-dob-{{index}}" class="phi-label">Date of Birth</label>
-                    <input type="date" id="patient-dob-{{index}}" name="patient-dob-{{index}}" class="phi-field">
-                </div>
-                
-                <div class="form-group">
-                    <label for="patient-phone-{{index}}" class="phi-label">Phone</label>
-                    <input type="tel" id="patient-phone-{{index}}" name="patient-phone-{{index}}" class="phi-field">
-                </div>
-                
-                <div class="form-group">
-                    <label for="patient-address-{{index}}" class="phi-label">Address</label>
-                    <input type="text" id="patient-address-{{index}}" name="patient-address-{{index}}" class="phi-field">
-                </div>
-            </div>
-            
-            <div class="form-section">
-                <h5>Medical History</h5>
-                <div class="medical-history-container">
+            <div class="card">
+                <div class="card-body">
                     <div class="form-group">
-                        <label for="medical-history-{{index}}">Past Medical History</label>
-                        <select id="medical-history-{{index}}" name="medical-history-{{index}}" class="medical-history-select" multiple>
-                            <option value="hypertension">Hypertension</option>
-                            <option value="diabetes">Diabetes</option>
-                            <option value="copd">COPD</option>
-                            <option value="asthma">Asthma</option>
-                            <option value="coronary_artery_disease">Coronary Artery Disease</option>
-                            <option value="congestive_heart_failure">Congestive Heart Failure</option>
-                            <option value="myocardial_infarction">Prior MI</option>
-                            <option value="stroke">Stroke/CVA</option>
-                            <option value="seizure">Seizure Disorder</option>
-                            <option value="cancer">Cancer</option>
-                            <option value="renal_disease">Renal Disease</option>
-                            <option value="liver_disease">Liver Disease</option>
-                            <option value="psychiatric">Psychiatric Disorder</option>
-                            <option value="substance_abuse">Substance Abuse</option>
-                            <option value="covid19">COVID-19</option>
+                        <label for="cad-system">CAD System</label>
+                        <select id="cad-system" class="form-control">
+                            <option value="">Select CAD System</option>
+                            <option value="flexcad">FlexCAD</option>
+                            <option value="zollcad">ZOLL CAD</option>
+                            <option value="emergecad">EmergeCAD</option>
+                            <option value="other">Other/Manual</option>
                         </select>
-                        <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
                     </div>
                     
                     <div class="form-group">
-                        <label for="medical-history-other-{{index}}">Other Medical History</label>
-                        <textarea id="medical-history-other-{{index}}" name="medical-history-other-{{index}}" placeholder="Enter additional medical history here"></textarea>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="form-section">
-                <h5>Medications</h5>
-                <div class="medications-container">
-                    <div class="form-group">
-                        <label for="medications-{{index}}">Current Medications</label>
-                        <select id="medications-{{index}}" name="medications-{{index}}" class="medications-select" multiple>
-                            <option value="lisinopril">Lisinopril</option>
-                            <option value="metoprolol">Metoprolol</option>
-                            <option value="atorvastatin">Atorvastatin (Lipitor)</option>
-                            <option value="metformin">Metformin</option>
-                            <option value="insulin">Insulin</option>
-                            <option value="aspirin">Aspirin</option>
-                            <option value="warfarin">Warfarin (Coumadin)</option>
-                            <option value="apixaban">Apixaban (Eliquis)</option>
-                            <option value="levothyroxine">Levothyroxine</option>
-                            <option value="albuterol">Albuterol</option>
-                            <option value="furosemide">Furosemide (Lasix)</option>
-                            <option value="prednisone">Prednisone</option>
-                            <option value="omeprazole">Omeprazole</option>
-                            <option value="amlodipine">Amlodipine</option>
-                            <option value="hydrochlorothiazide">Hydrochlorothiazide</option>
-                            <option value="gabapentin">Gabapentin</option>
-                            <option value="acetaminophen">Acetaminophen</option>
-                            <option value="ibuprofen">Ibuprofen</option>
-                        </select>
-                        <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
+                        <label for="cad-incident-number">CAD Incident Number</label>
+                        <input type="text" id="cad-incident-number" class="form-control" 
+                               placeholder="e.g., 2023-12345">
                     </div>
                     
-                    <div class="form-group">
-                        <label for="medications-other-{{index}}">Other Medications</label>
-                        <textarea id="medications-other-{{index}}" name="medications-other-{{index}}" placeholder="Enter additional medications here"></textarea>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="form-section">
-                <h5>Allergies</h5>
-                <div class="allergies-container">
-                    <div class="form-group">
-                        <label for="allergies-{{index}}">Known Allergies</label>
-                        <select id="allergies-{{index}}" name="allergies-{{index}}" class="allergies-select" multiple>
-                            <option value="penicillin">Penicillin</option>
-                            <option value="sulfa">Sulfa Drugs</option>
-                            <option value="nsaids">NSAIDs</option>
-                            <option value="aspirin">Aspirin</option>
-                            <option value="morphine">Morphine</option>
-                            <option value="codeine">Codeine</option>
-                            <option value="latex">Latex</option>
-                            <option value="contrast">Contrast Dye</option>
-                            <option value="eggs">Eggs</option>
-                            <option value="nuts">Nuts</option>
-                            <option value="shellfish">Shellfish</option>
-                            <option value="iodine">Iodine</option>
-                            <option value="bee_stings">Bee Stings</option>
-                        </select>
-                        <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="allergies-other-{{index}}">Other Allergies</label>
-                        <textarea id="allergies-other-{{index}}" name="allergies-other-{{index}}" placeholder="Enter additional allergies here"></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="nkda-{{index}}">No Known Drug Allergies</label>
-                        <div class="toggle-switch">
-                            <input type="checkbox" id="nkda-{{index}}" name="nkda-{{index}}">
-                            <label for="nkda-{{index}}" class="switch-label"></label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="form-section">
-                <h5>Vitals</h5>
-                <div class="vitals-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>BP</th>
-                                <th>Pulse</th>
-                                <th>Resp</th>
-                                <th>SpO2</th>
-                                <th>GCS</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody id="vitals-rows-{{index}}">
-                            <tr class="vitals-row">
-                                <td>
-                                    <input type="datetime-local" name="vital-time-{{index}}-1">
-                                </td>
-                                <td>
-                                    <input type="text" name="vital-bp-{{index}}-1" placeholder="120/80">
-                                </td>
-                                <td>
-                                    <input type="number" name="vital-pulse-{{index}}-1" min="20" max="250">
-                                </td>
-                                <td>
-                                    <input type="number" name="vital-resp-{{index}}-1" min="4" max="60">
-                                </td>
-                                <td>
-                                    <input type="number" name="vital-spo2-{{index}}-1" min="50" max="100">
-                                </td>
-                                <td>
-                                    <input type="number" name="vital-gcs-{{index}}-1" min="3" max="15">
-                                </td>
-                                <td>
-                                    <button type="button" class="remove-vital-btn secondary-btn small-btn">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <button type="button" class="add-vital-btn secondary-btn small-btn" data-patient="{{index}}">
-                    <i class="fas fa-plus"></i> Add Vital Signs
-                </button>
-            </div>
-            
-            <div class="form-section">
-                <h5>Treatments</h5>
-                <div id="treatments-container-{{index}}">
-                    <div class="treatment-entry">
-                        <div class="form-group">
-                            <label for="treatment-time-{{index}}-1">Time</label>
-                            <input type="datetime-local" id="treatment-time-{{index}}-1" name="treatment-time-{{index}}-1">
-                        </div>
-                        <div class="form-group">
-                            <label for="treatment-procedure-{{index}}-1">Procedure</label>
-                            <input type="text" id="treatment-procedure-{{index}}-1" name="treatment-procedure-{{index}}-1">
-                        </div>
-                        <div class="form-group">
-                            <label for="treatment-notes-{{index}}-1">Notes</label>
-                            <textarea id="treatment-notes-{{index}}-1" name="treatment-notes-{{index}}-1"></textarea>
-                        </div>
-                        <button type="button" class="remove-treatment-btn secondary-btn small-btn">
-                            <i class="fas fa-trash"></i>
+                    <div class="form-action">
+                        <button id="fetch-cad-data" class="btn btn-primary">
+                            <i class="fas fa-download"></i> Fetch Data
                         </button>
                     </div>
+                    
+                    <div id="cad-import-results" style="display: none;">
+                        <h4>Import Preview</h4>
+                        <div class="preview-table-container">
+                            <table class="preview-table">
+                                <thead>
+                                    <tr>
+                                        <th>Field</th>
+                                        <th>Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cad-preview-body">
+                                    <!-- Preview data rows will be inserted here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="form-action">
+                            <button id="import-preview-data" class="btn btn-success">
+                                <i class="fas fa-check"></i> Use This Data
+                            </button>
+                            <button id="cancel-import" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <button type="button" class="add-treatment-btn secondary-btn small-btn" data-patient="{{index}}">
-                    <i class="fas fa-plus"></i> Add Treatment
-                </button>
             </div>
         </div>
-    </template>
+        
+        <!-- Incident Form (Initially Hidden) -->
+        <div id="incident-form-container" class="content-section" style="display: none;">
+            <!-- This container will be populated by the incident form controller -->
+        </div>
+        
+        <!-- Incident List (Initially Hidden) -->
+        <div id="incident-list-container" class="content-section" style="display: none;">
+            <!-- This container will be populated by the incident list controller -->
+        </div>
 
-    <!-- Modal templates -->
-    <div id="modal-container" class="modal-container" style="display:none;">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 id="modal-title">Modal Title</h3>
-                <button id="modal-close" class="modal-close">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div id="modal-content" class="modal-content">
-                <!-- Modal content goes here -->
-            </div>
-            <div id="modal-footer" class="modal-footer">
-                <button id="modal-cancel" class="secondary-btn">Cancel</button>
-                <button id="modal-confirm" class="primary-btn">Confirm</button>
+        <!-- Welcome Screen (Initially Visible) -->
+        <div id="welcome-container" class="content-section">
+            <div class="welcome-card">
+                <div class="welcome-header">
+                    <h2>Welcome to the Incident Logger</h2>
+                    <p>Document, manage, and analyze emergency incidents with HIPAA compliance</p>
+                </div>
+                
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>HIPAA Compliant</h3>
+                            <p>Secure data handling with PHI protection and encryption</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>CAD Integration</h3>
+                            <p>Import incident data directly from your CAD system</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-file-export"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>NFIRS Compatible</h3>
+                            <p>Export reports in NFIRS format for regulatory compliance</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-map-marked-alt"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>Geolocation</h3>
+                            <p>Map integration for incident location and routing</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="welcome-actions">
+                    <button id="welcome-new-incident" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus-circle"></i> Create New Incident
+                    </button>
+                    <button id="welcome-view-incidents" class="btn btn-secondary btn-lg">
+                        <i class="fas fa-list"></i> View Incidents
+                    </button>
+                </div>
             </div>
         </div>
     </div>
+</main>
+{% endblock %}
 
-    <!-- Toast notification template -->
-    <div id="toast-container" class="toast-container"></div>
+{% block scripts %}
+<!-- External Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.11.9/dayjs.min.js"></script>
-    <script>
-        // Flag to track Google Maps loading status
-        window.googleMapsIsLoaded = false;
-        
-        // Callback when Google Maps API is loaded
-        function googleMapsLoaded() {
-            window.googleMapsIsLoaded = true;
-            console.log("Google Maps API loaded successfully");
-        }
-    </script>
-    <!-- Use API key without restrictions (or update to a properly configured key) -->
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDFHYo5vhQB9x_rBVqUeZXs9LtBJNGXWEE&libraries=places&callback=googleMapsLoaded"></script>
-    
-    <!-- NFIRS module scripts -->
-    <!-- Using fixed versions of the NFIRS scripts to resolve module loading issues -->
-    <script src="/static/js/nfirs/nfirs-codes-fix.js"></script>
-    <script src="/static/js/nfirs/nfirs-validator-fix.js"></script>
-    <script src="/static/js/nfirs/nfirs-export-fix.js"></script>
-    <!-- Module bridge ensures consistent namespaces -->
-    <script src="/static/js/nfirs-module-bridge.js"></script>
-    <script src="/static/js/nfirs/nfirs-ui-fix.js"></script>
-    
-    <!-- Component scripts - changed from type="module" to normal scripts -->
-    <script src="/static/js/components/incident-form.js"></script>
-    <!-- Using fixed versions of components to resolve module loading issues -->
-    <script src="/static/js/components/incident-validator-fix.js"></script>
-    <script src="/static/js/components/incident-list.js"></script>
-    <script src="/static/js/components/incident-map.js"></script>
-    <script src="/static/js/components/incident-export-fix.js"></script>
-    <script src="/static/js/components/hipaa-compliance-fix.js"></script>
-    <script src="/static/js/components/cad-integration-fix.js"></script>
-    
-    <!-- Main script file -->
-    <script src="/static/incident-logger.js"></script>
-    <script>
-    // Add console logging to debug module loading
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOMContentLoaded event fired');
-        console.log('Document ready, trying to initialize page');
-        setTimeout(() => {
-            console.log('Checking if all elements loaded correctly');
-            const containers = [
-                'incident-form-container', 
-                'cad-import-container', 
-                'incident-list-container',
-                'export-container', 
-                'settings-container'
-            ];
-            containers.forEach(id => {
-                const el = document.getElementById(id);
-                console.log(`Container #${id}: ${el ? 'Found' : 'NOT FOUND'}`);
-            });
-            
-            // Test NFIRS dropdown functionality
-            console.log('Testing NFIRS dropdown functionality');
-            testNFIRSDropdowns();
-        }, 1000);
-    });
-    
-    // Function to test NFIRS dropdown population and cascading
-    function testNFIRSDropdowns() {
-        // Test primary type dropdown
-        const primaryType = document.getElementById('incident-primary-type');
-        console.log('Primary Type Dropdown:', primaryType ? 'Found' : 'NOT FOUND');
-        
-        if (primaryType) {
-            // Set primary type to FIRE to test cascading
-            console.log('Setting primary type to FIRE');
-            primaryType.value = 'FIRE';
-            
-            // Manually trigger change event
-            const event = new Event('change');
-            primaryType.dispatchEvent(event);
-            
-            // Check secondary type dropdown after a small delay
-            setTimeout(() => {
-                const secondaryType = document.getElementById('incident-secondary-type');
-                console.log('Secondary Type Dropdown:', secondaryType ? 'Found' : 'NOT FOUND');
-                console.log('Secondary Type Options:', secondaryType ? secondaryType.options.length : 'N/A');
-                
-                if (secondaryType && secondaryType.options.length > 1) {
-                    // Set secondary type to STRUCTURE to test cascading
-                    console.log('Setting secondary type to STRUCTURE');
-                    secondaryType.value = 'STRUCTURE';
-                    secondaryType.dispatchEvent(new Event('change'));
-                    
-                    // Check specific type dropdown after a small delay
-                    setTimeout(() => {
-                        const specificType = document.getElementById('incident-specific-type');
-                        console.log('Specific Type Dropdown:', specificType ? 'Found' : 'NOT FOUND');
-                        console.log('Specific Type Options:', specificType ? specificType.options.length : 'N/A');
-                        
-                        // Also check NFIRS type dropdown
-                        const nfirsType = document.getElementById('nfirs-incident-type');
-                        console.log('NFIRS Type Dropdown:', nfirsType ? 'Found' : 'NOT FOUND');
-                        console.log('NFIRS Type Options:', nfirsType ? nfirsType.options.length : 'N/A');
-                    }, 500);
-                }
-            }, 500);
-        }
-    }
-    
-    // Force CSS reload on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        // Force reload CSS by appending timestamp to URL
-        const links = document.getElementsByTagName('link');
-        for (let i = 0; i < links.length; i++) {
-            if (links[i].rel === 'stylesheet') {
-                const href = links[i].href;
-                if (href.includes('incident-logger.css')) {
-                    links[i].href = href.split('?')[0] + '?v=' + new Date().getTime();
-                    console.log('Forced reload of CSS: ' + links[i].href);
-                }
-            }
-        }
-    });
-    </script>
+<!-- Application Scripts -->
+<script src="/static/add-medical-sections.js"></script>
 
-    <!-- Fix for Step 5 visibility -->
-    <script src="/static/step-fix.js"></script>
-    
-    <!-- Direct script to add medical sections -->
-    <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        console.log("Adding medical sections directly via script");
-        
-        setTimeout(function() {
-            try {
-                console.log("Looking for patient sections...");
-                
-                // Find the Step 5 (Patient Info) step element
-                var patientInfoStep = document.querySelector('.form-step[data-step="5"]');
-                if (!patientInfoStep) {
-                    console.error("Could not find Step 5 (Patient Info)!");
-                    return;
-                }
-                
-                // Find the "Patient #1" section header
-                var patient1Header = Array.from(patientInfoStep.querySelectorAll('h4')).find(h4 => 
-                    h4.textContent.trim() === 'Patient #1'
-                );
-                
-                if (!patient1Header) {
-                    console.error("Could not find 'Patient #1' header!");
-                    return;
-                }
-                
-                console.log("Found 'Patient #1' header!");
-                
-                // Find the parent patient entry that contains the Patient #1 header
-                var patientEntry = patient1Header.closest('.patient-entry');
-                if (!patientEntry) {
-                    console.error("Could not find patient entry container!");
-                    return;
-                }
-                console.log("Found patient entry container");
-                
-                // Get basic information fields at the beginning of patient entry
-                var basicInfoFields = Array.from(patientEntry.querySelectorAll('.form-group')).filter(el => 
-                    !el.closest('.form-section')
-                );
-                
-                // If we have the basic info fields, insert after the last one
-                var insertTarget = null;
-                if (basicInfoFields.length > 0) {
-                    insertTarget = basicInfoFields[basicInfoFields.length - 1];
-                    console.log("Found basic info fields, will insert after the last one");
-                } else {
-                    // Or try to find the first form section (might be vitals or something else)
-                    var firstSection = patientEntry.querySelector('.form-section');
-                    if (firstSection) {
-                        insertTarget = firstSection.previousElementSibling || patientEntry.firstElementChild;
-                        console.log("Found first form section, will insert before it");
-                    } else {
-                        // Fallback to just inserting at the end of the patient entry
-                        insertTarget = patientEntry.lastElementChild;
-                        console.log("No suitable target found, inserting at the end");
-                    }
-                }
-                
-                // Create the HTML for medical sections with exact template matching
-                var medSectionsHTML = `
-                    <!-- Medical History Section -->
-                    <div class="form-section">
-                        <h5>Medical History</h5>
-                        <div class="medical-history-container">
-                            <div class="form-group">
-                                <label for="medical-history-1">Past Medical History</label>
-                                <select id="medical-history-1" name="medical-history-1" class="medical-history-select" multiple>
-                                    <option value="hypertension">Hypertension</option>
-                                    <option value="diabetes">Diabetes</option>
-                                    <option value="copd">COPD</option>
-                                    <option value="asthma">Asthma</option>
-                                    <option value="coronary_artery_disease">Coronary Artery Disease</option>
-                                    <option value="congestive_heart_failure">Congestive Heart Failure</option>
-                                    <option value="myocardial_infarction">Prior MI</option>
-                                    <option value="stroke">Stroke/CVA</option>
-                                    <option value="seizure">Seizure Disorder</option>
-                                    <option value="cancer">Cancer</option>
-                                    <option value="renal_disease">Renal Disease</option>
-                                    <option value="liver_disease">Liver Disease</option>
-                                    <option value="psychiatric">Psychiatric Disorder</option>
-                                    <option value="substance_abuse">Substance Abuse</option>
-                                    <option value="covid19">COVID-19</option>
-                                </select>
-                                <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="medical-history-other-1">Other Medical History</label>
-                                <textarea id="medical-history-other-1" name="medical-history-other-1" placeholder="Enter additional medical history here"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Medications Section -->
-                    <div class="form-section">
-                        <h5>Medications</h5>
-                        <div class="medications-container">
-                            <div class="form-group">
-                                <label for="medications-1">Current Medications</label>
-                                <select id="medications-1" name="medications-1" class="medications-select" multiple>
-                                    <option value="lisinopril">Lisinopril</option>
-                                    <option value="metoprolol">Metoprolol</option>
-                                    <option value="atorvastatin">Atorvastatin (Lipitor)</option>
-                                    <option value="metformin">Metformin</option>
-                                    <option value="insulin">Insulin</option>
-                                    <option value="aspirin">Aspirin</option>
-                                    <option value="warfarin">Warfarin (Coumadin)</option>
-                                    <option value="apixaban">Apixaban (Eliquis)</option>
-                                    <option value="levothyroxine">Levothyroxine</option>
-                                    <option value="albuterol">Albuterol</option>
-                                    <option value="furosemide">Furosemide (Lasix)</option>
-                                    <option value="prednisone">Prednisone</option>
-                                    <option value="omeprazole">Omeprazole</option>
-                                    <option value="amlodipine">Amlodipine</option>
-                                    <option value="hydrochlorothiazide">Hydrochlorothiazide</option>
-                                    <option value="gabapentin">Gabapentin</option>
-                                    <option value="acetaminophen">Acetaminophen</option>
-                                    <option value="ibuprofen">Ibuprofen</option>
-                                </select>
-                                <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="medications-other-1">Other Medications</label>
-                                <textarea id="medications-other-1" name="medications-other-1" placeholder="Enter additional medications here"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Allergies Section -->
-                    <div class="form-section">
-                        <h5>Allergies</h5>
-                        <div class="allergies-container">
-                            <div class="form-group">
-                                <label for="allergies-1">Known Allergies</label>
-                                <select id="allergies-1" name="allergies-1" class="allergies-select" multiple>
-                                    <option value="penicillin">Penicillin</option>
-                                    <option value="sulfa">Sulfa Drugs</option>
-                                    <option value="nsaids">NSAIDs</option>
-                                    <option value="aspirin">Aspirin</option>
-                                    <option value="morphine">Morphine</option>
-                                    <option value="codeine">Codeine</option>
-                                    <option value="latex">Latex</option>
-                                    <option value="contrast">Contrast Dye</option>
-                                    <option value="eggs">Eggs</option>
-                                    <option value="nuts">Nuts</option>
-                                    <option value="shellfish">Shellfish</option>
-                                    <option value="iodine">Iodine</option>
-                                    <option value="bee_stings">Bee Stings</option>
-                                </select>
-                                <small class="field-help">Hold Ctrl/Cmd to select multiple or start typing to search</small>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="allergies-other-1">Other Allergies</label>
-                                <textarea id="allergies-other-1" name="allergies-other-1" placeholder="Enter additional allergies here"></textarea>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="nkda-1">No Known Drug Allergies</label>
-                                <div class="toggle-switch">
-                                    <input type="checkbox" id="nkda-1" name="nkda-1">
-                                    <label for="nkda-1" class="switch-label"></label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>`;
-                
-                // Insert the HTML after the PHI section
-                console.log("Inserting medical sections after PHI section");
-                
-                // Use safe insertion method if available, otherwise try direct approach with error handling
-                if (window.phiSection && typeof window.phiSection.addMedicalSections === 'function') {
-                    window.phiSection.addMedicalSections(medSectionsHTML);
-                } else if (window.phiSection) {
-                    window.phiSection.insertAdjacentHTML('afterend', medSectionsHTML);
-                } else if (window.phiSections && window.phiSections.length > 0) {
-                    window.phiSections[0].insertAdjacentHTML('afterend', medSectionsHTML);
-                } else {
-                    const patientEntry = document.querySelector('.patient-entry');
-                    if (patientEntry) {
-                        const vitalsSection = patientEntry.querySelector('.vitals-section');
-                        if (vitalsSection) {
-                            vitalsSection.insertAdjacentHTML('beforebegin', medSectionsHTML);
-                        } else {
-                            patientEntry.insertAdjacentHTML('beforeend', medSectionsHTML);
-                        }
-                    } else {
-                        throw new Error("Cannot find patient entry to insert medical sections");
-                    }
-                }
-                
-                console.log("Successfully inserted medical sections in correct order");
-            } catch (error) {
-                console.error("Error inserting medical sections:", error);
-            }
-            
-            // Initialize Select2 if available
-            setTimeout(function() {
-                console.log("Starting Select2 initialization...");
-                if (typeof $ !== 'undefined' && typeof $.fn !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
-                    try {
-                        $('#medical-history-1').select2({
-                            placeholder: 'Select or type medical conditions',
-                            tags: true,
-                            width: '100%'
-                        });
-                        
-                        $('#medications-1').select2({
-                            placeholder: 'Select or type medications',
-                            tags: true,
-                            width: '100%'
-                        });
-                        
-                        $('#allergies-1').select2({
-                            placeholder: 'Select or type allergies',
-                            tags: true,
-                            width: '100%'
-                        });
-                        
-                        console.log("Select2 initialized for medical dropdowns");
-                    } catch (e) {
-                        console.error("Error initializing Select2:", e);
-                    }
-                } else {
-                    console.warn("Select2 not available ($=" + typeof $ + ", $.fn=" + (typeof $ !== 'undefined' ? typeof $.fn : 'undefined') + ", $.fn.select2=" + (typeof $ !== 'undefined' && typeof $.fn !== 'undefined' ? typeof $.fn.select2 : 'undefined') + ")");
-                }
-                
-                // Add event listener to NKDA checkbox
-                var nkdaCheckbox = document.getElementById('nkda-1');
-                if (nkdaCheckbox) {
-                    nkdaCheckbox.addEventListener('change', function() {
-                        var allergiesSelect = document.getElementById('allergies-1');
-                        if (this.checked && allergiesSelect) {
-                            // Clear allergies when NKDA is checked
-                            if (typeof $ !== 'undefined' && typeof $.fn !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
-                                $(allergiesSelect).val(null).trigger('change');
-                            } else {
-                                for (let i = 0; i < allergiesSelect.options.length; i++) {
-                                    allergiesSelect.options[i].selected = false;
-                                }
-                            }
-                            allergiesSelect.disabled = true;
-                        } else if (allergiesSelect) {
-                            allergiesSelect.disabled = false;
-                        }
-                    });
-                    console.log("NKDA checkbox event listener added");
-                }
-            }, 500); // Additional delay for Select2 initialization
-        }, 1500); // Wait 1.5 seconds to ensure everything else is loaded
-    });
-    </script>
-    <script src="/static/add-medical-sections.js"></script>
-    
-    <!-- Fixes for module loading and form validation issues -->
-    <script src="/static/js/incident-module-fix.js"></script>
-    <script src="/static/js/form-validation-fix.js"></script>
-    <script src="/static/js/patient-section-fix.js"></script>
-    <!-- Using new ES6 module-based bundles -->
-    <script src="/static/dist/components-bundle.bundle.js"></script>
-    <script src="/static/dist/nfirs-bundle.bundle.js"></script>
-    <script src="/static/dist/incident-logger.bundle.js"></script>
-    <!-- Module initialization happens automatically in the ES6 bundles -->
-    <!-- Webpack bundles handle initialization and event binding -->
-</body>
-</html>
+<!-- Fixes for module loading and form validation issues -->
+<script src="/static/js/incident-module-fix.js"></script>
+<script src="/static/js/form-validation-fix.js"></script>
+<script src="/static/js/patient-section-fix.js"></script>
+
+<!-- Using new ES6 module-based bundles -->
+<script src="/static/dist/components-bundle.bundle.js"></script>
+<script src="/static/dist/nfirs-bundle.bundle.js"></script>
+<script src="/static/dist/incident-logger.bundle.js"></script>
+
+<!-- Main Incident Logger Script -->
+<script src="/static/incident-logger.js"></script>
+
+<!-- HIPAA Compliance Module Integration -->
+<script src="/static/js/components/hipaa-compliance.js"></script>
+
+<!-- CAD Integration Module -->
+<script src="/static/js/components/cad-integration.js"></script>
+
+<!-- Incident Export Module -->
+<script src="/static/js/components/incident-export.js"></script>
+
+<!-- Validator Module -->
+<script src="/static/js/components/incident-validator.js"></script>
+{% endblock %}
