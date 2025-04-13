@@ -647,6 +647,28 @@ document.addEventListener('DOMContentLoaded', function() {
           if (!enhanced['Incident ID'] && enhanced.RunNo) enhanced['Incident ID'] = enhanced.RunNo;
           if (!enhanced['Incident ID'] && enhanced['Run No']) enhanced['Incident ID'] = enhanced['Run No'];
           
+          // Explicitly convert time fields to Date objects
+          const timeFields = ['Reported', 'Dispatched', 'Enroute', 'Onscene', 'Transport', 'AtHospital', 'Available'];
+          timeFields.forEach(field => {
+            if (enhanced[field]) {
+              try {
+                const date = new Date(enhanced[field]);
+                if (!isNaN(date.getTime())) {
+                  enhanced[`${field}_obj`] = date;
+                  // Format as ISO string for cross-browser compatibility
+                  enhanced[field] = date.toISOString();
+                }
+              } catch (e) {
+                console.warn(`Failed to convert ${field} to Date: ${enhanced[field]}`);
+              }
+            }
+          });
+          
+          // Ensure all date-time aliases exist
+          if (enhanced.Reported && !enhanced['Reported Date']) enhanced['Reported Date'] = enhanced.Reported;
+          if (enhanced.Dispatched && !enhanced['Unit Dispatched']) enhanced['Unit Dispatched'] = enhanced.Dispatched;
+          if (enhanced.Onscene && !enhanced['Unit Onscene']) enhanced['Unit Onscene'] = enhanced.Onscene;
+          
           return enhanced;
         });
         
@@ -656,95 +678,65 @@ document.addEventListener('DOMContentLoaded', function() {
         const timestamp = Date.now();
         const dataId = 'formatter_data_' + timestamp;
         
+        // Create version metadata for debugging
+        const metadata = {
+          source: 'formatter',
+          tool: window.formatterState.selectedTool,
+          timestamp: new Date().toISOString(),
+          recordCount: enhancedData.length,
+          version: "v2.3",  // Updated version number
+          enhancement: "full-field-conversion"
+        };
+        
         // Verify data is properly serializable
-        const serializedData = JSON.stringify({
-          data: enhancedData,
-          metadata: {
-            source: 'formatter',
-            tool: window.formatterState.selectedTool,
-            timestamp: new Date().toISOString(),
-            recordCount: enhancedData.length,
-            version: "v2.2"
-          }
-        });
+        const serializedData = JSON.stringify(enhancedData);
         console.log(`Data serialized successfully, size: ${serializedData.length} bytes`);
         
         // Store in localStorage
         localStorage.setItem(dataId, serializedData);
         
+        // Store metadata separately to be clean and clear
+        localStorage.setItem(`${dataId}_meta`, JSON.stringify(metadata));
+        
         // Store in sessionStorage as well (direct approach)
         try {
-          // Transform data format to match what fire-ems-dashboard.js expects
-          const transformedData = data.map(item => {
-            // Create a new object with transformed fields
-            const transformed = { ...item };
-            
-            // Add _source property to indicate data comes from formatter
-            transformed._source = 'formatter';
-            
-            // Ensure coordinates are numeric
-            if (transformed.Latitude !== undefined) transformed.Latitude = parseFloat(transformed.Latitude);
-            if (transformed.Longitude !== undefined) transformed.Longitude = parseFloat(transformed.Longitude);
-            
-            // Ensure Date objects exist for timestamps
-            const dateFields = ['Reported', 'Unit Dispatched', 'Unit Enroute', 'Unit Onscene'];
-            dateFields.forEach(field => {
-              if (transformed[field]) {
-                try {
-                  const date = new Date(transformed[field]);
-                  if (!isNaN(date.getTime())) {
-                    transformed[`${field}_obj`] = date;
-                  }
-                } catch (e) {
-                  console.warn(`Failed to create Date object for ${field}:`, e);
-                }
-              }
-            });
-            
-            // Ensure standard field names exist if alternate ones are used
-            if (!transformed.Unit && transformed.UnitID) transformed.Unit = transformed.UnitID;
-            if (!transformed.Unit && transformed['Unit ID']) transformed.Unit = transformed['Unit ID'];
-            if (!transformed['Incident ID'] && transformed.RunNo) transformed['Incident ID'] = transformed.RunNo;
-            if (!transformed['Incident ID'] && transformed['Run No']) transformed['Incident ID'] = transformed['Run No'];
-            
-            return transformed;
-          });
-          
-          console.log("Transformed data for fire-ems-dashboard compatibility:", transformedData[0]);
-          
-          sessionStorage.setItem('formattedData', JSON.stringify(transformedData));
+          // Store the data directly for maximum compatibility
+          sessionStorage.setItem('formattedData', serializedData);
           sessionStorage.setItem('dataSource', 'formatter');
           sessionStorage.setItem('formatterToolId', window.formatterState.selectedTool);
           sessionStorage.setItem('formatterTarget', window.formatterState.selectedTool);
           sessionStorage.setItem('formatterTimestamp', new Date().toISOString());
-          console.log("Data stored in sessionStorage as backup with enhanced format compatibility");
+          console.log("Data stored in sessionStorage for direct access");
         } catch (e) {
           console.warn("Could not store in sessionStorage:", e);
         }
+        
+        // Store the data directly in window.formattedData for immediate use
+        window.formattedData = enhancedData;
         
         // DISABLE EMERGENCY MODE EXPLICITLY - Do not allow fallback
         window.skipEmergencyMode = true;
         
         // Log diagnostic info to help debug
-        console.log(`%c FORMATTER DATA TRANSFER (v2.1) `, 'background: #4CAF50; color: white; font-size: 14px;');
-        console.log('📦 Data:', {length: data.length, firstRecord: data[0]});
-        console.log('🗄️ Storage:', {dataId, localStorage: true, sessionStorage: true});
+        console.log(`%c FORMATTER DATA TRANSFER (v2.3) `, 'background: #4CAF50; color: white; font-size: 14px;');
+        console.log('📦 Data:', {length: enhancedData.length, firstRecord: enhancedData[0]});
+        console.log('🗄️ Storage:', {dataId, localStorage: true, sessionStorage: true, window: true});
         console.log('🎯 Target:', {url: targetUrl, tool: window.formatterState.selectedTool});
         
         // Store diagnostic data in both storages
         const diagnosticData = {
-          timestamp: Date.now(),
+          timestamp: timestamp,
           dataId: dataId,
           tool: window.formatterState.selectedTool,
-          recordCount: data.length,
-          urlParams: `from_formatter=true&formatter_data=${dataId}&storage_method=localStorage&t=${timestamp}&records=${data.length}`
+          recordCount: enhancedData.length,
+          urlParams: `from_formatter=true&formatter_data=${dataId}&storage_method=localStorage&t=${timestamp}&records=${enhancedData.length}&version=v2.3`
         };
         sessionStorage.setItem('formatter_diagnostic', JSON.stringify(diagnosticData));
         localStorage.setItem('formatter_diagnostic', JSON.stringify(diagnosticData));
         
         // Log and redirect using from_formatter (normal flow, NOT emergency)
         console.log(`Stored data with ID: ${dataId}, redirecting to ${targetUrl}?from_formatter=true&formatter_data=${dataId}`);
-        window.location.href = `${targetUrl}?from_formatter=true&formatter_data=${dataId}&storage_method=localStorage&t=${timestamp}&records=${data.length}&version=v2.1`;
+        window.location.href = `${targetUrl}?from_formatter=true&formatter_data=${dataId}&storage_method=localStorage&t=${timestamp}&records=${enhancedData.length}&version=v2.3`;
       } catch (error) {
         console.error('Error storing data in localStorage:', error);
         window.appendLog(`Error sending data: ${error.message}`, 'error');
