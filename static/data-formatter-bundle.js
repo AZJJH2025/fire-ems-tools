@@ -220,4 +220,7 @@
   
   // Expose the logger for other scripts to use
   window.DataFormatterLogger = Logger;
+  
+  // Set flag to indicate data formatter is loaded (prevents emergency mode)
+  window.dataFormatterLoaded = true;
 })();
