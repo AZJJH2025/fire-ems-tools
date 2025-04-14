@@ -788,8 +788,24 @@ document.addEventListener('DOMContentLoaded', function() {
     // Create body
     const tbody = document.createElement('tbody');
     
-    // Show up to 5 rows
-    const rowsToShow = Math.min(data.length, 5);
+    // Determine how many rows to show in preview
+    // Check if we're handling a large file like Data1G.csv 
+    const isLargeFile = window.formatterState && 
+                       window.formatterState.fileId && 
+                       (sessionStorage.getItem('currentFileName') || '').toLowerCase().includes('data1g');
+    
+    // Use more rows for Data1G.csv
+    const maxRowsToShow = isLargeFile ? 100 : 10;
+    const rowsToShow = Math.min(data.length, maxRowsToShow);
+    
+    // Log preview size for debugging
+    console.log(`Showing ${rowsToShow} rows in preview out of ${data.length} total rows. Large file: ${isLargeFile}`);
+    
+    // Add a note about the preview size at the bottom of the table
+    const previewNote = document.createElement('div');
+    previewNote.className = 'preview-note';
+    previewNote.innerHTML = `<small>Showing ${rowsToShow} of ${data.length} records</small>`;
+    container.appendChild(previewNote);
     
     for (let i = 0; i < rowsToShow; i++) {
       const row = document.createElement('tr');
