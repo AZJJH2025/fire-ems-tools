@@ -301,8 +301,9 @@
                                           filename.toLowerCase().includes('data1g') || 
                                           (file && file.size && file.size > 1000000);
                                           
-                        // Force to 1000 records for now to debug the issue
-                        const maxRowsToProcess = 1000; // Always process more records during debugging
+                        // Process a substantial number of records for all files
+                        // 1000 for large files (Data1G.csv), at least 100 for all other files
+                        const maxRowsToProcess = isLargeFile ? 1000 : 100;
                         
                         console.log(`Emergency CSV parser processing ${maxRowsToProcess} rows (large file: ${isLargeFile})`);
                         
@@ -712,13 +713,18 @@
               
               html += '</tr></thead><tbody>';
               
-              // Check if we're processing Data1G.csv
+              // Check if we're processing Data1G.csv or any other substantial file
               const filename = sessionStorage.getItem('currentFileName') || localStorage.getItem('currentFileName') || '';
-              // Always treat Data1G.csv as a large file regardless of record count
-              const isLargeFile = filename.toLowerCase().includes('data1g') || transformedData.length > 1000;
+              const filenameCheck = filename.toLowerCase();
+              const isData1G = filenameCheck.includes('data1g');
               
-              // Use larger preview size for Data1G.csv or other large files
-              const previewSize = isLargeFile ? 100 : 5;
+              // Consider a file "large" if it's Data1G.csv or has more than 100 records (lowered threshold)
+              const isLargeFile = isData1G || transformedData.length > 100;
+              
+              // Increase preview size for all files
+              // - At least 25 records for regular files (up from 5)
+              // - 100 records for large files (Data1G.csv or > 100 records)
+              const previewSize = isLargeFile ? 100 : 25;
               console.log(`Using preview size of ${previewSize} rows for output display (large file: ${isLargeFile}, filename: ${filename})`);
               
               // Add rows to preview
@@ -771,10 +777,14 @@
                 // Make sure we convert to lowercase to ensure case-insensitive comparison
                 const filenameCheck = filename.toLowerCase();
                 const isData1G = filenameCheck.includes('data1g');
-                console.log(`Checking if filename "${filename}" contains 'data1g': ${isData1G}`);
+                const isLargeFile = isData1G || transformedData.length > 100; // Lower threshold to 100 records
                 
-                const isLargeFile = isData1G || transformedData.length > 1000;
-                const previewSize = isLargeFile ? 100 : 5;
+                // Increase preview size for all files
+                // - At least 25 records for regular files (up from 5)
+                // - 100 records for large files like Data1G.csv
+                const previewSize = isLargeFile ? 100 : 25;
+                
+                console.log(`Checking filename "${filename}". isData1G: ${isData1G}, isLargeFile: ${isLargeFile}, previewSize: ${previewSize}`);
                 console.log(`Log message using preview size of ${previewSize} (large file: ${isLargeFile}, filename: ${filename})`);
                 const visibleRows = Math.min(transformedData.length, previewSize);
                 
