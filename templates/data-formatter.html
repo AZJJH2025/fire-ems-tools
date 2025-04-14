@@ -141,8 +141,31 @@
     (function initialize() {
       console.log("Early initialization started");
       
-      // If emergency mode is forced, load emergency scripts right away
-      if (window.emergencyModeForced) {
+      // CRITICAL FIX: Check for emergency mode triggers in early initialization
+      const currentFileName = sessionStorage.getItem('currentFileName') || localStorage.getItem('currentFileName');
+      const fileSize = parseInt(sessionStorage.getItem('lastFileSize') || '0', 10);
+      
+      // Check for known large files or large files by size
+      const isKnownLargeFile = currentFileName && (
+        currentFileName.toLowerCase().includes('data1g') || 
+        currentFileName.toLowerCase().includes('large') || 
+        currentFileName.toLowerCase().includes('big')
+      );
+      const isVeryLargeFile = fileSize > 10000000; // 10MB threshold
+      
+      if (window.emergencyModeForced || isKnownLargeFile || isVeryLargeFile) {
+        if (isKnownLargeFile || isVeryLargeFile) {
+          console.log(`%c[DataFormatter] Large file detected from storage: "${currentFileName}" (${Math.round(fileSize/1024)}KB)`, 
+                     'color: orange; font-weight: bold');
+          
+          // For known problem files or extremely large ones, force emergency mode
+          if (isKnownLargeFile || fileSize > 50000000) { // 50MB threshold for emergency mode
+            console.log('%c[DataFormatter] File is extremely large, forcing emergency mode', 
+                       'color: red; font-weight: bold');
+            window.emergencyModeForced = true;
+            window.isEmergencyMode = true;
+          }
+        }
         loadEmergencyScripts();
         return;
       }

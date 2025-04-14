@@ -69,7 +69,34 @@
       return;
     }
     
-    console.log(`[EmergencyMode] Processing file: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`);
+    // CRITICAL FIX: Check if this is a large file and update global state
+    const isKnownLargeFile = file.name && (
+      file.name.toLowerCase().includes('data1g') || 
+      file.name.toLowerCase().includes('large') || 
+      file.name.toLowerCase().includes('big')
+    );
+    const isLargeBySize = file.size > 1000000; // 1MB
+    
+    if (isKnownLargeFile || isLargeBySize) {
+      console.log(`%c[EmergencyMode] Large file detected: ${file.name} (${Math.round(file.size/1024)}KB)`, 
+                 'color: orange; font-weight: bold');
+      
+      // Store file size for future reference
+      try {
+        sessionStorage.setItem('lastFileSize', file.size.toString());
+      } catch(e) {
+        console.warn('Could not store file size', e);
+      }
+      
+      // For extremely large files or known problematic ones, ensure emergency mode
+      if (isKnownLargeFile || file.size > 50000000) { // 50MB
+        console.log('%c[EmergencyMode] File is extremely large, forcing emergency mode', 
+                   'color: red; font-weight: bold');
+        window.isEmergencyMode = true;
+      }
+    }
+    
+    console.log(`[EmergencyMode] Processing file: ${file.name} (${(file.size / 1024).toFixed(2)} KB) - large file: ${isKnownLargeFile || isLargeBySize}`);
     
     // Store file metadata in formatterState
     window.formatterState.fileName = file.name;
@@ -155,8 +182,12 @@
         window.formatterState.originalData = true;
         
         // Determine how many rows to process based on file
-        const isLargeFile = window.formatterState.isLargeFile(file.name);
-        const maxRowsToProcess = window.formatterState.getProcessingLimit();
+        // CRITICAL FIX: Force Data1G.csv to always be treated as a large file
+        const isDataIG = file.name.toLowerCase().includes('data1g');
+        const isLargeFile = isDataIG || window.formatterState.isLargeFile(file.name);
+        
+        // Always use the large file limit for Data1G.csv (minimum 1000 records)
+        const maxRowsToProcess = isDataIG ? 1000 : window.formatterState.getProcessingLimit();
         
         console.log(`[EmergencyMode] Processing ${maxRowsToProcess} rows from ${file.name} (large file: ${isLargeFile})`);
         
@@ -364,9 +395,28 @@
     const previewContainer = document.getElementById('input-preview');
     if (!previewContainer) return;
     
-    // Determine preview size
-    const previewSize = window.formatterState.getPreviewSize();
+    // CRITICAL FIX: Check for large files from current storage or file state
+    const fileName = window.formatterState.originalFileName || 
+                     sessionStorage.getItem('currentFileName') || 
+                     localStorage.getItem('currentFileName') || '';
+    const fileSize = parseInt(sessionStorage.getItem('lastFileSize') || '0', 10) || 
+                     window.formatterState.fileSize || 0;
+                     
+    // Check for known large files or file size
+    const isKnownLargeFile = fileName && (
+      fileName.toLowerCase().includes('data1g') || 
+      fileName.toLowerCase().includes('large') || 
+      fileName.toLowerCase().includes('big')
+    );
+    const isLargeBySize = fileSize > 1000000; // 1MB
+    const isLargeFile = isKnownLargeFile || isLargeBySize;
+    
+    // Always show more preview rows for large files (at least 100)
+    const previewSize = isLargeFile ? 100 : window.formatterState.getPreviewSize();
     const rowsToShow = Math.min(rows.length, previewSize);
+    
+    // Log what we're doing for debugging
+    console.log(`[EmergencyMode] Showing preview with ${rowsToShow} rows (Large file: ${isLargeFile}, size: ${Math.round(fileSize/1024)}KB, filename: "${fileName}")`);
     
     let html = '<table class="preview-table"><thead><tr>';
     
@@ -397,6 +447,24 @@
       totalRowsMessage.style.fontStyle = 'italic';
       totalRowsMessage.textContent = `Showing ${rowsToShow} of ${rows.length} total records. Complete dataset will be processed.`;
       previewContainer.appendChild(totalRowsMessage);
+      
+      // CRITICAL FIX: Add a special note for large files
+      if (isLargeFile) {
+        const largeFileMessage = document.createElement('div');
+        largeFileMessage.className = 'preview-message large-file-notice';
+        largeFileMessage.style.marginTop = '5px';
+        largeFileMessage.style.fontWeight = 'bold';
+        largeFileMessage.style.color = '#d35400';
+        
+        // Customize message based on file type
+        if (isKnownLargeFile) {
+          largeFileMessage.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Known large file detected - using enhanced processing mode with ${rowsToShow} preview rows.`;
+        } else {
+          largeFileMessage.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Large file detected (${Math.round(fileSize/1024)}KB) - using enhanced processing mode with ${rowsToShow} preview rows.`;
+        }
+        
+        previewContainer.appendChild(largeFileMessage);
+      }
     }
   }
   
@@ -433,19 +501,53 @@
     if (window.FireEMS && window.FireEMS.DataFormatter && window.FireEMS.DataFormatter.EventManager) {
       console.log('[EmergencyMode] Core EventManager detected, registering with event delegation system');
       
-      // Register as a low-priority emergency mode handler (only runs in emergency mode)
+      // Register as a high-priority emergency mode handler (runs in emergency mode)
       window.FireEMS.DataFormatter.EventManager.register('change', {
         name: 'EmergencyMode.processFile',
         callback: (event, element) => {
           if (element.id === 'data-file' && event.target.files && event.target.files.length > 0) {
+            const file = event.target.files[0];
+            
+            // Check if this is a large file that needs special handling
+            const isKnownLargeFile = file && file.name && (
+              file.name.toLowerCase().includes('data1g') || 
+              file.name.toLowerCase().includes('large') || 
+              file.name.toLowerCase().includes('big')
+            );
+            const isVeryLargeFile = file && file.size && file.size > 10000000; // 10MB
+            
+            if (isKnownLargeFile || isVeryLargeFile) {
+              console.log('%c[EmergencyMode] Detected large file, ensuring enhanced processing', 
+                         'color: orange; font-weight: bold');
+              
+              // Store file size for future reference
+              try {
+                sessionStorage.setItem('lastFileSize', file.size.toString());
+              } catch(e) {
+                console.warn('Could not store file size', e);
+              }
+              
+              if (window.FireEMS.DataFormatter.StateManager) {
+                window.FireEMS.DataFormatter.StateManager.set('isLargeFile', true);
+                
+                // For known problem files or extremely large ones, force emergency mode
+                if (isKnownLargeFile || file.size > 50000000) { // 50MB
+                  console.log('%c[EmergencyMode] File is extremely large, forcing emergency mode', 
+                             'color: red; font-weight: bold');
+                  window.FireEMS.DataFormatter.StateManager.set('mode', 'emergency');
+                }
+              }
+              window.isEmergencyMode = true;
+            }
+            
             console.log('[EmergencyMode] Processing file via event delegation');
-            window.FireEMS.EmergencyMode.processFile(event.target.files[0]);
+            window.FireEMS.EmergencyMode.processFile(file);
             return true; // Signal that we've handled the event
           }
           return false;
         },
-        mode: 'emergency', // Only run in emergency mode
-        priority: 10 // Low priority - only run if no higher priority handlers exist
+        mode: 'emergency', // Only run in emergency mode 
+        priority: 200 // High priority for Data1G.csv processing
       });
     } else {
       // Core EventManager is not available, set up our own listener as a fallback

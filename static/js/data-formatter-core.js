@@ -202,21 +202,43 @@
     },
 
     showModeIndicator: function(mode) {
+      // CRITICAL FIX: Only try to create indicator if DOM is ready
+      if (document.readyState === 'loading') {
+        console.log('[StateManager] DOM not ready, deferring mode indicator creation');
+        // Schedule to run again when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+          this.showModeIndicator(mode);
+        });
+        return;
+      }
+      
       // Create or update a visual indicator in the UI
       let indicator = document.getElementById('mode-indicator');
       
       if (!indicator) {
-        indicator = document.createElement('div');
-        indicator.id = 'mode-indicator';
-        indicator.style.position = 'fixed';
-        indicator.style.top = '10px';
-        indicator.style.right = '10px';
-        indicator.style.padding = '5px 10px';
-        indicator.style.borderRadius = '4px';
-        indicator.style.fontSize = '12px';
-        indicator.style.fontWeight = 'bold';
-        indicator.style.zIndex = '9999';
-        document.body.appendChild(indicator);
+        try {
+          indicator = document.createElement('div');
+          indicator.id = 'mode-indicator';
+          indicator.style.position = 'fixed';
+          indicator.style.top = '10px';
+          indicator.style.right = '10px';
+          indicator.style.padding = '5px 10px';
+          indicator.style.borderRadius = '4px';
+          indicator.style.fontSize = '12px';
+          indicator.style.fontWeight = 'bold';
+          indicator.style.zIndex = '9999';
+          
+          // Check if body exists before appending
+          if (document.body) {
+            document.body.appendChild(indicator);
+          } else {
+            console.warn('[StateManager] document.body not available, mode indicator creation deferred');
+            return;
+          }
+        } catch (e) {
+          console.warn('[StateManager] Error creating mode indicator:', e);
+          return;
+        }
       }
       
       if (mode === 'emergency') {
@@ -378,6 +400,30 @@
         }
       }
       
+      // CRITICAL FIX: If DOM not ready, defer loading until DOM is ready
+      if (document.readyState === 'loading') {
+        console.log(`[ComponentLoader] DOM not ready, deferring load of ${name}`);
+        return new Promise((resolve, reject) => {
+          document.addEventListener('DOMContentLoaded', () => {
+            console.log(`[ComponentLoader] DOM ready, loading deferred component ${name}`);
+            this.load(name).then(resolve).catch(reject);
+          });
+        });
+      }
+      
+      // CRITICAL FIX: Check if we can add script to document
+      if (!document.head && !document.body) {
+        console.warn(`[ComponentLoader] Cannot load script ${name} - DOM not initialized`);
+        
+        // Schedule a retry
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            console.log(`[ComponentLoader] Retrying load of ${name} after delay`);
+            this.load(name).then(resolve).catch(reject);
+          }, 500);
+        });
+      }
+      
       // Load the script
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
@@ -437,7 +483,14 @@
               reject(new Error(`All load attempts failed for ${name}`));
             };
             
-            document.body.appendChild(emergencyScript);
+            // CRITICAL FIX: Use document.head if body not available
+            const parent = document.body || document.head;
+            if (parent) {
+              parent.appendChild(emergencyScript);
+            } else {
+              console.error(`[ComponentLoader] Cannot append script - both document.body and document.head are null`);
+              reject(new Error('DOM not initialized enough to load scripts'));
+            }
           } else {
             StateManager.set(`componentStatus.${name}`, false);
             StateManager._state.loadingErrors.push(`Failed to load ${name}`);
@@ -452,7 +505,14 @@
           }
         };
         
-        document.body.appendChild(script);
+        // CRITICAL FIX: Use document.head if body not available
+        const parent = document.body || document.head;
+        if (parent) {
+          parent.appendChild(script);
+        } else {
+          console.error(`[ComponentLoader] Cannot append script - both document.body and document.head are null`);
+          reject(new Error('DOM not initialized enough to load scripts'));
+        }
       });
     },
     
@@ -473,8 +533,11 @@
     // Store all event handlers by event type
     handlers: {},
     
-    // Store elements with events
+    // Store elements with events and their actual DOM listeners
     elements: {},
+    
+    // Flag indicating if the system is initialized
+    initialized: false,
     
     // Register a handler for a specific event type
     on: function(eventType, handler) {
@@ -500,6 +563,26 @@
       return this;
     },
     
+    // Remove all handlers and detach DOM listeners
+    reset: function() {
+      // Remove all DOM event listeners
+      Object.entries(this.elements).forEach(([key, elem]) => {
+        const element = document.getElementById(elem.elementId);
+        if (element && element._eventManager_listener) {
+          element.removeEventListener(elem.eventType, element._eventManager_listener);
+          delete element._eventManager_listener;
+        }
+      });
+      
+      // Clear our handler registry
+      this.handlers = {};
+      this.elements = {};
+      this.initialized = false;
+      
+      console.log('[EventManager] Reset completed - all handlers removed');
+      return this;
+    },
+    
     // Attach event listener to an element and manage through event delegation
     attach: function(elementId, eventType, mode = 'any') {
       // Skip if already listening on this element
@@ -509,27 +592,126 @@
       // Store the element in our registry
       this.elements[key] = { elementId, eventType, mode };
       
+      // CRITICAL FIX: If DOM not ready, defer attaching event listener
+      if (document.readyState === 'loading') {
+        console.log(`[EventManager] DOM not ready, deferring event attachment for ${elementId}`);
+        document.addEventListener('DOMContentLoaded', () => {
+          this.attach(elementId, eventType, mode);
+        });
+        return this;
+      }
+      
       // Set up actual browser event listener
       const element = document.getElementById(elementId);
       if (!element) {
         console.warn(`[EventManager] Element not found: ${elementId}`);
+        
+        // CRITICAL FIX: Add retry mechanism for elements that might be created dynamically
+        setTimeout(() => {
+          const retryElement = document.getElementById(elementId);
+          if (retryElement) {
+            console.log(`[EventManager] Element ${elementId} found on retry, attaching event listener`);
+            this._attachToElement(retryElement, eventType, mode);
+          } else {
+            console.warn(`[EventManager] Element ${elementId} still not found after retry`);
+          }
+        }, 500); // Retry after 500ms
+        
         return this;
       }
       
-      element.addEventListener(eventType, (event) => {
-        // Lookup the current mode
+      return this._attachToElement(element, eventType, mode);
+    },
+    
+    // Helper method to attach event listener to an element
+    _attachToElement: function(element, eventType, mode = 'any') {
+      if (!element) {
+        console.warn('[EventManager] Cannot attach to null element');
+        return this;
+      }
+      
+      const elementId = element.id;
+      
+      // Prevent multiple listeners on the same element
+      if (element._eventManager_listener) {
+        console.warn(`[EventManager] Element ${elementId} already has a listener attached`);
+        element.removeEventListener(eventType, element._eventManager_listener);
+      }
+      
+      // Create a handler function that will process events through our delegation system
+      const handler = (event) => {
+        // Check if we're in emergency mode first - this is a critical performance optimization
         const currentMode = StateManager.get('mode');
+        
+        // Log what's happening - helps debug event delegation issues
+        console.log(`[EventManager] Processing ${eventType} event on ${elementId} (current mode: ${currentMode})`);
         
         // Get all handlers for this event type
         const handlers = this.handlers[eventType] || [];
         
+        // Check for large file special case for file inputs
+        const isLargeFileEvent = element && element.id === 'data-file' && 
+                               event && event.target && event.target.files && 
+                               event.target.files[0];
+                               
+        let isKnownLargeFile = false;
+        let isVeryLargeFile = false;
+        
+        if (isLargeFileEvent) {
+          const file = event.target.files[0];
+          
+          // Check filename for known large files
+          isKnownLargeFile = file.name && (
+            file.name.toLowerCase().includes('data1g') || 
+            file.name.toLowerCase().includes('large') ||
+            file.name.toLowerCase().includes('big')
+          );
+          
+          // Check file size
+          isVeryLargeFile = file.size > 10000000; // 10MB
+          
+          // Log large file detection
+          if (isKnownLargeFile || isVeryLargeFile) {
+            console.log(`%c[EventManager] LARGE FILE DETECTED: ${file.name} (${Math.round(file.size/1024/1024)}MB)`, 
+                        'color: orange; font-weight: bold');
+          }
+        }
+        
         // Find handlers that should execute in the current mode
         const eligibleHandlers = handlers.filter(handler => {
-          return handler.mode === 'any' || handler.mode === currentMode;
+          // Base condition - handler works in current mode or any mode
+          const modeMatches = handler.mode === 'any' || handler.mode === currentMode;
+          
+          // CRITICAL FIX: Special case for large files - include emergency handlers
+          const shouldUseEmergencyHandler = (isKnownLargeFile || isVeryLargeFile) && handler.mode === 'emergency';
+          if (isLargeFileEvent && shouldUseEmergencyHandler) {
+            return true;
+          }
+          
+          return modeMatches;
         });
         
         // Sort handlers by priority (high numbers first)
-        eligibleHandlers.sort((a, b) => (b.priority || 0) - (a.priority || 0));
+        // CRITICAL FIX: For large files, boost priority of emergency handlers
+        eligibleHandlers.sort((a, b) => {
+          // If this is a large file and we have emergency handlers, consider giving them priority
+          if (isLargeFileEvent && (isKnownLargeFile || isVeryLargeFile)) {
+            // For very large files or known problematic ones, emergency handlers get top priority
+            if ((isKnownLargeFile || isVeryLargeFile) && 
+                a.mode === 'emergency' && b.mode !== 'emergency') return -1;
+            if ((isKnownLargeFile || isVeryLargeFile) && 
+                a.mode !== 'emergency' && b.mode === 'emergency') return 1;
+          }
+          
+          // Normal priority sorting
+          return (b.priority || 0) - (a.priority || 0);
+        });
+        
+        // Log eligible handlers - helps debug event delegation issues
+        console.log(`[EventManager] Found ${eligibleHandlers.length} eligible handlers`);
+        if (eligibleHandlers.length > 0) {
+          console.log(`[EventManager] Handlers:`, eligibleHandlers.map(h => `${h.name} (mode: ${h.mode}, priority: ${h.priority || 0})`));
+        }
         
         // Execute handlers in priority order
         for (const handler of eligibleHandlers) {
@@ -544,7 +726,13 @@
             console.error(`[EventManager] Error in handler ${handler.name}:`, error);
           }
         }
-      });
+      };
+      
+      // Store handler reference on the element so we can remove it later
+      element._eventManager_listener = handler;
+      
+      // Add the actual event listener
+      element.addEventListener(eventType, handler);
       
       console.log(`[EventManager] Attached listener to ${elementId} for ${eventType} events`);
       return this;
@@ -1016,7 +1204,40 @@
         name: 'FileManager.processFile',
         callback: (event, element) => {
           if (element.id === 'data-file' && event.target.files && event.target.files.length > 0) {
-            this.processFile(event.target.files[0]);
+            const file = event.target.files[0];
+            
+            // CRITICAL FIX: Check for large files and use appropriate processing
+            const isVeryLargeFile = file && file.size && file.size > 10000000; // 10MB
+            const isKnownLargeFile = file && file.name && (
+              file.name.toLowerCase().includes('data1g') || 
+              file.name.toLowerCase().includes('large') ||
+              file.name.toLowerCase().includes('big')
+            );
+            
+            if (isKnownLargeFile || isVeryLargeFile) {
+              console.log('[FileManager] Detected large file, setting enhanced processing mode');
+              
+              // Store size for future reference
+              try {
+                sessionStorage.setItem('lastFileSize', file.size.toString());
+              } catch(e) {
+                console.warn('Could not store file size', e);
+              }
+              
+              // Always mark as large file
+              StateManager.set('isLargeFile', true);
+              
+              // For extremely large files or known problematic ones, use emergency mode
+              if (isKnownLargeFile || file.size > 50000000) { // 50MB threshold for emergency mode
+                console.log('[FileManager] File is extremely large, forcing emergency mode');
+                StateManager.set('mode', 'emergency');
+                
+                // Let emergency handler process this file
+                return false;
+              }
+            }
+            
+            this.processFile(file);
             return true; // Signal that we've handled the event
           }
           return false;
@@ -1125,7 +1346,11 @@
       
       DiagnosticManager.startTimer('bootProcess');
       
-      // Initialize state first
+      // CRITICAL FIX: Check if we're initializing before DOM is ready
+      const isDOMReady = document.readyState !== 'loading';
+      console.log(`[BootManager] Initializing (DOM ready: ${isDOMReady})`);
+      
+      // Initialize state first - this is always safe to do
       StateManager.initialize();
       
       // Initialize event system
@@ -1137,24 +1362,41 @@
       // Set up event listeners
       this.setupEventListeners();
       
-      // Begin loading components
-      this.loadInitialComponents();
+      // CRITICAL FIX: For early initialization, defer DOM-dependent operations
+      const completeDOMDependentInit = () => {
+        // Initialize file management first so it can handle events
+        FileManager.initialize();
+        
+        // Set up DOM event delegation after file manager is ready
+        this.setupDOMEvents();
+        
+        // Begin loading components after event system is ready
+        this.loadInitialComponents();
+        
+        // Create global formatterState for backward compatibility with existing code
+        this.setupLegacyCompatibility();
+        
+        console.log('[BootManager] DOM-dependent initialization complete');
+      };
       
-      // Set up timeout check for emergency mode
+      // Set up timeout check for emergency mode - do this immediately
       this.setupEmergencyCheck();
       
-      // Initialize file management
-      FileManager.initialize();
-      
-      // Set up DOM event delegation
-      this.setupDOMEvents();
+      // For DOM-dependent operations, check if we need to wait
+      if (isDOMReady) {
+        // DOM is already ready, proceed immediately
+        completeDOMDependentInit();
+      } else {
+        // Defer DOM-dependent initialization until DOM is ready
+        console.log('[BootManager] Deferring DOM-dependent initialization until DOM is ready');
+        document.addEventListener('DOMContentLoaded', () => {
+          console.log('[BootManager] DOM is now ready, completing initialization');
+          completeDOMDependentInit();
+        });
+      }
       
       DiagnosticManager.endTimer('bootProcess', true);
-      
-      // Create global formatterState for backward compatibility with existing code
-      this.setupLegacyCompatibility();
-      
-      console.log('[BootManager] Initialization complete');
+      console.log('[BootManager] Initial initialization phase complete');
     },
     
     // Register all the components we need
@@ -1220,17 +1462,58 @@
     
     // Set up DOM event delegation
     setupDOMEvents: function() {
-      // File input change event
-      EventManager.attach('data-file', 'change');
+      // Handle DOM not ready yet - wait until DOM is loaded
+      const setupEvents = () => {
+        // Check for large files from session/localStorage
+        const currentFileName = sessionStorage.getItem('currentFileName') || 
+                              localStorage.getItem('currentFileName');
+        const fileSize = parseInt(sessionStorage.getItem('lastFileSize') || '0', 10);
+        
+        // CRITICAL FIX: Check if this is a large file that should use enhanced processing
+        const isKnownLargeFile = (currentFileName && (
+          currentFileName.toLowerCase().includes('data1g') || 
+          currentFileName.toLowerCase().includes('large') ||
+          currentFileName.toLowerCase().includes('big')
+        ));
+        const isLargeBySize = fileSize > 1000000; // 1MB
+        
+        if (isKnownLargeFile || isLargeBySize) {
+          console.log(`[BootManager] Detected large file from storage, using enhanced processing`);
+          StateManager.set('isLargeFile', true);
+          
+          // Only force emergency mode for extremely large files or known problematic files
+          if (isKnownLargeFile || fileSize > 10000000) { // 10MB
+            console.log(`[BootManager] File is extremely large, forcing emergency mode`);
+            StateManager.set('mode', 'emergency');
+          }
+        }
+        // Otherwise, set normal mode if we're still in loading
+        else if (StateManager.get('mode') === 'loading') {
+          StateManager.set('mode', 'normal');
+        }
+        
+        // File input change event
+        EventManager.attach('data-file', 'change');
+        
+        // Map fields button click
+        EventManager.attach('map-fields-btn', 'click');
+        
+        // Download button click
+        EventManager.attach('download-btn', 'click');
+        
+        // Send to tool button click
+        EventManager.attach('send-to-tool-btn', 'click');
+        
+        console.log('[BootManager] Event delegation system initialized in', StateManager.get('mode'), 'mode');
+      };
       
-      // Map fields button click
-      EventManager.attach('map-fields-btn', 'click');
-      
-      // Download button click
-      EventManager.attach('download-btn', 'click');
-      
-      // Send to tool button click
-      EventManager.attach('send-to-tool-btn', 'click');
+      // Check if DOM is ready
+      if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        setupEvents();
+      } else {
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', setupEvents);
+      }
     },
     
     // Load the initial set of components
