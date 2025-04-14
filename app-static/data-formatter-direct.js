@@ -426,21 +426,56 @@
     }
   }
   
-  // Add event listener to file input
+  // Check if we need to add a file input listener
   document.addEventListener('DOMContentLoaded', function() {
-    const fileInput = document.getElementById('data-file');
-    
-    if (fileInput) {
-      console.log('[EmergencyMode] Adding file input listener');
+    // CRITICAL: Check if the core EventManager is available
+    // If it is, we should let it handle events instead of adding our own listeners
+    if (window.FireEMS && window.FireEMS.DataFormatter && window.FireEMS.DataFormatter.EventManager) {
+      console.log('[EmergencyMode] Core EventManager detected, registering with event delegation system');
       
-      fileInput.addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        if (file) {
-          window.FireEMS.EmergencyMode.processFile(file);
-        }
+      // Register as a low-priority emergency mode handler (only runs in emergency mode)
+      window.FireEMS.DataFormatter.EventManager.register('change', {
+        name: 'EmergencyMode.processFile',
+        callback: (event, element) => {
+          if (element.id === 'data-file' && event.target.files && event.target.files.length > 0) {
+            console.log('[EmergencyMode] Processing file via event delegation');
+            window.FireEMS.EmergencyMode.processFile(event.target.files[0]);
+            return true; // Signal that we've handled the event
+          }
+          return false;
+        },
+        mode: 'emergency', // Only run in emergency mode
+        priority: 10 // Low priority - only run if no higher priority handlers exist
       });
     } else {
-      console.warn('[EmergencyMode] File input element not found');
+      // Core EventManager is not available, set up our own listener as a fallback
+      const fileInput = document.getElementById('data-file');
+      
+      if (fileInput) {
+        // Check if we're in a state where we SHOULD add our own listener
+        const coreProcessingAvailable = window.FireEMS?.DataFormatter?.FileManager?.processFile;
+        
+        if (!coreProcessingAvailable) {
+          console.log('[EmergencyMode] Adding emergency file input listener');
+          
+          // Track whether we've added a listener to avoid duplicates
+          if (!fileInput._emergencyListenerAdded) {
+            fileInput.addEventListener('change', function(event) {
+              const file = event.target.files[0];
+              if (file) {
+                console.log('[EmergencyMode] Processing file via direct event listener');
+                window.FireEMS.EmergencyMode.processFile(file);
+              }
+            });
+            
+            fileInput._emergencyListenerAdded = true;
+          }
+        } else {
+          console.log('[EmergencyMode] Core file processing available, not adding duplicate listener');
+        }
+      } else {
+        console.warn('[EmergencyMode] File input element not found');
+      }
     }
   });
   

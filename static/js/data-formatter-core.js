@@ -266,7 +266,7 @@
     }
   };
   
-  // Component Loader manages script loading with proper dependency tracking
+  // ComponentLoader manages script loading with proper dependency tracking
   const ComponentLoader = {
     _registry: {},
     _loadAttempts: {},
@@ -468,6 +468,582 @@
     }
   };
   
+  // EventManager handles global events and provides a central event delegation system
+  const EventManager = {
+    // Store all event handlers by event type
+    handlers: {},
+    
+    // Store elements with events
+    elements: {},
+    
+    // Register a handler for a specific event type
+    on: function(eventType, handler) {
+      if (!this.handlers[eventType]) {
+        this.handlers[eventType] = [];
+      }
+      
+      this.handlers[eventType].push(handler);
+      return this;
+    },
+    
+    // Remove a handler
+    off: function(eventType, handler) {
+      if (!this.handlers[eventType]) return this;
+      
+      if (handler) {
+        this.handlers[eventType] = this.handlers[eventType].filter(h => h !== handler);
+      } else {
+        // Remove all handlers for this event type
+        delete this.handlers[eventType];
+      }
+      
+      return this;
+    },
+    
+    // Attach event listener to an element and manage through event delegation
+    attach: function(elementId, eventType, mode = 'any') {
+      // Skip if already listening on this element
+      const key = `${elementId}:${eventType}`;
+      if (this.elements[key]) return this;
+      
+      // Store the element in our registry
+      this.elements[key] = { elementId, eventType, mode };
+      
+      // Set up actual browser event listener
+      const element = document.getElementById(elementId);
+      if (!element) {
+        console.warn(`[EventManager] Element not found: ${elementId}`);
+        return this;
+      }
+      
+      element.addEventListener(eventType, (event) => {
+        // Lookup the current mode
+        const currentMode = StateManager.get('mode');
+        
+        // Get all handlers for this event type
+        const handlers = this.handlers[eventType] || [];
+        
+        // Find handlers that should execute in the current mode
+        const eligibleHandlers = handlers.filter(handler => {
+          return handler.mode === 'any' || handler.mode === currentMode;
+        });
+        
+        // Sort handlers by priority (high numbers first)
+        eligibleHandlers.sort((a, b) => (b.priority || 0) - (a.priority || 0));
+        
+        // Execute handlers in priority order
+        for (const handler of eligibleHandlers) {
+          try {
+            // If handler returns true, it "handled" the event so stop propagation
+            const result = handler.callback(event, element);
+            if (result === true) {
+              console.log(`[EventManager] Event handled by ${handler.name} (stopping propagation)`);
+              break;
+            }
+          } catch (error) {
+            console.error(`[EventManager] Error in handler ${handler.name}:`, error);
+          }
+        }
+      });
+      
+      console.log(`[EventManager] Attached listener to ${elementId} for ${eventType} events`);
+      return this;
+    },
+    
+    // Register a handler with mode and priority
+    register: function(eventType, handler) {
+      // Handler must be an object with at least a callback function
+      if (!handler || typeof handler.callback !== 'function') {
+        console.error('[EventManager] Invalid handler object:', handler);
+        return this;
+      }
+      
+      // Set defaults if missing
+      handler.mode = handler.mode || 'any';
+      handler.priority = handler.priority || 0;
+      handler.name = handler.name || 'anonymous';
+      
+      // Register the handler
+      this.on(eventType, handler);
+      console.log(`[EventManager] Registered ${handler.name} for ${eventType} events (mode: ${handler.mode}, priority: ${handler.priority})`);
+      
+      return this;
+    },
+    
+    // Initialize the event system
+    initialize: function() {
+      console.log('[EventManager] Initializing event delegation system');
+      
+      // Listen for mode changes to update handler eligibility
+      StateManager.addEventListener('modeChange', (data) => {
+        console.log(`[EventManager] Mode changed from ${data.oldMode} to ${data.newMode}, updating handler eligibility`);
+      });
+      
+      return this;
+    }
+  };
+  
+  // FileManager handles file processing consistently
+  const FileManager = {
+    // Constants
+    DEFAULT_PREVIEW_SIZE: 25,
+    LARGE_FILE_PREVIEW_SIZE: 100,
+    DEFAULT_PROCESSING_LIMIT: 100,
+    LARGE_FILE_PROCESSING_LIMIT: 1000,
+    
+    // Process a file and update state
+    processFile: function(file) {
+      if (!file) {
+        console.error('[FileManager] No file provided');
+        return;
+      }
+      
+      // Update state with file metadata
+      StateManager.setMultiple({
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type
+      });
+      
+      // Log file details
+      console.log(`[FileManager] Processing file: ${file.name} (${Math.round(file.size / 1024)} KB)`);
+      
+      // Determine file type and process accordingly
+      const fileExtension = file.name.split('.').pop().toLowerCase();
+      
+      // Use the appropriate processor based on file type
+      if (fileExtension === 'csv') {
+        this.processCSV(file);
+      } else if (['xls', 'xlsx'].includes(fileExtension)) {
+        this.processExcel(file);
+      } else if (fileExtension === 'json') {
+        this.processJSON(file);
+      } else {
+        console.warn(`[FileManager] Unsupported file extension: ${fileExtension}, attempting CSV processing`);
+        this.processCSV(file);
+      }
+      
+      // Update UI with filename
+      const fileNameDisplay = document.getElementById('file-name');
+      if (fileNameDisplay) {
+        fileNameDisplay.textContent = file.name;
+      }
+      
+      // Enable the mapping button
+      const mapFieldsBtn = document.getElementById('map-fields-btn');
+      if (mapFieldsBtn) {
+        mapFieldsBtn.disabled = false;
+      }
+      
+      // Add to processing log
+      this.addLogEntry(`File loaded: ${file.name} (${Math.round(file.size / 1024)} KB)`, 'info');
+    },
+    
+    // Process CSV files
+    processCSV: function(file) {
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        try {
+          const text = e.target.result;
+          const lines = text.split('\n');
+          const headers = lines[0].split(',').map(h => h.trim());
+          
+          if (headers.length === 0) {
+            this.handleError('No columns detected in CSV file');
+            return;
+          }
+          
+          // Store column headers in state
+          StateManager.set('sourceColumns', headers);
+          
+          // Determine processing limit based on file characteristics
+          const isLargeFile = StateManager.get('isLargeFile');
+          const maxRows = isLargeFile ? this.LARGE_FILE_PROCESSING_LIMIT : this.DEFAULT_PROCESSING_LIMIT;
+          
+          console.log(`[FileManager] Processing ${maxRows} rows from ${file.name} (large file: ${isLargeFile})`);
+          
+          // Process data rows
+          const sampleData = [];
+          
+          for (let i = 1; i < Math.min(lines.length, maxRows + 1); i++) {
+            if (lines[i].trim()) {
+              const values = lines[i].split(',');
+              const row = {};
+              
+              headers.forEach((header, index) => {
+                row[header] = values[index] ? values[index].trim() : '';
+              });
+              
+              sampleData.push(row);
+            }
+          }
+          
+          // Update state with sample data
+          StateManager.set('sampleData', sampleData);
+          StateManager.set('originalData', true);
+          
+          // Update preview
+          this.updatePreview(headers, sampleData);
+          
+          // Log success
+          this.addLogEntry(`CSV processed with ${headers.length} columns and ${sampleData.length} rows.${isLargeFile ? ' <b>(Enhanced processing for large file)</b>' : ''}`, 'info');
+        } catch (error) {
+          this.handleError(`Error processing CSV: ${error.message}`);
+          console.error('[FileManager] CSV processing error:', error);
+        }
+      };
+      
+      reader.onerror = () => {
+        this.handleError('Error reading file');
+      };
+      
+      reader.readAsText(file);
+    },
+    
+    // Process Excel files
+    processExcel: function(file) {
+      // Check if XLSX.js is available
+      if (!window.XLSX) {
+        this.handleError('Excel processing requires XLSX.js library which is not available');
+        return;
+      }
+      
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          
+          // Get first sheet
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          
+          // Convert to JSON
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          
+          if (jsonData.length === 0) {
+            this.handleError('No data found in Excel file');
+            return;
+          }
+          
+          // Extract headers from first row
+          const headers = jsonData[0].map(h => h ? h.toString().trim() : '');
+          
+          // Update state with column headers
+          StateManager.set('sourceColumns', headers);
+          
+          // Determine processing limit based on file characteristics
+          const isLargeFile = StateManager.get('isLargeFile');
+          const maxRows = isLargeFile ? this.LARGE_FILE_PROCESSING_LIMIT : this.DEFAULT_PROCESSING_LIMIT;
+          
+          console.log(`[FileManager] Processing ${maxRows} rows from Excel ${file.name} (large file: ${isLargeFile})`);
+          
+          // Process data rows
+          const sampleData = [];
+          
+          for (let i = 1; i < Math.min(jsonData.length, maxRows + 1); i++) {
+            if (jsonData[i].length > 0) {
+              const row = {};
+              
+              headers.forEach((header, index) => {
+                row[header] = index < jsonData[i].length ? jsonData[i][index] : '';
+              });
+              
+              sampleData.push(row);
+            }
+          }
+          
+          // Update state with sample data
+          StateManager.set('sampleData', sampleData);
+          StateManager.set('originalData', true);
+          
+          // Update preview
+          this.updatePreview(headers, sampleData);
+          
+          // Log success
+          this.addLogEntry(`Excel file processed with ${headers.length} columns and ${sampleData.length} rows.${isLargeFile ? ' <b>(Enhanced processing for large file)</b>' : ''}`, 'info');
+        } catch (error) {
+          this.handleError(`Error processing Excel file: ${error.message}`);
+          console.error('[FileManager] Excel processing error:', error);
+        }
+      };
+      
+      reader.onerror = () => {
+        this.handleError('Error reading Excel file');
+      };
+      
+      reader.readAsArrayBuffer(file);
+    },
+    
+    // Process JSON files
+    processJSON: function(file) {
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        try {
+          const jsonText = e.target.result;
+          const jsonData = JSON.parse(jsonText);
+          
+          // Handle array of objects
+          if (Array.isArray(jsonData) && jsonData.length > 0) {
+            // Check if first item is an object
+            if (typeof jsonData[0] === 'object' && jsonData[0] !== null) {
+              // Extract headers from first object
+              const headers = Object.keys(jsonData[0]);
+              
+              // Update state with column headers
+              StateManager.set('sourceColumns', headers);
+              
+              // Determine processing limit based on file characteristics
+              const isLargeFile = StateManager.get('isLargeFile');
+              const maxRows = isLargeFile ? this.LARGE_FILE_PROCESSING_LIMIT : this.DEFAULT_PROCESSING_LIMIT;
+              
+              console.log(`[FileManager] Processing ${maxRows} rows from JSON ${file.name} (large file: ${isLargeFile})`);
+              
+              // Use data directly, limiting to max rows
+              const sampleData = jsonData.slice(0, maxRows);
+              
+              // Update state with sample data
+              StateManager.set('sampleData', sampleData);
+              StateManager.set('originalData', true);
+              
+              // Update preview
+              this.updatePreview(headers, sampleData);
+              
+              // Log success
+              this.addLogEntry(`JSON file processed with ${headers.length} columns and ${sampleData.length} rows.${isLargeFile ? ' <b>(Enhanced processing for large file)</b>' : ''}`, 'info');
+            } else {
+              this.handleError('JSON data must be an array of objects');
+            }
+          } else {
+            this.handleError('JSON data must be an array of objects');
+          }
+        } catch (error) {
+          this.handleError(`Error processing JSON: ${error.message}`);
+          console.error('[FileManager] JSON processing error:', error);
+        }
+      };
+      
+      reader.onerror = () => {
+        this.handleError('Error reading JSON file');
+      };
+      
+      reader.readAsText(file);
+    },
+    
+    // Handle processing errors
+    handleError: function(message) {
+      // Show error in preview
+      const previewContainer = document.getElementById('input-preview');
+      if (previewContainer) {
+        previewContainer.innerHTML = `
+          <div class="error-message">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>${message}</p>
+          </div>
+        `;
+      }
+      
+      // Add to log
+      this.addLogEntry(message, 'error');
+    },
+    
+    // Update preview with processed data
+    updatePreview: function(headers, rows) {
+      const previewContainer = document.getElementById('input-preview');
+      if (!previewContainer) return;
+      
+      // Determine preview size based on file characteristics
+      const isLargeFile = StateManager.get('isLargeFile');
+      const previewSize = isLargeFile ? this.LARGE_FILE_PREVIEW_SIZE : this.DEFAULT_PREVIEW_SIZE;
+      const rowsToShow = Math.min(rows.length, previewSize);
+      
+      console.log(`[FileManager] Showing preview with ${rowsToShow} rows (large file: ${isLargeFile})`);
+      
+      // Generate preview HTML
+      let html = '<table class="preview-table"><thead><tr>';
+      
+      // Add headers
+      headers.forEach(header => {
+        html += `<th>${header}</th>`;
+      });
+      
+      html += '</tr></thead><tbody>';
+      
+      // Add rows
+      for (let i = 0; i < rowsToShow; i++) {
+        html += '<tr>';
+        headers.forEach(header => {
+          html += `<td>${rows[i][header] !== undefined ? rows[i][header] : ''}</td>`;
+        });
+        html += '</tr>';
+      }
+      
+      html += '</tbody></table>';
+      
+      // If not showing all rows, add a message
+      if (rowsToShow < rows.length) {
+        html += `
+          <div class="preview-message" style="margin-top: 10px; font-style: italic;">
+            Showing ${rowsToShow} of ${rows.length} total records. Complete dataset will be processed.
+          </div>
+        `;
+      }
+      
+      previewContainer.innerHTML = html;
+    },
+    
+    // Add entry to the transformation log
+    addLogEntry: function(message, type = 'info') {
+      const logContainer = document.getElementById('log-container');
+      if (!logContainer) return;
+      
+      const timestamp = new Date().toLocaleTimeString();
+      const logEntry = document.createElement('div');
+      logEntry.className = `log-entry log-${type}`;
+      logEntry.innerHTML = `
+        <span class="log-time">${timestamp}</span> 
+        ${message}
+      `;
+      
+      // Remove placeholder if present
+      const placeholder = logContainer.querySelector('.log-placeholder');
+      if (placeholder) {
+        logContainer.innerHTML = '';
+      }
+      
+      logContainer.appendChild(logEntry);
+    },
+    
+    // Create sample output after mapping
+    createSampleOutput: function() {
+      const sampleData = StateManager.get('sampleData');
+      const mappings = StateManager.get('mappings');
+      
+      if (!sampleData || !mappings) {
+        console.error('[FileManager] Missing data or mappings for output generation');
+        return;
+      }
+      
+      console.log(`[FileManager] Generating output from ${sampleData.length} records`);
+      
+      // Transform data based on mappings
+      const transformedData = sampleData.map(row => {
+        const transformed = {};
+        
+        // Apply each mapping
+        Object.entries(mappings).forEach(([targetField, mapping]) => {
+          const sourceColumn = mapping.sourceId || mapping;
+          transformed[targetField] = row[sourceColumn] || '';
+        });
+        
+        return transformed;
+      });
+      
+      // Update state
+      StateManager.set('transformedData', transformedData);
+      
+      // Update output preview
+      this.updateOutputPreview(transformedData, mappings);
+      
+      // Enable download and send buttons
+      const downloadBtn = document.getElementById('download-btn');
+      const sendToToolBtn = document.getElementById('send-to-tool-btn');
+      
+      if (downloadBtn) downloadBtn.disabled = false;
+      if (sendToToolBtn) sendToToolBtn.disabled = false;
+      
+      // Log action
+      const isLargeFile = StateManager.get('isLargeFile');
+      const previewSize = isLargeFile ? this.LARGE_FILE_PREVIEW_SIZE : this.DEFAULT_PREVIEW_SIZE;
+      const rowsToShow = Math.min(transformedData.length, previewSize);
+      
+      this.addLogEntry(`Data transformation complete. Preview shows ${rowsToShow} of ${transformedData.length} total record(s).${isLargeFile ? ' <b>(Using enhanced preview for large files)</b>' : ''}`, 'info');
+    },
+    
+    // Update output preview
+    updateOutputPreview: function(transformedData, mappings) {
+      const outputPreview = document.getElementById('output-preview');
+      if (!outputPreview) return;
+      
+      // Determine preview size
+      const isLargeFile = StateManager.get('isLargeFile');
+      const previewSize = isLargeFile ? this.LARGE_FILE_PREVIEW_SIZE : this.DEFAULT_PREVIEW_SIZE;
+      const rowsToShow = Math.min(transformedData.length, previewSize);
+      
+      // Generate preview HTML
+      let html = '<table class="preview-table"><thead><tr>';
+      
+      // Add headers from mappings
+      const headers = Object.keys(mappings);
+      headers.forEach(header => {
+        html += `<th>${header}</th>`;
+      });
+      
+      html += '</tr></thead><tbody>';
+      
+      // Add rows
+      for (let i = 0; i < rowsToShow; i++) {
+        html += '<tr>';
+        headers.forEach(header => {
+          html += `<td>${transformedData[i][header] || ''}</td>`;
+        });
+        html += '</tr>';
+      }
+      
+      html += '</tbody></table>';
+      
+      // If not showing all rows, add a message
+      if (rowsToShow < transformedData.length) {
+        html += `
+          <div class="preview-message" style="margin-top: 10px; font-style: italic;">
+            Showing ${rowsToShow} of ${transformedData.length} total records. Complete dataset will be processed.
+          </div>
+        `;
+      }
+      
+      outputPreview.innerHTML = html;
+    },
+    
+    // Initialize the file manager
+    initialize: function() {
+      console.log('[FileManager] Initializing');
+      
+      // Register as the primary file processor (high priority, works in any mode)
+      EventManager.register('change', {
+        name: 'FileManager.processFile',
+        callback: (event, element) => {
+          if (element.id === 'data-file' && event.target.files && event.target.files.length > 0) {
+            this.processFile(event.target.files[0]);
+            return true; // Signal that we've handled the event
+          }
+          return false;
+        },
+        mode: 'any',
+        priority: 100 // High priority to handle before emergency mode
+      });
+      
+      // Register for map fields button click
+      EventManager.register('click', {
+        name: 'FileManager.showFieldMapping',
+        callback: (event, element) => {
+          if (element.id === 'map-fields-btn') {
+            console.log('[FileManager] Map fields button clicked');
+            // Continue with normal map fields functionality
+            return false; // Allow other handlers to run too
+          }
+          return false;
+        },
+        mode: 'normal',
+        priority: 50
+      });
+      
+      return this;
+    }
+  };
+  
   // DiagnosticManager helps identify and resolve issues
   const DiagnosticManager = {
     startTime: Date.now(),
@@ -552,6 +1128,9 @@
       // Initialize state first
       StateManager.initialize();
       
+      // Initialize event system
+      EventManager.initialize();
+      
       // Register required components
       this.registerComponents();
       
@@ -563,6 +1142,12 @@
       
       // Set up timeout check for emergency mode
       this.setupEmergencyCheck();
+      
+      // Initialize file management
+      FileManager.initialize();
+      
+      // Set up DOM event delegation
+      this.setupDOMEvents();
       
       DiagnosticManager.endTimer('bootProcess', true);
       
@@ -631,28 +1216,21 @@
           ComponentLoader.load('formatterFixes');
         }
       });
+    },
+    
+    // Set up DOM event delegation
+    setupDOMEvents: function() {
+      // File input change event
+      EventManager.attach('data-file', 'change');
       
-      // Listen for file selection
-      document.addEventListener('DOMContentLoaded', function() {
-        const fileInput = document.getElementById('data-file');
-        
-        if (fileInput) {
-          fileInput.addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            // Update state with file details
-            StateManager.setMultiple({
-              fileName: file.name,
-              fileSize: file.size,
-              fileType: file.type
-            });
-            
-            // Log file selection
-            console.log(`[EventListener] File selected: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`);
-          });
-        }
-      });
+      // Map fields button click
+      EventManager.attach('map-fields-btn', 'click');
+      
+      // Download button click
+      EventManager.attach('download-btn', 'click');
+      
+      // Send to tool button click
+      EventManager.attach('send-to-tool-btn', 'click');
     },
     
     // Load the initial set of components
@@ -707,16 +1285,18 @@
         originalFileName: StateManager.get('fileName'),
         
         // Add convenience methods
-        isLargeFile: function() {
-          return StateManager.get('isLargeFile');
+        isLargeFile: function(filename) {
+          const fileToCheck = filename || this.originalFileName || '';
+          const isDataIG = fileToCheck.toLowerCase().includes('data1g');
+          return isDataIG || (this.fileSize > 1000000);
         },
         
         getProcessingLimit: function() {
-          return StateManager.getProcessingLimit();
+          return this.isLargeFile() ? 1000 : 100;
         },
         
         getPreviewSize: function() {
-          return StateManager.getPreviewSize();
+          return this.isLargeFile() ? 100 : 25;
         }
       };
       
@@ -727,8 +1307,24 @@
           window.formatterState.originalFileName = data.value;
         } else if (data.key === 'fileSize') {
           window.formatterState.fileSize = data.value;
+        } else if (data.key === 'sourceColumns') {
+          window.formatterState.sourceColumns = data.value;
+        } else if (data.key === 'sampleData') {
+          window.formatterState.sampleData = data.value;
+        } else if (data.key === 'mappings') {
+          window.formatterState.mappings = data.value;
+        } else if (data.key === 'transformedData') {
+          window.formatterState.transformedData = data.value;
+        } else if (data.key === 'originalData') {
+          window.formatterState.originalData = data.value;
         }
       });
+      
+      // Hook into the legacy `createSampleOutput` function if called
+      window.createSampleOutput = function() {
+        console.log('[LegacyCompat] createSampleOutput called, delegating to FileManager');
+        FileManager.createSampleOutput();
+      };
     }
   };
   
@@ -737,6 +1333,8 @@
     // Core modules
     StateManager: StateManager,
     ComponentLoader: ComponentLoader,
+    EventManager: EventManager,
+    FileManager: FileManager,
     DiagnosticManager: DiagnosticManager,
     
     // Convenience methods
@@ -758,6 +1356,11 @@
     
     getDiagnostics: function() {
       return DiagnosticManager.getReport();
+    },
+    
+    // Direct access to process a file - allowing outside callers to use our system
+    processFile: function(file) {
+      return FileManager.processFile(file);
     },
     
     // Used to check if this library is loaded
