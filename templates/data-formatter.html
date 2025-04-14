@@ -1616,7 +1616,7 @@
           formatterBundleLoaded: !!window.dataFormatterLoaded,
           dataFormatterLoggerExists: !!window.DataFormatterLogger,
           emergencyModeActive: !!window.isEmergencyMode,
-          domContentLoaded: document.readyState === 'complete' || document.readyState === 'interactive',
+          domContentLoaded: document.readyState === 'complete',
           userInterface: {
             formatterContainer: !!document.querySelector('.formatter-container'),
             fileInput: !!document.getElementById('data-file'),
@@ -1624,30 +1624,66 @@
             mappingButton: !!document.getElementById('map-fields-btn')
           }
         };
-        
-        // Calculate overall health
-        const criticalComponents = [
-          healthStatus.formatterStateInitialized,
-          healthStatus.userInterface.formatterContainer,
-          healthStatus.userInterface.fileInput,
-          healthStatus.userInterface.previewContainer
-        ];
-        
-        // If any critical component is missing, we need emergency mode
-        const needsEmergencyMode = criticalComponents.some(status => !status) && 
-                                  !healthStatus.emergencyModeActive;
-                                  
+
         // Log the health check results
         console.log("Health check results:", healthStatus);
-        console.log("Needs emergency mode:", needsEmergencyMode);
         
-        // If normal mode is forced, skip emergency mode activation
-        if (window.normalModeForced) {
-          console.log("Normal mode forced - skipping emergency mode activation");
+        // If emergency mode is already active, don't change anything
+        if (healthStatus.emergencyModeActive) {
+          console.log("Emergency mode already active - keeping current state");
           return;
         }
         
-        // If we already have the core library loaded, use its state manager
+        // If normal mode is forced, skip emergency mode activation
+        if (window.normalModeForced) {
+          console.log("Normal mode forced via URL parameter - keeping normal mode");
+          return;
+        }
+        
+        // If emergency mode is forced, activate it
+        if (window.emergencyModeForced) {
+          console.log("Emergency mode forced via URL parameter - activating");
+          if (healthStatus.coreLoaded) {
+            window.FireEMS.DataFormatter.setState('mode', 'emergency');
+          } else {
+            activateEmergencyMode();
+          }
+          return;
+        }
+        
+        // Calculate if we need emergency mode - only if DOM is fully loaded
+        let needsEmergencyMode = false;
+        
+        if (healthStatus.domContentLoaded) {
+          // When DOM is fully loaded, check if UI components are ready
+          const uiReady = healthStatus.userInterface.formatterContainer && 
+                          healthStatus.userInterface.fileInput &&
+                          healthStatus.userInterface.previewContainer;
+                          
+          const coreSystemReady = healthStatus.formatterStateInitialized && 
+                                  healthStatus.formatterBundleLoaded;
+                                  
+          // We only need emergency mode if critical components are missing after DOM is ready
+          needsEmergencyMode = !uiReady || !coreSystemReady;
+          
+          // Double-check by looking for expected behavior capabilities
+          const normalModeWorking = window.DataFormatterLogger || 
+                                    (window.FireEMS && window.FireEMS.DataFormatter);
+                                    
+          // Only trigger emergency mode if we're missing UI elements AND normal features
+          needsEmergencyMode = needsEmergencyMode && !normalModeWorking;
+          
+          console.log("DOM fully loaded - UI Ready:", uiReady);
+          console.log("Core system ready:", coreSystemReady);
+          console.log("Normal features working:", normalModeWorking);
+          console.log("Needs emergency mode:", needsEmergencyMode);
+        } else {
+          // If DOM isn't loaded yet, we're not ready to make a decision
+          console.log("DOM not fully loaded yet - deferring emergency mode decision");
+          return;
+        }
+        
+        // If we have the core library loaded, use its state manager
         if (healthStatus.coreLoaded) {
           const currentMode = window.FireEMS.DataFormatter.getState('mode');
           console.log("Current mode according to StateManager:", currentMode);
@@ -1661,6 +1697,8 @@
         else if (needsEmergencyMode) {
           console.error('Health check failed - activating emergency mode');
           activateEmergencyMode();
+        } else {
+          console.log("Health check passed - staying in normal mode");
         }
       }
       
@@ -1695,14 +1733,37 @@
         }
       }
       
-      // Run the first health check after a short delay
-      setTimeout(performHealthCheck, 3000);
+      // Only run the health check when the document is fully loaded and rendered
+      // This ensures all UI elements are available for checking
+      if (document.readyState === 'complete') {
+        // Document already loaded, wait briefly for React components to render
+        setTimeout(performHealthCheck, 1000);
+      } else {
+        // Wait for the document to be fully loaded first
+        window.addEventListener('load', function() {
+          // Then wait a bit longer for React components to render
+          setTimeout(performHealthCheck, 1000);
+        });
+      }
       
       // Set up a second health check to catch any late-loading issues
       setTimeout(function() {
         if (!window.healthCheckComplete) {
           console.log("Running final health verification");
-          performHealthCheck();
+          
+          // Check if normal mode is working correctly before triggering emergency mode
+          const normalModeWorking = window.DataFormatterLogger && 
+                                    document.querySelector('.formatter-container') &&
+                                    document.getElementById('data-file') && 
+                                    document.getElementById('input-preview');
+                                    
+          if (!normalModeWorking) {
+            console.log("Normal mode components missing, performing health check");
+            performHealthCheck();
+          } else {
+            console.log("Normal mode appears to be working, skipping emergency mode activation");
+          }
+          
           window.healthCheckComplete = true;
         }
       }, 7000);
