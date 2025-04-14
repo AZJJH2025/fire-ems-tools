@@ -12,6 +12,9 @@ window.emergencyModeType = 'direct';
 
 // Initialize basic state if not already done
 if (!window.formatterState) {
+  // Get filename from storage for consistent Data1G.csv detection
+  const filename = sessionStorage.getItem('currentFileName') || localStorage.getItem('currentFileName') || '';
+  
   window.formatterState = {
     fileId: null,
     sourceColumns: [],
@@ -19,8 +22,13 @@ if (!window.formatterState) {
     selectedTool: null,
     mappings: null,
     transformedData: null,
-    originalData: null
+    originalData: null,
+    originalFileName: filename // Initialize with filename from storage
   };
+  
+  if (filename) {
+    console.log(`Initialized formatterState with filename: ${filename}`);
+  }
 }
 
 // Notify that we've loaded

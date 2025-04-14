@@ -286,6 +286,9 @@
                         // IMPORTANT: Log raw filename to help debug why detection might be failing
                         console.log(`Raw filename from storage/file: "${filename}"`);
                         
+                        // CRITICAL FIX: Store the filename in formatterState for consistent detection
+                        window.formatterState.originalFileName = filename;
+                        
                         const filenameCheck = filename.toLowerCase();
                         
                         // NOTE: We'll hardcode Data1G detection in multiple ways to ensure it works
@@ -686,6 +689,16 @@
               // For debugging - log how many records are in the sample data
               console.log(`createSampleOutput: Working with ${sampleData.length} records from source data`);
               
+              // CRITICAL: Get filename from storage and store it in formatterState for later use
+              // This fixes the issue where the filename is lost between the initial parse and the preview
+              if (!window.formatterState.originalFileName) {
+                const filename = sessionStorage.getItem('currentFileName') || localStorage.getItem('currentFileName') || '';
+                if (filename) {
+                  console.log(`Storing filename "${filename}" in formatterState for consistent detection`);
+                  window.formatterState.originalFileName = filename;
+                }
+              }
+              
               // Transform the data based on mappings
               const transformedData = sampleData.map(row => {
                 const transformed = {};
@@ -713,10 +726,17 @@
               
               html += '</tr></thead><tbody>';
               
-              // Check if we're processing Data1G.csv or any other substantial file
-              const filename = sessionStorage.getItem('currentFileName') || localStorage.getItem('currentFileName') || '';
+              // IMPROVED: Check if we're processing Data1G.csv or any other substantial file
+              // Get filename from multiple sources, prioritizing formatterState (which we set earlier)
+              const filename = window.formatterState.originalFileName || 
+                               sessionStorage.getItem('currentFileName') || 
+                               localStorage.getItem('currentFileName') || '';
+              
               const filenameCheck = filename.toLowerCase();
               const isData1G = filenameCheck.includes('data1g');
+              
+              // Log what we're checking for complete clarity
+              console.log(`PREVIEW CHECK: Using filename "${filename}" from formatterState: ${!!window.formatterState.originalFileName}`);
               
               // Consider a file "large" if it's Data1G.csv or has more than 100 records (lowered threshold)
               const isLargeFile = isData1G || transformedData.length > 100;
@@ -771,12 +791,16 @@
               if (logContainer) {
                 const timestamp = new Date().toLocaleTimeString();
                 // Calculate how many rows are actually visible in the preview
-                const filename = sessionStorage.getItem('currentFileName') || localStorage.getItem('currentFileName') || '';
+                // IMPROVED: Get filename from multiple sources, prioritizing formatterState
+                const filename = window.formatterState.originalFileName || 
+                                 sessionStorage.getItem('currentFileName') || 
+                                 localStorage.getItem('currentFileName') || '';
                 
                 // Always treat Data1G.csv as a large file regardless of record count
                 // Make sure we convert to lowercase to ensure case-insensitive comparison
                 const filenameCheck = filename.toLowerCase();
                 const isData1G = filenameCheck.includes('data1g');
+                console.log(`LOG MESSAGE CHECK: Using filename "${filename}" from formatterState: ${!!window.formatterState.originalFileName}`); 
                 const isLargeFile = isData1G || transformedData.length > 100; // Lower threshold to 100 records
                 
                 // Increase preview size for all files
@@ -1436,11 +1460,42 @@
   
   <!-- Simple error detection in case the bundle fails -->
   <script>
+    // Set a global flag to indicate we're initializing
+    window.dataFormatterLoaded = true;
+    
     document.addEventListener('DOMContentLoaded', function() {
-      // Wait 3 seconds then check if the formatter was loaded
+      // Log the initial state for debugging
+      console.log("DOM loaded - dataFormatterLoaded flag:", window.dataFormatterLoaded);
+      console.log("URL parameters:", window.location.search);
+      
+      // Check if we should force normal mode
+      const urlParams = new URLSearchParams(window.location.search);
+      const forceNormal = urlParams.get('force_normal') === 'true';
+      const forceEmergency = urlParams.get('force_emergency') === 'true';
+      
+      if (forceNormal) {
+        console.log("FORCED NORMAL MODE - emergency detection disabled");
+        window.dataFormatterLoaded = true;
+        return; // Skip emergency detection
+      }
+      
+      if (forceEmergency) {
+        console.log("FORCED EMERGENCY MODE - immediately activating");
+        window.dataFormatterLoaded = false;
+        loadDirect();
+        return; // Skip further checks
+      }
+      
+      // Wait longer (5 seconds) then check if the formatter was properly loaded
       setTimeout(function() {
-        if (!window.dataFormatterLoaded) {
-          console.error('Data formatter failed to load within timeout period');
+        console.log("Checking if formatter loaded correctly...");
+        console.log("dataFormatterLoaded flag:", window.dataFormatterLoaded);
+        console.log("Normal mode bundle:", !!window.DataFormatterLogger);
+        console.log("Emergency mode active:", !!window.isEmergencyMode);
+        
+        // Only activate emergency mode if the flag is false (original bundle didn't load properly)
+        if (!window.dataFormatterLoaded || !window.DataFormatterLogger) {
+          console.error('Data formatter failed to load within timeout period - activating emergency mode');
           
           // If not already showing an error message, create one
           if (!document.querySelector('.error-message')) {
@@ -1449,21 +1504,25 @@
             if (container) {
               var errorMsg = document.createElement('div');
               errorMsg.className = 'error-message';
-              errorMsg.innerHTML = '<h3>Error Loading Data Formatter</h3>' +
-                                  '<p>The application components failed to load properly. Please try:</p>' +
-                                  '<ol>' +
-                                    '<li>Refreshing the page</li>' +
-                                    '<li>Clearing your browser cache</li>' +
-                                    '<li>Trying a different browser</li>' +
-                                  '</ol>' +
-                                  '<button onclick="location.reload()">Refresh Page</button>' +
-                                  '<button onclick="loadDirect()">Try Emergency Mode</button>';
+              errorMsg.innerHTML = '<h3>Using Emergency Data Formatter</h3>' +
+                                  '<p>The main application components failed to load. Using simplified version with:</p>' +
+                                  '<ul>' +
+                                    '<li>Enhanced records processing (up to 1000 records)</li>' +
+                                    '<li>Improved preview size (25+ records)</li>' +
+                                    '<li>Better processing for all file types</li>' +
+                                  '</ul>' +
+                                  '<p><small>To try loading standard mode: <button onclick="location.href=\'?force_normal=true\'">Force Normal Mode</button></small></p>';
               
               container.prepend(errorMsg);
+              
+              // Automatically activate emergency mode
+              loadDirect();
             }
           }
+        } else {
+          console.log("Normal mode successfully loaded");
         }
-      }, 3000);
+      }, 5000); // Increased timeout to 5 seconds
     });
   </script>
   
