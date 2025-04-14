@@ -675,8 +675,16 @@
               
               html += '</tr></thead><tbody>';
               
-              // Add up to 5 rows
-              const rowsToShow = Math.min(transformedData.length, 5);
+              // Check if we're processing Data1G.csv
+              const filename = sessionStorage.getItem('currentFileName') || localStorage.getItem('currentFileName') || '';
+              const isLargeFile = filename.toLowerCase().includes('data1g') || transformedData.length > 1000;
+              
+              // Use larger preview size for Data1G.csv or other large files
+              const previewSize = isLargeFile ? 100 : 5;
+              console.log(`Using preview size of ${previewSize} rows for output display (large file: ${isLargeFile})`);
+              
+              // Add rows to preview
+              const rowsToShow = Math.min(transformedData.length, previewSize);
               for (let i = 0; i < rowsToShow; i++) {
                 html += '<tr>';
                 headers.forEach(header => {
@@ -717,9 +725,17 @@
               const logContainer = document.getElementById('log-container');
               if (logContainer) {
                 const timestamp = new Date().toLocaleTimeString();
+                // Calculate how many rows are actually visible in the preview
+                const filename = sessionStorage.getItem('currentFileName') || localStorage.getItem('currentFileName') || '';
+                const isLargeFile = filename.toLowerCase().includes('data1g') || transformedData.length > 1000;
+                const previewSize = isLargeFile ? 100 : 5;
+                const visibleRows = Math.min(transformedData.length, previewSize);
+                
+                // Include both visible and total count in the message
                 logContainer.innerHTML += `<div class="log-entry log-info">
                   <span class="log-time">${timestamp}</span> 
-                  Data transformation complete. Preview created with ${transformedData.length} record(s).
+                  Data transformation complete. Preview shows ${visibleRows} of ${transformedData.length} total record(s).
+                  ${isLargeFile ? ' <b>(Using enhanced preview for large file)</b>' : ''}
                 </div>`;
               }
             }

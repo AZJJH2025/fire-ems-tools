@@ -615,16 +615,33 @@ document.addEventListener('DOMContentLoaded', function() {
             </tr>
           </thead>
           <tbody>
-            ${data.slice(0, 50).map(row => `
-              <tr>
-                ${Object.values(row).map(value => 
-                  `<td style="padding: 8px; text-align: left; border-bottom: 1px solid #eee;">${value}</td>`
-                ).join('')}
-              </tr>
-            `).join('')}
+            ${(() => {
+              // Determine how many rows to show - use more for Data1G.csv
+              const filename = sessionStorage.getItem('currentFileName') || '';
+              const isLargeFile = filename.toLowerCase().includes('data1g') || data.length > 5000;
+              const maxRowsToShow = isLargeFile ? 100 : 50;
+              
+              console.log(`Emergency mode showing ${maxRowsToShow} rows (large file: ${isLargeFile})`);
+              
+              return data.slice(0, maxRowsToShow).map(row => `
+                <tr>
+                  ${Object.values(row).map(value => 
+                    `<td style="padding: 8px; text-align: left; border-bottom: 1px solid #eee;">${value}</td>`
+                  ).join('')}
+                </tr>
+              `).join('');
+            })()}
           </tbody>
         </table>
-        ${data.length > 50 ? `<p>Showing first 50 of ${data.length} records.</p>` : ''}
+        ${(() => {
+          const filename = sessionStorage.getItem('currentFileName') || '';
+          const isLargeFile = filename.toLowerCase().includes('data1g') || data.length > 5000;
+          const maxRowsToShow = isLargeFile ? 100 : 50;
+          
+          return data.length > maxRowsToShow ? 
+            `<p>Showing first ${maxRowsToShow} of ${data.length} records. ${isLargeFile ? '(Using enhanced limit for large file)' : ''}</p>` : 
+            '';
+        })()}
       </div>
       
       <div style="margin-top: 20px;">
