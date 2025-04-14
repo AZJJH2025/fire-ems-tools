@@ -1894,7 +1894,7 @@ document.addEventListener('DOMContentLoaded', function() {
         outputPreview.innerHTML = tableHTML;
         
         // Add a success message
-        appendLog(`Output preview generated with ${Math.min(data.length, 5)} sample records`, 'success');
+        appendLog(`Output preview generated with ${Math.min(data.length, previewLimit)} sample records`, 'success');
         
         // Ensure the buttons are enabled
         const downloadBtn = document.getElementById('download-btn');
