@@ -5,36 +5,164 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Data Formatter - FireEMS.ai</title>
   
-  <!-- FireEMS Resilience Framework -->
+  <!-- Early Initialization - Data Formatter Core -->
   <script>
-    // Load the framework initialization script
-    (function() {
-      function loadFramework() {
-        console.log("Loading FireEMS Framework");
-        const script = document.createElement('script');
-        script.src = '/static/js/fireems-framework.js';
+    // Set a global flag immediately to prevent emergency mode triggering unnecessarily
+    window.dataFormatterLoaded = true;
+    
+    // Initialize basic formatter state early
+    window.formatterState = {
+      initialized: true,
+      sourceColumns: [],
+      sampleData: [],
+      isLargeFile: function(filename) {
+        if (!filename) return false;
+        return filename.toLowerCase().includes('data1g') || (this.fileSize > 1000000);
+      },
+      getProcessingLimit: function() {
+        const filename = this.originalFileName || '';
+        return this.isLargeFile(filename) ? 1000 : 100;
+      },
+      getPreviewSize: function() {
+        const filename = this.originalFileName || '';
+        return this.isLargeFile(filename) ? 100 : 25;
+      }
+    };
+    
+    // Capture URL parameters early
+    const urlParams = new URLSearchParams(window.location.search);
+    const forceNormal = urlParams.get('force_normal') === 'true';
+    const forceEmergency = urlParams.get('force_emergency') === 'true';
+    
+    // Set mode based on URL parameters
+    if (forceEmergency) {
+      console.log("FORCED EMERGENCY MODE via URL parameter");
+      window.emergencyModeForced = true;
+    } else if (forceNormal) {
+      console.log("FORCED NORMAL MODE via URL parameter");
+      window.normalModeForced = true;
+    }
+    
+    // Create a loader function that uses Promise with multiple fallbacks
+    function loadScript(url, options = {}) {
+      // Default options
+      const opts = Object.assign({
+        async: true,
+        fallbackUrls: [],
+        onSuccess: null,
+        onError: null,
+        timeout: 5000, // 5 second timeout
+        critical: false
+      }, options);
+      
+      return new Promise((resolve, reject) => {
+        console.log(`Loading script: ${url}`);
         
-        script.onerror = function() {
-          console.warn("Failed to load framework from primary path, trying fallback...");
-          const fallbackScript = document.createElement('script');
-          fallbackScript.src = '/app-static/js/fireems-framework.js';
-          
-          fallbackScript.onerror = function() {
-            console.error("Failed to load framework from all paths");
-          };
-          
-          document.head.appendChild(fallbackScript);
+        const script = document.createElement('script');
+        script.src = url;
+        script.async = opts.async;
+        
+        // Set timeout for script loading
+        const timeoutId = setTimeout(() => {
+          console.warn(`Script load timeout for ${url}`);
+          tryNextFallback(0);
+        }, opts.timeout);
+        
+        script.onload = () => {
+          clearTimeout(timeoutId);
+          console.log(`Successfully loaded: ${url}`);
+          if (opts.onSuccess) opts.onSuccess();
+          resolve(url);
+        };
+        
+        script.onerror = () => {
+          clearTimeout(timeoutId);
+          console.warn(`Failed to load: ${url}`);
+          tryNextFallback(0);
         };
         
         document.head.appendChild(script);
+        
+        // Function to try fallback URLs
+        function tryNextFallback(index) {
+          if (index >= opts.fallbackUrls.length) {
+            if (opts.critical && !window.emergencyModeForced) {
+              console.error(`Critical script ${url} failed to load, activating emergency mode`);
+              loadEmergencyScripts();
+            }
+            if (opts.onError) opts.onError();
+            reject(new Error(`Failed to load script: ${url}`));
+            return;
+          }
+          
+          const fallbackUrl = opts.fallbackUrls[index];
+          console.log(`Trying fallback ${index + 1}/${opts.fallbackUrls.length}: ${fallbackUrl}`);
+          
+          const fallbackScript = document.createElement('script');
+          fallbackScript.src = fallbackUrl;
+          fallbackScript.async = opts.async;
+          
+          fallbackScript.onload = () => {
+            console.log(`Successfully loaded fallback: ${fallbackUrl}`);
+            if (opts.onSuccess) opts.onSuccess();
+            resolve(fallbackUrl);
+          };
+          
+          fallbackScript.onerror = () => {
+            console.warn(`Fallback ${index + 1} failed: ${fallbackUrl}`);
+            tryNextFallback(index + 1);
+          };
+          
+          document.head.appendChild(fallbackScript);
+        }
+      });
+    }
+    
+    // Load emergency mode scripts directly
+    function loadEmergencyScripts() {
+      if (window.emergencyScriptsLoaded) return;
+      window.emergencyScriptsLoaded = true;
+      
+      console.log("Loading emergency scripts");
+      
+      // Load core emergency scripts in parallel
+      Promise.all([
+        loadScript('/app-static/data-formatter-direct.js'),
+        loadScript('/app-static/data-formatter-fix.js'),
+        loadScript('/app-static/js/emergency-mode.js')
+      ]).then(() => {
+        console.log("All emergency scripts loaded successfully");
+      }).catch(error => {
+        console.error("Failed to load some emergency scripts:", error);
+      });
+    }
+    
+    // Initialize immediately
+    (function initialize() {
+      console.log("Early initialization started");
+      
+      // If emergency mode is forced, load emergency scripts right away
+      if (window.emergencyModeForced) {
+        loadEmergencyScripts();
+        return;
       }
       
-      // Load the framework when the document is ready
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', loadFramework);
-      } else {
-        loadFramework();
-      }
+      // Otherwise, first try to load the core script
+      loadScript('/static/js/data-formatter-core.js', {
+        critical: true,
+        fallbackUrls: [
+          '/app-static/js/data-formatter-core.js',
+          '/direct-static/js/data-formatter-core.js'
+        ],
+        timeout: 3000,
+        onSuccess: () => {
+          console.log("Core script loaded successfully");
+        },
+        onError: () => {
+          console.error("Failed to load core script, falling back to emergency mode");
+          loadEmergencyScripts();
+        }
+      });
     })();
   </script>
   
@@ -689,8 +817,8 @@
               // For debugging - log how many records are in the sample data
               console.log(`createSampleOutput: Working with ${sampleData.length} records from source data`);
               
-              // CRITICAL: Get filename from storage and store it in formatterState for later use
-              // This fixes the issue where the filename is lost between the initial parse and the preview
+              // CRITICAL: Get filename from all possible sources and store it in formatterState
+              // This ensures consistent detection throughout the processing pipeline
               if (!window.formatterState.originalFileName) {
                 const filename = sessionStorage.getItem('currentFileName') || localStorage.getItem('currentFileName') || '';
                 if (filename) {
@@ -712,11 +840,41 @@
                 return transformed;
               });
               
+              // Save ALL transformed data to state (very important - we want to save ALL records, not just the preview)
+              window.formatterState.transformedData = transformedData;
+              console.log(`Saved ${transformedData.length} records to formatterState.transformedData`);
+              
+              // IMPROVED: Use the formatterState methods for consistent behavior
+              let isLargeFile = false;
+              let previewSize = 25;
+              
+              // Use the formatterState methods if available
+              if (window.formatterState.isLargeFile && typeof window.formatterState.isLargeFile === 'function') {
+                isLargeFile = window.formatterState.isLargeFile();
+                previewSize = window.formatterState.getPreviewSize();
+                console.log(`Using formatterState methods: isLargeFile=${isLargeFile}, previewSize=${previewSize}`);
+              }
+              // Fallback to legacy detection
+              else {
+                // Get filename from multiple sources in priority order
+                const filename = window.formatterState.originalFileName || 
+                                 sessionStorage.getItem('currentFileName') || 
+                                 localStorage.getItem('currentFileName') || '';
+                
+                const filenameCheck = filename.toLowerCase();
+                const isData1G = filenameCheck.includes('data1g');
+                isLargeFile = isData1G || transformedData.length > 100;
+                previewSize = isLargeFile ? 100 : 25;
+                
+                console.log(`Using legacy detection: filename="${filename}", isData1G=${isData1G}, isLargeFile=${isLargeFile}, previewSize=${previewSize}`);
+              }
+              
+              // Calculate how many rows to show
+              const rowsToShow = Math.min(transformedData.length, previewSize);
+              console.log(`Preview will show ${rowsToShow} of ${transformedData.length} total records (isLargeFile: ${isLargeFile})`);
+              
               // Start creating the preview table
               let html = '<table class="preview-table"><thead><tr>';
-              
-              // Log total records for debugging
-              console.log(`About to show preview table with ${transformedData.length} total transformed records`);
               
               // Create headers from target fields
               const headers = Object.keys(mappings);
@@ -726,29 +884,7 @@
               
               html += '</tr></thead><tbody>';
               
-              // IMPROVED: Check if we're processing Data1G.csv or any other substantial file
-              // Get filename from multiple sources, prioritizing formatterState (which we set earlier)
-              const filename = window.formatterState.originalFileName || 
-                               sessionStorage.getItem('currentFileName') || 
-                               localStorage.getItem('currentFileName') || '';
-              
-              const filenameCheck = filename.toLowerCase();
-              const isData1G = filenameCheck.includes('data1g');
-              
-              // Log what we're checking for complete clarity
-              console.log(`PREVIEW CHECK: Using filename "${filename}" from formatterState: ${!!window.formatterState.originalFileName}`);
-              
-              // Consider a file "large" if it's Data1G.csv or has more than 100 records (lowered threshold)
-              const isLargeFile = isData1G || transformedData.length > 100;
-              
-              // Increase preview size for all files
-              // - At least 25 records for regular files (up from 5)
-              // - 100 records for large files (Data1G.csv or > 100 records)
-              const previewSize = isLargeFile ? 100 : 25;
-              console.log(`Using preview size of ${previewSize} rows for output display (large file: ${isLargeFile}, filename: ${filename})`);
-              
               // Add rows to preview
-              const rowsToShow = Math.min(transformedData.length, previewSize);
               for (let i = 0; i < rowsToShow; i++) {
                 html += '<tr>';
                 headers.forEach(header => {
@@ -758,11 +894,15 @@
               }
               
               html += '</tbody></table>';
-              outputPreview.innerHTML = html;
               
-              // Save ALL transformed data to state (very important - we want to save ALL records, not just the preview)
-              window.formatterState.transformedData = transformedData;
-              console.log(`Saved ${transformedData.length} records to formatterState.transformedData`);
+              // Add message if not showing all records
+              if (rowsToShow < transformedData.length) {
+                html += `<div class="preview-message" style="margin-top: 10px; font-style: italic;">
+                  Showing ${rowsToShow} of ${transformedData.length} total records. Complete dataset will be processed.
+                </div>`;
+              }
+              
+              outputPreview.innerHTML = html;
               
               // Enable download and send buttons
               const downloadBtn = document.getElementById('download-btn');
@@ -771,56 +911,55 @@
               if (downloadBtn) {
                 downloadBtn.disabled = false;
                 
-                // Add emergency event listener for download button
-                downloadBtn.addEventListener('click', function() {
-                  downloadTransformedData();
-                });
+                // Don't add duplicate event listeners
+                const hasListener = downloadBtn.getAttribute('data-has-listener') === 'true';
+                if (!hasListener) {
+                  downloadBtn.addEventListener('click', function() {
+                    downloadTransformedData();
+                  });
+                  downloadBtn.setAttribute('data-has-listener', 'true');
+                }
               }
               
               if (sendToToolBtn) {
                 sendToToolBtn.disabled = false;
                 
-                // Add emergency event listener for send to tool button
-                sendToToolBtn.addEventListener('click', function() {
-                  sendDataToTool();
-                });
+                // Don't add duplicate event listeners
+                const hasListener = sendToToolBtn.getAttribute('data-has-listener') === 'true';
+                if (!hasListener) {
+                  sendToToolBtn.addEventListener('click', function() {
+                    sendDataToTool();
+                  });
+                  sendToToolBtn.setAttribute('data-has-listener', 'true');
+                }
               }
               
               // Log action
               const logContainer = document.getElementById('log-container');
               if (logContainer) {
                 const timestamp = new Date().toLocaleTimeString();
-                // Calculate how many rows are actually visible in the preview
-                // IMPROVED: Get filename from multiple sources, prioritizing formatterState
-                const filename = window.formatterState.originalFileName || 
-                                 sessionStorage.getItem('currentFileName') || 
-                                 localStorage.getItem('currentFileName') || '';
-                
-                // Always treat Data1G.csv as a large file regardless of record count
-                // Make sure we convert to lowercase to ensure case-insensitive comparison
-                const filenameCheck = filename.toLowerCase();
-                const isData1G = filenameCheck.includes('data1g');
-                console.log(`LOG MESSAGE CHECK: Using filename "${filename}" from formatterState: ${!!window.formatterState.originalFileName}`); 
-                const isLargeFile = isData1G || transformedData.length > 100; // Lower threshold to 100 records
-                
-                // Increase preview size for all files
-                // - At least 25 records for regular files (up from 5)
-                // - 100 records for large files like Data1G.csv
-                const previewSize = isLargeFile ? 100 : 25;
-                
-                console.log(`Checking filename "${filename}". isData1G: ${isData1G}, isLargeFile: ${isLargeFile}, previewSize: ${previewSize}`);
-                console.log(`Log message using preview size of ${previewSize} (large file: ${isLargeFile}, filename: ${filename})`);
-                const visibleRows = Math.min(transformedData.length, previewSize);
-                
-                // This is where the critical "5 of 29" message comes from!
-                console.log(`CRITICAL LOG MESSAGE: Preview shows ${visibleRows} of ${transformedData.length} total record(s) (isLargeFile: ${isLargeFile})`);
                 
                 // Include both visible and total count in the message
-                logContainer.innerHTML += `<div class="log-entry log-info">
+                const logHtml = `<div class="log-entry log-info">
                   <span class="log-time">${timestamp}</span> 
-                  Data transformation complete. Preview shows ${visibleRows} of ${transformedData.length} total record(s).
-                  ${isLargeFile ? ' <b>(Using enhanced preview for large file)</b>' : ''}
+                  Data transformation complete. Preview shows ${rowsToShow} of ${transformedData.length} total record(s).
+                  ${isLargeFile ? ' <b>(Using enhanced preview for large files)</b>' : ''}
                 </div>`;
+                
+                // Avoid duplicate log entries
+                const existingEntries = logContainer.querySelectorAll('.log-entry');
+                let isDuplicate = false;
+                
+                for (let i = Math.max(0, existingEntries.length - 5); i < existingEntries.length; i++) {
+                  if (existingEntries[i].textContent.includes(`Data transformation complete. Preview shows ${rowsToShow} of ${transformedData.length}`)) {
+                    isDuplicate = true;
+                    break;
+                  }
+                }
+                
+                if (!isDuplicate) {
+                  logContainer.innerHTML += logHtml;
+                }
               }
             }
             
@@ -1458,71 +1597,115 @@
     }
   </script>
   
-  <!-- Simple error detection in case the bundle fails -->
+  <!-- Advanced health check and emergency mode coordination -->
   <script>
-    // Set a global flag to indicate we're initializing
-    window.dataFormatterLoaded = true;
-    
     document.addEventListener('DOMContentLoaded', function() {
-      // Log the initial state for debugging
-      console.log("DOM loaded - dataFormatterLoaded flag:", window.dataFormatterLoaded);
-      console.log("URL parameters:", window.location.search);
+      // Log the current state for debugging
+      console.log("DOM loaded - System Status Check");
+      console.log("dataFormatterLoaded flag:", window.dataFormatterLoaded);
+      console.log("Core library loaded:", !!window.FireEMS?.DataFormatter?.isLoaded);
+      console.log("FormatterState initialized:", !!window.formatterState?.initialized);
       
-      // Check if we should force normal mode
-      const urlParams = new URLSearchParams(window.location.search);
-      const forceNormal = urlParams.get('force_normal') === 'true';
-      const forceEmergency = urlParams.get('force_emergency') === 'true';
-      
-      if (forceNormal) {
-        console.log("FORCED NORMAL MODE - emergency detection disabled");
-        window.dataFormatterLoaded = true;
-        return; // Skip emergency detection
-      }
-      
-      if (forceEmergency) {
-        console.log("FORCED EMERGENCY MODE - immediately activating");
-        window.dataFormatterLoaded = false;
-        loadDirect();
-        return; // Skip further checks
-      }
-      
-      // Wait longer (5 seconds) then check if the formatter was properly loaded
-      setTimeout(function() {
-        console.log("Checking if formatter loaded correctly...");
-        console.log("dataFormatterLoaded flag:", window.dataFormatterLoaded);
-        console.log("Normal mode bundle:", !!window.DataFormatterLogger);
-        console.log("Emergency mode active:", !!window.isEmergencyMode);
+      // Setup the health checker that will verify all components are working properly
+      function performHealthCheck() {
+        console.log("Running comprehensive health check");
         
-        // Only activate emergency mode if the flag is false (original bundle didn't load properly)
-        if (!window.dataFormatterLoaded || !window.DataFormatterLogger) {
-          console.error('Data formatter failed to load within timeout period - activating emergency mode');
-          
-          // If not already showing an error message, create one
-          if (!document.querySelector('.error-message')) {
-            // Create error message for user
-            var container = document.querySelector('.formatter-container');
-            if (container) {
-              var errorMsg = document.createElement('div');
-              errorMsg.className = 'error-message';
-              errorMsg.innerHTML = '<h3>Using Emergency Data Formatter</h3>' +
-                                  '<p>The main application components failed to load. Using simplified version with:</p>' +
-                                  '<ul>' +
-                                    '<li>Enhanced records processing (up to 1000 records)</li>' +
-                                    '<li>Improved preview size (25+ records)</li>' +
-                                    '<li>Better processing for all file types</li>' +
-                                  '</ul>' +
-                                  '<p><small>To try loading standard mode: <button onclick="location.href=\'?force_normal=true\'">Force Normal Mode</button></small></p>';
-              
-              container.prepend(errorMsg);
-              
-              // Automatically activate emergency mode
-              loadDirect();
-            }
+        const healthStatus = {
+          coreLoaded: !!window.FireEMS?.DataFormatter?.isLoaded,
+          formatterStateInitialized: !!window.formatterState?.initialized,
+          formatterBundleLoaded: !!window.dataFormatterLoaded,
+          dataFormatterLoggerExists: !!window.DataFormatterLogger,
+          emergencyModeActive: !!window.isEmergencyMode,
+          domContentLoaded: document.readyState === 'complete' || document.readyState === 'interactive',
+          userInterface: {
+            formatterContainer: !!document.querySelector('.formatter-container'),
+            fileInput: !!document.getElementById('data-file'),
+            previewContainer: !!document.getElementById('input-preview'),
+            mappingButton: !!document.getElementById('map-fields-btn')
           }
-        } else {
-          console.log("Normal mode successfully loaded");
+        };
+        
+        // Calculate overall health
+        const criticalComponents = [
+          healthStatus.formatterStateInitialized,
+          healthStatus.userInterface.formatterContainer,
+          healthStatus.userInterface.fileInput,
+          healthStatus.userInterface.previewContainer
+        ];
+        
+        // If any critical component is missing, we need emergency mode
+        const needsEmergencyMode = criticalComponents.some(status => !status) && 
+                                  !healthStatus.emergencyModeActive;
+                                  
+        // Log the health check results
+        console.log("Health check results:", healthStatus);
+        console.log("Needs emergency mode:", needsEmergencyMode);
+        
+        // If normal mode is forced, skip emergency mode activation
+        if (window.normalModeForced) {
+          console.log("Normal mode forced - skipping emergency mode activation");
+          return;
         }
-      }, 5000); // Increased timeout to 5 seconds
+        
+        // If we already have the core library loaded, use its state manager
+        if (healthStatus.coreLoaded) {
+          const currentMode = window.FireEMS.DataFormatter.getState('mode');
+          console.log("Current mode according to StateManager:", currentMode);
+          
+          if (needsEmergencyMode && currentMode !== 'emergency') {
+            console.warn("Health check detected issues - switching to emergency mode");
+            window.FireEMS.DataFormatter.setState('mode', 'emergency');
+          }
+        } 
+        // Otherwise use the older fallback method
+        else if (needsEmergencyMode) {
+          console.error('Health check failed - activating emergency mode');
+          activateEmergencyMode();
+        }
+      }
+      
+      // Helper function to activate emergency mode with visual feedback
+      function activateEmergencyMode() {
+        // Don't activate more than once
+        if (window.emergencyModeActivated) return;
+        window.emergencyModeActivated = true;
+        
+        // Show a visual indicator for the user
+        const container = document.querySelector('.formatter-container');
+        if (container && !document.querySelector('.error-message')) {
+          const errorMsg = document.createElement('div');
+          errorMsg.className = 'error-message';
+          errorMsg.innerHTML = '<h3>Enhanced Data Formatter Activated</h3>' +
+                              '<p>Switched to resilient mode with the following capabilities:</p>' +
+                              '<ul>' +
+                                '<li>Improved processing for large files (up to 1000 records)</li>' +
+                                '<li>Enhanced preview display (25-100 records)</li>' +
+                                '<li>Better handling for Data1G.csv files</li>' +
+                                '<li>Consistent file type detection</li>' +
+                              '</ul>';
+          
+          container.prepend(errorMsg);
+        }
+        
+        // Load emergency scripts if not already done
+        if (typeof loadEmergencyScripts === 'function') {
+          loadEmergencyScripts();
+        } else if (typeof loadDirect === 'function') {
+          loadDirect();
+        }
+      }
+      
+      // Run the first health check after a short delay
+      setTimeout(performHealthCheck, 3000);
+      
+      // Set up a second health check to catch any late-loading issues
+      setTimeout(function() {
+        if (!window.healthCheckComplete) {
+          console.log("Running final health verification");
+          performHealthCheck();
+          window.healthCheckComplete = true;
+        }
+      }, 7000);
     });
   </script>
   

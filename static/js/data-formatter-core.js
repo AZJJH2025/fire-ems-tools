@@ -1,0 +1,772 @@
+/**
+ * Data Formatter Core
+ * Core initialization and state management for the Data Formatter
+ * 
+ * This script provides a robust foundation for the Data Formatter, ensuring:
+ * - Proper state initialization before any component loads
+ * - Consistent handling of large files like Data1G.csv
+ * - Reliable detection of emergency mode conditions
+ * - Safe fallback to emergency mode when needed
+ * - Consistent state management throughout the application lifecycle
+ */
+
+(function() {
+  'use strict';
+
+  // Core namespace
+  window.FireEMS = window.FireEMS || {};
+  window.FireEMS.DataFormatter = window.FireEMS.DataFormatter || {};
+  
+  // Create StateManager first - this is the single source of truth
+  const StateManager = {
+    // Internal state storage with defaults
+    _state: {
+      // Application state
+      initialized: false,
+      mode: 'loading', // 'loading', 'normal', 'emergency'
+      loadingErrors: [],
+      componentStatus: {}, // Track which components have loaded
+
+      // File metadata
+      fileId: null,
+      fileName: null,
+      fileSize: 0,
+      fileType: null,
+      isLargeFile: false,
+      isDataIG: false,
+
+      // Processing state
+      sourceColumns: [],
+      sampleData: [],
+      selectedTool: null,
+      mappings: null,
+      transformedData: null,
+      originalData: null,
+
+      // Configuration
+      previewSizes: {
+        default: 25,     // Default preview size for regular files
+        large: 100       // Preview size for large files like Data1G.csv
+      },
+      processingLimits: {
+        default: 100,    // Default processing limit for regular files
+        large: 1000      // Processing limit for large files
+      },
+      
+      // URLs and paths
+      staticPaths: {
+        normal: '/static/',
+        emergency: '/app-static/'
+      }
+    },
+
+    // Public getters
+    get: function(key) {
+      if (key) {
+        return this._state[key];
+      }
+      // Return a copy of state, not the reference
+      return JSON.parse(JSON.stringify(this._state));
+    },
+
+    // Controlled setter to maintain state consistency
+    set: function(key, value) {
+      // Special handling for certain keys
+      if (key === 'fileName') {
+        this._state.fileName = value;
+        // Update Data1G detection whenever filename changes
+        this.detectLargeFile(value);
+        
+        // Store filename in sessionStorage for persistence
+        try {
+          sessionStorage.setItem('currentFileName', value);
+          localStorage.setItem('currentFileName', value);
+        } catch (e) {
+          console.warn('Could not store filename in storage:', e);
+        }
+      } 
+      else if (key === 'fileSize') {
+        this._state.fileSize = value;
+        // Update large file detection based on size
+        if (value > 1000000) { // 1MB
+          this._state.isLargeFile = true;
+        }
+      }
+      else if (key === 'mode') {
+        if (['loading', 'normal', 'emergency'].includes(value)) {
+          const oldMode = this._state.mode;
+          this._state.mode = value;
+          this.logModeChange(oldMode, value);
+          
+          // Dispatch mode change event
+          this.dispatchEvent('modeChange', { oldMode, newMode: value });
+        } else {
+          console.error('Invalid mode:', value);
+        }
+      }
+      else {
+        // Standard key setting
+        this._state[key] = value;
+      }
+
+      // Dispatch a state change event
+      this.dispatchEvent('stateChange', { key, value });
+      
+      return this;
+    },
+
+    // Handle multiple properties at once
+    setMultiple: function(obj) {
+      if (!obj || typeof obj !== 'object') return this;
+      
+      Object.entries(obj).forEach(([key, value]) => {
+        this.set(key, value);
+      });
+      
+      return this;
+    },
+
+    // File-specific methods
+    detectLargeFile: function(filename) {
+      if (!filename) return;
+      
+      const lcFilename = (filename || '').toLowerCase();
+      const isDataIG = lcFilename.includes('data1g');
+      
+      this._state.isDataIG = isDataIG;
+      this._state.isLargeFile = isDataIG || this._state.fileSize > 1000000;
+      
+      // Log detection for debugging
+      console.log(`[StateManager] File detection: "${filename}" - isDataIG: ${isDataIG}, isLargeFile: ${this._state.isLargeFile}`);
+    },
+
+    // Get the current processing limit based on file characteristics
+    getProcessingLimit: function() {
+      return this._state.isLargeFile ? 
+        this._state.processingLimits.large : 
+        this._state.processingLimits.default;
+    },
+
+    // Get the current preview size based on file characteristics
+    getPreviewSize: function() {
+      return this._state.isLargeFile ? 
+        this._state.previewSizes.large : 
+        this._state.previewSizes.default;
+    },
+
+    // Custom events system
+    _eventListeners: {},
+    
+    addEventListener: function(event, callback) {
+      if (!this._eventListeners[event]) {
+        this._eventListeners[event] = [];
+      }
+      this._eventListeners[event].push(callback);
+      return this;
+    },
+    
+    dispatchEvent: function(event, data) {
+      if (!this._eventListeners[event]) return;
+      
+      this._eventListeners[event].forEach(callback => {
+        try {
+          callback(data);
+        } catch (e) {
+          console.error(`Error in ${event} event listener:`, e);
+        }
+      });
+    },
+
+    // Diagnostic methods
+    getStatus: function() {
+      return {
+        initialized: this._state.initialized,
+        mode: this._state.mode,
+        isLargeFile: this._state.isLargeFile,
+        isDataIG: this._state.isDataIG,
+        fileName: this._state.fileName,
+        fileSize: this._state.fileSize,
+        componentStatus: this._state.componentStatus
+      };
+    },
+
+    logModeChange: function(oldMode, newMode) {
+      console.log(`[StateManager] Mode changed: ${oldMode} -> ${newMode}`);
+      
+      // Add a visual indicator for users
+      if (newMode === 'emergency') {
+        this.showModeIndicator('emergency');
+      } else if (newMode === 'normal') {
+        this.showModeIndicator('normal');
+      }
+    },
+
+    showModeIndicator: function(mode) {
+      // Create or update a visual indicator in the UI
+      let indicator = document.getElementById('mode-indicator');
+      
+      if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'mode-indicator';
+        indicator.style.position = 'fixed';
+        indicator.style.top = '10px';
+        indicator.style.right = '10px';
+        indicator.style.padding = '5px 10px';
+        indicator.style.borderRadius = '4px';
+        indicator.style.fontSize = '12px';
+        indicator.style.fontWeight = 'bold';
+        indicator.style.zIndex = '9999';
+        document.body.appendChild(indicator);
+      }
+      
+      if (mode === 'emergency') {
+        indicator.style.backgroundColor = '#ffcc00';
+        indicator.style.color = '#333';
+        indicator.textContent = 'Emergency Mode';
+      } else {
+        indicator.style.backgroundColor = '#4caf50';
+        indicator.style.color = 'white';
+        indicator.textContent = 'Normal Mode';
+      }
+      
+      // Hide after 5 seconds
+      setTimeout(() => {
+        indicator.style.opacity = '0.7';
+      }, 5000);
+    },
+
+    // Initialize state from multiple sources
+    initialize: function() {
+      // Check URL parameters for forced modes
+      const urlParams = new URLSearchParams(window.location.search);
+      const forceNormal = urlParams.get('force_normal') === 'true';
+      const forceEmergency = urlParams.get('force_emergency') === 'true';
+      
+      if (forceNormal) {
+        this.set('mode', 'normal');
+      } else if (forceEmergency) {
+        this.set('mode', 'emergency');
+      }
+      
+      // Try to recover file info from session/localStorage
+      const fileName = sessionStorage.getItem('currentFileName') || 
+                      localStorage.getItem('currentFileName');
+                
+      if (fileName) {
+        this.set('fileName', fileName);
+      }
+      
+      // Mark as initialized
+      this._state.initialized = true;
+      
+      // Log initialization
+      console.log('[StateManager] State initialized:', this.getStatus());
+      
+      return this;
+    }
+  };
+  
+  // Component Loader manages script loading with proper dependency tracking
+  const ComponentLoader = {
+    _registry: {},
+    _loadAttempts: {},
+    
+    // Register a component with its dependencies
+    register: function(name, options = {}) {
+      this._registry[name] = {
+        loaded: false,
+        url: options.url || null,
+        fallbackUrl: options.fallbackUrl || null,
+        emergencyUrl: options.emergencyUrl || null,
+        dependencies: options.dependencies || [],
+        callback: options.callback || null,
+        critical: !!options.critical
+      };
+      return this;
+    },
+    
+    // Mark a component as loaded
+    markLoaded: function(name) {
+      if (!this._registry[name]) {
+        console.warn(`[ComponentLoader] Trying to mark unknown component "${name}" as loaded`);
+        return this;
+      }
+      
+      this._registry[name].loaded = true;
+      StateManager.set(`componentStatus.${name}`, true);
+      
+      // Check if any components depending on this one can now be loaded
+      this._checkDependentComponents();
+      
+      return this;
+    },
+    
+    // Check if all critical components are loaded
+    allCriticalLoaded: function() {
+      return Object.entries(this._registry)
+        .filter(([_, config]) => config.critical)
+        .every(([_, config]) => config.loaded);
+    },
+    
+    // Check and load any components whose dependencies are now satisfied
+    _checkDependentComponents: function() {
+      Object.entries(this._registry).forEach(([name, config]) => {
+        if (!config.loaded && this._areDependenciesSatisfied(name)) {
+          this.load(name);
+        }
+      });
+    },
+    
+    // Check if all dependencies for a component are loaded
+    _areDependenciesSatisfied: function(name) {
+      const dependencies = this._registry[name]?.dependencies || [];
+      
+      return dependencies.every(depName => {
+        return this._registry[depName] && this._registry[depName].loaded;
+      });
+    },
+    
+    // Load a component
+    load: function(name) {
+      if (!this._registry[name]) {
+        console.error(`[ComponentLoader] Unknown component: ${name}`);
+        return Promise.reject(new Error(`Unknown component: ${name}`));
+      }
+      
+      const config = this._registry[name];
+      
+      // Don't reload if already loaded
+      if (config.loaded) {
+        return Promise.resolve(true);
+      }
+      
+      // Don't attempt to load if dependencies aren't satisfied
+      if (!this._areDependenciesSatisfied(name)) {
+        console.log(`[ComponentLoader] Not loading ${name} yet - dependencies not satisfied`);
+        return Promise.reject(new Error(`Dependencies not satisfied for ${name}`));
+      }
+      
+      // Track load attempts
+      this._loadAttempts[name] = (this._loadAttempts[name] || 0) + 1;
+      
+      // Determine which URL to use based on the current mode
+      let url = config.url;
+      
+      if (StateManager.get('mode') === 'emergency' && config.emergencyUrl) {
+        url = config.emergencyUrl;
+      }
+      
+      // If this is a retry and we have a fallback URL, use that
+      if (this._loadAttempts[name] > 1 && config.fallbackUrl) {
+        url = config.fallbackUrl;
+      }
+      
+      // If no URL, this might be a virtual component or bundle
+      if (!url) {
+        if (config.callback) {
+          try {
+            config.callback();
+            this.markLoaded(name);
+            return Promise.resolve(true);
+          } catch (error) {
+            console.error(`[ComponentLoader] Error executing callback for ${name}:`, error);
+            return Promise.reject(error);
+          }
+        } else {
+          console.warn(`[ComponentLoader] No URL or callback for component: ${name}`);
+          return Promise.resolve(false);
+        }
+      }
+      
+      // Load the script
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = url;
+        
+        script.onload = () => {
+          console.log(`[ComponentLoader] Loaded: ${name} from ${url}`);
+          this.markLoaded(name);
+          
+          if (config.callback) {
+            try {
+              config.callback();
+            } catch (error) {
+              console.error(`[ComponentLoader] Error executing callback for ${name}:`, error);
+            }
+          }
+          
+          resolve(true);
+        };
+        
+        script.onerror = (error) => {
+          console.warn(`[ComponentLoader] Failed to load: ${name} from ${url}`);
+          
+          // Try the emergency URL as a last resort if available
+          if (config.emergencyUrl && url !== config.emergencyUrl) {
+            console.log(`[ComponentLoader] Attempting emergency URL for ${name}: ${config.emergencyUrl}`);
+            
+            const emergencyScript = document.createElement('script');
+            emergencyScript.src = config.emergencyUrl;
+            
+            emergencyScript.onload = () => {
+              console.log(`[ComponentLoader] Loaded ${name} from emergency URL: ${config.emergencyUrl}`);
+              this.markLoaded(name);
+              
+              if (config.callback) {
+                try {
+                  config.callback();
+                } catch (error) {
+                  console.error(`[ComponentLoader] Error executing callback for ${name}:`, error);
+                }
+              }
+              
+              resolve(true);
+            };
+            
+            emergencyScript.onerror = () => {
+              console.error(`[ComponentLoader] All load attempts failed for ${name}`);
+              StateManager.set(`componentStatus.${name}`, false);
+              StateManager._state.loadingErrors.push(`Failed to load ${name}`);
+              
+              // If this is a critical component, switch to emergency mode
+              if (config.critical && StateManager.get('mode') !== 'emergency') {
+                console.error(`[ComponentLoader] Critical component ${name} failed to load, switching to emergency mode`);
+                StateManager.set('mode', 'emergency');
+              }
+              
+              reject(new Error(`All load attempts failed for ${name}`));
+            };
+            
+            document.body.appendChild(emergencyScript);
+          } else {
+            StateManager.set(`componentStatus.${name}`, false);
+            StateManager._state.loadingErrors.push(`Failed to load ${name}`);
+            
+            // If this is a critical component, switch to emergency mode
+            if (config.critical && StateManager.get('mode') !== 'emergency') {
+              console.error(`[ComponentLoader] Critical component ${name} failed to load, switching to emergency mode`);
+              StateManager.set('mode', 'emergency');
+            }
+            
+            reject(error);
+          }
+        };
+        
+        document.body.appendChild(script);
+      });
+    },
+    
+    // Load multiple components
+    loadMultiple: function(names) {
+      return Promise.allSettled(names.map(name => this.load(name)));
+    },
+    
+    // Load all registered components
+    loadAll: function() {
+      const components = Object.keys(this._registry);
+      return this.loadMultiple(components);
+    }
+  };
+  
+  // DiagnosticManager helps identify and resolve issues
+  const DiagnosticManager = {
+    startTime: Date.now(),
+    loadTimes: {},
+    errors: [],
+    
+    // Start timing a specific operation
+    startTimer: function(operation) {
+      this.loadTimes[operation] = {
+        start: Date.now()
+      };
+      return this;
+    },
+    
+    // End timing for an operation
+    endTimer: function(operation, success) {
+      if (this.loadTimes[operation]) {
+        this.loadTimes[operation].end = Date.now();
+        this.loadTimes[operation].duration = this.loadTimes[operation].end - this.loadTimes[operation].start;
+        this.loadTimes[operation].success = success;
+      }
+      return this;
+    },
+    
+    // Log an error
+    logError: function(source, error) {
+      this.errors.push({
+        time: Date.now(),
+        source,
+        error: error.toString(),
+        stack: error.stack
+      });
+      
+      console.error(`[DiagnosticManager] Error in ${source}:`, error);
+      return this;
+    },
+    
+    // Get diagnostic report
+    getReport: function() {
+      return {
+        totalTime: Date.now() - this.startTime,
+        loadTimes: this.loadTimes,
+        errors: this.errors,
+        stateStatus: StateManager.getStatus(),
+        components: ComponentLoader._registry,
+        browser: {
+          userAgent: navigator.userAgent,
+          platform: navigator.platform,
+          language: navigator.language,
+          cookiesEnabled: navigator.cookieEnabled
+        }
+      };
+    },
+    
+    // Send diagnostics to server
+    sendReport: function() {
+      const report = this.getReport();
+      console.log('[DiagnosticManager] Diagnostic report:', report);
+      
+      // In a real implementation, send to server
+      // fetch('/api/diagnostics', {
+      //   method: 'POST',
+      //   headers: {'Content-Type': 'application/json'},
+      //   body: JSON.stringify(report)
+      // }).catch(e => console.error('Failed to send diagnostics:', e));
+      
+      return report;
+    }
+  };
+  
+  // BootManager coordinates the startup sequence
+  const BootManager = {
+    _initialized: false,
+    
+    // Bootstrap the entire application
+    initialize: function() {
+      if (this._initialized) return;
+      this._initialized = true;
+      
+      DiagnosticManager.startTimer('bootProcess');
+      
+      // Initialize state first
+      StateManager.initialize();
+      
+      // Register required components
+      this.registerComponents();
+      
+      // Set up event listeners
+      this.setupEventListeners();
+      
+      // Begin loading components
+      this.loadInitialComponents();
+      
+      // Set up timeout check for emergency mode
+      this.setupEmergencyCheck();
+      
+      DiagnosticManager.endTimer('bootProcess', true);
+      
+      // Create global formatterState for backward compatibility with existing code
+      this.setupLegacyCompatibility();
+      
+      console.log('[BootManager] Initialization complete');
+    },
+    
+    // Register all the components we need
+    registerComponents: function() {
+      // Core libraries
+      ComponentLoader.register('coreLibrary', {
+        url: '/static/js/fireems-framework.js',
+        fallbackUrl: '/app-static/js/fireems-framework.js',
+        critical: true
+      });
+      
+      // Main formatter bundle
+      ComponentLoader.register('formatterBundle', {
+        url: '/static/data-formatter-bundle.js?v=1.0.2',
+        fallbackUrl: '/direct-static/data-formatter-bundle.js',
+        emergencyUrl: '/app-static/data-formatter-direct.js',
+        dependencies: ['coreLibrary'],
+        critical: true,
+        callback: function() {
+          console.log('[FormatterBundle] Main bundle loaded, setting dataFormatterLoaded flag');
+          window.dataFormatterLoaded = true;
+        }
+      });
+      
+      // Emergency mode libraries
+      ComponentLoader.register('emergencyMode', {
+        url: '/static/js/emergency-scripts/emergency-mode-library.js',
+        fallbackUrl: '/app-static/js/emergency-mode.js',
+        dependencies: ['coreLibrary'],
+        critical: false
+      });
+      
+      // Integration libraries for different tools
+      ComponentLoader.register('formatterIntegration', {
+        url: '/static/data-formatter-integration.js',
+        fallbackUrl: '/app-static/data-formatter-integration.js',
+        dependencies: ['formatterBundle'],
+        critical: false
+      });
+      
+      // Extra utilities and fixes
+      ComponentLoader.register('formatterFixes', {
+        url: '/static/data-formatter-fix.js',
+        fallbackUrl: '/app-static/data-formatter-fix.js',
+        dependencies: ['formatterBundle'],
+        critical: false
+      });
+    },
+    
+    // Set up event listeners for state changes
+    setupEventListeners: function() {
+      // Listen for mode changes
+      StateManager.addEventListener('modeChange', function(data) {
+        console.log(`[EventListener] Mode changed from ${data.oldMode} to ${data.newMode}`);
+        
+        if (data.newMode === 'emergency') {
+          // Load emergency components
+          ComponentLoader.load('emergencyMode');
+          ComponentLoader.load('formatterFixes');
+        }
+      });
+      
+      // Listen for file selection
+      document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('data-file');
+        
+        if (fileInput) {
+          fileInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Update state with file details
+            StateManager.setMultiple({
+              fileName: file.name,
+              fileSize: file.size,
+              fileType: file.type
+            });
+            
+            // Log file selection
+            console.log(`[EventListener] File selected: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`);
+          });
+        }
+      });
+    },
+    
+    // Load the initial set of components
+    loadInitialComponents: function() {
+      // Start by loading the core library
+      ComponentLoader.load('coreLibrary')
+        .then(() => {
+          // Once core is loaded, load the main bundle
+          return ComponentLoader.load('formatterBundle');
+        })
+        .then(() => {
+          // Once main bundle is loaded, try to load integration
+          return ComponentLoader.load('formatterIntegration');
+        })
+        .catch(error => {
+          console.error('[BootManager] Error loading initial components:', error);
+          
+          // If we can't load critical components, switch to emergency mode
+          if (!ComponentLoader.allCriticalLoaded()) {
+            StateManager.set('mode', 'emergency');
+          }
+        });
+    },
+    
+    // Set up emergency mode check
+    setupEmergencyCheck: function() {
+      // Check after 3 seconds if components are loaded properly
+      setTimeout(() => {
+        // If dataFormatterLoaded flag is not set, switch to emergency mode
+        if (!window.dataFormatterLoaded && StateManager.get('mode') !== 'emergency') {
+          console.warn('[BootManager] dataFormatterLoaded flag not set after timeout, switching to emergency mode');
+          StateManager.set('mode', 'emergency');
+        }
+      }, 3000);
+    },
+    
+    // Set up legacy compatibility
+    setupLegacyCompatibility: function() {
+      // Create global formatterState for backward compatibility
+      window.formatterState = {
+        fileId: null,
+        fileName: StateManager.get('fileName'),
+        fileSize: StateManager.get('fileSize'),
+        sourceColumns: [],
+        sampleData: [],
+        selectedTool: null,
+        mappings: null,
+        transformedData: null,
+        originalData: null,
+        
+        // The critical field that was missing in the original implementation
+        originalFileName: StateManager.get('fileName'),
+        
+        // Add convenience methods
+        isLargeFile: function() {
+          return StateManager.get('isLargeFile');
+        },
+        
+        getProcessingLimit: function() {
+          return StateManager.getProcessingLimit();
+        },
+        
+        getPreviewSize: function() {
+          return StateManager.getPreviewSize();
+        }
+      };
+      
+      // Set up proxy to sync changes between StateManager and global formatterState
+      StateManager.addEventListener('stateChange', function(data) {
+        if (data.key === 'fileName') {
+          window.formatterState.fileName = data.value;
+          window.formatterState.originalFileName = data.value;
+        } else if (data.key === 'fileSize') {
+          window.formatterState.fileSize = data.value;
+        }
+      });
+    }
+  };
+  
+  // Expose the public API
+  window.FireEMS.DataFormatter = {
+    // Core modules
+    StateManager: StateManager,
+    ComponentLoader: ComponentLoader,
+    DiagnosticManager: DiagnosticManager,
+    
+    // Convenience methods
+    getState: function(key) {
+      return StateManager.get(key);
+    },
+    
+    setState: function(key, value) {
+      return StateManager.set(key, value);
+    },
+    
+    isEmergencyMode: function() {
+      return StateManager.get('mode') === 'emergency';
+    },
+    
+    isLargeFile: function() {
+      return StateManager.get('isLargeFile');
+    },
+    
+    getDiagnostics: function() {
+      return DiagnosticManager.getReport();
+    },
+    
+    // Used to check if this library is loaded
+    isLoaded: true
+  };
+  
+  // Initialize the system
+  BootManager.initialize();
+  
+  // Log that we're ready
+  console.log('[DataFormatter] Core library initialized and ready');
+})();
