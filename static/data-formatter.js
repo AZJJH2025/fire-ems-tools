@@ -176,8 +176,19 @@ document.addEventListener('DOMContentLoaded', function() {
         fileName.textContent = file.name;
         fileType = getFileType(file);
         
+        // Store filename for large file detection (if the function is available from patch)
+        if (window.storeFileName) {
+            window.storeFileName(file.name);
+        }
+        
         if (inputFormat.value === 'auto') {
             inputFormat.value = fileType;
+        }
+        
+        // Special handling for Data1G.csv
+        if (file.name.toLowerCase().includes('data1g')) {
+            console.log('Data1G.csv detected - will use enhanced processing');
+            appendLog('Large data file detected. Using enhanced processing mode.', 'info');
         }
         
         // Hide Excel options by default

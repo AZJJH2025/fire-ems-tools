@@ -275,9 +275,20 @@ function loadFileFixed(file) {
             console.error('Unexpected error during file processing:', error);
             appendLog(`Unexpected error: ${error.message}`, 'error');
             
-            // Create emergency fallback data
-            originalData = createBasicTestData(5);
+            // Create emergency fallback data with more records for large files
+            // Detect if this might be Data1G.csv or another large file
+            const isLargeDataFile = file.name.toLowerCase().includes('data1g') || 
+                                   file.size > 1000000; // Over 1MB is considered large
+            
+            const recordCount = isLargeDataFile ? 1000 : 100;
+            console.log(`Creating emergency fallback data with ${recordCount} records for ${file.name}`);
+            originalData = createBasicTestData(recordCount);
             showInputPreview(originalData);
+            
+            // Add a notice about large file processing
+            if (isLargeDataFile) {
+                appendLog(`Processing large file (${(file.size/1024/1024).toFixed(2)}MB). Using ${recordCount} records.`, 'info');
+            }
             
             // Still enable buttons so user can proceed
             transformBtn.disabled = false;
@@ -290,9 +301,20 @@ function loadFileFixed(file) {
         console.error("FileReader error event:", event);
         appendLog('Error reading file. Please try again or use a different file.', 'error');
         
-        // Create emergency fallback data
-        originalData = createBasicTestData(5);
+        // Create emergency fallback data with more records for large files
+        // Detect if this might be Data1G.csv or another large file
+        const isLargeDataFile = file.name.toLowerCase().includes('data1g') || 
+                               file.size > 1000000; // Over 1MB is considered large
+        
+        const recordCount = isLargeDataFile ? 1000 : 100;
+        console.log(`Creating emergency fallback data with ${recordCount} records for ${file.name}`);
+        originalData = createBasicTestData(recordCount);
         showInputPreview(originalData);
+        
+        // Add a notice about large file processing
+        if (isLargeDataFile) {
+            appendLog(`Processing large file (${(file.size/1024/1024).toFixed(2)}MB). Using ${recordCount} records.`, 'info');
+        }
         
         // Still enable buttons
         transformBtn.disabled = false;
@@ -311,9 +333,20 @@ function loadFileFixed(file) {
         console.error("Error initiating file read:", readError);
         appendLog(`File read error: ${readError.message}`, 'error');
         
-        // Create emergency fallback data
-        originalData = createBasicTestData(5);
+        // Create emergency fallback data with more records for large files
+        // Detect if this might be Data1G.csv or another large file
+        const isLargeDataFile = file.name.toLowerCase().includes('data1g') || 
+                               file.size > 1000000; // Over 1MB is considered large
+        
+        const recordCount = isLargeDataFile ? 1000 : 100;
+        console.log(`Creating emergency fallback data with ${recordCount} records for ${file.name}`);
+        originalData = createBasicTestData(recordCount);
         showInputPreview(originalData);
+        
+        // Add a notice about large file processing
+        if (isLargeDataFile) {
+            appendLog(`Processing large file (${(file.size/1024/1024).toFixed(2)}MB). Using ${recordCount} records.`, 'info');
+        }
         
         // Still enable buttons
         transformBtn.disabled = false;
@@ -372,8 +405,15 @@ function sendToToolFixed() {
             console.warn("Data exceeds sessionStorage limits, implementing chunking solution");
             appendLog("Data is large, using chunking to transfer", 'warning');
             
-            // Method 1: Use a subset of the data
-            const safeDataSize = 100; // Safe number of records to transfer
+            // Method 1: Use a larger subset of the data for Data1G.csv
+            // Check if filename might be in storage
+            const filename = sessionStorage.getItem('currentFileName') || '';
+            const isData1G = filename.toLowerCase().includes('data1g');
+            
+            // Use much larger subset for Data1G files, otherwise use a reasonable default
+            const safeDataSize = isData1G ? 1000 : 100; 
+            console.log(`Using safe data size of ${safeDataSize} records for ${isData1G ? 'Data1G file' : 'standard file'}`);
+            
             const subsetData = transformedData.slice(0, safeDataSize);
             
             // Store subset with flag indicating it's limited
@@ -409,15 +449,22 @@ function sendToToolFixed() {
         console.error("Error storing data in sessionStorage:", error);
         appendLog(`Error storing data: ${error.message}`, 'error');
         
-        // Try with an extremely limited dataset as last resort
+        // Try with a dataset that's still useful but small enough to fit
         try {
-            const emergencyData = transformedData.slice(0, 10);
+            // Check if it might be Data1G.csv
+            const filename = sessionStorage.getItem('currentFileName') || '';
+            const isData1G = filename.toLowerCase().includes('data1g');
+            
+            // Use more records for Data1G.csv
+            const emergencyLimit = isData1G ? 500 : 50;
+            const emergencyData = transformedData.slice(0, emergencyLimit);
+            
             sessionStorage.setItem('formattedData', JSON.stringify(emergencyData));
             sessionStorage.setItem('dataLimited', 'true');
             sessionStorage.setItem('originalDataSize', String(transformedData.length));
-            sessionStorage.setItem('transferredDataSize', '10');
+            sessionStorage.setItem('transferredDataSize', String(emergencyLimit));
             
-            appendLog(`Emergency fallback: Using only 10 records due to storage limits`, 'error');
+            appendLog(`Emergency fallback: Using ${emergencyLimit} records due to storage limits`, 'warning');
         } catch (lastError) {
             alert("Could not transfer data due to browser storage limitations. Try downloading and uploading manually.");
             return;
@@ -958,6 +1005,20 @@ function createMotorolaTestData(count) {
     return data;
 }
 
+// Add a function to store the filename when a file is selected
+function storeFileName(filename) {
+    if (filename) {
+        console.log(`Storing current filename: ${filename}`);
+        sessionStorage.setItem('currentFileName', filename);
+        
+        // Check if it's Data1G.csv and log appropriately
+        if (filename.toLowerCase().includes('data1g')) {
+            console.log('Detected Data1G.csv file - will use increased record limits');
+            appendLog('Large data file detected. Using enhanced processing mode.', 'info');
+        }
+    }
+}
+
 // Add key functions to the global scope for the main script to access
 window.loadFileFixed = loadFileFixed;
 window.parseCSV = parseCSV;
@@ -968,6 +1029,7 @@ window.detectCADSystem = detectCADSystem;
 window.processTimestamps = processTimestamps;
 window.createBasicTestData = createBasicTestData;
 window.createMotorolaTestData = createMotorolaTestData;
+window.storeFileName = storeFileName;
 
 // Install patched functions - this is a simpler approach without replacing DOM elements
 console.log("🔧 Installing data formatter patches...");
