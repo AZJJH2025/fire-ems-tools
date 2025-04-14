@@ -657,8 +657,13 @@
                 return;
               }
               
+              // Important: This is the entry point for transforming the data
+              // We need to ensure we're working with all available records
               const sampleData = window.formatterState.sampleData;
               const mappings = window.formatterState.mappings;
+              
+              // For debugging - log how many records are in the sample data
+              console.log(`createSampleOutput: Working with ${sampleData.length} records from source data`);
               
               // Transform the data based on mappings
               const transformedData = sampleData.map(row => {
@@ -673,8 +678,11 @@
                 return transformed;
               });
               
-              // Show preview of first 5 rows
+              // Start creating the preview table
               let html = '<table class="preview-table"><thead><tr>';
+              
+              // Log total records for debugging
+              console.log(`About to show preview table with ${transformedData.length} total transformed records`);
               
               // Create headers from target fields
               const headers = Object.keys(mappings);
@@ -706,8 +714,9 @@
               html += '</tbody></table>';
               outputPreview.innerHTML = html;
               
-              // Save transformed data to state
+              // Save ALL transformed data to state (very important - we want to save ALL records, not just the preview)
               window.formatterState.transformedData = transformedData;
+              console.log(`Saved ${transformedData.length} records to formatterState.transformedData`);
               
               // Enable download and send buttons
               const downloadBtn = document.getElementById('download-btn');
@@ -737,11 +746,20 @@
                 const timestamp = new Date().toLocaleTimeString();
                 // Calculate how many rows are actually visible in the preview
                 const filename = sessionStorage.getItem('currentFileName') || localStorage.getItem('currentFileName') || '';
+                
                 // Always treat Data1G.csv as a large file regardless of record count
-                const isLargeFile = filename.toLowerCase().includes('data1g') || transformedData.length > 1000;
+                // Make sure we convert to lowercase to ensure case-insensitive comparison
+                const filenameCheck = filename.toLowerCase();
+                const isData1G = filenameCheck.includes('data1g');
+                console.log(`Checking if filename "${filename}" contains 'data1g': ${isData1G}`);
+                
+                const isLargeFile = isData1G || transformedData.length > 1000;
                 const previewSize = isLargeFile ? 100 : 5;
                 console.log(`Log message using preview size of ${previewSize} (large file: ${isLargeFile}, filename: ${filename})`);
                 const visibleRows = Math.min(transformedData.length, previewSize);
+                
+                // This is where the critical "5 of 29" message comes from!
+                console.log(`CRITICAL LOG MESSAGE: Preview shows ${visibleRows} of ${transformedData.length} total record(s) (isLargeFile: ${isLargeFile})`);
                 
                 // Include both visible and total count in the message
                 logContainer.innerHTML += `<div class="log-entry log-info">
