@@ -1790,8 +1790,21 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Show the first 5 records
-        const previewData = data.slice(0, 5);
+        // Check if file name indicates it's Data1G.csv or a large dataset
+        const isLargeDataset = fileName.textContent.toLowerCase().includes('data1g') || (data && data.length > 1000);
+        
+        // Show more records for Data1G.csv or large datasets
+        const previewLimit = isLargeDataset ? 100 : 10;
+        const previewData = data.slice(0, previewLimit);
+        
+        // Log the preview size for debugging
+        console.log(`Input Preview: Showing ${previewData.length} of ${data.length} records. Large dataset: ${isLargeDataset}`);
+        
+        // Add preview size info to log
+        appendLog(`Data loaded. Preview created with ${previewData.length} record(s).`);
+        if (isLargeDataset) {
+            appendLog(`Using enhanced preview for large dataset (${data.length} total records).`);
+        }
         
         // Create table headers
         const headers = Object.keys(previewData[0]);
@@ -1828,8 +1841,21 @@ document.addEventListener('DOMContentLoaded', function() {
         // Make global function available
         window.showOutputPreview = showOutputPreview;
         
-        // Show the first 5 records
-        const previewData = data.slice(0, 5);
+        // Check if file name indicates it's Data1G.csv or a large dataset
+        const isLargeDataset = fileName.textContent.toLowerCase().includes('data1g') || (data && data.length > 1000);
+        
+        // Show more records for Data1G.csv or large datasets
+        const previewLimit = isLargeDataset ? 100 : 10;
+        const previewData = data.slice(0, previewLimit);
+        
+        // Log the preview size for debugging
+        console.log(`Output Preview: Showing ${previewData.length} of ${data.length} records. Large dataset: ${isLargeDataset}`);
+        
+        // Add preview size info to log
+        appendLog(`Data transformation complete. Preview created with ${previewData.length} record(s).`);
+        if (isLargeDataset) {
+            appendLog(`Using enhanced preview for large dataset (${data.length} total records).`);        
+        }
         
         // Create table headers
         const headers = Object.keys(previewData[0]);

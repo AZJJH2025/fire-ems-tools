@@ -770,8 +770,16 @@ def transform_data():
         if not transformed_df.empty:
             logger.info(f"Sample transformed data:\n{transformed_df.head(3).to_string()}")
             
-        # Generate the preview (first 10 rows)
-        preview_data = transformed_df.head(10).fillna('').to_dict('records')
+        # Generate the preview - use more rows for large files
+        # Check if this might be Data1G.csv (from the original filename stored in the request)
+        original_filename = data.get('originalFilename', '')
+        is_large_file = 'data1g' in original_filename.lower() or len(transformed_df) > 1000
+        
+        # Use 100 rows for Data1G.csv or other large files
+        preview_rows = 100 if is_large_file else 10
+        logger.info(f"Generating preview with {preview_rows} rows (large file: {is_large_file})")
+        
+        preview_data = transformed_df.head(preview_rows).fillna('').to_dict('records')
         
         # Generate a unique ID for the transformed data
         transform_id = str(uuid.uuid4())
