@@ -275,9 +275,18 @@
                         window.formatterState.sourceColumns = headers;
                         window.formatterState.originalData = true;
                         
-                        // Parse a few rows for sample data
+                        // Parse rows for sample data - use more for Data1G.csv
                         const sampleData = [];
-                        for (let i = 1; i < Math.min(lines.length, 6); i++) {
+                        
+                        // Check if this might be Data1G.csv from filename
+                        const filename = sessionStorage.getItem('currentFileName') || 
+                                         localStorage.getItem('currentFileName') || '';
+                        const isLargeFile = filename.toLowerCase().includes('data1g');
+                        const maxRowsToProcess = isLargeFile ? 1000 : 100;
+                        
+                        console.log(`Emergency CSV parser processing ${maxRowsToProcess} rows (large file: ${isLargeFile})`);
+                        
+                        for (let i = 1; i < Math.min(lines.length, maxRowsToProcess + 1); i++) {
                           if (lines[i].trim()) {
                             const values = lines[i].split(',');
                             const row = {};
