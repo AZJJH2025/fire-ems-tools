@@ -181,6 +181,15 @@ document.addEventListener('DOMContentLoaded', function() {
             window.storeFileName(file.name);
         }
         
+        // Always store the filename in sessionStorage for Data1G.csv detection
+        try {
+            sessionStorage.setItem('currentFileName', file.name);
+            localStorage.setItem('currentFileName', file.name);
+            console.log('Stored filename in storage:', file.name);
+        } catch (storageErr) {
+            console.warn('Failed to store filename in storage:', storageErr);
+        }
+        
         if (inputFormat.value === 'auto') {
             inputFormat.value = fileType;
         }
@@ -1372,9 +1381,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Unexpected error during file processing:', error);
                 appendLog(`Unexpected error: ${error.message}`, 'error');
                 
-                // Create emergency fallback data
-                originalData = createBasicTestData(5);
+                // Create emergency fallback data with more records for large files
+                // Detect if this might be Data1G.csv or another large file
+                const isLargeDataFile = file.name.toLowerCase().includes('data1g') || 
+                                      file.size > 1000000; // Over 1MB is considered large
+                
+                const recordCount = isLargeDataFile ? 1000 : 100;
+                console.log(`Creating emergency fallback data with ${recordCount} records for ${file.name}`);
+                originalData = createBasicTestData(recordCount);
                 showInputPreview(originalData);
+                
+                // Add a notice about large file processing
+                if (isLargeDataFile) {
+                    appendLog(`Processing large file (${(file.size/1024/1024).toFixed(2)}MB). Using ${recordCount} records.`, 'info');
+                }
                 
                 // Still enable buttons so user can proceed
                 mapFieldsBtn.disabled = false;
@@ -1387,9 +1407,20 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error("FileReader error event:", event);
             appendLog('Error reading file. Please try again or use a different file.', 'error');
             
-            // Create emergency fallback data
-            originalData = createBasicTestData(5);
+            // Create emergency fallback data with more records for large files
+            // Detect if this might be Data1G.csv or another large file
+            const isLargeDataFile = file.name.toLowerCase().includes('data1g') || 
+                                  file.size > 1000000; // Over 1MB is considered large
+            
+            const recordCount = isLargeDataFile ? 1000 : 100;
+            console.log(`Creating emergency fallback data with ${recordCount} records for ${file.name}`);
+            originalData = createBasicTestData(recordCount);
             showInputPreview(originalData);
+            
+            // Add a notice about large file processing
+            if (isLargeDataFile) {
+                appendLog(`Processing large file (${(file.size/1024/1024).toFixed(2)}MB). Using ${recordCount} records.`, 'info');
+            }
             
             // Still enable buttons
             mapFieldsBtn.disabled = false;
@@ -1408,9 +1439,20 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error("Error initiating file read:", readError);
             appendLog(`File read error: ${readError.message}`, 'error');
             
-            // Create emergency fallback data
-            originalData = createBasicTestData(5);
+            // Create emergency fallback data with more records for large files
+            // Detect if this might be Data1G.csv or another large file
+            const isLargeDataFile = file.name.toLowerCase().includes('data1g') || 
+                                  file.size > 1000000; // Over 1MB is considered large
+            
+            const recordCount = isLargeDataFile ? 1000 : 100;
+            console.log(`Creating emergency fallback data with ${recordCount} records for ${file.name}`);
+            originalData = createBasicTestData(recordCount);
             showInputPreview(originalData);
+            
+            // Add a notice about large file processing
+            if (isLargeDataFile) {
+                appendLog(`Processing large file (${(file.size/1024/1024).toFixed(2)}MB). Using ${recordCount} records.`, 'info');
+            }
             
             // Still enable buttons
             mapFieldsBtn.disabled = false;
