@@ -686,11 +686,12 @@
               
               // Check if we're processing Data1G.csv
               const filename = sessionStorage.getItem('currentFileName') || localStorage.getItem('currentFileName') || '';
+              // Always treat Data1G.csv as a large file regardless of record count
               const isLargeFile = filename.toLowerCase().includes('data1g') || transformedData.length > 1000;
               
               // Use larger preview size for Data1G.csv or other large files
               const previewSize = isLargeFile ? 100 : 5;
-              console.log(`Using preview size of ${previewSize} rows for output display (large file: ${isLargeFile})`);
+              console.log(`Using preview size of ${previewSize} rows for output display (large file: ${isLargeFile}, filename: ${filename})`);
               
               // Add rows to preview
               const rowsToShow = Math.min(transformedData.length, previewSize);
@@ -736,8 +737,10 @@
                 const timestamp = new Date().toLocaleTimeString();
                 // Calculate how many rows are actually visible in the preview
                 const filename = sessionStorage.getItem('currentFileName') || localStorage.getItem('currentFileName') || '';
+                // Always treat Data1G.csv as a large file regardless of record count
                 const isLargeFile = filename.toLowerCase().includes('data1g') || transformedData.length > 1000;
                 const previewSize = isLargeFile ? 100 : 5;
+                console.log(`Log message using preview size of ${previewSize} (large file: ${isLargeFile}, filename: ${filename})`);
                 const visibleRows = Math.min(transformedData.length, previewSize);
                 
                 // Include both visible and total count in the message
