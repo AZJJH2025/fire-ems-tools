@@ -1857,18 +1857,19 @@ function createTimeChart(data, stats) {
     
     // Check if we have date/time data
     // First check a sample of records for required time fields
-    let hasTimeData = false;
+    // Using a more descriptive name to avoid conflicts with other variables
+    let hasTimeDataFields = false;
     for (const record of data.slice(0, Math.min(data.length, 10))) { // Check first 10 records
         if (record.incident_date || record.incident_time || 
             record['Reported'] || record['Reported_obj'] || 
             (record._date_obj instanceof Date)) {
-            hasTimeData = true;
+            hasTimeDataFields = true;
             break;
         }
     }
     
     // If no time data found, show a message and abort chart creation
-    if (!hasTimeData) {
+    if (!hasTimeDataFields) {
         console.warn("No time/date data found in records");
         container.innerHTML = `
             <div class="missing-data-message" style="text-align: center; padding: 40px; background-color: #f9f9f9; border-radius: 8px; margin: 20px 0;">
@@ -2012,15 +2013,21 @@ function createTimeChart(data, stats) {
     });
     
     // Check if time data exists after attempts to create Date objects
-    const hasTimeData = data.some(record => record['Reported_obj']);
+    const hasReportedTimeData = data.some(record => record['Reported_obj']);
     console.log("Time chart data check after processing:", {
         recordCount: data.length,
         recordsWithReportedObj: data.filter(record => record['Reported_obj'] instanceof Date).length,
         reportedObjSamples: data.filter(record => record['Reported_obj']).slice(0, 3).map(record => record['Reported_obj'])
     });
     
-    if (!hasTimeData) {
-        container.innerHTML = '<p>No time data available for heatmap</p>';
+    if (!hasReportedTimeData) {
+        container.innerHTML = `
+            <div class="missing-data-message" style="text-align: center; padding: 40px; background-color: #f9f9f9; border-radius: 8px; margin: 20px 0;">
+                <i class="fas fa-clock" style="font-size: 48px; color: #ccc; margin-bottom: 20px;"></i>
+                <h3>Time Heatmap Unavailable</h3>
+                <p>Cannot display time heatmap because the data couldn't be properly processed for time analysis.</p>
+            </div>
+        `;
         return;
     }
     
@@ -2110,11 +2117,71 @@ function createIncidentMap(data) {
     // First check if we have coordinate data at all - if all records are missing coordinates, 
     // show an error message instead of trying to create a map
     let hasCoordinates = false;
-    for (const record of data.slice(0, Math.min(data.length, 10))) { // Check first 10 records
-        if ((record.latitude !== undefined || record.Latitude !== undefined || record.lat !== undefined) &&
-            (record.longitude !== undefined || record.Longitude !== undefined || record.lng !== undefined || record.lon !== undefined)) {
+    let coordinateFound = false;
+    
+    // More thorough check for coordinate data - check all possible naming conventions
+    for (const record of data.slice(0, Math.min(data.length, 50))) { // Check more records to be safe
+        // Check all possible latitude field names
+        const hasLat = 
+            (record.latitude !== undefined && record.latitude !== null && record.latitude !== '') || 
+            (record.Latitude !== undefined && record.Latitude !== null && record.Latitude !== '') || 
+            (record.lat !== undefined && record.lat !== null && record.lat !== '') ||
+            (record.LAT !== undefined && record.LAT !== null && record.LAT !== '');
+            
+        // Check all possible longitude field names
+        const hasLong = 
+            (record.longitude !== undefined && record.longitude !== null && record.longitude !== '') || 
+            (record.Longitude !== undefined && record.Longitude !== null && record.Longitude !== '') || 
+            (record.lng !== undefined && record.lng !== null && record.lng !== '') ||
+            (record.lon !== undefined && record.lon !== null && record.lon !== '') ||
+            (record.LNG !== undefined && record.LNG !== null && record.LNG !== '') ||
+            (record.LON !== undefined && record.LON !== null && record.LON !== '') ||
+            (record.LONG !== undefined && record.LONG !== null && record.LONG !== '');
+        
+        if (hasLat && hasLong) {
+            console.log("Found coordinate data in record:", record);
             hasCoordinates = true;
+            coordinateFound = true;
             break;
+        }
+    }
+    
+    // If we didn't find coordinates in the first pass, do an even more aggressive check
+    if (!coordinateFound) {
+        console.warn("No standard coordinate fields found, checking for any numeric fields that might be coordinates");
+        // Look for any fields that might contain latitude/longitude values
+        const potentialLatFields = ['lat', 'latitude', 'y', 'yloc', 'north'];
+        const potentialLngFields = ['lon', 'lng', 'longitude', 'x', 'xloc', 'east'];
+        
+        for (const record of data.slice(0, Math.min(data.length, 10))) {
+            // Check each field in the record for values that look like coordinates
+            for (const key in record) {
+                const lowerKey = key.toLowerCase();
+                const value = parseFloat(record[key]);
+                
+                // Check if the field name suggests latitude
+                if (!isNaN(value) && (
+                    potentialLatFields.some(term => lowerKey.includes(term)) || 
+                    // Or the value looks like a latitude (-90 to 90)
+                    (value >= -90 && value <= 90 && 
+                     // Try to find a matching longitude
+                     Object.entries(record).some(([k, v]) => {
+                        const longValue = parseFloat(v);
+                        return k !== key && 
+                               !isNaN(longValue) && 
+                               longValue >= -180 && 
+                               longValue <= 180 &&
+                               (potentialLngFields.some(term => k.toLowerCase().includes(term)) ||
+                                // Or they appear to be a pair based on naming
+                                (lowerKey.includes('lat') && k.toLowerCase().includes('lon')))
+                     }))
+                )) {
+                    console.log("Found potential coordinate data:", key, record[key]);
+                    hasCoordinates = true;
+                    break;
+                }
+            }
+            if (hasCoordinates) break;
         }
     }
     
