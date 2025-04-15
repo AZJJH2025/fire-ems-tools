@@ -1133,6 +1133,220 @@
               }
             }
             
+            // Checks what required fields are missing for a given tool
+            function checkMissingRequiredFields(selectedTool) {
+              const missingFields = [];
+              
+              // Define required fields for each tool
+              const requiredFieldsByTool = {
+                'response-time': [
+                  { id: 'incident_id', name: 'Incident ID' },
+                  { id: 'incident_date', name: 'Incident Date' },
+                  { id: 'incident_time', name: 'Incident Time' },
+                  { id: 'dispatch_time', name: 'Dispatch Time' },
+                  { id: 'en_route_time', name: 'En Route Time' },
+                  { id: 'on_scene_time', name: 'On Scene Time' },
+                  { id: 'latitude', name: 'Latitude' },
+                  { id: 'longitude', name: 'Longitude' },
+                  { id: 'incident_type', name: 'Incident Type' }
+                ],
+                'call-density': [
+                  { id: 'incident_id', name: 'Incident ID' },
+                  { id: 'incident_date', name: 'Incident Date' },
+                  { id: 'incident_time', name: 'Incident Time' },
+                  { id: 'latitude', name: 'Latitude' },
+                  { id: 'longitude', name: 'Longitude' }
+                ],
+                'isochrone': [
+                  { id: 'station_id', name: 'Station ID' },
+                  { id: 'station_name', name: 'Station Name' },
+                  { id: 'latitude', name: 'Latitude' },
+                  { id: 'longitude', name: 'Longitude' }
+                ],
+                'isochrone-stations': [
+                  { id: 'station_id', name: 'Station ID' },
+                  { id: 'station_name', name: 'Station Name' },
+                  { id: 'latitude', name: 'Latitude' },
+                  { id: 'longitude', name: 'Longitude' }
+                ],
+                'isochrone-incidents': [
+                  { id: 'incident_id', name: 'Incident ID' },
+                  { id: 'incident_date', name: 'Incident Date' },
+                  { id: 'latitude', name: 'Latitude' },
+                  { id: 'longitude', name: 'Longitude' }
+                ],
+                'coverage-gap': [
+                  { id: 'station_id', name: 'Station ID' },
+                  { id: 'latitude', name: 'Latitude' },
+                  { id: 'longitude', name: 'Longitude' }
+                ],
+                'incident-logger': [
+                  { id: 'incident_id', name: 'Incident ID' },
+                  { id: 'incident_date', name: 'Incident Date' },
+                  { id: 'incident_time', name: 'Incident Time' },
+                  { id: 'latitude', name: 'Latitude' },
+                  { id: 'longitude', name: 'Longitude' },
+                  { id: 'incident_type', name: 'Incident Type' }
+                ],
+                'station-overview': [
+                  { id: 'station_id', name: 'Station ID' },
+                  { id: 'station_name', name: 'Station Name' },
+                  { id: 'latitude', name: 'Latitude' },
+                  { id: 'longitude', name: 'Longitude' }
+                ],
+                'fire-map-pro': [
+                  { id: 'incident_id', name: 'Incident ID' },
+                  { id: 'latitude', name: 'Latitude' },
+                  { id: 'longitude', name: 'Longitude' }
+                ]
+              };
+              
+              // Get the required fields for the selected tool
+              const requiredFields = requiredFieldsByTool[selectedTool] || [];
+              if (!requiredFields.length) {
+                return missingFields; // No required fields defined for this tool
+              }
+              
+              // Check each required field
+              const transformedData = window.formatterState.transformedData;
+              if (!transformedData || transformedData.length === 0) {
+                return requiredFields.map(field => field.name); // All fields are missing
+              }
+              
+              // Check the first record for required fields
+              const sampleRecord = transformedData[0];
+              
+              requiredFields.forEach(field => {
+                const fieldKey = field.id;
+                const fieldName = field.name;
+                
+                // Special handling for coordinate fields (check multiple possible keys)
+                if (fieldKey === 'latitude') {
+                  if (sampleRecord.latitude === undefined && 
+                      sampleRecord.Latitude === undefined && 
+                      sampleRecord.lat === undefined) {
+                    missingFields.push(fieldName);
+                  }
+                } else if (fieldKey === 'longitude') {
+                  if (sampleRecord.longitude === undefined && 
+                      sampleRecord.Longitude === undefined && 
+                      sampleRecord.lon === undefined && 
+                      sampleRecord.lng === undefined) {
+                    missingFields.push(fieldName);
+                  }
+                } 
+                // For other fields, check the exact field ID
+                else if (sampleRecord[fieldKey] === undefined) {
+                  missingFields.push(fieldName);
+                }
+              });
+              
+              return missingFields;
+            }
+            
+            // Shows a confirmation dialog for missing required fields
+            function showMissingFieldsWarning(missingFields, selectedTool) {
+              const toolDisplayNames = {
+                'response-time': 'Response Time Analyzer',
+                'call-density': 'Call Density Heatmap',
+                'isochrone': 'Isochrone Map Generator',
+                'isochrone-stations': 'Isochrone Map - Station Locations',
+                'isochrone-incidents': 'Isochrone Map - Incident Data',
+                'coverage-gap': 'Coverage Gap Finder',
+                'incident-logger': 'Incident Logger',
+                'station-overview': 'Station Overview',
+                'fire-map-pro': 'FireMapPro'
+              };
+              
+              const toolName = toolDisplayNames[selectedTool] || selectedTool;
+              
+              // Create feature impact descriptions based on missing fields
+              const featureImpacts = [];
+              
+              // Add the appropriate warnings based on missing fields and selected tool
+              if (missingFields.includes('Latitude') || missingFields.includes('Longitude')) {
+                featureImpacts.push("• Map visualization will be unavailable");
+              }
+              
+              if (selectedTool === 'response-time') {
+                if (missingFields.includes('Dispatch Time') || 
+                    missingFields.includes('En Route Time') || 
+                    missingFields.includes('On Scene Time')) {
+                  featureImpacts.push("• Response time calculations will be incomplete or unavailable");
+                }
+                
+                if (missingFields.includes('Incident Date') || missingFields.includes('Incident Time')) {
+                  featureImpacts.push("• Time-based analysis and charts will be limited");
+                }
+              }
+              
+              if (selectedTool === 'call-density' && 
+                 (missingFields.includes('Incident Date') || missingFields.includes('Incident Time'))) {
+                featureImpacts.push("• Time-based heatmap filtering will be unavailable");
+              }
+              
+              // If no specific impacts were identified, add a generic message
+              if (featureImpacts.length === 0) {
+                featureImpacts.push("• Some features may be limited or unavailable");
+              }
+              
+              // Build the confirmation message
+              let message = `
+              <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #fff3cd; border-radius: 5px; max-width: 500px; margin: 0 auto;">
+                <h3 style="color: #856404; margin-top: 0;">⚠️ Missing Required Fields</h3>
+                <p>Your data is missing the following required fields for ${toolName}:</p>
+                <ul style="color: #856404; padding-left: 20px;">
+                  ${missingFields.map(field => `<li>${field}</li>`).join('')}
+                </ul>
+                <p><strong>Impact:</strong></p>
+                <div style="margin-left: 10px; margin-bottom: 15px; color: #856404;">
+                  ${featureImpacts.join('<br>')}
+                </div>
+                <p style="margin-bottom: 20px;">Do you want to continue anyway?</p>
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                  <button id="cancel-button" style="padding: 8px 16px; background-color: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                    Cancel
+                  </button>
+                  <button id="continue-button" style="padding: 8px 16px; background-color: #ffc107; color: #212529; border: none; border-radius: 4px; cursor: pointer;">
+                    Continue with Limitations
+                  </button>
+                </div>
+              </div>`;
+              
+              // Create a modal dialog
+              const modalOverlay = document.createElement('div');
+              modalOverlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;';
+              modalOverlay.innerHTML = message;
+              document.body.appendChild(modalOverlay);
+              
+              // Return a promise to handle the async decision
+              return new Promise(resolve => {
+                const cancelButton = document.getElementById('cancel-button');
+                const continueButton = document.getElementById('continue-button');
+                
+                cancelButton.addEventListener('click', () => {
+                  document.body.removeChild(modalOverlay);
+                  resolve(false);
+                });
+                
+                continueButton.addEventListener('click', () => {
+                  document.body.removeChild(modalOverlay);
+                  
+                  // Add to log
+                  const logContainer = document.getElementById('log-container');
+                  if (logContainer) {
+                    const timestamp = new Date().toLocaleTimeString();
+                    logContainer.innerHTML += `<div class="log-entry log-warning">
+                      <span class="log-time">${timestamp}</span> 
+                      Proceeding with ${missingFields.length} missing required fields: ${missingFields.join(', ')}
+                    </div>`;
+                  }
+                  
+                  resolve(true);
+                });
+              });
+            }
+            
             // Emergency send to tool functionality
             function sendDataToTool() {
               console.log("Emergency send to tool functionality activated");
@@ -1171,33 +1385,72 @@
               
               const targetTool = toolMapping[selectedTool] || selectedTool;
               
-              // Try to use the emergency mode library
-              loadEmergencyLibrary().then(emergencyMode => {
+              // Check for missing required fields based on selected tool
+              const missingRequiredFields = checkMissingRequiredFields(selectedTool);
+              
+              // Handle missing required fields using async/await pattern
+              (async function() {
                 try {
+                  // If there are missing required fields, show a warning but allow to proceed
+                  if (missingRequiredFields.length > 0) {
+                    const confirmation = await showMissingFieldsWarning(missingRequiredFields, selectedTool);
+                    if (!confirmation) {
+                      return; // User cancelled
+                    }
+                    
+                    // Store missing fields information in sessionStorage
+                    try {
+                      sessionStorage.setItem('missingRequiredFields', JSON.stringify(missingRequiredFields));
+                      sessionStorage.setItem('missingFieldsTimestamp', new Date().toISOString());
+                      sessionStorage.setItem('dataSourceTool', selectedTool);
+                    } catch (err) {
+                      console.warn("Could not store missing fields in sessionStorage", err);
+                    }
+                  }
+                  
+                  // Try to load and use the emergency mode library
+                  const emergencyMode = await loadEmergencyLibrary();
+                  
                   // Get the data
                   const data = window.formatterState.transformedData;
                   
-                  // Use the library to send to tool
-                  const success = emergencyMode.sendToTool(data, targetTool, {
-                    // Set expiration to 1 hour
-                    expiration: 60 * 60 * 1000
-                  });
+                  // Create options object
+                  const sendOptions = {
+                    expiration: 60 * 60 * 1000 // 1 hour
+                  };
+                  
+                  // If we have missing fields, add metadata
+                  if (missingRequiredFields.length > 0) {
+                    sendOptions.metadata = {
+                      missingRequiredFields: missingRequiredFields,
+                      selectedTool: selectedTool,
+                      timestamp: new Date().toISOString()
+                    };
+                  }
+                  
+                  // Send the data to the tool
+                  const success = emergencyMode.sendToTool(data, targetTool, sendOptions);
                   
                   if (success) {
-                    // Log success (though we'll be redirecting)
+                    // Log success
                     const logContainer = document.getElementById('log-container');
                     if (logContainer) {
                       const timestamp = new Date().toLocaleTimeString();
+                      
+                      // Add special note if there were missing fields
+                      const missingFieldsNote = missingRequiredFields.length > 0 
+                        ? ` (with ${missingRequiredFields.length} missing fields)` 
+                        : '';
+                        
                       logContainer.innerHTML += `<div class="log-entry log-success">
                         <span class="log-time">${timestamp}</span> 
-                        Data prepared for ${selectedTool}. Redirecting to target tool...
+                        Data prepared for ${selectedTool}${missingFieldsNote}. Redirecting to target tool...
                       </div>`;
                     }
                   } else {
-                    throw new Error("Send to tool failed");
+                    throw new Error("Send to tool operation failed");
                   }
                 } catch (error) {
-                  // Log error
                   console.error("Send to tool error:", error);
                   
                   // Show error in log
@@ -1210,17 +1463,14 @@
                     </div>`;
                   }
                   
+                  // Alert the user
                   alert("Error sending data to tool: " + error.message);
                   
-                  // Fall back to direct implementation if library fails
-                  fallbackSendToTool(data, targetTool);
+                  // Use fallback method
+                  console.log("Using fallback method to send data");
+                  fallbackSendToTool(window.formatterState.transformedData, targetTool);
                 }
-              }).catch(error => {
-                console.error("Failed to load emergency library:", error);
-                
-                // Fall back to direct implementation
-                fallbackSendToTool(window.formatterState.transformedData, targetTool);
-              });
+              })();
             }
             
             // Fallback send to tool if library fails
@@ -1244,16 +1494,51 @@
                 // Store data in localStorage
                 localStorage.setItem(dataId, serializedData);
                 
-                // Build target URL
-                const targetUrl = `/${targetTool}?emergency_data=${dataId}`;
+                // Build target URL with parameters
+                let targetUrl = `/${targetTool}?emergency_data=${dataId}`;
+                
+                // Check for missing required fields in sessionStorage
+                try {
+                  const missingFieldsStr = sessionStorage.getItem('missingRequiredFields');
+                  if (missingFieldsStr) {
+                    const missingFields = JSON.parse(missingFieldsStr);
+                    if (missingFields && missingFields.length > 0) {
+                      // Add missing fields parameter to URL
+                      targetUrl += '&missing_fields=true';
+                      targetUrl += `&missing_count=${missingFields.length}`;
+                      
+                      // Add a flag to bypass strict validation since we're already warned the user
+                      targetUrl += '&bypass_validation=true';
+                      
+                      console.log(`Including ${missingFields.length} missing fields in URL parameters`);
+                    }
+                  }
+                } catch (err) {
+                  console.warn("Could not read missing fields from sessionStorage:", err);
+                }
                 
                 // Log the action
                 const logContainer = document.getElementById('log-container');
                 if (logContainer) {
                   const timestamp = new Date().toLocaleTimeString();
+                  
+                  // Check for missing fields to include in log message
+                  let missingFieldsNote = '';
+                  try {
+                    const missingFieldsStr = sessionStorage.getItem('missingRequiredFields');
+                    if (missingFieldsStr) {
+                      const missingFields = JSON.parse(missingFieldsStr);
+                      if (missingFields && missingFields.length > 0) {
+                        missingFieldsNote = ` (with ${missingFields.length} missing required fields)`;
+                      }
+                    }
+                  } catch (err) {
+                    // Ignore errors reading from sessionStorage
+                  }
+                  
                   logContainer.innerHTML += `<div class="log-entry log-info">
                     <span class="log-time">${timestamp}</span> 
-                    Using fallback method to send data to ${targetTool}. (${Math.round(dataSize / 1024)} KB)
+                    Using fallback method to send data to ${targetTool}${missingFieldsNote}. (${Math.round(dataSize / 1024)} KB)
                   </div>`;
                 }
                 

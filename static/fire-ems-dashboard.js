@@ -18,6 +18,48 @@ function processData(data) {
         const formattedData = formatFireEMSData(data.data);
         const stats = calculateDataStatistics(formattedData);
         
+        // Check for missing required fields from the Data Formatter
+        let missingFieldsNotice = '';
+        
+        try {
+            // First check URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const hasMissingFields = urlParams.get('missing_fields') === 'true';
+            const missingCount = parseInt(urlParams.get('missing_count') || '0');
+            
+            // Then check sessionStorage
+            const missingFieldsStr = sessionStorage.getItem('missingRequiredFields');
+            const missingFields = missingFieldsStr ? JSON.parse(missingFieldsStr) : null;
+            
+            if (hasMissingFields || (missingFields && missingFields.length > 0)) {
+                const fieldCount = missingCount || (missingFields ? missingFields.length : 0);
+                const fieldsListed = missingFields ? missingFields.join(', ') : '';
+                
+                console.warn(`Processing data with ${fieldCount} missing required fields: ${fieldsListed}`);
+                
+                // Create a user-friendly notice about missing fields
+                missingFieldsNotice = `
+                    <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 12px 15px; margin: 15px 0; border-radius: 4px;">
+                        <h4 style="margin-top: 0; color: #856404;">⚠️ Some visualizations may be limited</h4>
+                        <p style="margin-bottom: 5px;">
+                            Your data is missing ${fieldCount} required field(s)${fieldsListed ? ': ' + fieldsListed : ''}.
+                            Some charts or visualizations might not be available.
+                        </p>
+                        <ul style="margin-top: 10px; margin-bottom: 5px; color: #856404;">
+                            ${fieldsListed.includes('Latitude') || fieldsListed.includes('Longitude') ? 
+                              '<li>Map visualization will show a placeholder instead</li>' : ''}
+                            ${fieldsListed.includes('Incident Date') || fieldsListed.includes('Incident Time') ? 
+                              '<li>Time-based analysis will be limited</li>' : ''}
+                            ${fieldsListed.includes('Dispatch Time') || fieldsListed.includes('En Route Time') || fieldsListed.includes('On Scene Time') ? 
+                              '<li>Response time calculations will be incomplete</li>' : ''}
+                        </ul>
+                    </div>
+                `;
+            }
+        } catch (err) {
+            console.warn("Error checking for missing fields:", err);
+        }
+        
         // Display basic file stats
         if (data.source !== 'formatter') {
             resultDiv.innerHTML = `
@@ -26,7 +68,13 @@ function processData(data) {
                     <p>📊 Incidents: ${data.rows || (data.data ? data.data.length : 'Unknown')}</p>
                     <p>📅 First reported date: ${data.first_reported_date || 'N/A'}</p>
                 </div>
+                ${missingFieldsNotice}
             `;
+        } else {
+            // For formatter data, display only the missing fields notice if present
+            if (missingFieldsNotice) {
+                resultDiv.innerHTML = missingFieldsNotice;
+            }
         }
         
         // Optionally update file stats container if available
@@ -1648,13 +1696,40 @@ function calculateDataStatistics(formattedData) {
     
     const totalIncidents = formattedData.length;
     
-    // Average response time calculation.
-    const responseTimes = formattedData
-        .filter(record => record['Response Time (min)'] !== undefined)
-        .map(record => record['Response Time (min)']);
-    const avgResponseTime = responseTimes.length > 0
-        ? Math.round(responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length)
-        : null;
+    // Check if we have the necessary time data for response time calculation
+    let hasResponseTimeData = formattedData.some(record => 
+        record['Response Time (min)'] !== undefined || 
+        (record['Unit Onscene_obj'] && record['Unit Dispatched_obj'])
+    );
+    
+    let avgResponseTime = null;
+    
+    if (hasResponseTimeData) {
+        // Average response time calculation when 'Response Time (min)' is available
+        const responseTimes = formattedData
+            .filter(record => record['Response Time (min)'] !== undefined)
+            .map(record => record['Response Time (min)']);
+        
+        // If we have pre-calculated response times, use those
+        if (responseTimes.length > 0) {
+            avgResponseTime = Math.round(responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length);
+        } 
+        // Otherwise try to calculate from timestamp fields
+        else {
+            const calculatedResponseTimes = formattedData
+                .filter(record => record['Unit Onscene_obj'] && record['Unit Dispatched_obj'])
+                .map(record => {
+                    const dispatchTime = record['Unit Dispatched_obj'].getTime();
+                    const onSceneTime = record['Unit Onscene_obj'].getTime();
+                    return (onSceneTime - dispatchTime) / (1000 * 60); // Convert to minutes
+                })
+                .filter(time => time >= 0 && time < 120); // Filter out negative times and unreasonably long times
+                
+            if (calculatedResponseTimes.length > 0) {
+                avgResponseTime = Math.round(calculatedResponseTimes.reduce((sum, time) => sum + time, 0) / calculatedResponseTimes.length);
+            }
+        }
+    }
     
     // Count incidents by hour.
     const hourCounts = {};
@@ -1777,6 +1852,34 @@ function createTimeChart(data, stats) {
     const container = document.getElementById('time-chart');
     if (!container) {
         console.error("Time chart container not found");
+        return;
+    }
+    
+    // Check if we have date/time data
+    // First check a sample of records for required time fields
+    let hasTimeData = false;
+    for (const record of data.slice(0, Math.min(data.length, 10))) { // Check first 10 records
+        if (record.incident_date || record.incident_time || 
+            record['Reported'] || record['Reported_obj'] || 
+            (record._date_obj instanceof Date)) {
+            hasTimeData = true;
+            break;
+        }
+    }
+    
+    // If no time data found, show a message and abort chart creation
+    if (!hasTimeData) {
+        console.warn("No time/date data found in records");
+        container.innerHTML = `
+            <div class="missing-data-message" style="text-align: center; padding: 40px; background-color: #f9f9f9; border-radius: 8px; margin: 20px 0;">
+                <i class="fas fa-clock" style="font-size: 48px; color: #ccc; margin-bottom: 20px;"></i>
+                <h3>Time Analysis Unavailable</h3>
+                <p>Cannot display time charts because the data is missing date/time information.</p>
+                <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                    Please ensure your data includes incident date and time fields.
+                </p>
+            </div>
+        `;
         return;
     }
     
@@ -2001,6 +2104,33 @@ function createIncidentMap(data) {
     const mapContainer = document.getElementById('incident-map');
     if (!mapContainer) {
         console.error("Map container not found");
+        return;
+    }
+    
+    // First check if we have coordinate data at all - if all records are missing coordinates, 
+    // show an error message instead of trying to create a map
+    let hasCoordinates = false;
+    for (const record of data.slice(0, Math.min(data.length, 10))) { // Check first 10 records
+        if ((record.latitude !== undefined || record.Latitude !== undefined || record.lat !== undefined) &&
+            (record.longitude !== undefined || record.Longitude !== undefined || record.lng !== undefined || record.lon !== undefined)) {
+            hasCoordinates = true;
+            break;
+        }
+    }
+    
+    // If no coordinates found, show a message and abort map creation
+    if (!hasCoordinates) {
+        console.warn("No coordinate data found in records");
+        mapContainer.innerHTML = `
+            <div class="missing-data-message" style="text-align: center; padding: 40px; background-color: #f9f9f9; border-radius: 8px; margin: 20px 0;">
+                <i class="fas fa-map-marker-alt" style="font-size: 48px; color: #ccc; margin-bottom: 20px;"></i>
+                <h3>Map Unavailable</h3>
+                <p>Cannot display the map because the data is missing location coordinates.</p>
+                <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                    Please ensure your data includes latitude and longitude fields.
+                </p>
+            </div>
+        `;
         return;
     }
     
