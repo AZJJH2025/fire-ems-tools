@@ -129,7 +129,8 @@
       Promise.all([
         loadScript('/app-static/data-formatter-direct.js'),
         loadScript('/app-static/data-formatter-fix.js'),
-        loadScript('/app-static/js/emergency-mode.js')
+        loadScript('/app-static/js/emergency-mode.js'),
+        loadScript('/app-static/data-formatter-excel-fix.js', '/static/data-formatter-excel-fix.js')
       ]).then(() => {
         console.log("All emergency scripts loaded successfully");
       }).catch(error => {
@@ -1488,6 +1489,9 @@
   <script src="https://cdn.jsdelivr.net/npm/react@17/umd/react.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/react-dom@17/umd/react-dom.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@material-ui/core@4.12.3/umd/material-ui.production.min.js"></script>
+  
+  <!-- Excel encoding fix script -->
+  <script src="/static/data-formatter-excel-fix.js"></script>
   
   <!-- Robust JavaScript loading with fallbacks -->
   <script>
