@@ -22,6 +22,16 @@ const ColumnMappingUI = ({ onMappingComplete }) => {
     mappings, selectedTool, fileId
   } = state;
   
+  // Debug logs for troubleshooting
+  console.log('ColumnMappingUI rendered with:', { 
+    sourceColumnsLength: sourceColumns?.length || 0,
+    sampleDataLength: sampleData?.length || 0,
+    targetFieldsLength: targetFields?.length || 0,
+    mappingsLength: mappings?.length || 0,
+    selectedTool,
+    fileId
+  });
+  
   // Local state for transform configuration UI
   const [transformConfigOpen, setTransformConfigOpen] = useState(false);
   const [currentFieldConfig, setCurrentFieldConfig] = useState(null);
@@ -215,9 +225,67 @@ const ColumnMappingUI = ({ onMappingComplete }) => {
   
   // Handle apply and preview button click
   const handleApplyAndPreview = () => {
-    if (!areRequiredFieldsMapped()) {
-      alert('Please map all required fields before continuing.');
-      return;
+    // Check if all required fields are mapped
+    const allMapped = areRequiredFieldsMapped();
+    
+    // If required fields are missing, show a warning with confirmation dialog
+    if (!allMapped) {
+      // Find which required fields are missing
+      const requiredFields = targetFields.filter(field => field.required);
+      const missingFields = requiredFields.filter(field => 
+        !mappings.some(mapping => mapping.targetField === field.name)
+      );
+      
+      // Create descriptions of potential impacts
+      const impacts = [];
+      const hasCoordinates = missingFields.some(f => f.id === 'latitude' || f.id === 'longitude');
+      const hasTimeFields = missingFields.some(f => 
+        f.id === 'incident_date' || f.id === 'incident_time' || 
+        f.id === 'dispatch_time' || f.id === 'en_route_time' || f.id === 'on_scene_time'
+      );
+      
+      if (hasCoordinates) {
+        impacts.push("Map visualizations may not be available");
+      }
+      if (hasTimeFields) {
+        impacts.push("Time-based analysis may be limited");
+      }
+      if (impacts.length === 0) {
+        impacts.push("Some features may be limited or unavailable");
+      }
+      
+      // Show confirmation dialog
+      const confirmMessage = `
+Warning: Missing Required Fields
+
+The following required fields are not mapped:
+${missingFields.map(f => '- ' + f.name).join('\n')}
+
+Impact:
+${impacts.map(i => '- ' + i).join('\n')}
+
+Do you want to continue anyway?
+      `;
+      
+      if (!window.confirm(confirmMessage)) {
+        return; // User cancelled
+      }
+      
+      // If user confirmed, continue but store information about missing fields
+      try {
+        // Store in session storage to be used during send to tool 
+        sessionStorage.setItem('warnedMissingFields', 
+          JSON.stringify(missingFields.map(f => f.name))
+        );
+        sessionStorage.setItem('warnedMissingFieldsTimestamp', new Date().toISOString());
+        
+        // Log the decision
+        console.warn("User proceeded with missing required fields:", 
+          missingFields.map(f => f.name).join(', ')
+        );
+      } catch (err) {
+        console.warn("Could not store missing fields info:", err);
+      }
     }
     
     // Create the final mappings array with transform configs
@@ -404,7 +472,10 @@ const ColumnMappingUI = ({ onMappingComplete }) => {
             <LinearProgress 
               variant="determinate" 
               value={getMappingProgress()} 
-              color={getMappingProgress() === 100 ? "primary" : "secondary"}
+              color="primary"
+              style={{ 
+                backgroundColor: getMappingProgress() === 100 ? '#e8f5e9' : '#fff3cd'
+              }}
             />
           </Box>
           
@@ -449,13 +520,18 @@ const ColumnMappingUI = ({ onMappingComplete }) => {
                               style={{
                                 padding: 12,
                                 backgroundColor: mappedValue ? '#e8f5e9' : '#f9f9f9',
-                                borderLeft: field.required ? `4px solid ${mappedValue ? '#4caf50' : '#f44336'}` : 'none'
+                                borderLeft: field.required ? `4px solid ${mappedValue ? '#4caf50' : '#ff9800'}` : 'none'
                               }}
                             >
                               <Grid container alignItems="center" justifyContent="space-between">
                                 <Grid item xs={5}>
                                   <Typography variant="body1">
-                                    {field.name}{field.required ? ' *' : ''}
+                                    {field.name}
+                                    {field.required && (
+                                      <Tooltip title="Recommended field for full functionality">
+                                        <span style={{ color: mappedValue ? '#4caf50' : '#ff9800', marginLeft: '4px' }}>*</span>
+                                      </Tooltip>
+                                    )}
                                   </Typography>
                                   <Box display="flex" alignItems="center" mt={0.5}>
                                     <Chip
@@ -546,7 +622,7 @@ const ColumnMappingUI = ({ onMappingComplete }) => {
               variant="contained"
               color="primary"
               onClick={handleApplyAndPreview}
-              disabled={!areRequiredFieldsMapped()}
+              // Always enable the button but will show a warning if fields are missing
             >
               Apply and Preview
             </Button>
