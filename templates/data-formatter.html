@@ -674,7 +674,7 @@
                         <tr>
                           <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd;">Target Field</th>
                           <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd;">Source Column</th>
-                          <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd;">Required</th>
+                          <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd;">Status</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -703,7 +703,7 @@
                       </select>
                     </td>
                     <td style="padding: 8px; border-bottom: 1px solid #eee;">
-                      ${field.required ? '<span style="color: #d9534f;">Required</span>' : 'Optional'}
+                      ${field.required ? '<span style="color: #ff9800;" title="Recommended for full functionality">Recommended</span>' : 'Optional'}
                     </td>
                   </tr>
                 `;
@@ -718,7 +718,7 @@
                         Cancel
                       </button>
                       <button type="button" id="apply-mappings-btn" class="primary-btn" style="padding: 10px 20px; background-color: #2196f3; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                        Apply Mappings
+                        Continue to Next Step
                       </button>
                     </div>
                   </form>
@@ -752,8 +752,52 @@
                   );
                   
                   if (missingRequired.length > 0) {
-                    alert(`Please map all required fields. Missing: ${missingRequired.map(f => f.name).join(', ')}`);
-                    return;
+                    // Create impact descriptions
+                    const impacts = [];
+                    const hasCoordinates = missingRequired.some(f => 
+                      f.id === 'latitude' || f.id === 'longitude'
+                    );
+                    const hasTimeFields = missingRequired.some(f => 
+                      f.id === 'incident_date' || f.id === 'incident_time' || 
+                      f.id === 'dispatch_time' || f.id === 'en_route_time' || 
+                      f.id === 'on_scene_time'
+                    );
+                    
+                    if (hasCoordinates) {
+                      impacts.push("- Map visualizations may not be available");
+                    }
+                    if (hasTimeFields) {
+                      impacts.push("- Time-based analysis may be limited");
+                    }
+                    if (impacts.length === 0) {
+                      impacts.push("- Some features may be limited or unavailable");
+                    }
+                    
+                    // Create the warning message
+                    const warningMsg = 
+                      `Warning: Missing ${missingRequired.length} Required Fields\n\n` +
+                      `The following required fields are not mapped:\n` +
+                      `${missingRequired.map(f => f.name).join('\n')}\n\n` +
+                      `Impact:\n${impacts.join('\n')}\n\n` +
+                      `Do you want to continue anyway?`;
+                      
+                    // Show confirm dialog
+                    const confirmed = confirm(warningMsg);
+                    if (!confirmed) {
+                      return; // User cancelled
+                    }
+                    
+                    // Store missing fields for downstream handling
+                    try {
+                      sessionStorage.setItem('missingRequiredFields', 
+                        JSON.stringify(missingRequired.map(f => f.name))
+                      );
+                      sessionStorage.setItem('missingFieldsTimestamp', 
+                        new Date().toISOString()
+                      );
+                    } catch (err) {
+                      console.warn("Could not store missing fields in sessionStorage:", err);
+                    }
                   }
                   
                   // Save mappings to formatterState
