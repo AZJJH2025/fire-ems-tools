@@ -1,39 +1,38 @@
 #!/bin/bash
-# build.sh - Build script for Render deployment
+# build.sh - Build script for Render deployment (Includes Python & React Build)
 
-# Exit on error
+# Exit immediately if a command exits with a non-zero status.
 set -e
 
-echo "Starting build process..."
+echo "Starting full build process..."
+echo "Current working directory: $(pwd)"
 
-# Install Python dependencies
+# --- Python Backend Setup ---
 echo "Installing Python dependencies..."
 pip install -r requirements.txt
+echo "Python dependencies installed."
 
-# Prepare static directory
-echo "Checking static directory paths..."
-REPO_ROOT=$(pwd)
-STATIC_SRC="${REPO_ROOT}/static"
-STATIC_DEST="/opt/render/project/src/static"
+# --- React Frontend Build ---
+# Verify Node.js and npm are available (Render's Python env usually has them)
+echo "Checking Node.js environment..."
+node -v
+npm -v
 
-# Ensure static directory exists
-mkdir -p "${STATIC_DEST}"
+# Navigate to the React app directory
+# *** IMPORTANT: Verify this path is correct relative to repo root ***
+REACT_APP_DIR="./static/js/react-data-formatter"
+echo "Navigating to React app directory: ${REACT_APP_DIR}"
+cd "${REACT_APP_DIR}"
 
-# Check if source and destination are different before copying
-if [ "$(realpath ${STATIC_SRC})" != "$(realpath ${STATIC_DEST})" ]; then
-  echo "Copying static files from ${STATIC_SRC} to ${STATIC_DEST}..."
-  cp -rv "${STATIC_SRC}/"* "${STATIC_DEST}/"
-else
-  echo "Static source and destination are the same, skipping copy operation"
-  echo "Static files are already at the correct location: ${STATIC_DEST}"
-fi
+echo "Installing React app dependencies (npm install)..."
+npm install
+echo "React dependencies installed."
 
-# List contents to verify files exist
-echo "Listing contents of static directory:"
-ls -la "${STATIC_DEST}"
+echo "Building React app (npm run build)..."
+npm run build # This usually creates a 'build/' or 'dist/' sub-directory
+echo "React app built."
 
-# Verify critical CSS file exists
-echo "Verifying critical CSS file exists:"
-ls -la "${STATIC_DEST}/fireems-framework.css" 2>/dev/null || echo "WARNING: fireems-framework.css not found!"
-
-echo "Build process completed successfully!"
+# Navigate back to the project root directory
+# *** IMPORTANT: Verify path back to root is correct ***
+echo "Navigating back to project root..."
+cd ../../..
