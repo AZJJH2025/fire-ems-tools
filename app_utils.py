@@ -96,13 +96,27 @@ try:
             # Get the appropriate storage backend
             storage = get_limiter_storage(app)
             
-            # Configure the limiter
-            limiter = Limiter(
-                key_func=get_remote_address,
-                default_limits=["200 per hour", "50 per minute"],
-                storage_uri=None,  # We are providing the storage instance directly
-                storage=storage
-            )
+            # Configure the limiter - for Flask-Limiter version 3.x+
+            # In version 3.x+, storage is configured through constructor not via storage= parameter
+            try:
+                logger.info(f"Initializing Flask-Limiter with storage type: {storage.__class__.__name__}")
+                
+                # For Flask-Limiter 3.x the storage is configured later, not in constructor
+                limiter = Limiter(
+                    key_func=get_remote_address,
+                    default_limits=["200 per hour", "50 per minute"]
+                )
+                
+                # Configure storage after initialization - this is how version 3.x works
+                limiter.storage = storage
+                
+            except Exception as init_error:
+                logger.error(f"Error initializing Limiter: {str(init_error)}")
+                # Fall back to default configuration with no custom storage
+                limiter = Limiter(
+                    key_func=get_remote_address,
+                    default_limits=["200 per hour", "50 per minute"]
+                )
             
             # Initialize with the app
             limiter.init_app(app)
