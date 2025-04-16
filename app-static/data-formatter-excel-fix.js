@@ -25,10 +25,31 @@
     function safeShowPreview(data) {
         if (typeof window.showInputPreview === 'function') {
             window.showInputPreview(data);
+            return true;
         } else {
-            console.log("[Excel Fix] Preview function not available yet");
+            console.log("[Excel Fix] Preview function not available yet, trying fallbacks");
             
-            // Try a direct DOM update as fallback
+            // Try with core formatter components first
+            if (window.DataFormatterStore && 
+                window.DataFormatterStore.actions && 
+                typeof window.DataFormatterStore.actions.setOriginalData === 'function') {
+                
+                window.DataFormatterStore.actions.setOriginalData(data);
+                console.log("[Excel Fix] Used DataFormatterStore to update data");
+                return true;
+            }
+            
+            // Try with FireEMS framework if available
+            if (window.FireEMS && 
+                window.FireEMS.DataFormatter && 
+                typeof window.FireEMS.DataFormatter.showPreview === 'function') {
+                
+                window.FireEMS.DataFormatter.showPreview(data);
+                console.log("[Excel Fix] Used FireEMS.DataFormatter to show preview");
+                return true;
+            }
+            
+            // Try a direct DOM update as last resort
             try {
                 const previewContainer = document.getElementById('input-preview');
                 if (previewContainer && data && data.length > 0) {
@@ -42,12 +63,28 @@
                     });
                     html += '</tr></thead><tbody>';
                     
-                    // Add up to 10 rows of data
-                    const rowsToShow = Math.min(data.length, 10);
+                    // Determine how many rows to show - use formatterState if available
+                    let rowsToShow = 10;
+                    if (window.formatterState && typeof window.formatterState.getPreviewSize === 'function') {
+                        rowsToShow = window.formatterState.getPreviewSize();
+                        console.log(`[Excel Fix] Using formatterState preview size: ${rowsToShow}`);
+                    } else {
+                        // Otherwise use a simple heuristic based on data size
+                        rowsToShow = data.length > 100 ? 25 : (data.length > 50 ? 15 : 10);
+                    }
+                    
+                    rowsToShow = Math.min(data.length, rowsToShow);
+                    
+                    // Add data rows
                     for (let i = 0; i < rowsToShow; i++) {
                         html += '<tr>';
                         headers.forEach(header => {
-                            html += `<td>${data[i][header] || ''}</td>`;
+                            // Safely display the cell value
+                            const cellValue = data[i][header];
+                            const displayValue = cellValue === null || cellValue === undefined ? 
+                                '' : String(cellValue).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                            
+                            html += `<td>${displayValue}</td>`;
                         });
                         html += '</tr>';
                     }
@@ -55,16 +92,22 @@
                     
                     previewContainer.innerHTML = html;
                     
-                    if (data.length > 10) {
+                    if (data.length > rowsToShow) {
                         const message = document.createElement('div');
-                        message.className = 'info-message';
-                        message.innerHTML = `<p>Showing 10 of ${data.length} rows...</p>`;
+                        message.className = 'preview-message';
+                        message.style.cssText = 'margin-top: 10px; font-style: italic; color: #666;';
+                        message.innerHTML = `<p>Showing ${rowsToShow} of ${data.length} rows. Complete dataset will be processed.</p>`;
                         previewContainer.appendChild(message);
                     }
+                    
+                    console.log(`[Excel Fix] Successfully rendered preview table with ${rowsToShow} of ${data.length} rows`);
+                    return true;
                 }
             } catch (err) {
                 console.error("Failed to manually update preview:", err);
             }
+            
+            return false;
         }
     }
     
@@ -96,12 +139,22 @@
             console.log("Using enhanced Excel sheet loading with encoding fixes");
             const worksheet = window.excelWorkbook.Sheets[sheetName];
             
+            // Log the worksheet properties to help debug issues
+            console.log(`[Excel Fix] Worksheet "${sheetName}" details:`, {
+                ref: worksheet['!ref'],
+                range: worksheet['!range'],
+                headerRows: worksheet['!headerRows'],
+                cols: worksheet['!cols'] ? worksheet['!cols'].length : 'N/A', 
+                rows: worksheet['!rows'] ? worksheet['!rows'].length : 'N/A'
+            });
+            
             // Convert to JSON with enhanced options
             const rawData = XLSX.utils.sheet_to_json(worksheet, {
                 header: 1,
                 raw: false,
                 dateNF: 'yyyy-mm-dd',
-                defval: ''
+                defval: '',
+                range: worksheet['!ref'] // Explicitly use the sheet range
             });
             
             // Transform with proper sanitization
@@ -121,7 +174,20 @@
                 const filteredData = processedData.filter(row => 
                     Object.values(row).some(val => val !== ''));
                 
-                console.log(`Enhanced Excel loader: Loaded sheet "${sheetName}" with ${filteredData.length} records`);
+                console.log(`Enhanced Excel loader: Loaded sheet "${sheetName}" with ${filteredData.length} records and ${headers.length} columns`);
+                
+                // Log more details to help with debugging
+                if (filteredData.length > 0) {
+                    console.log("[Excel Fix] First row sample:", filteredData[0]);
+                } else {
+                    console.warn("[Excel Fix] No data rows after filtering!");
+                }
+                
+                // Check if we have enough columns - warn if there are only 1-2 columns as this might indicate parsing issues
+                if (headers.length < 3) {
+                    console.warn(`[Excel Fix] Only ${headers.length} columns detected! This may indicate a parsing issue.`);
+                    safeAppendLog(`Warning: Only ${headers.length} columns detected in Excel file. This may indicate a parsing issue.`, 'warning');
+                }
                 
                 // Update global state
                 window.originalData = filteredData;
@@ -139,8 +205,10 @@
                 }
                 
                 // Show preview with sanitized data
-                safeShowPreview(filteredData);
-                safeAppendLog(`Loaded Excel sheet "${sheetName}" with ${filteredData.length} records using enhanced encoding support`);
+                const previewSuccess = safeShowPreview(filteredData);
+                console.log(`[Excel Fix] Preview display ${previewSuccess ? 'successful' : 'failed'}`);
+                
+                safeAppendLog(`Loaded Excel sheet "${sheetName}" with ${filteredData.length} records and ${headers.length} columns using enhanced encoding support`);
                 
                 return filteredData;
             } else {
@@ -251,7 +319,8 @@
                                 cellDates: true,
                                 dateNF: 'yyyy-mm-dd',
                                 WTF: true, // More verbose errors for debugging
-                                cellText: false
+                                cellText: false,
+                                sheetRows: 0 // Read all rows instead of default limit
                             });
                             
                             // Check for encoding issues in first few cells
@@ -283,7 +352,8 @@
                                     type: 'array',
                                     codepage: 1252,  // Windows-1252
                                     cellDates: true,
-                                    raw: true
+                                    raw: true,
+                                    sheetRows: 0 // Read all rows instead of default limit
                                 });
                             }
                             
@@ -308,6 +378,9 @@
                                 // Load the first sheet by default
                                 if (window.excelWorkbook.SheetNames.length > 0) {
                                     const firstSheet = window.excelWorkbook.SheetNames[0];
+                                    // Log what we know about the workbook to aid debugging
+                                    console.log(`[Excel Fix] Loading first sheet "${firstSheet}". Workbook has ${window.excelWorkbook.SheetNames.length} sheets.`);
+                                    
                                     // Directly use our enhanced function to avoid timing issues
                                     enhancedLoadExcelSheet(firstSheet);
                                 }

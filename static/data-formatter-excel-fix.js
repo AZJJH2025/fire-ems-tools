@@ -25,10 +25,31 @@
     function safeShowPreview(data) {
         if (typeof window.showInputPreview === 'function') {
             window.showInputPreview(data);
+            return true;
         } else {
-            console.log("[Excel Fix] Preview function not available yet");
+            console.log("[Excel Fix] Preview function not available yet, trying fallbacks");
             
-            // Try a direct DOM update as fallback
+            // Try with core formatter components first
+            if (window.DataFormatterStore && 
+                window.DataFormatterStore.actions && 
+                typeof window.DataFormatterStore.actions.setOriginalData === 'function') {
+                
+                window.DataFormatterStore.actions.setOriginalData(data);
+                console.log("[Excel Fix] Used DataFormatterStore to update data");
+                return true;
+            }
+            
+            // Try with FireEMS framework if available
+            if (window.FireEMS && 
+                window.FireEMS.DataFormatter && 
+                typeof window.FireEMS.DataFormatter.showPreview === 'function') {
+                
+                window.FireEMS.DataFormatter.showPreview(data);
+                console.log("[Excel Fix] Used FireEMS.DataFormatter to show preview");
+                return true;
+            }
+            
+            // Try a direct DOM update as last resort
             try {
                 const previewContainer = document.getElementById('input-preview');
                 if (previewContainer && data && data.length > 0) {
@@ -42,12 +63,28 @@
                     });
                     html += '</tr></thead><tbody>';
                     
-                    // Add up to 10 rows of data
-                    const rowsToShow = Math.min(data.length, 10);
+                    // Determine how many rows to show - use formatterState if available
+                    let rowsToShow = 10;
+                    if (window.formatterState && typeof window.formatterState.getPreviewSize === 'function') {
+                        rowsToShow = window.formatterState.getPreviewSize();
+                        console.log(`[Excel Fix] Using formatterState preview size: ${rowsToShow}`);
+                    } else {
+                        // Otherwise use a simple heuristic based on data size
+                        rowsToShow = data.length > 100 ? 25 : (data.length > 50 ? 15 : 10);
+                    }
+                    
+                    rowsToShow = Math.min(data.length, rowsToShow);
+                    
+                    // Add data rows
                     for (let i = 0; i < rowsToShow; i++) {
                         html += '<tr>';
                         headers.forEach(header => {
-                            html += `<td>${data[i][header] || ''}</td>`;
+                            // Safely display the cell value
+                            const cellValue = data[i][header];
+                            const displayValue = cellValue === null || cellValue === undefined ? 
+                                '' : String(cellValue).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                            
+                            html += `<td>${displayValue}</td>`;
                         });
                         html += '</tr>';
                     }
@@ -55,16 +92,22 @@
                     
                     previewContainer.innerHTML = html;
                     
-                    if (data.length > 10) {
+                    if (data.length > rowsToShow) {
                         const message = document.createElement('div');
-                        message.className = 'info-message';
-                        message.innerHTML = `<p>Showing 10 of ${data.length} rows...</p>`;
+                        message.className = 'preview-message';
+                        message.style.cssText = 'margin-top: 10px; font-style: italic; color: #666;';
+                        message.innerHTML = `<p>Showing ${rowsToShow} of ${data.length} rows. Complete dataset will be processed.</p>`;
                         previewContainer.appendChild(message);
                     }
+                    
+                    console.log(`[Excel Fix] Successfully rendered preview table with ${rowsToShow} of ${data.length} rows`);
+                    return true;
                 }
             } catch (err) {
                 console.error("Failed to manually update preview:", err);
             }
+            
+            return false;
         }
     }
     
