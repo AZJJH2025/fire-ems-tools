@@ -3873,6 +3873,92 @@
       if (!window.DataFormatterUI) {
         console.warn("React Data Formatter UI not loaded. Emergency fallback will be used.");
       }
+      
+      // Define standalone emergency download function in the global scope
+      window.emergencyDirectDownload = function() {
+          alert("Starting direct download");
+          if (!window.formatterState || !window.formatterState.transformedData || window.formatterState.transformedData.length === 0) {
+              alert("No transformed data available to download");
+              return;
+          }
+          
+          const data = window.formatterState.transformedData;
+          
+          try {
+              // Get headers
+              const headers = Object.keys(data[0]);
+              
+              // Create CSV content
+              let csvContent = headers.join(',') + '\n';
+              
+              // Add data rows
+              data.forEach(row => {
+                  const rowValues = headers.map(header => {
+                      const value = row[header] || '';
+                      // Escape quotes and wrap values with commas
+                      return value.includes(',') ? `"${value.replace(/"/g, '""')}"` : value;
+                  });
+                  csvContent += rowValues.join(',') + '\n';
+              });
+              
+              // Create blob and download link
+              const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.setAttribute('href', url);
+              link.setAttribute('download', 'transformed_data.csv');
+              document.body.appendChild(link);
+              
+              // Trigger download
+              link.click();
+              
+              // Clean up
+              document.body.removeChild(link);
+              URL.revokeObjectURL(url);
+              
+              alert("Download completed successfully");
+          } catch (error) {
+              alert("Error downloading data: " + error.message);
+          }
+      };
+      
+      // Add emergency direct access buttons after 3 seconds
+      setTimeout(function() {
+          // Find the output preview area
+          const outputPreview = document.getElementById('output-preview');
+          if (outputPreview) {
+              // Create direct buttons
+              const directButtonsDiv = document.createElement('div');
+              directButtonsDiv.style.marginTop = '20px';
+              directButtonsDiv.style.padding = '10px';
+              directButtonsDiv.style.backgroundColor = '#f0f0f0';
+              directButtonsDiv.style.border = '1px solid #ccc';
+              directButtonsDiv.style.borderRadius = '5px';
+              
+              directButtonsDiv.innerHTML = `
+                  <h3 style="margin-top: 0;">Emergency Actions</h3>
+                  <p>If the regular buttons aren't working, use these emergency alternatives:</p>
+                  <button id="emergency-download-btn" style="padding: 10px; margin-right: 10px; background-color: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                      Emergency Download
+                  </button>
+                  <button id="emergency-send-btn" style="padding: 10px; background-color: #2196f3; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                      Emergency Send to Tool
+                  </button>
+              `;
+              
+              // Add to page
+              outputPreview.parentNode.appendChild(directButtonsDiv);
+              
+              // Add direct event handlers
+              document.getElementById('emergency-download-btn').onclick = function() {
+                  window.emergencyDirectDownload();
+              };
+              
+              document.getElementById('emergency-send-btn').onclick = function() {
+                  alert("Send to tool functionality not implemented in emergency mode");
+              };
+          }
+      }, 3000);
     });
   </script>
 </body>
