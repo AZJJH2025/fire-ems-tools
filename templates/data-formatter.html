@@ -1051,6 +1051,60 @@
             // Update preview with transformed data
             showTransformedDataPreview(transformedData);
             
+            // Directly enable Download and Send to Tool buttons
+            const downloadBtn = document.getElementById('download-btn');
+            const sendToToolBtn = document.getElementById('send-to-tool-btn');
+            
+            if (downloadBtn) {
+              downloadBtn.disabled = false;
+              console.log("Enabling download button");
+              
+              // Make sure it has a click handler
+              if (!downloadBtn.getAttribute('data-has-handler')) {
+                downloadBtn.addEventListener('click', function() {
+                  console.log("Download button clicked");
+                  if (typeof downloadTransformedData === 'function') {
+                    downloadTransformedData();
+                  } else {
+                    console.error("downloadTransformedData function not available");
+                    alert("Download functionality is not available");
+                  }
+                });
+                downloadBtn.setAttribute('data-has-handler', 'true');
+              }
+            }
+            
+            if (sendToToolBtn) {
+              sendToToolBtn.disabled = false;
+              console.log("Enabling send to tool button");
+              
+              // Make sure it has a click handler
+              if (!sendToToolBtn.getAttribute('data-has-handler')) {
+                sendToToolBtn.addEventListener('click', function() {
+                  console.log("Send to tool button clicked");
+                  if (typeof sendDataToTool === 'function') {
+                    sendDataToTool();
+                  } else {
+                    console.error("sendDataToTool function not available");
+                    alert("Send to tool functionality is not available");
+                  }
+                });
+                sendToToolBtn.setAttribute('data-has-handler', 'true');
+              }
+            }
+            
+            // Add to log
+            const logContainer = document.getElementById('log-container');
+            if (logContainer) {
+              const timestamp = new Date().toLocaleTimeString();
+              logContainer.innerHTML += `
+                <div class="log-entry log-success">
+                  <span class="log-time">${timestamp}</span>
+                  Data transformed successfully. ${transformedData.length} records processed.
+                </div>
+              `;
+            }
+            
             console.log("Data transformation complete:", transformedData.length, "records");
             
             return transformedData;
@@ -1074,7 +1128,26 @@
             const outputPreview = document.getElementById('output-preview');
             if (!outputPreview) {
               console.error("Output preview element not found");
-              return;
+              
+              // Try to update the entire preview container as a fallback
+              previewContainer.innerHTML = `
+                <h3>Transformed Data Preview</h3>
+                <div id="output-preview" class="data-preview"></div>
+                <div class="action-buttons">
+                  <button id="download-btn" class="primary-btn">Download Data</button>
+                  <button id="send-to-tool-btn" class="primary-btn">Send to Tool</button>
+                </div>
+              `;
+              
+              // Try again to get the output preview element
+              const newOutputPreview = document.getElementById('output-preview');
+              if (!newOutputPreview) {
+                console.error("Still cannot find output preview element after recreation");
+                return;
+              }
+              
+              // Use the new element
+              return showTransformedDataPreview(transformedData);
             }
             
             // Get headers from the first record
