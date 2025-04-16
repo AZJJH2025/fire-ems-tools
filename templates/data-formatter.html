@@ -1051,46 +1051,194 @@
             // Update preview with transformed data
             showTransformedDataPreview(transformedData);
             
-            // Directly enable Download and Send to Tool buttons
+            // Add emergency download function if it doesn't exist
+            if (typeof window.emergencyDownloadData !== 'function') {
+                window.emergencyDownloadData = function() {
+                    console.log("Emergency download function called");
+                    
+                    if (!window.formatterState || !window.formatterState.transformedData) {
+                        alert("No transformed data available to download");
+                        return;
+                    }
+                    
+                    const data = window.formatterState.transformedData;
+                    console.log("Preparing to download", data.length, "records");
+                    
+                    try {
+                        // Get headers
+                        const headers = Object.keys(data[0]);
+                        
+                        // Create CSV content
+                        let csvContent = headers.join(',') + '\n';
+                        
+                        // Add data rows
+                        data.forEach(row => {
+                            const rowValues = headers.map(header => {
+                                const value = row[header] || '';
+                                // Escape quotes and wrap values with commas
+                                return value.includes(',') ? `"${value.replace(/"/g, '""')}"` : value;
+                            });
+                            csvContent += rowValues.join(',') + '\n';
+                        });
+                        
+                        // Create blob and download link
+                        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.setAttribute('href', url);
+                        link.setAttribute('download', 'transformed_data.csv');
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        
+                        // Trigger download
+                        link.click();
+                        
+                        // Clean up
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+                        
+                        console.log("Emergency download completed successfully");
+                        
+                        // Add to log
+                        const logContainer = document.getElementById('log-container');
+                        if (logContainer) {
+                            const timestamp = new Date().toLocaleTimeString();
+                            logContainer.innerHTML += `
+                                <div class="log-entry log-success">
+                                    <span class="log-time">${timestamp}</span>
+                                    Data downloaded successfully using emergency function.
+                                </div>
+                            `;
+                        }
+                    } catch (error) {
+                        console.error("Error in emergency download:", error);
+                        alert("Error downloading data: " + error.message);
+                    }
+                };
+                
+                // Add emergency send to tool function
+                window.emergencySendToTool = function() {
+                    console.log("Emergency send to tool function called");
+                    
+                    if (!window.formatterState || !window.formatterState.transformedData) {
+                        alert("No transformed data available to send");
+                        return;
+                    }
+                    
+                    try {
+                        // Store data in session storage
+                        sessionStorage.setItem('transformedData', JSON.stringify(window.formatterState.transformedData));
+                        
+                        // Get the selected tool
+                        const toolSelector = document.getElementById('tool-selector') || document.getElementById('target-tool');
+                        let targetTool = 'fire-ems-dashboard';
+                        
+                        if (toolSelector) {
+                            targetTool = toolSelector.value || targetTool;
+                        }
+                        
+                        // Map tool IDs to URLs
+                        const toolUrls = {
+                            'response-time': '/fire-ems-dashboard',
+                            'call-density': '/call-density-heatmap',
+                            'isochrone': '/isochrone-map',
+                            'station-overview': '/station-overview',
+                            'incident-logger': '/incident-logger',
+                            'coverage-gap': '/coverage-gap-finder'
+                        };
+                        
+                        // Get the target URL
+                        const targetUrl = toolUrls[targetTool] || '/fire-ems-dashboard';
+                        
+                        // Add a parameter to indicate imported data
+                        const redirectUrl = targetUrl + '?imported=true';
+                        
+                        // Log action
+                        const logContainer = document.getElementById('log-container');
+                        if (logContainer) {
+                            const timestamp = new Date().toLocaleTimeString();
+                            logContainer.innerHTML += `
+                                <div class="log-entry log-success">
+                                    <span class="log-time">${timestamp}</span>
+                                    Data sent to tool. Redirecting to ${targetTool}...
+                                </div>
+                            `;
+                        }
+                        
+                        // Redirect after a small delay
+                        setTimeout(() => {
+                            window.location.href = redirectUrl;
+                        }, 1000);
+                        
+                    } catch (error) {
+                        console.error("Error in emergency send to tool:", error);
+                        alert("Error sending data to tool: " + error.message);
+                    }
+                };
+            }
+
+            // Directly enable Download and Send to Tool buttons and replace the click handlers
+            // Find all buttons on the page - more aggressive approach
+            const allButtons = document.querySelectorAll('button');
+            console.log("Found " + allButtons.length + " buttons on page");
+            
+            // Attempt to add handlers to any button with Download or Send text
+            allButtons.forEach(button => {
+                const buttonText = button.textContent.trim().toLowerCase();
+                
+                if (buttonText.includes('download')) {
+                    console.log("Found download button by text: " + button.textContent);
+                    button.disabled = false;
+                    button.onclick = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log("Download button clicked via direct selector");
+                        window.emergencyDownloadData();
+                        return false;
+                    };
+                    console.log("Download button enabled with global onclick handler");
+                }
+                
+                if (buttonText.includes('send')) {
+                    console.log("Found send button by text: " + button.textContent);
+                    button.disabled = false;
+                    button.onclick = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log("Send button clicked via direct selector");
+                        window.emergencySendToTool();
+                        return false;
+                    };
+                    console.log("Send button enabled with global onclick handler");
+                }
+            });
+            
+            // Also try the standard approach with element IDs
             const downloadBtn = document.getElementById('download-btn');
             const sendToToolBtn = document.getElementById('send-to-tool-btn');
             
+            // Direct DOM manipulation for the download button
             if (downloadBtn) {
-              downloadBtn.disabled = false;
-              console.log("Enabling download button");
-              
-              // Make sure it has a click handler
-              if (!downloadBtn.getAttribute('data-has-handler')) {
-                downloadBtn.addEventListener('click', function() {
-                  console.log("Download button clicked");
-                  if (typeof downloadTransformedData === 'function') {
-                    downloadTransformedData();
-                  } else {
-                    console.error("downloadTransformedData function not available");
-                    alert("Download functionality is not available");
-                  }
-                });
-                downloadBtn.setAttribute('data-has-handler', 'true');
-              }
+                downloadBtn.disabled = false;
+                downloadBtn.onclick = function(e) {
+                    if (e) e.preventDefault();
+                    console.log("Download button clicked via ID");
+                    window.emergencyDownloadData();
+                    return false;
+                };
+                console.log("Download button enabled with direct onclick handler");
             }
             
+            // Direct DOM manipulation for the send button
             if (sendToToolBtn) {
-              sendToToolBtn.disabled = false;
-              console.log("Enabling send to tool button");
-              
-              // Make sure it has a click handler
-              if (!sendToToolBtn.getAttribute('data-has-handler')) {
-                sendToToolBtn.addEventListener('click', function() {
-                  console.log("Send to tool button clicked");
-                  if (typeof sendDataToTool === 'function') {
-                    sendDataToTool();
-                  } else {
-                    console.error("sendDataToTool function not available");
-                    alert("Send to tool functionality is not available");
-                  }
-                });
-                sendToToolBtn.setAttribute('data-has-handler', 'true');
-              }
+                sendToToolBtn.disabled = false;
+                sendToToolBtn.onclick = function(e) {
+                    if (e) e.preventDefault();
+                    console.log("Send button clicked via ID");
+                    window.emergencySendToTool();
+                    return false;
+                };
+                console.log("Send button enabled with direct onclick handler");
             }
             
             // Add to log
