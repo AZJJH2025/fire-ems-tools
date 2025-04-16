@@ -273,7 +273,13 @@
   </header>
 
   <main class="container">
+    <section class="log-section">
+      <div id="log-container" class="log-container">
+        <!-- Operation logs will be shown here -->
+      </div>
+    </section>
       
+    <section class="instructions-section">
       <div class="instructions-toggle">
         <button id="show-instructions" class="secondary-btn">
           <i class="fas fa-question-circle"></i> How to Use This Tool
@@ -583,10 +589,210 @@
           <div class="loading-spinner"></div>
           <p>Loading field mapping interface...</p>
         </div>
+      </div>
+      
+      <!-- Preview Container for transformed data -->
+      <div id="preview-container" class="formatter-panel preview-panel" style="display: none;">
+        <h2>Transformed Data Preview</h2>
+        <div class="loading-container">
+          <div class="loading-spinner"></div>
+          <p>Processing data...</p>
+        </div>
         
         <!-- Load React application scripts -->
         <script type="text/javascript" src="{{ url_for('static', filename='js/react-data-formatter/dist/data-formatter.js') }}"></script>
         <script>
+          // Function to transform data based on mappings
+          function transformData(mappings) {
+            console.log("Transforming data with mappings:", mappings);
+            
+            // Check if we have valid input data
+            if (!window.formatterState || !window.formatterState.sampleData || window.formatterState.sampleData.length === 0) {
+              console.error("No sample data available for transformation");
+              return;
+            }
+            
+            // Get the input data
+            const inputData = window.formatterState.sampleData;
+            const transformedData = [];
+            
+            // Process each record
+            for (const record of inputData) {
+              const transformedRecord = {};
+              
+              // Apply each mapping
+              for (const mapping of mappings) {
+                const sourceField = mapping.sourceField;
+                const targetField = mapping.targetField;
+                const sourceValue = record[sourceField];
+                
+                // Skip if source value is undefined
+                if (sourceValue === undefined) continue;
+                
+                // Handle split rules if present
+                if (mapping.splitRule && mapping.splitRule.delimiter !== undefined && mapping.splitRule.partIndex !== undefined) {
+                  try {
+                    const parts = sourceValue.split(mapping.splitRule.delimiter);
+                    const partIndex = mapping.splitRule.partIndex === -1 ? parts.length - 1 : mapping.splitRule.partIndex;
+                    transformedRecord[targetField] = parts[partIndex] ? parts[partIndex].trim() : '';
+                  } catch (e) {
+                    console.warn(`Error applying split rule for ${targetField}:`, e);
+                    transformedRecord[targetField] = sourceValue;
+                  }
+                } else {
+                  // Simple direct mapping
+                  transformedRecord[targetField] = sourceValue;
+                }
+              }
+              
+              // Add to transformed data
+              transformedData.push(transformedRecord);
+            }
+            
+            // Store transformed data in formatterState
+            window.formatterState.transformedData = transformedData;
+            
+            // Update preview with transformed data
+            showTransformedDataPreview(transformedData);
+            
+            console.log("Data transformation complete:", transformedData.length, "records");
+            
+            return transformedData;
+          }
+          
+          // Function to show transformed data preview
+          function showTransformedDataPreview(transformedData) {
+            if (!transformedData || transformedData.length === 0) {
+              console.error("No transformed data to preview");
+              return;
+            }
+            
+            // Find the preview container
+            const previewContainer = document.getElementById('preview-container');
+            if (!previewContainer) {
+              console.error("Preview container not found");
+              return;
+            }
+            
+            // Get headers from the first record
+            const headers = Object.keys(transformedData[0]);
+            
+            // Calculate how many rows to show
+            const rowsToShow = Math.min(transformedData.length, 10);
+            const isLargeFile = transformedData.length > 100;
+            
+            // Build preview HTML
+            let previewHtml = `
+              <h3>Transformed Data Preview</h3>
+              <div class="data-preview">
+                <table class="preview-table">
+                  <thead>
+                    <tr>
+            `;
+            
+            // Add header cells
+            headers.forEach(header => {
+              previewHtml += `<th>${header}</th>`;
+            });
+            
+            previewHtml += `
+                    </tr>
+                  </thead>
+                  <tbody>
+            `;
+            
+            // Add data rows
+            for (let i = 0; i < rowsToShow; i++) {
+              previewHtml += '<tr>';
+              headers.forEach(header => {
+                const value = transformedData[i][header] || '';
+                previewHtml += `<td>${value}</td>`;
+              });
+              previewHtml += '</tr>';
+            }
+            
+            previewHtml += `
+                  </tbody>
+                </table>
+            `;
+            
+            // Add message about row count if we're showing a subset
+            if (transformedData.length > rowsToShow) {
+              previewHtml += `
+                <div class="info-message">
+                  <p>Showing ${rowsToShow} of ${transformedData.length} total records. Complete dataset will be sent to the tool.</p>
+                </div>
+              `;
+            }
+            
+            previewHtml += '</div>';
+            
+            // Add buttons for actions
+            previewHtml += `
+              <div class="action-buttons">
+                <button id="send-to-tool-btn" class="primary-btn">Send to Tool</button>
+                <button id="download-btn" class="secondary-btn">Download Data</button>
+                <button id="back-to-mapper-btn" class="tertiary-btn">Back to Mapping</button>
+              </div>
+            `;
+            
+            // Update the preview container
+            previewContainer.innerHTML = previewHtml;
+            
+            // Set up button event handlers
+            const sendToToolBtn = document.getElementById('send-to-tool-btn');
+            const downloadBtn = document.getElementById('download-btn');
+            const backToMapperBtn = document.getElementById('back-to-mapper-btn');
+            
+            if (sendToToolBtn && !sendToToolBtn.getAttribute('data-has-listener')) {
+              sendToToolBtn.addEventListener('click', () => {
+                if (typeof sendDataToTool === 'function') {
+                  sendDataToTool();
+                }
+              });
+              sendToToolBtn.setAttribute('data-has-listener', 'true');
+            }
+            
+            if (downloadBtn && !downloadBtn.getAttribute('data-has-listener')) {
+              downloadBtn.addEventListener('click', () => {
+                if (typeof downloadTransformedData === 'function') {
+                  downloadTransformedData();
+                }
+              });
+              downloadBtn.setAttribute('data-has-listener', 'true');
+            }
+            
+            if (backToMapperBtn && !backToMapperBtn.getAttribute('data-has-listener')) {
+              backToMapperBtn.addEventListener('click', () => {
+                showFormatterPanels('column-mapping-container');
+              });
+              backToMapperBtn.setAttribute('data-has-listener', 'true');
+            }
+          }
+          
+          // Function to show specific formatter panels
+          function showFormatterPanels(activePanelId) {
+            // Hide all formatter panels first
+            const panels = document.querySelectorAll('.formatter-panel');
+            panels.forEach(panel => {
+              panel.style.display = 'none';
+            });
+            
+            // If a specific panel ID was provided, show that panel
+            if (activePanelId) {
+              const activePanel = document.getElementById(activePanelId);
+              if (activePanel) {
+                activePanel.style.display = 'block';
+              }
+            }
+            
+            // Special case for column mapping container
+            const mappingContainer = document.getElementById('column-mapping-container');
+            if (mappingContainer) {
+              mappingContainer.style.display = activePanelId === 'column-mapping-container' ? 'block' : 'none';
+            }
+          }
+          
           // Initialize the React application when map fields button is clicked
           document.addEventListener('DOMContentLoaded', function() {
             const mapFieldsBtn = document.getElementById('map-fields-btn');
@@ -627,10 +833,47 @@
                       
                       console.log("Mounting React Data Formatter UI with data:", reactData);
                       
-                      // Mount the React component
+                      // Mount the React component with a reference to our globally defined handler
                       window.DataFormatterUI.mount(container, reactData, function(mappings, metadata) {
-                        console.log("Mapping complete with", mappings.length, "mappings");
-                        handleMappingComplete(mappings, metadata);
+                        console.log("Mapping complete callback received with", mappings.length, "mappings");
+                        
+                        // Use the global handler function if available
+                        if (typeof window.handleMappingComplete === 'function') {
+                          window.handleMappingComplete(mappings, metadata);
+                        } else {
+                          // Fallback handling if global function is not defined
+                          console.log("No global handleMappingComplete function found, using inline handler");
+                          
+                          // Store mappings in formatterState
+                          window.formatterState.mappings = mappings;
+                          
+                          // Store metadata if available
+                          if (metadata) {
+                            window.formatterState.processingMetadata = metadata;
+                          }
+                          
+                          // Call the existing processMapping function if available
+                          if (typeof window.processMapping === 'function') {
+                            window.processMapping(mappings, metadata);
+                          } else {
+                            // Fallback handling if processMapping function is not defined
+                            console.log("Using default mapping handler");
+                            
+                            // Show the preview panel
+                            if (typeof window.showFormatterPanels === 'function') {
+                              window.showFormatterPanels('preview-container');
+                            } else {
+                              console.error("showFormatterPanels function not available");
+                            }
+                            
+                            // Try to transform the data using the mappings
+                            if (typeof window.transformData === 'function') {
+                              window.transformData(mappings);
+                            } else {
+                              console.error("transformData function not available");
+                            }
+                          }
+                        }
                       });
                       
                       console.log("React Data Formatter UI mounted successfully");
@@ -1884,6 +2127,427 @@
   <!-- Core dependencies for React and Material UI -->
   <script src="https://cdn.jsdelivr.net/npm/react@17/umd/react.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/react-dom@17/umd/react-dom.production.min.js"></script>
+
+  <!-- Function Exporter - ensures all required functions are available in the global window scope -->
+  <script>
+    // Make sure all critical functions are explicitly exposed to window
+    window.showFormatterPanels = function(activePanelId) {
+      // Hide all formatter panels first
+      const panels = document.querySelectorAll('.formatter-panel');
+      panels.forEach(panel => {
+        panel.style.display = 'none';
+      });
+      
+      // If a specific panel ID was provided, show that panel
+      if (activePanelId) {
+        const activePanel = document.getElementById(activePanelId);
+        if (activePanel) {
+          activePanel.style.display = 'block';
+        }
+      }
+      
+      // Special case for column mapping container
+      const mappingContainer = document.getElementById('column-mapping-container');
+      if (mappingContainer) {
+        mappingContainer.style.display = activePanelId === 'column-mapping-container' ? 'block' : 'none';
+      }
+      
+      // Show preview container if needed
+      if (activePanelId === 'preview-container') {
+        const previewContainer = document.getElementById('preview-container');
+        if (previewContainer) {
+          previewContainer.style.display = 'block';
+        }
+      }
+    };
+    
+    window.transformData = function(mappings) {
+      console.log("Transforming data with mappings:", mappings);
+      
+      // Check if we have valid input data
+      if (!window.formatterState || !window.formatterState.sampleData || window.formatterState.sampleData.length === 0) {
+        console.error("No sample data available for transformation");
+        return;
+      }
+      
+      // Get the input data
+      const inputData = window.formatterState.sampleData;
+      const transformedData = [];
+      
+      // Process each record
+      for (const record of inputData) {
+        const transformedRecord = {};
+        
+        // Apply each mapping
+        for (const mapping of mappings) {
+          const sourceField = mapping.sourceField;
+          const targetField = mapping.targetField;
+          const sourceValue = record[sourceField];
+          
+          // Skip if source value is undefined
+          if (sourceValue === undefined) continue;
+          
+          // Handle split rules if present
+          if (mapping.splitRule && mapping.splitRule.delimiter !== undefined && mapping.splitRule.partIndex !== undefined) {
+            try {
+              const parts = sourceValue.split(mapping.splitRule.delimiter);
+              const partIndex = mapping.splitRule.partIndex === -1 ? parts.length - 1 : mapping.splitRule.partIndex;
+              transformedRecord[targetField] = parts[partIndex] ? parts[partIndex].trim() : '';
+            } catch (e) {
+              console.warn(`Error applying split rule for ${targetField}:`, e);
+              transformedRecord[targetField] = sourceValue;
+            }
+          } else {
+            // Simple direct mapping
+            transformedRecord[targetField] = sourceValue;
+          }
+        }
+        
+        // Save processing metadata if present
+        if (window.formatterState.processingMetadata) {
+          Object.assign(transformedRecord, window.formatterState.processingMetadata);
+        }
+        
+        // Add to transformed data
+        transformedData.push(transformedRecord);
+      }
+      
+      // Store transformed data in formatterState
+      window.formatterState.transformedData = transformedData;
+      
+      // Update preview with transformed data
+      window.showTransformedDataPreview(transformedData);
+      
+      console.log("Data transformation complete:", transformedData.length, "records");
+      
+      return transformedData;
+    };
+    
+    window.showTransformedDataPreview = function(transformedData) {
+      if (!transformedData || transformedData.length === 0) {
+        console.error("No transformed data to preview");
+        return;
+      }
+      
+      // Find the preview container
+      const previewContainer = document.getElementById('preview-container');
+      if (!previewContainer) {
+        console.error("Preview container not found");
+        return;
+      }
+      
+      // Get headers from the first record
+      const headers = Object.keys(transformedData[0]);
+      
+      // Calculate how many rows to show
+      const rowsToShow = Math.min(transformedData.length, 10);
+      const isLargeFile = transformedData.length > 100;
+      
+      // Build preview HTML
+      let previewHtml = `
+        <h3>Transformed Data Preview</h3>
+        <div class="data-preview">
+          <table class="preview-table">
+            <thead>
+              <tr>
+      `;
+      
+      // Add header cells
+      headers.forEach(header => {
+        previewHtml += `<th>${header}</th>`;
+      });
+      
+      previewHtml += `
+              </tr>
+            </thead>
+            <tbody>
+      `;
+      
+      // Add data rows
+      for (let i = 0; i < rowsToShow; i++) {
+        previewHtml += '<tr>';
+        headers.forEach(header => {
+          const value = transformedData[i][header] || '';
+          previewHtml += `<td>${value}</td>`;
+        });
+        previewHtml += '</tr>';
+      }
+      
+      previewHtml += `
+            </tbody>
+          </table>
+      `;
+      
+      // Add message about row count if we're showing a subset
+      if (transformedData.length > rowsToShow) {
+        previewHtml += `
+          <div class="info-message">
+            <p>Showing ${rowsToShow} of ${transformedData.length} total records. Complete dataset will be sent to the tool.</p>
+          </div>
+        `;
+      }
+      
+      previewHtml += '</div>';
+      
+      // Add buttons for actions
+      previewHtml += `
+        <div class="action-buttons">
+          <button id="send-to-tool-btn" class="primary-btn">Send to Tool</button>
+          <button id="download-btn" class="secondary-btn">Download Data</button>
+          <button id="back-to-mapper-btn" class="tertiary-btn">Back to Mapping</button>
+        </div>
+      `;
+      
+      // Update the preview container
+      previewContainer.innerHTML = previewHtml;
+      
+      // Set up button event handlers
+      const sendToToolBtn = document.getElementById('send-to-tool-btn');
+      const downloadBtn = document.getElementById('download-btn');
+      const backToMapperBtn = document.getElementById('back-to-mapper-btn');
+      
+      if (sendToToolBtn && !sendToToolBtn.getAttribute('data-has-listener')) {
+        sendToToolBtn.addEventListener('click', () => {
+          if (typeof sendDataToTool === 'function') {
+            sendDataToTool();
+          }
+        });
+        sendToToolBtn.setAttribute('data-has-listener', 'true');
+      }
+      
+      if (downloadBtn && !downloadBtn.getAttribute('data-has-listener')) {
+        downloadBtn.addEventListener('click', () => {
+          if (typeof downloadTransformedData === 'function') {
+            downloadTransformedData();
+          }
+        });
+        downloadBtn.setAttribute('data-has-listener', 'true');
+      }
+      
+      if (backToMapperBtn && !backToMapperBtn.getAttribute('data-has-listener')) {
+        backToMapperBtn.addEventListener('click', () => {
+          window.showFormatterPanels('column-mapping-container');
+        });
+        backToMapperBtn.setAttribute('data-has-listener', 'true');
+      }
+    };
+    
+    // Handle mapping complete - the critical callback for React integration
+    window.handleMappingComplete = function(mappings, metadata) {
+      console.log("handleMappingComplete called with", mappings.length, "mappings");
+      
+      // Store mappings in formatterState
+      if (window.formatterState) {
+        window.formatterState.mappings = mappings;
+        
+        // Store metadata if available
+        if (metadata) {
+          window.formatterState.processingMetadata = metadata;
+        }
+        
+        // Transform the data
+        if (typeof window.transformData === 'function') {
+          window.transformData(mappings);
+        }
+        
+        // Show the preview panel
+        if (typeof window.showFormatterPanels === 'function') {
+          window.showFormatterPanels('preview-container');
+        }
+      }
+    };
+    
+    // Function to send data to the selected tool
+    window.sendDataToTool = function() {
+      console.log("Sending data to tool");
+      
+      // Check if we have transformed data
+      if (!window.formatterState || !window.formatterState.transformedData || window.formatterState.transformedData.length === 0) {
+        alert("No transformed data available to send");
+        return;
+      }
+      
+      // Get selected tool
+      const toolSelect = document.getElementById('target-tool');
+      const selectedTool = toolSelect ? toolSelect.value : '';
+      
+      if (!selectedTool) {
+        alert("No target tool selected");
+        return;
+      }
+      
+      // Store the data in sessionStorage for the target tool
+      try {
+        // Prepare transport data object
+        const transportData = {
+          data: window.formatterState.transformedData,
+          source: 'data-formatter',
+          timestamp: new Date().toISOString(),
+          count: window.formatterState.transformedData.length
+        };
+        
+        // Serialize and store data
+        sessionStorage.setItem('imported_data', JSON.stringify(transportData));
+        
+        // Redirect based on selected tool
+        let redirectUrl = '/';
+        
+        switch (selectedTool) {
+          case 'response-time':
+            redirectUrl = '/fire-ems-dashboard';
+            break;
+          case 'call-density':
+            redirectUrl = '/call-density-heatmap';
+            break;
+          case 'isochrone':
+            redirectUrl = '/isochrone-map';
+            break;
+          case 'station-overview':
+            redirectUrl = '/station-overview';
+            break;
+          case 'incident-logger':
+            redirectUrl = '/incident-logger';
+            break;
+          case 'coverage-gap':
+            redirectUrl = '/coverage-gap-finder';
+            break;
+          default:
+            redirectUrl = '/fire-ems-dashboard';
+        }
+        
+        // Add parameter to indicate imported data
+        redirectUrl += '?imported=true';
+        
+        // Log action
+        const logContainer = document.getElementById('log-container');
+        if (logContainer) {
+          const timestamp = new Date().toLocaleTimeString();
+          logContainer.innerHTML += `<div class="log-entry log-success">
+            <span class="log-time">${timestamp}</span>
+            Data sent to ${selectedTool} tool (${window.formatterState.transformedData.length} records).
+          </div>`;
+        }
+        
+        // Redirect to the tool
+        window.location.href = redirectUrl;
+      } catch (error) {
+        console.error("Error sending data to tool:", error);
+        alert("Error sending data to tool: " + error.message);
+      }
+    };
+    
+    // Function to download transformed data
+    window.downloadTransformedData = function() {
+      console.log("Downloading transformed data");
+      
+      // Check if we have transformed data
+      if (!window.formatterState || !window.formatterState.transformedData || window.formatterState.transformedData.length === 0) {
+        alert("No transformed data available to download");
+        return;
+      }
+      
+      // Get selected format
+      const formatSelect = document.getElementById('output-format');
+      const format = formatSelect ? formatSelect.value : 'csv';
+      
+      try {
+        const data = window.formatterState.transformedData;
+        const headers = Object.keys(data[0]);
+        
+        // Prepare content based on format
+        let content = '';
+        let fileName = 'transformed-data';
+        let mimeType = '';
+        
+        if (format === 'csv') {
+          // CSV format
+          content = headers.join(',') + '\n';
+          
+          data.forEach(row => {
+            const values = headers.map(header => {
+              // Handle values with commas by wrapping in quotes
+              const value = row[header] || '';
+              return value.includes(',') ? `"${value}"` : value;
+            });
+            content += values.join(',') + '\n';
+          });
+          
+          fileName += '.csv';
+          mimeType = 'text/csv';
+        } else if (format === 'json') {
+          // JSON format
+          content = JSON.stringify(data, null, 2);
+          fileName += '.json';
+          mimeType = 'application/json';
+        } else if (format === 'excel') {
+          // Try to use XLSX.js if available
+          if (typeof XLSX !== 'undefined') {
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Data");
+            XLSX.writeFile(wb, "transformed-data.xlsx");
+            
+            // Log action
+            const logContainer = document.getElementById('log-container');
+            if (logContainer) {
+              const timestamp = new Date().toLocaleTimeString();
+              logContainer.innerHTML += `<div class="log-entry log-success">
+                <span class="log-time">${timestamp}</span>
+                Excel file downloaded successfully (${data.length} records).
+              </div>`;
+            }
+            
+            return; // Early return since XLSX.js handles the download
+          } else {
+            // Fall back to CSV
+            alert("Excel format not available. Downloading as CSV instead.");
+            content = headers.join(',') + '\n';
+            
+            data.forEach(row => {
+              const values = headers.map(header => {
+                const value = row[header] || '';
+                return value.includes(',') ? `"${value}"` : value;
+              });
+              content += values.join(',') + '\n';
+            });
+            
+            fileName += '.csv';
+            mimeType = 'text/csv';
+          }
+        }
+        
+        // Create a Blob and download link
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        
+        // Create temporary link and trigger download
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        
+        // Clean up
+        setTimeout(() => {
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }, 100);
+        
+        // Log action
+        const logContainer = document.getElementById('log-container');
+        if (logContainer) {
+          const timestamp = new Date().toLocaleTimeString();
+          logContainer.innerHTML += `<div class="log-entry log-success">
+            <span class="log-time">${timestamp}</span>
+            File downloaded successfully (${format} format, ${data.length} records).
+          </div>`;
+        }
+      } catch (error) {
+        console.error("Download error:", error);
+        alert("Error creating download file: " + error.message);
+      }
+    };
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/@material-ui/core@4.12.3/umd/material-ui.production.min.js"></script>
   
   <!-- Excel encoding fix script -->
