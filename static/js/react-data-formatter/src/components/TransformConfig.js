@@ -109,7 +109,7 @@ const TransformConfig = ({ open, fieldConfig, onClose, onSave }) => {
                 <FormControlLabel
                   value="dms"
                   control={<Radio color="primary" />}
-                  label="Degrees Minutes Seconds (e.g., 40°42'46\"N, 74°00'21\"W)"
+                  label="Degrees Minutes Seconds (e.g., 40°42′46″N, 74°00′21″W)"
                 />
               </RadioGroup>
             </FormControl>
