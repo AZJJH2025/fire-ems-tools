@@ -15,8 +15,10 @@ import numpy as np
 from datetime import datetime, timedelta
 import io
 import logging
+import traceback
 from werkzeug.utils import secure_filename
 import random
+import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -576,70 +578,151 @@ def fire_map_pro_map(map_id):
 def data_formatter_upload():
     """Handle file upload for Data Formatter"""
     try:
+        # Log request details for debugging
+        logger.debug("===== DATA FORMATTER UPLOAD ENDPOINT IN TOOLS.PY CALLED =====")
+        logger.debug(f"Request method: {request.method}, content type: {request.content_type}")
+        
         if 'file' not in request.files:
+            logger.error("No file provided in request")
             return jsonify({"error": "No file provided"}), 400
             
         file = request.files['file']
         
         if file.filename == '':
+            logger.error("No file selected")
             return jsonify({"error": "No file selected"}), 400
             
         # Check file type
-        allowed_extensions = {'csv', 'xlsx', 'xls', 'json'}
+        allowed_extensions = {'csv', 'xlsx', 'xls', 'json', 'xml'}
         if '.' not in file.filename or file.filename.rsplit('.', 1)[1].lower() not in allowed_extensions:
-            return jsonify({"error": "File type not allowed"}), 400
+            logger.error(f"File type not allowed: {file.filename}")
+            return jsonify({"error": f"File type not allowed. Must be one of: {', '.join(allowed_extensions)}"}), 400
             
-        # Process file data
-        if file.filename.endswith('.csv'):
-            df = pd.read_csv(file)
-        elif file.filename.endswith('.xlsx') or file.filename.endswith('.xls'):
-            df = pd.read_excel(file)
-        elif file.filename.endswith('.json'):
-            df = pd.read_json(file)
-        else:
-            return jsonify({"error": "Unsupported file format"}), 400
+        # Create a unique filename
+        import uuid
+        from werkzeug.utils import secure_filename
+        
+        filename = secure_filename(file.filename)
+        file_id = str(uuid.uuid4())
+        file_extension = filename.rsplit('.', 1)[1].lower()
+        unique_filename = f"{file_id}.{file_extension}"
+        
+        # Helper function to get files path
+        def get_files_path():
+            uploads_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'uploads')
+            os.makedirs(uploads_dir, exist_ok=True)
+            return uploads_dir
+        
+        # Create upload directory if it doesn't exist
+        upload_dir = get_files_path()
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # Save the file
+        file_path = os.path.join(upload_dir, unique_filename)
+        file.save(file_path)
+        logger.info(f"File saved to: {file_path}")
+        
+        # Process file to get data
+        try:
+            # Load source data based on file type
+            if file_extension == 'csv':
+                df = pd.read_csv(file_path)
+                logger.info(f"CSV file loaded, shape: {df.shape}")
+            elif file_extension in ['xlsx', 'xls']:
+                df = pd.read_excel(file_path)
+                logger.info(f"Excel file loaded, shape: {df.shape}")
+            elif file_extension == 'json':
+                df = pd.read_json(file_path)
+                logger.info(f"JSON file loaded, shape: {df.shape}")
+            elif file_extension == 'xml':
+                df = pd.read_xml(file_path)
+                logger.info(f"XML file loaded, shape: {df.shape}")
+            else:
+                logger.error(f"Unsupported file type: {file_extension}")
+                return jsonify({"error": f"Unsupported file type: {file_extension}"}), 400
+                
+            # Basic validation
+            if df.empty:
+                logger.error("File contains no data")
+                return jsonify({"error": "File contains no data"}), 400
+                
+            # Detect data source type
+            system_type = detect_system_type(df)
             
-        # Basic validation
-        if df.empty:
-            return jsonify({"error": "File contains no data"}), 400
+            # Check for important data features
+            has_geo = has_geo_coordinates(df)
+            has_timestamps = has_timestamps(df)
             
-        # Detect data source type
-        system_type = detect_system_type(df)
-        
-        # Check for important data features
-        has_geo = has_geo_coordinates(df)
-        has_timestamps = has_timestamps(df)
-        
-        # Suggest compatible tools
-        compatible_tools = suggest_tools(df, system_type, has_geo, has_timestamps)
-        
-        # Store in session
-        save_to_session('formatter_data', {
-            'data': df.to_json(date_format='iso', orient='split'),
-            'system_type': system_type,
-            'has_geo': has_geo,
-            'has_timestamps': has_timestamps,
-            'compatible_tools': compatible_tools,
-            'pandas': True
-        })
-        
-        # Return summary
-        summary = {
-            "rows": len(df),
-            "columns": list(df.columns),
-            "sample": df.head(5).to_dict(orient='records'),
-            "system_type": system_type,
-            "has_geo_coordinates": has_geo,
-            "has_timestamps": has_timestamps,
-            "compatible_tools": compatible_tools
-        }
-        
-        return jsonify({
-            "success": True,
-            "summary": summary
-        })
+            # Suggest compatible tools
+            compatible_tools = suggest_tools(df, system_type, has_geo, has_timestamps)
+            
+            # Store in session for backward compatibility
+            save_to_session('formatter_data', {
+                'data': df.to_json(date_format='iso', orient='split'),
+                'system_type': system_type,
+                'has_geo': has_geo,
+                'has_timestamps': has_timestamps,
+                'compatible_tools': compatible_tools,
+                'pandas': True,
+                'fileId': file_id,
+                'filename': filename
+            })
+            
+            # Get columns and sample data
+            columns = list(df.columns)
+            rows = len(df)
+            # Convert DataFrame to list of dicts for response
+            data = df.head(50).to_dict('records')
+            
+            # Try to detect first reported date for display
+            first_reported_date = None
+            date_fields = ['Reported', 'Incident Date', 'Date', 'incident_date', 'datetime']
+            for field in date_fields:
+                if field in df.columns:
+                    try:
+                        date_values = df[field].dropna()
+                        if len(date_values) > 0:
+                            # Try to parse as date
+                            first_date = pd.to_datetime(date_values.iloc[0])
+                            if pd.notna(first_date):
+                                first_reported_date = first_date.strftime('%Y-%m-%d')
+                                break
+                    except Exception as e:
+                        logger.warning(f"Error parsing date field {field}: {str(e)}")
+            
+            # Log success
+            logger.info(f"File processed successfully. Columns: {columns}")
+            
+            # Prepare the response
+            return jsonify({
+                "success": True,
+                "fileId": file_id,
+                "filename": filename,
+                "fileType": file_extension,
+                "columns": columns,
+                "rows": rows,
+                "data": data,
+                "first_reported_date": first_reported_date,
+                "system_type": system_type,
+                "has_geo_coordinates": has_geo,
+                "has_timestamps": has_timestamps,
+                "compatible_tools": compatible_tools
+            })
+            
+        except Exception as e:
+            logger.error(f"Error processing file: {str(e)}")
+            logger.error(f"Error details: {traceback.format_exc()}")
+            # Return error with file info
+            return jsonify({
+                "error": f"File uploaded but could not be processed: {str(e)}",
+                "fileId": file_id,
+                "filename": filename,
+                "fileType": file_extension
+            }), 500
+            
     except Exception as e:
         logger.error(f"Error in data_formatter_upload: {str(e)}")
+        logger.error(f"Error details: {traceback.format_exc()}")
         return jsonify({"error": str(e)}), 500
 
 def detect_system_type(df):
@@ -760,30 +843,164 @@ def suggest_tools(df, system_type, has_geo, has_timestamps):
 def data_formatter_transform():
     """Transform data for a specific tool"""
     try:
-        # Get data from session
-        formatter_data = get_from_session('formatter_data', False)
-        if formatter_data is None:
-            return jsonify({"error": "No data available. Please upload data first."}), 400
-            
-        # Get parameters
-        params = request.json
-        target_tool = params.get('tool')
+        # Log request details for debugging
+        logger.debug("===== DATA FORMATTER TRANSFORM ENDPOINT IN TOOLS.PY CALLED =====")
+        logger.debug(f"Request method: {request.method}, content type: {request.content_type}")
+        logger.debug(f"Request headers: {dict(request.headers)}")
+        raw_data = request.get_data().decode('utf-8', errors='replace')
+        logger.debug(f"Raw request data: {raw_data[:1000]}...")  # Log first 1000 chars to avoid huge logs
         
+        # Get parameters
+        params = request.get_json()
+        logger.debug(f"Parsed JSON data: {json.dumps(params)[:1000]}...")
+        
+        # Extract file ID - this is what the frontend sends instead of expecting session data
+        file_id = params.get('fileId')
+        if not file_id:
+            logger.error("Missing required parameter: fileId")
+            return jsonify({"error": "Missing required parameter: fileId"}), 400
+            
+        # Get mappings in the format the frontend sends
+        mappings = params.get('mappings', {})
+        if not mappings:
+            logger.error("Missing required parameter: mappings")
+            return jsonify({"error": "Missing required parameter: mappings"}), 400
+            
+        # Extract processing metadata (contains split rules)
+        processing_metadata = params.get('processingMetadata', {})
+        logger.debug(f"Processing metadata: {json.dumps(processing_metadata)}")
+        
+        # Extract split rules if available
+        split_rules = {}
+        if processing_metadata and '_splitRules' in processing_metadata:
+            split_rules = processing_metadata.get('_splitRules', {})
+            logger.info(f"Split rules found in processing metadata: {json.dumps(split_rules)}")
+        
+        # Get target tool - using targetTool if provided, falling back to "tool"
+        target_tool = params.get('targetTool') or params.get('tool')
         if not target_tool:
+            logger.error("Missing required parameter: targetTool or tool")
             return jsonify({"error": "Target tool must be specified"}), 400
             
-        # Parse field mappings
-        field_mappings = params.get('field_mappings', {})
+        # Try to find the file based on fileId
+        # First, try to find the file in uploads directory
+        import os
+        from werkzeug.utils import secure_filename
         
-        # Get the data
-        df = pd.read_json(formatter_data['data'], orient='split')
+        # Helper function to get files path
+        def get_files_path():
+            uploads_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'uploads')
+            os.makedirs(uploads_dir, exist_ok=True)
+            return uploads_dir
+            
+        # Try to find the file in uploads directory
+        file_found = False
+        file_path = None
+        file_extension = None
+        uploads_dir = get_files_path()
+        
+        for ext in ['csv', 'xlsx', 'xls', 'json', 'xml']:
+            temp_path = os.path.join(uploads_dir, f"{file_id}.{ext}")
+            if os.path.exists(temp_path):
+                file_path = temp_path
+                file_extension = ext
+                file_found = True
+                logger.info(f"Found file: {file_path}")
+                break
+                
+        # Convert mappings to the format expected by transform_data_for_tool
+        field_mappings = {}
+        for target_field, mapping_info in mappings.items():
+            # Handle different mapping formats (string or object with sourceId)
+            if isinstance(mapping_info, str):
+                field_mappings[target_field] = mapping_info
+            elif isinstance(mapping_info, dict) and 'sourceField' in mapping_info:
+                field_mappings[target_field] = mapping_info['sourceField']
+            elif isinstance(mapping_info, dict) and 'sourceId' in mapping_info:
+                field_mappings[target_field] = mapping_info['sourceId']
+                
+        logger.debug(f"Converted field mappings: {json.dumps(field_mappings)}")
+        
+        # Check if we found the file
+        if file_found:
+            # Load the file based on extension
+            try:
+                if file_extension == 'csv':
+                    df = pd.read_csv(file_path)
+                    logger.info(f"Loaded CSV file: {file_path}, shape: {df.shape}")
+                elif file_extension in ['xlsx', 'xls']:
+                    df = pd.read_excel(file_path)
+                    logger.info(f"Loaded Excel file: {file_path}, shape: {df.shape}")
+                elif file_extension == 'json':
+                    df = pd.read_json(file_path)
+                    logger.info(f"Loaded JSON file: {file_path}, shape: {df.shape}")
+                else:
+                    logger.error(f"Unsupported file type: {file_extension}")
+                    return jsonify({"error": f"Unsupported file type: {file_extension}"}), 400
+                
+                # Detect system type
+                system_type = detect_system_type(df)
+            except Exception as e:
+                logger.error(f"Error loading file {file_path}: {str(e)}")
+                return jsonify({"error": f"Error loading file: {str(e)}"}), 500
+        else:
+            # Try to get it from session as fallback
+            formatter_data = get_from_session('formatter_data', False)
+            
+            # Check if we have data from session
+            if formatter_data:
+                # Get the data from session
+                df = pd.read_json(formatter_data['data'], orient='split')
+                system_type = formatter_data.get('system_type', 'Unknown')
+                logger.info(f"Using data from session, shape: {df.shape}")
+            else:
+                # Could not find the file
+                logger.error(f"No data found for fileId: {file_id}")
+                return jsonify({"error": f"No data found for fileId: {file_id}. Please upload data first."}), 400
         
         # Transform data for the target tool
-        transformed_data = transform_data_for_tool(df, target_tool, field_mappings, formatter_data['system_type'])
+        transformed_data = transform_data_for_tool(df, target_tool, field_mappings, system_type)
+        
+        # Apply split rules manually if provided
+        if split_rules and transformed_data and 'data' in transformed_data:
+            logger.info("Applying split rules to transformed data")
+            
+            # Apply each split rule to the transformed data
+            for target_field, rule in split_rules.items():
+                # Verify rule has required fields
+                if not rule or not isinstance(rule, dict):
+                    logger.warning(f"Skipping invalid split rule for {target_field}: {rule}")
+                    continue
+                    
+                source_field = rule.get('sourceField')
+                delimiter = rule.get('delimiter')
+                part_index = rule.get('partIndex')
+                
+                if not source_field or delimiter is None or part_index is None:
+                    logger.warning(f"Skipping incomplete split rule for {target_field}: {rule}")
+                    continue
+                
+                # Apply the split rule to each record in the transformed data
+                logger.info(f"Applying split rule for {target_field}: {source_field} with delimiter '{delimiter}' and part index {part_index}")
+                
+                for record in transformed_data['data']:
+                    if source_field in record:
+                        try:
+                            source_value = record[source_field]
+                            if source_value and isinstance(source_value, str):
+                                parts = source_value.split(delimiter)
+                                part_index_value = part_index if part_index != -1 else len(parts) - 1
+                                
+                                if 0 <= part_index_value < len(parts):
+                                    record[target_field] = parts[part_index_value].strip()
+                                    logger.debug(f"Split rule applied: {source_value} -> {record[target_field]}")
+                        except Exception as e:
+                            logger.error(f"Error applying split rule: {str(e)}")
         
         # Store transformed data in session
         save_to_session('transformed_data', transformed_data)
         
+        # Return the transformed data in the expected format
         return jsonify({
             "success": True,
             "transformed_data": {
