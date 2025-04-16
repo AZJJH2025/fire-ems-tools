@@ -820,14 +820,41 @@
               }
               
               // Hide the mapping container
-              hideFormatterPanels();
-              showFormatterPanels('preview-container');
+              const mappingContainer = document.getElementById('column-mapping-container');
+              if (mappingContainer) {
+                mappingContainer.style.display = 'none';
+              }
+              
+              // Show the preview container
+              const previewContainer = document.getElementById('preview-container');
+              if (previewContainer) {
+                previewContainer.style.display = 'block';
+              }
+              
+              // Show all formatter panels
+              document.querySelectorAll('.formatter-panel').forEach(panel => {
+                panel.style.display = 'block';
+              });
             });
             
             // Handle cancel button
             document.getElementById('emergency-mapping-cancel').addEventListener('click', function() {
-              hideFormatterPanels();
-              showFormatterPanels('upload-container');
+              // Hide the mapping container
+              const mappingContainer = document.getElementById('column-mapping-container');
+              if (mappingContainer) {
+                mappingContainer.style.display = 'none';
+              }
+              
+              // Show the upload container
+              const uploadContainer = document.getElementById('upload-container');
+              if (uploadContainer) {
+                uploadContainer.style.display = 'block';
+              }
+              
+              // Show all formatter panels
+              document.querySelectorAll('.formatter-panel').forEach(panel => {
+                panel.style.display = 'block';
+              });
             });
           };
           
@@ -1043,6 +1070,13 @@
               return;
             }
             
+            // Find the output preview element inside preview container
+            const outputPreview = document.getElementById('output-preview');
+            if (!outputPreview) {
+              console.error("Output preview element not found");
+              return;
+            }
+            
             // Get headers from the first record
             const headers = Object.keys(transformedData[0]);
             
@@ -1052,11 +1086,9 @@
             
             // Build preview HTML
             let previewHtml = `
-              <h3>Transformed Data Preview</h3>
-              <div class="data-preview">
-                <table class="preview-table">
-                  <thead>
-                    <tr>
+              <table class="preview-table">
+                <thead>
+                  <tr>
             `;
             
             // Add header cells
@@ -1133,7 +1165,17 @@
             
             if (backToMapperBtn && !backToMapperBtn.getAttribute('data-has-listener')) {
               backToMapperBtn.addEventListener('click', () => {
-                showFormatterPanels('column-mapping-container');
+                // Hide the preview container
+                const previewContainer = document.getElementById('preview-container');
+                if (previewContainer) {
+                  previewContainer.style.display = 'none';
+                }
+                
+                // Show the mapping container
+                const mappingContainer = document.getElementById('column-mapping-container');
+                if (mappingContainer) {
+                  mappingContainer.style.display = 'block';
+                }
               });
               backToMapperBtn.setAttribute('data-has-listener', 'true');
             }
