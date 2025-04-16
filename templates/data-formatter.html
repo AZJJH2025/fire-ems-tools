@@ -632,7 +632,8 @@
             }
             
             // Create a basic mapping interface
-            const selectedTool = document.getElementById('tool-selector').value;
+            const toolSelector = document.getElementById('tool-selector') || document.getElementById('target-tool');
+            const selectedTool = toolSelector ? toolSelector.value : 'unknown';
             const sourceColumns = window.formatterState.sourceColumns;
             const sampleData = window.formatterState.sampleData || [];
             
