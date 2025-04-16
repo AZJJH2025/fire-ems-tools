@@ -638,7 +638,9 @@ def transform_data():
             if isinstance(mapping, str):
                 # Convert simple string mapping to proper format
                 logger.debug(f"Converting string mapping '{mapping}' to dict format for field '{field_id}'")
-                mapping = {'sourceId': mapping}
+                # Store the source column name in the sourceId field
+                source_field = mapping
+                mapping = {'sourceId': source_field}
             
             # Validate mapping structure
             if not isinstance(mapping, dict):
@@ -646,7 +648,8 @@ def transform_data():
                 continue
                 
             # Skip if no source field is specified
-            if not mapping.get('sourceId'):
+            source_id = mapping.get('sourceId')
+            if not source_id:
                 logger.debug(f"Skipping mapping without sourceId for field {field_id}")
                 continue
                 
