@@ -634,6 +634,8 @@
             // Create a basic mapping interface
             const toolSelector = document.getElementById('tool-selector') || document.getElementById('target-tool');
             const selectedTool = toolSelector ? toolSelector.value : 'unknown';
+            // Get proper tool display name for header
+            const toolDisplayName = getToolDisplayName(selectedTool);
             const sourceColumns = window.formatterState.sourceColumns;
             const sampleData = window.formatterState.sampleData || [];
             
@@ -654,9 +656,6 @@
             `;
             
             // Add mapping fields based on the selected tool
-            // Get proper tool display name for header
-            const toolDisplayName = getToolDisplayName(selectedTool);
-            
             // Get the appropriate target fields for this tool
             const targetFields = getTargetFieldsForTool(selectedTool);
             
