@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { 
   Grid, Paper, Typography, Box, Button, Chip, 
   IconButton, Tooltip, Accordion, AccordionSummary,
-  AccordionDetails, LinearProgress, CircularProgress
+  AccordionDetails, LinearProgress, CircularProgress,
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  FormControl, InputLabel, Select, MenuItem, Switch
 } from '@material-ui/core';
 import { 
   ExpandMore as ExpandMoreIcon,
@@ -36,6 +38,11 @@ const ColumnMappingUI = ({ onMappingComplete }) => {
   const [transformConfigOpen, setTransformConfigOpen] = useState(false);
   const [currentFieldConfig, setCurrentFieldConfig] = useState(null);
   const [transformConfigs, setTransformConfigs] = useState({});
+  
+  // State for split configuration UI
+  const [splitConfigOpen, setSplitConfigOpen] = useState(false);
+  const [currentSplitConfig, setCurrentSplitConfig] = useState(null);
+  const [splitRules, setSplitRules] = useState({});
   
   // Group target fields by category
   const fieldsByCategory = targetFields.reduce((acc, field) => {
@@ -83,7 +90,8 @@ const ColumnMappingUI = ({ onMappingComplete }) => {
           sourceField: sourceColumn,
           targetField: targetField.name,
           required: targetField.required,
-          transformConfig: getDefaultTransformConfig(targetField)
+          transformConfig: getDefaultTransformConfig(targetField),
+          splitRule: null // Initialize split rule as null
         };
         
         // Update mappings in state
@@ -203,6 +211,51 @@ const ColumnMappingUI = ({ onMappingComplete }) => {
     setCurrentFieldConfig(null);
   };
   
+  // Open split configuration dialog
+  const handleOpenSplitConfig = (fieldId) => {
+    const field = targetFields.find(f => f.id === fieldId);
+    const existingMapping = mappings.find(m => m.targetField === field.name);
+    
+    if (field && existingMapping) {
+      const currentRule = splitRules[fieldId] || existingMapping.splitRule || null;
+      setCurrentSplitConfig({ 
+        fieldId, 
+        field, 
+        sourceField: existingMapping.sourceField, 
+        rule: currentRule
+      });
+      setSplitConfigOpen(true);
+    }
+  };
+  
+  // Handle save split configuration
+  const handleSaveSplitConfig = (fieldId, splitRule) => {
+    // Update split rules
+    setSplitRules(prev => ({
+      ...prev,
+      [fieldId]: splitRule
+    }));
+    
+    // Update mapping with new split rule
+    const field = targetFields.find(f => f.id === fieldId);
+    if (field) {
+      const existingMapping = mappings.find(m => m.targetField === field.name);
+      
+      if (existingMapping) {
+        dispatch({
+          type: ActionTypes.UPDATE_MAPPING,
+          payload: {
+            ...existingMapping,
+            splitRule: splitRule
+          }
+        });
+      }
+    }
+    
+    setSplitConfigOpen(false);
+    setCurrentSplitConfig(null);
+  };
+  
   // Check if all required fields are mapped
   const areRequiredFieldsMapped = () => {
     const requiredFields = targetFields.filter(field => field.required);
@@ -288,21 +341,75 @@ Do you want to continue anyway?
       }
     }
     
-    // Create the final mappings array with transform configs
+    // Check if any date/time pairs are using the same source column
+    const dateTimeFieldPairs = [];
+    const dateFields = targetFields.filter(f => f.type === 'date' && f.name.includes('Date'));
+    const timeFields = targetFields.filter(f => f.type === 'time' || f.name.includes('Time'));
+    
+    // Check for date+time fields mapped to the same source column
+    dateFields.forEach(dateField => {
+      const dateMapping = mappings.find(m => m.targetField === dateField.name);
+      if (dateMapping) {
+        // Find any time field mapped to the same source column
+        timeFields.forEach(timeField => {
+          const timeMapping = mappings.find(m => m.targetField === timeField.name);
+          if (timeMapping && timeMapping.sourceField === dateMapping.sourceField) {
+            console.log(`Found Date+Time pair using same source column: ${dateField.name} + ${timeField.name} <- ${dateMapping.sourceField}`);
+            
+            // Add to date/time pairs
+            dateTimeFieldPairs.push({
+              sourceField: dateMapping.sourceField,
+              dateField: dateField.name, 
+              timeField: timeField.name,
+              sourceValue: sampleData && sampleData.length > 0 ? 
+                sampleData[0][dateMapping.sourceField] : null
+            });
+          }
+        });
+      }
+    });
+    
+    // Process the final mappings with configurations
     const finalMappings = mappings.map(mapping => {
       const targetField = targetFields.find(field => field.name === mapping.targetField);
+      const targetFieldId = targetField ? targetField.id : null;
       
       return {
         ...mapping,
         transformConfig: targetField ? 
-          transformConfigs[targetField.id] || getDefaultTransformConfig(targetField) : 
-          null
+          transformConfigs[targetFieldId] || getDefaultTransformConfig(targetField) : 
+          null,
+        splitRule: targetFieldId ? splitRules[targetFieldId] || mapping.splitRule || null : null
       };
     });
     
-    // Call the mapping complete callback
+    // Add the date/time pairs data and split rules to the processing metadata
+    const processingMetadata = {
+      _dateTimePairs: dateTimeFieldPairs.length > 0 ? dateTimeFieldPairs : undefined,
+      _splitRules: {}
+    };
+    
+    // Prepare a structured split rules object to store
+    finalMappings.forEach(mapping => {
+      if (mapping.splitRule) {
+        processingMetadata._splitRules[mapping.targetField] = {
+          sourceField: mapping.sourceField,
+          delimiter: mapping.splitRule.delimiter,
+          partIndex: mapping.splitRule.partIndex
+        };
+      }
+    });
+    
+    // Store processing metadata in sessionStorage for use by the target tool
+    try {
+      sessionStorage.setItem('formatterProcessingMetadata', JSON.stringify(processingMetadata));
+    } catch (err) {
+      console.warn("Could not store processing metadata:", err);
+    }
+    
+    // Call the mapping complete callback with enhanced mappings
     if (typeof onMappingComplete === 'function') {
-      onMappingComplete(finalMappings);
+      onMappingComplete(finalMappings, processingMetadata);
     }
   };
   
@@ -582,13 +689,25 @@ Do you want to continue anyway?
                                               </Tooltip>
                                             )}
                                             
-                                            <IconButton
-                                              size="small"
-                                              onClick={() => handleOpenTransformConfig(field.id)}
-                                              style={{ marginLeft: 4 }}
-                                            >
-                                              <SettingsIcon fontSize="small" />
-                                            </IconButton>
+                                            <Box display="flex">
+                                              <IconButton
+                                                size="small"
+                                                onClick={() => handleOpenTransformConfig(field.id)}
+                                                style={{ marginLeft: 4 }}
+                                                title="Configure transformation"
+                                              >
+                                                <SettingsIcon fontSize="small" />
+                                              </IconButton>
+                                              
+                                              <IconButton
+                                                size="small"
+                                                onClick={() => handleOpenSplitConfig(field.id)}
+                                                style={{ marginLeft: 4 }}
+                                                title="Configure split rule"
+                                              >
+                                                <i className="material-icons" style={{ fontSize: '16px' }}>content_cut</i>
+                                              </IconButton>
+                                            </Box>
                                           </Box>
                                         ) : (
                                           <Typography
@@ -638,6 +757,181 @@ Do you want to continue anyway?
           onClose={() => setTransformConfigOpen(false)}
           onSave={(config) => handleSaveTransformConfig(currentFieldConfig.fieldId, config)}
         />
+      )}
+      
+      {/* Split configuration dialog */}
+      {splitConfigOpen && currentSplitConfig && (
+        <Dialog
+          open={splitConfigOpen}
+          onClose={() => setSplitConfigOpen(false)}
+          aria-labelledby="split-config-dialog-title"
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle id="split-config-dialog-title">
+            Configure Split Rule for {currentSplitConfig.field.name}
+          </DialogTitle>
+          
+          <DialogContent dividers>
+            <Box p={1}>
+              <Typography variant="subtitle1" gutterBottom>
+                Split Source Field: {currentSplitConfig.sourceField}
+              </Typography>
+              
+              {sampleData && sampleData.length > 0 && (
+                <Box mb={2} p={1} border="1px solid #e0e0e0" borderRadius={1} bgcolor="#f5f5f5">
+                  <Typography variant="caption">Sample data:</Typography>
+                  <Box component="pre" style={{ margin: '4px 0', overflowX: 'auto' }}>
+                    {sampleData[0][currentSplitConfig.sourceField] || 'No sample data available'}
+                  </Box>
+                </Box>
+              )}
+              
+              <FormControl component="fieldset" fullWidth margin="normal">
+                <Typography variant="body2">Enable Split Rule</Typography>
+                <Box display="flex" alignItems="center">
+                  <Switch
+                    checked={!!currentSplitConfig.rule}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setCurrentSplitConfig({
+                          ...currentSplitConfig,
+                          rule: { delimiter: ' ', partIndex: 0 }
+                        });
+                      } else {
+                        setCurrentSplitConfig({
+                          ...currentSplitConfig,
+                          rule: null
+                        });
+                      }
+                    }}
+                    color="primary"
+                  />
+                  <Typography variant="body2" style={{ marginLeft: 8 }}>
+                    {currentSplitConfig.rule ? 'Split rule active' : 'Use entire field value'}
+                  </Typography>
+                </Box>
+              </FormControl>
+              
+              {currentSplitConfig.rule && (
+                <>
+                  <FormControl fullWidth margin="normal">
+                    <InputLabel>Split Delimiter</InputLabel>
+                    <Select
+                      value={currentSplitConfig.rule.delimiter}
+                      onChange={(e) => {
+                        setCurrentSplitConfig({
+                          ...currentSplitConfig,
+                          rule: {
+                            ...currentSplitConfig.rule,
+                            delimiter: e.target.value
+                          }
+                        });
+                      }}
+                    >
+                      <MenuItem value=" ">Space</MenuItem>
+                      <MenuItem value=",">Comma (,)</MenuItem>
+                      <MenuItem value=";">Semicolon (;)</MenuItem>
+                      <MenuItem value="|">Pipe (|)</MenuItem>
+                      <MenuItem value="/">Forward Slash (/)</MenuItem>
+                      <MenuItem value="-">Hyphen (-)</MenuItem>
+                      <MenuItem value=".">Period (.)</MenuItem>
+                    </Select>
+                  </FormControl>
+                  
+                  <FormControl fullWidth margin="normal">
+                    <InputLabel>Part to Extract</InputLabel>
+                    <Select
+                      value={currentSplitConfig.rule.partIndex}
+                      onChange={(e) => {
+                        setCurrentSplitConfig({
+                          ...currentSplitConfig,
+                          rule: {
+                            ...currentSplitConfig.rule,
+                            partIndex: e.target.value
+                          }
+                        });
+                      }}
+                    >
+                      <MenuItem value={0}>First Part (1)</MenuItem>
+                      <MenuItem value={1}>Second Part (2)</MenuItem>
+                      <MenuItem value={2}>Third Part (3)</MenuItem>
+                      <MenuItem value={3}>Fourth Part (4)</MenuItem>
+                      <MenuItem value={4}>Fifth Part (5)</MenuItem>
+                      <MenuItem value={-1}>Last Part</MenuItem>
+                    </Select>
+                  </FormControl>
+                  
+                  <Box mt={2} p={2} bgcolor="#e8f4fd" borderRadius={1}>
+                    <Typography variant="subtitle2">Preview:</Typography>
+                    {sampleData && sampleData.length > 0 && (
+                      <Box mt={1} maxHeight={120} overflow="auto" bgcolor="white" p={1} borderRadius={1}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                          <thead>
+                            <tr style={{ backgroundColor: '#f5f5f5' }}>
+                              <th style={{ padding: 8, textAlign: 'left' }}>Original</th>
+                              <th style={{ padding: 8, textAlign: 'left' }}>Split Result</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {sampleData.slice(0, 3).map((row, index) => {
+                              const original = row[currentSplitConfig.sourceField] || '';
+                              let splitResult = 'N/A';
+                              
+                              try {
+                                const parts = original.split(currentSplitConfig.rule.delimiter);
+                                const partIndex = currentSplitConfig.rule.partIndex;
+                                
+                                splitResult = partIndex === -1 
+                                  ? parts[parts.length - 1] 
+                                  : (parts[partIndex] || 'N/A');
+                              } catch (e) {
+                                splitResult = 'Error';
+                              }
+                              
+                              return (
+                                <tr key={index}>
+                                  <td style={{ padding: 8, borderTop: '1px solid #e0e0e0' }}>{original}</td>
+                                  <td style={{ padding: 8, borderTop: '1px solid #e0e0e0', fontWeight: 'bold' }}>{splitResult}</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </Box>
+                    )}
+                  </Box>
+                </>
+              )}
+              
+              {currentSplitConfig.field.type === 'date' && currentSplitConfig.field.name.includes('Date') && (
+                <Box mt={3} p={2} bgcolor="#fff3cd" borderRadius={1}>
+                  <Typography variant="subtitle2">🕒 Date/Time Smart Handling:</Typography>
+                  <Typography variant="body2" style={{ marginTop: 8 }}>
+                    If you map this Date field and its corresponding Time field to the <strong>same</strong> source column,
+                    the system will automatically split the value if it detects a combined date+time format (like "2023-01-15 14:30:00").
+                  </Typography>
+                  <Typography variant="body2" style={{ marginTop: 8 }}>
+                    This automatic detection works alongside any manual split rules you configure.
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </DialogContent>
+          
+          <DialogActions>
+            <Button onClick={() => setSplitConfigOpen(false)} color="default">
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => handleSaveSplitConfig(currentSplitConfig.fieldId, currentSplitConfig.rule)} 
+              color="primary" 
+              variant="contained"
+            >
+              Save Configuration
+            </Button>
+          </DialogActions>
+        </Dialog>
       )}
     </Grid>
   );

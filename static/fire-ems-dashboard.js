@@ -1506,6 +1506,32 @@ function formatFireEMSData(data) {
         
         if (isFormatterData) {
             console.log("Processing pre-formatted data from Data Formatter");
+            
+            // Apply split rules if present
+            if (formattedRecord._splitRules && typeof formattedRecord._splitRules === 'object') {
+                console.log("Applying split rules:", formattedRecord._splitRules);
+                
+                // Process each split rule
+                Object.entries(formattedRecord._splitRules).forEach(([targetField, rule]) => {
+                    if (rule && rule.sourceField && rule.delimiter !== undefined && rule.partIndex !== undefined) {
+                        try {
+                            const sourceValue = formattedRecord[rule.sourceField];
+                            if (sourceValue && typeof sourceValue === 'string') {
+                                const parts = sourceValue.split(rule.delimiter);
+                                const partIndex = rule.partIndex === -1 ? parts.length - 1 : rule.partIndex;
+                                
+                                if (parts[partIndex] !== undefined) {
+                                    // Store the split result in the target field
+                                    formattedRecord[targetField] = parts[partIndex].trim();
+                                    console.log(`Applied split rule for ${targetField}: "${sourceValue}" → "${formattedRecord[targetField]}"`);
+                                }
+                            }
+                        } catch (e) {
+                            console.warn(`Error applying split rule for ${targetField}:`, e);
+                        }
+                    }
+                });
+            }
         }
         
         // Process date fields: store both formatted string and Date object.
@@ -1529,6 +1555,58 @@ function formatFireEMSData(data) {
                                 formattedRecord[field] = formatDateTime(date);
                             }
                             return;
+                        }
+                    }
+                    
+                    // Handle smart DateTime hybrid approach - check if this field is part of a Date+Time pair
+                    // both mapped to the same source column
+                    if (isFormatterData && formattedRecord._dateTimePairs) {
+                        const pairInfo = formattedRecord._dateTimePairs.find(pair => 
+                            pair.dateField === field || pair.timeField === field
+                        );
+                        
+                        if (pairInfo && pairInfo.sourceValue) {
+                            console.log(`Smart DateTime handling for ${field} as part of pair:`, pairInfo);
+                            
+                            // Extract parts based on whether this is the date or time field
+                            try {
+                                let dateObj;
+                                const sourceValue = pairInfo.sourceValue;
+                                
+                                // Check various combined formats
+                                if (sourceValue.includes('T')) {
+                                    // ISO format like 2023-01-15T14:30:00
+                                    dateObj = new Date(sourceValue);
+                                } else if (sourceValue.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/)) {
+                                    // YYYY-MM-DD HH:MM format
+                                    dateObj = new Date(sourceValue.replace(' ', 'T'));
+                                } else if (sourceValue.match(/\d{1,2}\/\d{1,2}\/\d{4} \d{1,2}:\d{1,2}/)) {
+                                    // MM/DD/YYYY HH:MM format
+                                    const [datePart, timePart] = sourceValue.split(' ');
+                                    const [month, day, year] = datePart.split('/');
+                                    const [hour, minute] = timePart.split(':');
+                                    dateObj = new Date(year, month-1, day, hour, minute);
+                                }
+                                
+                                if (dateObj && !isNaN(dateObj.getTime())) {
+                                    // For date field, we store the Date object and a formatted date string
+                                    if (field === pairInfo.dateField) {
+                                        formattedRecord[`${field}_obj`] = dateObj;
+                                        formattedRecord[field] = dateObj.toISOString().split('T')[0];
+                                    } 
+                                    // For time field, we extract just the time part
+                                    else if (field === pairInfo.timeField) {
+                                        formattedRecord[`${field}_obj`] = dateObj;
+                                        const timeStr = dateObj.toTimeString().split(' ')[0];
+                                        formattedRecord[field] = timeStr;
+                                    }
+                                    
+                                    console.log(`Smart DateTime split for ${field}:`, formattedRecord[field]);
+                                    return;
+                                }
+                            } catch (e) {
+                                console.warn(`Failed smart DateTime split for ${field}:`, e);
+                            }
                         }
                     }
                     
