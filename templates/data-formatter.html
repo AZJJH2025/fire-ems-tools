@@ -584,6 +584,73 @@
           <p>Loading field mapping interface...</p>
         </div>
         
+        <!-- Load React application scripts -->
+        <script type="text/javascript" src="{{ url_for('static', filename='js/react-data-formatter/dist/data-formatter.js') }}"></script>
+        <script>
+          // Initialize the React application when map fields button is clicked
+          document.addEventListener('DOMContentLoaded', function() {
+            const mapFieldsBtn = document.getElementById('map-fields-btn');
+            
+            if (mapFieldsBtn && !mapFieldsBtn.getAttribute('data-react-handler-added')) {
+              mapFieldsBtn.setAttribute('data-react-handler-added', 'true');
+              
+              mapFieldsBtn.addEventListener('click', function() {
+                const container = document.getElementById('column-mapping-container');
+                if (!container) return;
+                
+                // Only try to mount React if we have the necessary data
+                if (window.formatterState && 
+                    window.formatterState.sourceColumns && 
+                    window.formatterState.sourceColumns.length > 0) {
+                  
+                  console.log("Attempting to initialize React Data Formatter UI");
+                  
+                  // Get the target tool
+                  const toolSelect = document.getElementById('target-tool');
+                  const selectedTool = toolSelect ? toolSelect.value : '';
+                  
+                  if (!selectedTool) {
+                    console.error("No target tool selected");
+                    return;
+                  }
+                  
+                  try {
+                    // Check if React and our component are available
+                    if (window.DataFormatterUI && typeof window.DataFormatterUI.mount === 'function') {
+                      // Prepare data for React component
+                      const reactData = {
+                        sourceColumns: window.formatterState.sourceColumns,
+                        sampleData: window.formatterState.sampleData || [],
+                        selectedTool: selectedTool,
+                        fileId: window.formatterState.fileId
+                      };
+                      
+                      console.log("Mounting React Data Formatter UI with data:", reactData);
+                      
+                      // Mount the React component
+                      window.DataFormatterUI.mount(container, reactData, function(mappings, metadata) {
+                        console.log("Mapping complete with", mappings.length, "mappings");
+                        handleMappingComplete(mappings, metadata);
+                      });
+                      
+                      console.log("React Data Formatter UI mounted successfully");
+                    } else {
+                      console.error("React Data Formatter UI not available");
+                      createEmergencyMappingInterface();
+                    }
+                  } catch (error) {
+                    console.error("Error mounting React Data Formatter UI:", error);
+                    createEmergencyMappingInterface();
+                  }
+                } else {
+                  console.error("No source columns available for mapping");
+                  createEmergencyMappingInterface();
+                }
+              });
+            }
+          });
+        </script>
+        
         <!-- Emergency fallback for column mapping -->
         <script>
           // Listen for the button click
