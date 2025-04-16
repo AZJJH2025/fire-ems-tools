@@ -640,7 +640,8 @@
             let mappingHtml = `
               <div class="emergency-mapping-ui" style="padding: 20px;">
                 <h2>Field Mapping</h2>
-                <p class="note" style="margin-bottom: 20px; color: #666;">Map source fields to target fields for the ${selectedTool} tool.</p>
+                <p class="note" style="margin-bottom: 20px; color: #666;">Map source fields to target fields for the ${toolDisplayName} tool.</p>
+                <p style="margin-bottom: 15px;">Auto-matches have been suggested based on your data. Please review and adjust as needed.</p>
                 <form id="emergency-mapping-form">
                   <table class="mapping-table" style="width: 100%; border-collapse: collapse;">
                     <thead>
@@ -653,17 +654,46 @@
             `;
             
             // Add mapping fields based on the selected tool
+            // Get proper tool display name for header
+            const toolDisplayName = getToolDisplayName(selectedTool);
+            
+            // Get the appropriate target fields for this tool
             const targetFields = getTargetFieldsForTool(selectedTool);
             
             targetFields.forEach(field => {
+              // Try to auto-match columns with similar names
+              const bestMatch = findBestMatchingColumn(field.label || field, sourceColumns);
+              
               mappingHtml += `
                 <tr>
                   <td style="padding: 8px; border-bottom: 1px solid #ddd;">${field.label || field}</td>
                   <td style="padding: 8px; border-bottom: 1px solid #ddd;">
-                    <select name="mapping_${field.id || field}" class="source-field-select" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                      <option value="">-- Select Source Field --</option>
-                      ${sourceColumns.map(col => `<option value="${col}">${col}</option>`).join('')}
-                    </select>
+                    <div class="mapping-input-container">
+                      <select name="mapping_${field.id || field}" class="source-field-select" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 6px;" data-target-field="${field.id || field}">
+                        <option value="">-- Select Source Field --</option>
+                        ${sourceColumns.map(col => `<option value="${col}" ${bestMatch === col ? 'selected' : ''}>${col}</option>`).join('')}
+                      </select>
+                      <div class="split-options" style="display: none; margin-top: 6px; padding: 6px; border: 1px dashed #ccc; border-radius: 4px; background-color: #f9f9f9;">
+                        <label style="display: block; margin-bottom: 6px; font-weight: bold;">
+                          <input type="checkbox" class="enable-split" style="margin-right: 6px;"> Enable Split Rule
+                        </label>
+                        <div class="split-rule-details" style="display: none; padding-left: 20px;">
+                          <div style="margin-bottom: 6px;">
+                            <label style="display: block; margin-bottom: 3px;">Delimiter:</label>
+                            <input type="text" class="split-delimiter" style="width: 60px; padding: 4px;" placeholder=" / ">
+                          </div>
+                          <div>
+                            <label style="display: block; margin-bottom: 3px;">Part Index:</label>
+                            <select class="split-index" style="width: 80px; padding: 4px;">
+                              <option value="0">First</option>
+                              <option value="1">Second</option>
+                              <option value="2">Third</option>
+                              <option value="-1">Last</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </td>
                 </tr>
               `;
@@ -690,22 +720,92 @@
             // Show the container
             container.style.display = 'block';
             
+            // Add event handlers to show/hide split rule options
+            setTimeout(() => {
+              // Get all dropdowns in the mapping form
+              const sourceFieldSelects = document.querySelectorAll('.source-field-select');
+              
+              // Add change event handlers to dropdowns
+              sourceFieldSelects.forEach(select => {
+                // Show split options when field is selected
+                select.addEventListener('change', function() {
+                  const container = this.closest('.mapping-input-container');
+                  const splitOptions = container.querySelector('.split-options');
+                  
+                  if (this.value) {
+                    splitOptions.style.display = 'block';
+                  } else {
+                    splitOptions.style.display = 'none';
+                    // Also uncheck the split option
+                    const splitCheckbox = container.querySelector('.enable-split');
+                    if (splitCheckbox) splitCheckbox.checked = false;
+                    
+                    // Hide the split details
+                    const splitDetails = container.querySelector('.split-rule-details');
+                    if (splitDetails) splitDetails.style.display = 'none';
+                  }
+                });
+                
+                // Trigger the change event if a value is already selected
+                if (select.value) {
+                  const event = new Event('change');
+                  select.dispatchEvent(event);
+                }
+              });
+              
+              // Handle toggle for split rule checkboxes
+              const splitCheckboxes = document.querySelectorAll('.enable-split');
+              splitCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                  const container = this.closest('.mapping-input-container');
+                  const splitDetails = container.querySelector('.split-rule-details');
+                  
+                  if (this.checked) {
+                    splitDetails.style.display = 'block';
+                  } else {
+                    splitDetails.style.display = 'none';
+                  }
+                });
+              });
+            }, 100);
+            
             // Handle mapping submission
             document.getElementById('emergency-mapping-submit').addEventListener('click', function() {
               const mappings = [];
-              const selects = document.querySelectorAll('.source-field-select');
+              const mappingContainers = document.querySelectorAll('.mapping-input-container');
               
-              selects.forEach(select => {
-                const targetField = select.name.replace('mapping_', '');
+              mappingContainers.forEach(container => {
+                const select = container.querySelector('.source-field-select');
+                const targetField = select.getAttribute('data-target-field');
                 const sourceField = select.value;
                 
                 if (sourceField) {
-                  mappings.push({
+                  // Create the base mapping
+                  const mapping = {
                     targetField: targetField,
                     sourceField: sourceField
-                  });
+                  };
+                  
+                  // Check if split rule is enabled
+                  const splitEnabled = container.querySelector('.enable-split')?.checked;
+                  if (splitEnabled) {
+                    const delimiter = container.querySelector('.split-delimiter').value || ' ';
+                    const partIndex = parseInt(container.querySelector('.split-index').value, 10);
+                    
+                    // Add split rule to mapping
+                    mapping.splitRule = {
+                      delimiter: delimiter,
+                      partIndex: partIndex
+                    };
+                    
+                    console.log(`Split rule created for ${targetField}: delimiter='${delimiter}', index=${partIndex}`);
+                  }
+                  
+                  mappings.push(mapping);
                 }
               });
+              
+              console.log("Created mappings with split rules:", mappings);
               
               // Call the mapping complete handler
               if (typeof window.handleMappingComplete === 'function') {
@@ -732,6 +832,77 @@
             });
           };
           
+          // Function to get a display name for the tool
+          function getToolDisplayName(toolName) {
+            const toolDisplayNames = {
+              'response_time_analyzer': 'Response Time Analyzer',
+              'response-time': 'Response Time Analyzer',
+              'call_density_heatmap': 'Call Density Heatmap',
+              'call-density': 'Call Density Heatmap',
+              'isochrone': 'Isochrone Map Generator',
+              'isochrone-stations': 'Isochrone Map - Station Locations',
+              'isochrone-incidents': 'Isochrone Map - Incident Data',
+              'coverage-gap': 'Coverage Gap Finder',
+              'station-overview': 'Station Overview',
+              'incident-logger': 'Incident Logger',
+              'fire-map-pro': 'FireMapPro'
+            };
+            
+            return toolDisplayNames[toolName] || toolName;
+          }
+          
+          // Function to find best matching column based on name similarity
+          function findBestMatchingColumn(targetField, sourceColumns) {
+            // Normalize the target field name
+            const normalizedTarget = targetField.toLowerCase().replace(/[^a-z0-9]/g, '');
+            
+            // Try to find an exact match first
+            for (const col of sourceColumns) {
+              const normalizedCol = col.toLowerCase().replace(/[^a-z0-9]/g, '');
+              if (normalizedCol === normalizedTarget) {
+                return col;
+              }
+            }
+            
+            // Look for columns containing the target field name
+            for (const col of sourceColumns) {
+              const normalizedCol = col.toLowerCase();
+              if (normalizedCol.includes(normalizedTarget)) {
+                return col;
+              }
+            }
+            
+            // Common field mappings from data file formats
+            const commonMappings = {
+              'incident id': ['run no', 'incident', 'id', 'call id', 'callid', 'incident number'],
+              'incident date': ['reported', 'date', 'call date', 'calldate'],
+              'incident time': ['reported', 'time', 'call time', 'calltime'],
+              'dispatch time': ['dispatched', 'unit dispatched', 'dispatch'],
+              'arrival time': ['unit onscene', 'onscene', 'arrival', 'on scene', 'arrived'],
+              'clear time': ['clear', 'cleared', 'unit clear', 'complete'],
+              'latitude': ['lat', 'y', 'ylat'],
+              'longitude': ['lon', 'long', 'x', 'xlong']
+            };
+            
+            // Check common field mappings
+            const targetLower = targetField.toLowerCase();
+            for (const [key, alternatives] of Object.entries(commonMappings)) {
+              if (targetLower.includes(key) || key.includes(targetLower)) {
+                // Found a match for the field category, now look for matching columns
+                for (const alt of alternatives) {
+                  for (const col of sourceColumns) {
+                    if (col.toLowerCase().includes(alt)) {
+                      return col;
+                    }
+                  }
+                }
+              }
+            }
+            
+            // No match found
+            return '';
+          }
+          
           // Function to get target fields based on the selected tool
           function getTargetFieldsForTool(toolName) {
             const commonFields = [
@@ -740,20 +911,51 @@
               { id: 'incident_time', label: 'Incident Time' }
             ];
             
-            switch(toolName) {
+            // Normalize tool name for switch statement
+            const normalizedTool = toolName.toLowerCase().replace(/-/g, '_');
+            
+            switch(normalizedTool) {
               case 'response_time_analyzer':
+              case 'response_time':
                 return [
                   ...commonFields,
                   { id: 'dispatch_time', label: 'Dispatch Time' },
+                  { id: 'enroute_time', label: 'En Route Time' },
                   { id: 'arrival_time', label: 'Arrival Time' },
-                  { id: 'clear_time', label: 'Clear Time' }
+                  { id: 'clear_time', label: 'Clear Time' },
+                  { id: 'unit_id', label: 'Unit ID' },
+                  { id: 'incident_type', label: 'Incident Type' },
+                  { id: 'location', label: 'Location' },
+                  { id: 'latitude', label: 'Latitude' },
+                  { id: 'longitude', label: 'Longitude' }
                 ];
               case 'call_density_heatmap':
+              case 'call_density':
                 return [
                   ...commonFields,
                   { id: 'latitude', label: 'Latitude' },
                   { id: 'longitude', label: 'Longitude' },
-                  { id: 'incident_type', label: 'Incident Type' }
+                  { id: 'incident_type', label: 'Incident Type' },
+                  { id: 'address', label: 'Address' },
+                  { id: 'city', label: 'City' }
+                ];
+              case 'isochrone':
+              case 'isochrone_stations':
+                return [
+                  { id: 'station_id', label: 'Station ID' },
+                  { id: 'station_name', label: 'Station Name' },
+                  { id: 'address', label: 'Station Address' },
+                  { id: 'latitude', label: 'Latitude' },
+                  { id: 'longitude', label: 'Longitude' },
+                  { id: 'unit_types', label: 'Unit Types' }
+                ];
+              case 'coverage_gap':
+                return [
+                  ...commonFields,
+                  { id: 'response_time', label: 'Response Time' },
+                  { id: 'latitude', label: 'Latitude' },
+                  { id: 'longitude', label: 'Longitude' },
+                  { id: 'address', label: 'Address' }
                 ];
               default:
                 return commonFields;
@@ -794,9 +996,15 @@
                 // Handle split rules if present
                 if (mapping.splitRule && mapping.splitRule.delimiter !== undefined && mapping.splitRule.partIndex !== undefined) {
                   try {
+                    console.log(`Applying split rule for ${targetField}: '${sourceValue}' with delimiter '${mapping.splitRule.delimiter}' and index ${mapping.splitRule.partIndex}`);
                     const parts = sourceValue.split(mapping.splitRule.delimiter);
+                    console.log(`  Split result: [${parts.join(', ')}]`);
+                    
                     const partIndex = mapping.splitRule.partIndex === -1 ? parts.length - 1 : mapping.splitRule.partIndex;
-                    transformedRecord[targetField] = parts[partIndex] ? parts[partIndex].trim() : '';
+                    const result = parts[partIndex] ? parts[partIndex].trim() : '';
+                    
+                    console.log(`  Selected part ${partIndex}: '${result}'`);
+                    transformedRecord[targetField] = result;
                   } catch (e) {
                     console.warn(`Error applying split rule for ${targetField}:`, e);
                     transformedRecord[targetField] = sourceValue;
