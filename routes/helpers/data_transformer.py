@@ -208,14 +208,34 @@ def apply_transformations(df, mappings, schema, app_root_path):
         logger.debug(f"===== Processing mapping #{mapping_count}: {field_id} =====")
         logger.debug(f"Mapping content: {mapping}")
         
-        # Skip if no source field is defined
-        if not mapping.get('sourceId'):
-            logger.warning(f"Skipping field '{field_id}' as it has no sourceId defined")
-            continue
+        # Handle different mapping formats
+        source_field = None
         
-        source_field = mapping['sourceId']
+        # Check if mapping is a string (direct mapping)
+        if isinstance(mapping, str):
+            source_field = mapping
+            logger.debug(f"Using string mapping '{source_field}' for field '{field_id}'")
+        # Check if mapping is a dict with sourceId
+        elif isinstance(mapping, dict) and mapping.get('sourceId'):
+            source_field = mapping['sourceId']
+            logger.debug(f"Using mapping dict with sourceId '{source_field}' for field '{field_id}'")
+        # Check if mapping is a dict with sourceField (alternate format)
+        elif isinstance(mapping, dict) and mapping.get('sourceField'):
+            source_field = mapping['sourceField']
+            logger.debug(f"Using mapping dict with sourceField '{source_field}' for field '{field_id}'")
+        
+        # Skip if no source field could be determined
+        if not source_field:
+            logger.warning(f"Skipping field '{field_id}' as no source field could be determined from mapping: {mapping}")
+            continue
+            
         logger.debug(f"Source field for '{field_id}': '{source_field}'")
-        transformations = mapping.get('transformations', [])
+        
+        # Handle transformations array if present in the mapping dict
+        transformations = []
+        if isinstance(mapping, dict):
+            transformations = mapping.get('transformations', [])
+        
         logger.debug(f"Transformations for '{field_id}': {transformations}")
         
         # Find the standard field name from the schema
