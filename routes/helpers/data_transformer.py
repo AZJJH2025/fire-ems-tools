@@ -157,7 +157,7 @@ def get_standardized_field_name(field_id, schema=None):
     # Otherwise, just standardize the field name (lowercase, replace spaces with underscores)
     return field_id.lower().replace(' ', '_')
 
-def apply_transformations(df, mappings, schema, app_root_path):
+def apply_transformations(df, mappings, schema, app_root_path, split_rules=None):
     """Apply transformations based on mappings and schema."""
     logger.debug("======= ENTERING APPLY_TRANSFORMATIONS FUNCTION =======")
     logger.debug(f"Source DataFrame columns: {list(df.columns)}")
@@ -165,6 +165,12 @@ def apply_transformations(df, mappings, schema, app_root_path):
     logger.debug(f"First few rows of source data:\n{df.head(3).to_string()}")
     logger.debug(f"Mappings object type: {type(mappings)}, length: {len(mappings)}")
     logger.debug(f"Mappings keys: {list(mappings.keys())}")
+    
+    # Handle split rules if provided
+    if split_rules:
+        logger.info(f"Split rules provided to apply_transformations: {split_rules}")
+    else:
+        split_rules = {}
     
     result_df = pd.DataFrame()
     
@@ -368,6 +374,61 @@ def apply_transformations(df, mappings, schema, app_root_path):
     if 'location_longitude' in result_df.columns:
         logger.info("Converting location_longitude to standard longitude field")
         result_df['longitude'] = pd.to_numeric(result_df['location_longitude'], errors='coerce')
+    
+    # Apply split rules if they exist
+    if split_rules and not result_df.empty:
+        logger.info("Applying split rules to the transformed data")
+        
+        for target_field, rule in split_rules.items():
+            # Verify rule has required fields
+            if not rule or not isinstance(rule, dict):
+                logger.warning(f"Skipping invalid split rule for {target_field}: {rule}")
+                continue
+                
+            source_field = rule.get('sourceField')
+            delimiter = rule.get('delimiter')
+            part_index = rule.get('partIndex')
+            
+            if not source_field or delimiter is None or part_index is None:
+                logger.warning(f"Skipping incomplete split rule for {target_field}: {rule}")
+                continue
+                
+            # Check if source field exists in the dataframe
+            if source_field not in df.columns:
+                logger.warning(f"Source field {source_field} for split rule not found in dataframe")
+                continue
+                
+            # Apply the split rule
+            logger.info(f"Applying split rule for {target_field}: {source_field} with delimiter '{delimiter}' and part index {part_index}")
+            
+            try:
+                # Use standard field name for target field if needed
+                std_target_field = target_field
+                if target_field in standard_field_mappings:
+                    std_target_field = standard_field_mappings[target_field]
+                
+                # Process each row
+                def apply_split(value):
+                    if pd.isna(value) or not isinstance(value, str):
+                        return value
+                    parts = value.split(delimiter)
+                    if parts and 0 <= part_index < len(parts):
+                        return parts[part_index].strip()
+                    elif part_index == -1 and parts:  # Special case for last part
+                        return parts[-1].strip()
+                    return value
+                
+                # Apply the split function to the source column and store in target column
+                result_df[std_target_field] = df[source_field].apply(apply_split)
+                logger.info(f"Successfully applied split rule for {target_field} -> {std_target_field}")
+                
+                # Log a sample of the transformed values
+                if not result_df.empty:
+                    sample_vals = result_df[std_target_field].head(2).tolist()
+                    logger.info(f"Sample split values for '{std_target_field}': {sample_vals}")
+                    
+            except Exception as e:
+                logger.error(f"Error applying split rule for {target_field}: {str(e)}")
     
     # Add metadata
     result_df['_processed_at'] = datetime.now(pytz.UTC).strftime('%Y-%m-%dT%H:%M:%SZ')

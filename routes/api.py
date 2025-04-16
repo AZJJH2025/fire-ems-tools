@@ -571,6 +571,15 @@ def transform_data():
         mappings = data['mappings']
         logger.debug(f"CRITICAL DEBUG - Raw mappings object: {mappings}")
         
+        # Check for processing metadata in the request
+        processing_metadata = data.get('processingMetadata', {})
+        
+        # Get split rules from processing metadata if available
+        split_rules = {}
+        if processing_metadata and isinstance(processing_metadata, dict):
+            split_rules = processing_metadata.get('_splitRules', {})
+            logger.info(f"Split rules found in processing metadata: {json.dumps(split_rules)}")
+        
         # Get the target tool if provided
         target_tool = data.get('targetTool', 'response-time')
         
@@ -699,8 +708,8 @@ def transform_data():
             logger.debug(f"Source DataFrame shape: {source_df.shape}")
             logger.debug(f"Enhanced mappings being used: {json.dumps(enhanced_mappings)}")
             
-            # Apply the transformation function with the enhanced mappings
-            transformed_df = apply_transformations(source_df, enhanced_mappings, schema, current_app.root_path)
+            # Apply the transformation function with the enhanced mappings and split rules
+            transformed_df = apply_transformations(source_df, enhanced_mappings, schema, current_app.root_path, split_rules)
             
             # CRITICAL DEBUG - Log right after transformation
             logger.debug("======= TRANSFORMATION PROCESS COMPLETED =======")
