@@ -56,9 +56,16 @@ const DataFormatterAPI = {
             console.log('FileId:', fileId);
             console.log('Mappings:', mappings);
             
+            // Get processing metadata from window.formatterState if available
+            const processingMetadata = (window.formatterState && window.formatterState.processingMetadata) 
+                ? window.formatterState.processingMetadata 
+                : {};
+
             const requestBody = {
                 fileId: fileId,
                 mappings: mappings,
+                // Include processing metadata (which contains splitRules)
+                processingMetadata: processingMetadata,
                 // Let the server know if we have the DataTransformer utility available
                 clientCapabilities: {
                     hasDataTransformer: !!(window.FireEMS && window.FireEMS.Utils && window.FireEMS.Utils.DataTransformer)

@@ -612,6 +612,10 @@
               return;
             }
             
+            // Get processing metadata (including split rules) if available
+            const metadata = window.formatterState.processingMetadata || {};
+            console.log("Processing metadata for transformation:", metadata);
+            
             // Get the input data
             const inputData = window.formatterState.sampleData;
             const transformedData = [];
@@ -2348,6 +2352,7 @@
         // Transform the data
         if (typeof window.transformData === 'function') {
           window.transformData(mappings);
+          console.log("Transformation initiated with mappings and metadata:", metadata);
         }
         
         // Show the preview panel

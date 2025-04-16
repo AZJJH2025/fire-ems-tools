@@ -579,6 +579,14 @@ def transform_data():
         if processing_metadata and isinstance(processing_metadata, dict):
             split_rules = processing_metadata.get('_splitRules', {})
             logger.info(f"Split rules found in processing metadata: {json.dumps(split_rules)}")
+        elif 'metadata' in data and isinstance(data['metadata'], dict):
+            # Alternative source for metadata from the request
+            alt_metadata = data['metadata']
+            if '_splitRules' in alt_metadata:
+                split_rules = alt_metadata['_splitRules']
+                logger.info(f"Split rules found in alternative metadata field: {json.dumps(split_rules)}")
+        
+        logger.info(f"Final split rules for transformation: {json.dumps(split_rules)}")
         
         # Get the target tool if provided
         target_tool = data.get('targetTool', 'response-time')
