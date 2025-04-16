@@ -600,7 +600,7 @@
         </div>
         
         <!-- Load React application scripts -->
-        <script type="text/javascript" src="{{ url_for('static_handler.serve_static', filename='js/react-data-formatter/dist/data-formatter.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static_handler.serve_static', filename=asset_url('data-formatter.js', 'react-data-formatter')) }}"></script>
         <script>
           // Function to transform data based on mappings
           function transformData(mappings) {

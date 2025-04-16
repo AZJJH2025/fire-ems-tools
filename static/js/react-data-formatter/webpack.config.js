@@ -1,14 +1,17 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 
 module.exports = (env, argv) => {
   const isProduction = argv.mode === 'production';
   
   return {
-    entry: './src/index.js',
+    entry: {
+      'data-formatter': './src/index.js'
+    },
     output: {
       path: path.resolve(__dirname, 'dist'),
-      filename: isProduction ? 'data-formatter.[contenthash].js' : 'data-formatter.js',
+      filename: isProduction ? '[name].[contenthash].js' : '[name].js',
       publicPath: '/static/js/react-data-formatter/dist/',
       library: 'DataFormatterUI',
       libraryTarget: 'umd',
@@ -41,6 +44,30 @@ module.exports = (env, argv) => {
         template: './src/index.html',
         filename: 'index.html',
         inject: false // We'll handle script insertion ourselves
+      }),
+      new WebpackManifestPlugin({
+        fileName: 'manifest.json',
+        publicPath: '',
+        generate: (seed, files, entrypoints) => {
+          const manifestFiles = files.reduce((manifest, file) => {
+            const name = file.name.replace(/\.[a-f0-9]+\./, '.');
+            manifest[name] = file.path.replace(/^.*\/dist\//, '');
+            return manifest;
+          }, seed);
+          
+          // Add entrypoints
+          const entrypointFiles = {};
+          Object.keys(entrypoints).forEach(entrypoint => {
+            entrypointFiles[entrypoint] = entrypoints[entrypoint].filter(
+              fileName => !fileName.endsWith('.map')
+            ).map(fileName => fileName.replace(/^.*\/dist\//, ''));
+          });
+          
+          return {
+            files: manifestFiles,
+            entrypoints: entrypointFiles
+          };
+        }
       })
     ],
     devServer: {

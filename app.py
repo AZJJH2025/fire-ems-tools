@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 import json
 import secrets
 from app_utils import init_limiter, safe_limit, require_api_key
+from asset_utils import init_asset_utils
 
 # Setup logging
 logging.basicConfig(
@@ -70,6 +71,9 @@ def create_app(config_name='default'):
     
     # Initialize rate limiter
     init_limiter(app)
+    
+    # Initialize asset utilities
+    init_asset_utils(app)
     
     # Set up template auto-reloading in development
     app.config['TEMPLATES_AUTO_RELOAD'] = True
