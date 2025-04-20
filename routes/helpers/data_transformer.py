@@ -393,20 +393,33 @@ def apply_transformations(df, mappings, schema, app_root_path, split_rules=None)
                 logger.warning(f"Skipping incomplete split rule for {target_field}: {rule}")
                 continue
                 
-            # Check if source field exists in the dataframe
-            if source_field not in df.columns:
-                logger.warning(f"Source field {source_field} for split rule not found in dataframe")
+            # Use standard field name for target field if needed
+            std_target_field = target_field
+            if target_field in standard_field_mappings:
+                std_target_field = standard_field_mappings[target_field]
+                
+            # Check if source field exists in either the original or transformed dataframe
+            source_df = None
+            if source_field in df.columns:
+                logger.info(f"Source field '{source_field}' found in original dataframe")
+                source_df = df
+            elif source_field in result_df.columns:
+                logger.info(f"Source field '{source_field}' found in transformed dataframe")
+                source_df = result_df
+            elif source_field in standard_field_mappings and standard_field_mappings[source_field] in result_df.columns:
+                # Try the standardized version of the source field
+                std_source_field = standard_field_mappings[source_field]
+                logger.info(f"Using standardized source field '{std_source_field}' instead of '{source_field}'")
+                source_field = std_source_field
+                source_df = result_df
+            else:
+                logger.warning(f"Source field '{source_field}' for split rule not found in any dataframe")
                 continue
                 
             # Apply the split rule
             logger.info(f"Applying split rule for {target_field}: {source_field} with delimiter '{delimiter}' and part index {part_index}")
             
             try:
-                # Use standard field name for target field if needed
-                std_target_field = target_field
-                if target_field in standard_field_mappings:
-                    std_target_field = standard_field_mappings[target_field]
-                
                 # Process each row
                 def apply_split(value):
                     if pd.isna(value) or not isinstance(value, str):
@@ -419,7 +432,7 @@ def apply_transformations(df, mappings, schema, app_root_path, split_rules=None)
                     return value
                 
                 # Apply the split function to the source column and store in target column
-                result_df[std_target_field] = df[source_field].apply(apply_split)
+                result_df[std_target_field] = source_df[source_field].apply(apply_split)
                 logger.info(f"Successfully applied split rule for {target_field} -> {std_target_field}")
                 
                 # Log a sample of the transformed values

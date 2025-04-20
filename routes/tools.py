@@ -1128,17 +1128,41 @@ def data_formatter_transform():
                         split_rule_failure_count += 1
                         continue
                     
-                    # Check if source field exists in any records
-                    source_field_exists = False
-                    for record in transformed_data['data'][:10]:  # Check first 10 records
-                        if source_field in record:
-                            source_field_exists = True
+                    # Get a list of fields to try as source, including both the original and possible transformed field name
+                    possible_source_fields = [source_field]
+                    
+                    # Check for possible field name variations (standardized names)
+                    source_field_lower = source_field.lower().replace(' ', '_')
+                    if source_field_lower != source_field:
+                        possible_source_fields.append(source_field_lower)
+                        
+                    # Try with common prefixes if the field might have been standardized
+                    for prefix in ['incident_', 'location_', 'response_', 'patient_']:
+                        if not source_field.startswith(prefix) and not source_field_lower.startswith(prefix):
+                            possible_source_fields.append(f"{prefix}{source_field_lower}")
+                    
+                    logger.debug(f"Will try these field names as source: {possible_source_fields}")
+                    
+                    # Find which source field exists in the records
+                    actual_source_field = None
+                    for field_name in possible_source_fields:
+                        source_field_exists = False
+                        for record in transformed_data['data'][:10]:  # Check first 10 records
+                            if field_name in record:
+                                source_field_exists = True
+                                actual_source_field = field_name
+                                break
+                        if source_field_exists:
                             break
                     
-                    if not source_field_exists:
-                        logger.warning(f"Source field '{source_field}' not found in transformed data records")
+                    if not actual_source_field:
+                        logger.warning(f"Source field '{source_field}' or its variants not found in transformed data records")
                         split_rule_failure_count += 1
                         continue
+                    
+                    # Update source field to the one we found
+                    source_field = actual_source_field
+                    logger.info(f"Using source field '{source_field}' for split rule")
                     
                     # Apply the split rule to each record in the transformed data
                     logger.info(f"Applying split rule for {target_field}: {source_field} with delimiter '{delimiter}' and part index {part_index}")
@@ -1156,7 +1180,7 @@ def data_formatter_transform():
                                     
                                     part_index_value = part_index if part_index != -1 else len(parts) - 1
                                     
-                                    if 0 <= part_index_value < len(parts):
+                                    if parts and 0 <= part_index_value < len(parts):
                                         record[target_field] = parts[part_index_value].strip()
                                         record_success_count += 1
                                         # Only log a few examples to avoid flooding logs
