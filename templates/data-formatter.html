@@ -43,6 +43,9 @@
       window.normalModeForced = true;
     }
     
+    // Track which scripts have been loaded to prevent duplicates
+    window._loadedScripts = window._loadedScripts || {};
+    
     // Create a loader function that uses Promise with multiple fallbacks
     function loadScript(url, options = {}) {
       // Default options
@@ -56,6 +59,27 @@
       }, options);
       
       return new Promise((resolve, reject) => {
+        // CRITICAL FIX: Check if this script or its fallbacks have already been loaded
+        const normalizedUrl = url.split('?')[0]; // Remove query parameters
+        
+        if (window._loadedScripts[normalizedUrl]) {
+          console.log(`Script already loaded (skipping): ${url}`);
+          if (opts.onSuccess) opts.onSuccess();
+          resolve(normalizedUrl);
+          return;
+        }
+        
+        // Also check if any fallback URLs have been loaded
+        for (const fallbackUrl of opts.fallbackUrls) {
+          const normalizedFallback = fallbackUrl.split('?')[0];
+          if (window._loadedScripts[normalizedFallback]) {
+            console.log(`Script already loaded via fallback (skipping): ${url} -> ${fallbackUrl}`);
+            if (opts.onSuccess) opts.onSuccess();
+            resolve(normalizedFallback);
+            return;
+          }
+        }
+        
         console.log(`Loading script: ${url}`);
         
         const script = document.createElement('script');
@@ -71,6 +95,8 @@
         script.onload = () => {
           clearTimeout(timeoutId);
           console.log(`Successfully loaded: ${url}`);
+          // Mark as loaded to prevent duplicates
+          window._loadedScripts[normalizedUrl] = true;
           if (opts.onSuccess) opts.onSuccess();
           resolve(url);
         };
@@ -96,6 +122,16 @@
           }
           
           const fallbackUrl = opts.fallbackUrls[index];
+          const normalizedFallback = fallbackUrl.split('?')[0];
+          
+          // Skip if this fallback is already loaded
+          if (window._loadedScripts[normalizedFallback]) {
+            console.log(`Fallback already loaded (skipping): ${fallbackUrl}`);
+            if (opts.onSuccess) opts.onSuccess();
+            resolve(fallbackUrl);
+            return;
+          }
+          
           console.log(`Trying fallback ${index + 1}/${opts.fallbackUrls.length}: ${fallbackUrl}`);
           
           const fallbackScript = document.createElement('script');
@@ -104,6 +140,8 @@
           
           fallbackScript.onload = () => {
             console.log(`Successfully loaded fallback: ${fallbackUrl}`);
+            // Mark as loaded to prevent duplicates
+            window._loadedScripts[normalizedFallback] = true;
             if (opts.onSuccess) opts.onSuccess();
             resolve(fallbackUrl);
           };
@@ -120,18 +158,48 @@
     
     // Load emergency mode scripts directly
     function loadEmergencyScripts() {
-      if (window.emergencyScriptsLoaded) return;
+      if (window.emergencyScriptsLoaded) {
+        console.log("Emergency scripts already loaded, skipping");
+        return;
+      }
       window.emergencyScriptsLoaded = true;
       
       console.log("Loading emergency scripts");
       
-      // Load core emergency scripts in parallel
-      Promise.all([
-        loadScript('/app-static/data-formatter-direct.js'),
-        loadScript('/app-static/data-formatter-fix.js'),
-        loadScript('/app-static/js/emergency-mode.js'),
-        loadScript('/app-static/data-formatter-excel-fix.js', '/static/data-formatter-excel-fix.js')
-      ]).then(() => {
+      // Define the core emergency scripts with clear paths
+      const emergencyScripts = [
+        {
+          url: '/app-static/data-formatter-direct.js',
+          fallbackUrls: ['/static/data-formatter-direct.js', '/direct-static/data-formatter-direct.js'],
+          critical: true
+        },
+        {
+          url: '/app-static/data-formatter-fix.js',
+          fallbackUrls: ['/static/data-formatter-fix.js', '/direct-static/data-formatter-fix.js'],
+          critical: true
+        },
+        {
+          url: '/app-static/js/emergency-mode.js',
+          fallbackUrls: ['/static/js/emergency-mode.js', '/direct-static/js/emergency-mode.js'],
+          critical: true
+        },
+        {
+          url: '/app-static/data-formatter-excel-fix.js',
+          fallbackUrls: ['/static/data-formatter-excel-fix.js', '/direct-static/data-formatter-excel-fix.js'],
+          critical: false
+        }
+      ];
+      
+      // Load all scripts in parallel with proper fallbacks
+      Promise.all(
+        emergencyScripts.map(script => 
+          loadScript(script.url, {
+            fallbackUrls: script.fallbackUrls,
+            critical: script.critical,
+            timeout: 5000
+          })
+        )
+      ).then(() => {
         console.log("All emergency scripts loaded successfully");
       }).catch(error => {
         console.error("Failed to load some emergency scripts:", error);
@@ -141,6 +209,13 @@
     // Initialize immediately
     (function initialize() {
       console.log("Early initialization started");
+      
+      // Check if we've already initialized to prevent duplicate loads
+      if (window.dataFormatterInitialized) {
+        console.log("Data Formatter already initialized, skipping duplicate initialization");
+        return;
+      }
+      window.dataFormatterInitialized = true;
       
       // CRITICAL FIX: Check for emergency mode triggers in early initialization
       const currentFileName = sessionStorage.getItem('currentFileName') || localStorage.getItem('currentFileName');
@@ -153,6 +228,20 @@
         currentFileName.toLowerCase().includes('big')
       );
       const isVeryLargeFile = fileSize > 10000000; // 10MB threshold
+      
+      // Store data about file in global state
+      if (currentFileName) {
+        window.formatterState.originalFileName = currentFileName;
+      }
+      if (fileSize) {
+        window.formatterState.fileSize = fileSize;
+      }
+      if (isKnownLargeFile) {
+        window.formatterState.isLargeFile = true;
+      }
+      
+      // Log initialization state
+      console.log(`[Initialization] File info: name="${currentFileName}", size=${fileSize}KB, isKnownLargeFile=${isKnownLargeFile}, isVeryLargeFile=${isVeryLargeFile}`);
       
       if (window.emergencyModeForced || isKnownLargeFile || isVeryLargeFile) {
         if (isKnownLargeFile || isVeryLargeFile) {
@@ -171,7 +260,14 @@
         return;
       }
       
-      // Otherwise, first try to load the core script
+      // Check if core script is already loaded to prevent duplication
+      const coreScriptKey = '/static/js/data-formatter-core.js'.split('?')[0];
+      if (window._loadedScripts && window._loadedScripts[coreScriptKey]) {
+        console.log("Core script already loaded, skipping duplicate load");
+        return;
+      }
+      
+      // Load the core script with proper fallbacks
       loadScript('/static/js/data-formatter-core.js', {
         critical: true,
         fallbackUrls: [
@@ -599,8 +695,31 @@
           <p>Processing data...</p>
         </div>
         
-        <!-- Load React application scripts -->
-        <script type="text/javascript" src="{{ url_for('static_handler.serve_static', filename=asset_url('data-formatter.js', 'react-data-formatter')) }}"></script>
+        <!-- Load React application scripts - Added version check to prevent duplicate loading -->
+        <script>
+          // Check if React UI is already loaded
+          if (!window.reactDataFormatterLoaded) {
+            window.reactDataFormatterLoaded = true;
+            console.log("Loading React Data Formatter UI script (first load)");
+            
+            // Use our global script loader to prevent duplicates
+            loadScript("{{ url_for('static_handler.serve_static', filename=asset_url('data-formatter.js', 'react-data-formatter')) }}", {
+              fallbackUrls: [
+                "/static/js/react-data-formatter/dist/data-formatter.js",
+                "/app-static/data-formatter.js"
+              ],
+              onSuccess: function() {
+                console.log("React Data Formatter UI script loaded successfully");
+              },
+              onError: function() {
+                console.error("React Data Formatter UI script failed to load");
+                window.reactDataFormatterLoaded = false;
+              }
+            });
+          } else {
+            console.log("React Data Formatter UI already loaded, skipping duplicate load");
+          }
+        </script>
         <script>
           // Create the emergency mapping interface function in the global scope
           window.createEmergencyMappingInterface = function() {

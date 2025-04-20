@@ -350,6 +350,9 @@
     
     // Load a component
     load: function(name) {
+      // Track loaded scripts globally to prevent duplicates across loaders
+      window._loadedScripts = window._loadedScripts || {};
+      
       if (!this._registry[name]) {
         console.error(`[ComponentLoader] Unknown component: ${name}`);
         return Promise.reject(new Error(`Unknown component: ${name}`));
@@ -359,6 +362,7 @@
       
       // Don't reload if already loaded
       if (config.loaded) {
+        console.log(`[ComponentLoader] Component ${name} already loaded, skipping`);
         return Promise.resolve(true);
       }
       
@@ -400,6 +404,64 @@
         }
       }
       
+      // CRITICAL FIX: Check if script is already loaded by URL to prevent duplicates
+      const normalizedUrl = url.split('?')[0]; // Remove query parameters
+      if (window._loadedScripts[normalizedUrl]) {
+        console.log(`[ComponentLoader] Script for ${name} already loaded from ${normalizedUrl}, marking as loaded`);
+        this.markLoaded(name);
+        
+        // Execute callback if exists
+        if (config.callback) {
+          try {
+            config.callback();
+          } catch (error) {
+            console.error(`[ComponentLoader] Error executing callback for ${name}:`, error);
+          }
+        }
+        
+        return Promise.resolve(true);
+      }
+      
+      // Also check emergency URL to prevent duplicates
+      if (config.emergencyUrl) {
+        const normalizedEmergencyUrl = config.emergencyUrl.split('?')[0];
+        if (window._loadedScripts[normalizedEmergencyUrl]) {
+          console.log(`[ComponentLoader] Script for ${name} already loaded from emergency URL ${normalizedEmergencyUrl}, marking as loaded`);
+          this.markLoaded(name);
+          
+          // Execute callback if exists
+          if (config.callback) {
+            try {
+              config.callback();
+            } catch (error) {
+              console.error(`[ComponentLoader] Error executing callback for ${name}:`, error);
+            }
+          }
+          
+          return Promise.resolve(true);
+        }
+      }
+      
+      // Also check fallback URL to prevent duplicates
+      if (config.fallbackUrl) {
+        const normalizedFallbackUrl = config.fallbackUrl.split('?')[0];
+        if (window._loadedScripts[normalizedFallbackUrl]) {
+          console.log(`[ComponentLoader] Script for ${name} already loaded from fallback URL ${normalizedFallbackUrl}, marking as loaded`);
+          this.markLoaded(name);
+          
+          // Execute callback if exists
+          if (config.callback) {
+            try {
+              config.callback();
+            } catch (error) {
+              console.error(`[ComponentLoader] Error executing callback for ${name}:`, error);
+            }
+          }
+          
+          return Promise.resolve(true);
+        }
+      }
+      
       // CRITICAL FIX: If DOM not ready, defer loading until DOM is ready
       if (document.readyState === 'loading') {
         console.log(`[ComponentLoader] DOM not ready, deferring load of ${name}`);
@@ -431,6 +493,8 @@
         
         script.onload = () => {
           console.log(`[ComponentLoader] Loaded: ${name} from ${url}`);
+          // Mark URL as loaded to prevent duplicates
+          window._loadedScripts[normalizedUrl] = true;
           this.markLoaded(name);
           
           if (config.callback) {
@@ -449,6 +513,24 @@
           
           // Try the emergency URL as a last resort if available
           if (config.emergencyUrl && url !== config.emergencyUrl) {
+            // Check if emergency URL is already loaded
+            const normalizedEmergencyUrl = config.emergencyUrl.split('?')[0];
+            if (window._loadedScripts[normalizedEmergencyUrl]) {
+              console.log(`[ComponentLoader] Emergency URL for ${name} already loaded: ${normalizedEmergencyUrl}, marking as loaded`);
+              this.markLoaded(name);
+              
+              if (config.callback) {
+                try {
+                  config.callback();
+                } catch (error) {
+                  console.error(`[ComponentLoader] Error executing callback for ${name}:`, error);
+                }
+              }
+              
+              resolve(true);
+              return;
+            }
+            
             console.log(`[ComponentLoader] Attempting emergency URL for ${name}: ${config.emergencyUrl}`);
             
             const emergencyScript = document.createElement('script');
@@ -456,6 +538,8 @@
             
             emergencyScript.onload = () => {
               console.log(`[ComponentLoader] Loaded ${name} from emergency URL: ${config.emergencyUrl}`);
+              // Mark emergency URL as loaded to prevent duplicates
+              window._loadedScripts[normalizedEmergencyUrl] = true;
               this.markLoaded(name);
               
               if (config.callback) {
