@@ -98,6 +98,30 @@ python app.py
 http://localhost:5005
 ```
 
+## React Data Formatter Setup
+
+The React frontend code is located in `/static/js/react-data-formatter/`. This component provides an interactive interface for mapping and transforming data fields.
+
+### Building the React Application
+
+The React application is built using Webpack. To build the production bundle, navigate to `/static/js/react-data-formatter/` and run `npm run build`.
+
+```bash
+cd static/js/react-data-formatter/
+npm install
+npm run build
+```
+
+The `dist/` directory contains the compiled and bundled JavaScript, CSS, and HTML files that are served by the Flask application.
+
+### Dependencies
+
+The React application uses dependencies like `@material-ui/core` and `react-beautiful-dnd`. Run `npm install` in the `/static/js/react-data-formatter/` directory before building.
+
+### MapFieldsManager
+
+The `MapFieldsManager.js` file in `/static/js/utils/` provides utility functions for mapping data fields in the application's UI. It works in conjunction with the React data formatter to standardize and transform field values.
+
 ## Data Formatter Testing
 
 For testing the Data Formatter specifically, refer to [DATA_FORMATTER_TESTING.md](DATA_FORMATTER_TESTING.md).
