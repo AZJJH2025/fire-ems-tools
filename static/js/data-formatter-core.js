@@ -8,6 +8,7 @@
  * - Reliable detection of emergency mode conditions
  * - Safe fallback to emergency mode when needed
  * - Consistent state management throughout the application lifecycle
+ * - Prevention of duplicate script loading
  */
 
 (function() {
@@ -288,87 +289,138 @@
     }
   };
   
-  // ComponentLoader manages script loading with proper dependency tracking
-  const ComponentLoader = {
-    _registry: {},
-    _loadAttempts: {},
-    _componentToUrlMap: {}, // NEW: Map component names to their URLs for reverse lookup
+  // Global Script Registry for tracking loaded scripts across the application
+  const ScriptRegistry = {
+    // Store all loaded scripts keyed by normalized URL
+    _loadedScripts: {},
     
-    // NEW: Global initialization of script registry
-    _initScriptRegistry: function() {
-      // Ensure global script registry exists
+    // Store component to URL mappings for reverse lookups
+    _componentToUrlMap: {},
+    
+    // Initialize the registry
+    initialize: function() {
+      // Use existing global registry or create a new one
       window._loadedScripts = window._loadedScripts || {};
+      this._loadedScripts = window._loadedScripts;
       
-      // NEW: Also create a component-to-script mapping registry
+      // Create component-to-script mapping registry
       window._componentScripts = window._componentScripts || {};
+      
+      // Log initialization status
+      console.log('[ScriptRegistry] Initialized with', Object.keys(this._loadedScripts).length, 'scripts already registered');
       
       return this;
     },
     
-    // NEW: Add a script URL to the registry
-    _registerScriptUrl: function(name, url) {
-      if (!url) return;
-      
-      // Initialize registries
-      this._initScriptRegistry();
+    // Register a script URL
+    registerScript: function(url, componentName = null) {
+      if (!url) return false;
       
       // Normalize URL by removing query parameters
       const normalizedUrl = url.split('?')[0];
       
-      // Store in our internal mapping
-      if (!this._componentToUrlMap[name]) {
-        this._componentToUrlMap[name] = [];
-      }
-      if (!this._componentToUrlMap[name].includes(normalizedUrl)) {
-        this._componentToUrlMap[name].push(normalizedUrl);
-      }
+      // Check if already registered
+      const alreadyLoaded = this.isLoaded(normalizedUrl);
       
-      // Store in global component script map
-      if (!window._componentScripts[name]) {
-        window._componentScripts[name] = [];
-      }
-      if (!window._componentScripts[name].includes(normalizedUrl)) {
-        window._componentScripts[name].push(normalizedUrl);
-      }
+      // Register in our central registry
+      this._loadedScripts[normalizedUrl] = true;
+      window._loadedScripts[normalizedUrl] = true;
       
-      return normalizedUrl;
-    },
-    
-    // NEW: Check if component has any of its script URLs already loaded
-    _isComponentAlreadyLoaded: function(name) {
-      // Initialize registries
-      this._initScriptRegistry();
-      
-      // Get all possible URLs for this component
-      const config = this._registry[name] || {};
-      const urls = [];
-      
-      // Check main URL
-      if (config.url) urls.push(config.url.split('?')[0]);
-      
-      // Check fallback URL
-      if (config.fallbackUrl) urls.push(config.fallbackUrl.split('?')[0]);
-      
-      // Check emergency URL
-      if (config.emergencyUrl) urls.push(config.emergencyUrl.split('?')[0]);
-      
-      // Check if any of the URLs are already loaded
-      for (const url of urls) {
-        if (window._loadedScripts[url]) {
-          console.log(`[ComponentLoader] Component ${name} already loaded from URL ${url}`);
-          return true;
+      // Register component mapping if provided
+      if (componentName) {
+        if (!this._componentToUrlMap[componentName]) {
+          this._componentToUrlMap[componentName] = [];
+        }
+        if (!this._componentToUrlMap[componentName].includes(normalizedUrl)) {
+          this._componentToUrlMap[componentName].push(normalizedUrl);
+        }
+        
+        // Update global component scripts map
+        if (!window._componentScripts[componentName]) {
+          window._componentScripts[componentName] = [];
+        }
+        if (!window._componentScripts[componentName].includes(normalizedUrl)) {
+          window._componentScripts[componentName].push(normalizedUrl);
         }
       }
       
-      // Also check if component name is in the registry
-      return (window._componentScripts[name] && window._componentScripts[name].some(url => window._loadedScripts[url]));
+      // Only log if this is a new registration
+      if (!alreadyLoaded) {
+        console.log(`[ScriptRegistry] Registered script: ${normalizedUrl}${componentName ? ` for component: ${componentName}` : ''}`);
+      }
+      
+      return true;
+    },
+    
+    // Check if a script is already loaded
+    isLoaded: function(url) {
+      if (!url) return false;
+      
+      // Normalize URL by removing query parameters
+      const normalizedUrl = url.split('?')[0];
+      
+      // Check if script is in our registry
+      return !!this._loadedScripts[normalizedUrl];
+    },
+    
+    // Check if any URL associated with a component is loaded
+    isComponentLoaded: function(componentName) {
+      if (!componentName) return false;
+      
+      // Check if we have any URLs for this component
+      if (!this._componentToUrlMap[componentName] || this._componentToUrlMap[componentName].length === 0) {
+        return false;
+      }
+      
+      // Check if any of the URLs are loaded
+      return this._componentToUrlMap[componentName].some(url => this.isLoaded(url));
+    },
+    
+    // Get all registered URLs for a component
+    getUrlsForComponent: function(componentName) {
+      if (!componentName) return [];
+      
+      return this._componentToUrlMap[componentName] || [];
+    },
+    
+    // Get list of all loaded scripts
+    getLoadedScripts: function() {
+      return Object.keys(this._loadedScripts);
+    },
+    
+    // Get component name for a URL if it exists
+    getComponentForUrl: function(url) {
+      if (!url) return null;
+      
+      const normalizedUrl = url.split('?')[0];
+      
+      // Find the component that owns this URL
+      for (const [componentName, urls] of Object.entries(this._componentToUrlMap)) {
+        if (urls.includes(normalizedUrl)) {
+          return componentName;
+        }
+      }
+      
+      return null;
+    }
+  };
+  
+  // ComponentLoader manages script loading with proper dependency tracking
+  const ComponentLoader = {
+    _registry: {},
+    _loadAttempts: {},
+    
+    // Initialize the component loader
+    initialize: function() {
+      // Initialize script registry
+      ScriptRegistry.initialize();
+      
+      console.log('[ComponentLoader] Initialized');
+      return this;
     },
     
     // Register a component with its dependencies
     register: function(name, options = {}) {
-      // Initialize the script registry
-      this._initScriptRegistry();
-      
       // Check if already registered
       if (this._registry[name]) {
         console.log(`[ComponentLoader] Component ${name} already registered, updating configuration`);
@@ -385,13 +437,13 @@
         critical: !!options.critical
       };
       
-      // NEW: Register all possible URLs for this component
-      if (options.url) this._registerScriptUrl(name, options.url);
-      if (options.fallbackUrl) this._registerScriptUrl(name, options.fallbackUrl);
-      if (options.emergencyUrl) this._registerScriptUrl(name, options.emergencyUrl);
+      // Register all URLs with the script registry
+      if (options.url) ScriptRegistry.registerScript(options.url, name);
+      if (options.fallbackUrl) ScriptRegistry.registerScript(options.fallbackUrl, name);
+      if (options.emergencyUrl) ScriptRegistry.registerScript(options.emergencyUrl, name);
       
-      // NEW: Check if already loaded via any URL
-      if (this._isComponentAlreadyLoaded(name)) {
+      // Check if already loaded via any URL
+      if (ScriptRegistry.isComponentLoaded(name)) {
         console.log(`[ComponentLoader] Component ${name} detected as already loaded during registration`);
         this.markLoaded(name);
       }
@@ -401,9 +453,6 @@
     
     // Mark a component as loaded
     markLoaded: function(name) {
-      // Initialize registries
-      this._initScriptRegistry();
-      
       if (!this._registry[name]) {
         console.warn(`[ComponentLoader] Trying to mark unknown component "${name}" as loaded`);
         return this;
@@ -423,10 +472,10 @@
       // Update StateManager
       StateManager.set(`componentStatus.${name}`, true);
       
-      // NEW: Explicitly mark as loaded in global component registry to prevent any future loads
-      window._componentScripts[name] = window._componentScripts[name] || [];
-      window._componentScripts[name].forEach(url => {
-        window._loadedScripts[url] = true;
+      // Explicitly mark as loaded in global component registry to prevent any future loads
+      const urls = ScriptRegistry.getUrlsForComponent(name);
+      urls.forEach(url => {
+        ScriptRegistry.registerScript(url, name);
       });
       
       // Check if any components depending on this one can now be loaded
@@ -462,9 +511,6 @@
     
     // Load a component
     load: function(name) {
-      // Initialize registries
-      this._initScriptRegistry();
-      
       console.log(`[ComponentLoader] Load request for component: ${name}`);
       
       // Check if component exists
@@ -481,8 +527,8 @@
         return Promise.resolve(true);
       }
       
-      // NEW: Check if this component is already loaded by any of its URLs 
-      if (this._isComponentAlreadyLoaded(name)) {
+      // Check if this component is already loaded by any of its URLs 
+      if (ScriptRegistry.isComponentLoaded(name)) {
         console.log(`[ComponentLoader] Component ${name} detected as already loaded by URL check`);
         this.markLoaded(name);
         
@@ -536,15 +582,9 @@
         }
       }
       
-      // Normalize the URL
-      const normalizedUrl = url.split('?')[0];
-      
-      // NEW: Register the URL for this component to ensure proper tracking
-      this._registerScriptUrl(name, url);
-      
       // Check if this specific URL is already loaded
-      if (window._loadedScripts[normalizedUrl]) {
-        console.log(`[ComponentLoader] Script already loaded from ${normalizedUrl}, marking ${name} as loaded`);
+      if (ScriptRegistry.isLoaded(url)) {
+        console.log(`[ComponentLoader] Script already loaded from ${url}, marking ${name} as loaded`);
         this.markLoaded(name);
         
         // Execute callback if exists
@@ -590,14 +630,14 @@
         const script = document.createElement('script');
         script.src = url;
         
-        // NEW: Track that loading has started
+        // Track that loading has started
         script.setAttribute('data-component', name);
         
         script.onload = () => {
           console.log(`[ComponentLoader] Successfully loaded: ${name} from ${url}`);
           
-          // Mark URL as loaded to prevent duplicates
-          window._loadedScripts[normalizedUrl] = true;
+          // Register script as loaded
+          ScriptRegistry.registerScript(url, name);
           
           // Mark component as loaded
           this.markLoaded(name);
@@ -619,14 +659,9 @@
           
           // If emergency URL available and different from current URL, try that
           if (config.emergencyUrl && url !== config.emergencyUrl) {
-            const normalizedEmergencyUrl = config.emergencyUrl.split('?')[0];
-            
-            // Register emergency URL for this component
-            this._registerScriptUrl(name, config.emergencyUrl);
-            
             // Check if emergency URL is already loaded
-            if (window._loadedScripts[normalizedEmergencyUrl]) {
-              console.log(`[ComponentLoader] Emergency URL for ${name} already loaded: ${normalizedEmergencyUrl}, marking as loaded`);
+            if (ScriptRegistry.isLoaded(config.emergencyUrl)) {
+              console.log(`[ComponentLoader] Emergency URL for ${name} already loaded: ${config.emergencyUrl}, marking as loaded`);
               this.markLoaded(name);
               
               // Execute callback if exists
@@ -651,8 +686,8 @@
             emergencyScript.onload = () => {
               console.log(`[ComponentLoader] Loaded ${name} from emergency URL: ${config.emergencyUrl}`);
               
-              // Mark emergency URL as loaded to prevent duplicates
-              window._loadedScripts[normalizedEmergencyUrl] = true;
+              // Register emergency URL
+              ScriptRegistry.registerScript(config.emergencyUrl, name);
               
               // Mark component as loaded
               this.markLoaded(name);
@@ -1513,6 +1548,7 @@
         errors: this.errors,
         stateStatus: StateManager.getStatus(),
         components: ComponentLoader._registry,
+        loadedScripts: ScriptRegistry.getLoadedScripts(),
         browser: {
           userAgent: navigator.userAgent,
           platform: navigator.platform,
@@ -1553,8 +1589,14 @@
       const isDOMReady = document.readyState !== 'loading';
       console.log(`[BootManager] Initializing (DOM ready: ${isDOMReady})`);
       
-      // Initialize state first - this is always safe to do
+      // Initialize global script registry first
+      ScriptRegistry.initialize();
+      
+      // Initialize state manager - this is always safe to do
       StateManager.initialize();
+      
+      // Initialize component loader
+      ComponentLoader.initialize();
       
       // Initialize event system
       EventManager.initialize();
@@ -1831,6 +1873,7 @@
     EventManager: EventManager,
     FileManager: FileManager,
     DiagnosticManager: DiagnosticManager,
+    ScriptRegistry: ScriptRegistry,
     
     // Convenience methods
     getState: function(key) {
@@ -1856,6 +1899,156 @@
     // Direct access to process a file - allowing outside callers to use our system
     processFile: function(file) {
       return FileManager.processFile(file);
+    },
+    
+    // Script loading utility exposed to the public API
+    loadScript: function(url, options = {}) {
+      // Default options
+      const opts = Object.assign({
+        componentName: null,
+        fallbackUrls: [],
+        critical: false,
+        async: true,
+        callback: null
+      }, options);
+      
+      // Check if already loaded
+      if (ScriptRegistry.isLoaded(url)) {
+        console.log(`[DataFormatter.loadScript] Script already loaded: ${url}`);
+        
+        // Execute callback if provided
+        if (opts.callback && typeof opts.callback === 'function') {
+          setTimeout(opts.callback, 0);
+        }
+        
+        return Promise.resolve(url);
+      }
+      
+      // Also check fallback URLs
+      for (const fallbackUrl of opts.fallbackUrls) {
+        if (ScriptRegistry.isLoaded(fallbackUrl)) {
+          console.log(`[DataFormatter.loadScript] Script already loaded via fallback: ${fallbackUrl}`);
+          
+          // Execute callback if provided
+          if (opts.callback && typeof opts.callback === 'function') {
+            setTimeout(opts.callback, 0);
+          }
+          
+          return Promise.resolve(fallbackUrl);
+        }
+      }
+      
+      // Create a virtual component if componentName is provided
+      if (opts.componentName) {
+        ComponentLoader.register(opts.componentName, {
+          url: url,
+          fallbackUrl: opts.fallbackUrls[0] || null,
+          emergencyUrl: opts.fallbackUrls[1] || null,
+          critical: opts.critical,
+          callback: opts.callback
+        });
+        
+        // Load the component
+        return ComponentLoader.load(opts.componentName);
+      }
+      
+      // Otherwise, load script directly
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = url;
+        script.async = opts.async;
+        
+        script.onload = () => {
+          console.log(`[DataFormatter.loadScript] Successfully loaded: ${url}`);
+          
+          // Register script in registry
+          ScriptRegistry.registerScript(url);
+          
+          // Execute callback if provided
+          if (opts.callback && typeof opts.callback === 'function') {
+            opts.callback();
+          }
+          
+          resolve(url);
+        };
+        
+        script.onerror = () => {
+          console.warn(`[DataFormatter.loadScript] Failed to load: ${url}`);
+          
+          // Try fallback URLs
+          this._tryFallbacks(opts.fallbackUrls, 0, opts.callback)
+            .then(resolve)
+            .catch(reject);
+        };
+        
+        // Append to document
+        const parent = document.body || document.head;
+        if (parent) {
+          parent.appendChild(script);
+        } else {
+          reject(new Error('DOM not initialized enough to load scripts'));
+        }
+      });
+    },
+    
+    // Helper method to try fallback URLs
+    _tryFallbacks: function(fallbackUrls, index, callback) {
+      return new Promise((resolve, reject) => {
+        if (index >= fallbackUrls.length) {
+          reject(new Error('All fallback URLs failed'));
+          return;
+        }
+        
+        const fallbackUrl = fallbackUrls[index];
+        
+        // Check if already loaded
+        if (ScriptRegistry.isLoaded(fallbackUrl)) {
+          console.log(`[DataFormatter._tryFallbacks] Fallback already loaded: ${fallbackUrl}`);
+          
+          // Execute callback if provided
+          if (callback && typeof callback === 'function') {
+            callback();
+          }
+          
+          resolve(fallbackUrl);
+          return;
+        }
+        
+        console.log(`[DataFormatter._tryFallbacks] Trying fallback ${index + 1}/${fallbackUrls.length}: ${fallbackUrl}`);
+        
+        const script = document.createElement('script');
+        script.src = fallbackUrl;
+        script.async = true;
+        
+        script.onload = () => {
+          console.log(`[DataFormatter._tryFallbacks] Successfully loaded fallback: ${fallbackUrl}`);
+          
+          // Register script in registry
+          ScriptRegistry.registerScript(fallbackUrl);
+          
+          // Execute callback if provided
+          if (callback && typeof callback === 'function') {
+            callback();
+          }
+          
+          resolve(fallbackUrl);
+        };
+        
+        script.onerror = () => {
+          console.warn(`[DataFormatter._tryFallbacks] Fallback ${index + 1} failed: ${fallbackUrl}`);
+          this._tryFallbacks(fallbackUrls, index + 1, callback)
+            .then(resolve)
+            .catch(reject);
+        };
+        
+        // Append to document
+        const parent = document.body || document.head;
+        if (parent) {
+          parent.appendChild(script);
+        } else {
+          reject(new Error('DOM not initialized enough to load scripts'));
+        }
+      });
     },
     
     // Used to check if this library is loaded
