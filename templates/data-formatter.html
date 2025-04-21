@@ -3751,18 +3751,7 @@
                 
                 console.log("React Data Formatter UI mounted successfully");
                 
-                // Update the Map Fields button to allow it to close the mapping interface
-                newMapFieldsBtn.addEventListener('click', function() {
-                  // This handler is for after React is mounted
-                  console.log("Map Fields button clicked again - closing mapping interface");
-                  window.DataFormatterUI.unmount(container);
-                  container.style.display = 'none';
-                  document.querySelectorAll('.formatter-panel').forEach(panel => {
-                    if (panel.id === 'upload-container') {
-                      panel.style.display = 'block';
-                    }
-                  });
-                });
+                // Map Fields button event handler removed to prevent duplicates
                 
               } catch (error) {
                 console.error("Error mounting React Data Formatter UI:", error);
