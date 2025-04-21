@@ -1586,11 +1586,6 @@
             const mapFieldsBtn = document.getElementById('map-fields-btn');
             
             if (mapFieldsBtn) {
-              // Add a direct handler in case the main one doesn't work
-              mapFieldsBtn.addEventListener('click', function() {
-                console.log("Emergency column mapping handler activated");
-                createEmergencyMappingInterface();
-              });
             }
             
             // Function to create a simple mapping interface when the React one fails
