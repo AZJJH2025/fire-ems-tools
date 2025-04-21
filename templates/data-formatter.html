@@ -754,6 +754,34 @@
               ],
               onSuccess: function() {
                 console.log("React Data Formatter UI script loaded successfully");
+                
+                // Proactively initialize the component now that it's loaded
+                setTimeout(function() {
+                  // Get the container element for the React component
+                  const container = document.getElementById('column-mapping-container');
+                  if (!container) {
+                    console.warn("Column mapping container not found for React initialization");
+                    return;
+                  }
+                  
+                  // Check if the DataFormatterUI was properly registered
+                  if (!window.DataFormatterUI || typeof window.DataFormatterUI.mount !== 'function') {
+                    console.warn("DataFormatterUI not registered correctly after script load");
+                    return;
+                  }
+                  
+                  console.log("Proactively registering DataFormatterUI component");
+                  
+                  // Get the tool selector - try both possible IDs
+                  const toolSelect = document.getElementById('target-tool') || document.getElementById('tool-selector');
+                  const selectedTool = toolSelect ? toolSelect.value : '';
+                  
+                  // We'll pre-initialize but not mount until needed
+                  // Just ensure the component is ready by checking its mount function
+                  console.log("React UI component ready with mount function:", 
+                              !!window.DataFormatterUI.mount,
+                              "Selected tool:", selectedTool);
+                }, 100); // Short delay to ensure script is fully processed
               },
               onError: function() {
                 console.error("React Data Formatter UI script failed to load");
@@ -1606,14 +1634,35 @@
                   
                   console.log("Attempting to initialize React Data Formatter UI");
                   
-                  // Get the target tool
-                  const toolSelect = document.getElementById('target-tool');
-                  const selectedTool = toolSelect ? toolSelect.value : '';
+                  // Get the target tool - try multiple possible IDs and fallback options
+                  const toolSelect = document.getElementById('target-tool') || 
+                                    document.getElementById('tool-selector') || 
+                                    document.querySelector('select[name="target_tool"]');
                   
-                  if (!selectedTool) {
-                    console.error("No target tool selected");
-                    return;
+                  // Try to get the selected tool value
+                  let selectedTool = '';
+                  if (toolSelect && toolSelect.value) {
+                    selectedTool = toolSelect.value;
+                  } else if (window.formatterState && window.formatterState.selectedTool) {
+                    // Fallback to the formatter state if it's set there
+                    selectedTool = window.formatterState.selectedTool;
+                  } else {
+                    // Final fallback to a default tool if available
+                    const defaultTools = ['response-time', 'isochrone-map', 'call-density', 'fire-map-pro'];
+                    const toolOptions = document.querySelectorAll('#tool-selector option, #target-tool option');
+                    
+                    if (toolOptions && toolOptions.length > 0) {
+                      // Use the first option as a last resort
+                      selectedTool = toolOptions[0].value;
+                    } else {
+                      // Hard-coded fallback
+                      selectedTool = 'response-time';
+                    }
+                    
+                    console.warn(`No tool selected, using fallback: ${selectedTool}`);
                   }
+                  
+                  console.log(`Selected tool for mapping: ${selectedTool}`);
                   
                   try {
                     // Check if React and our component are available
@@ -4013,6 +4062,27 @@
       testScript.src = '/static/js/data-formatter-emergency-test.js';
       document.body.appendChild(testScript);
     }, 2000);
+    
+    // Add additional safety check for React component after page fully loads
+    setTimeout(function() {
+      // If the page is fully loaded and we still don't have DataFormatterUI registered correctly
+      if (!window.DataFormatterUI || typeof window.DataFormatterUI.mount !== 'function') {
+        console.warn("DataFormatterUI component not available after timeout, attempting recovery");
+        
+        // Try direct loading of the script as a last resort
+        const directScript = document.createElement('script');
+        directScript.src = "/static/js/react-data-formatter/dist/data-formatter.js";
+        directScript.onload = function() {
+          console.log("Direct script load of React Data Formatter UI successful");
+          if (window.DataFormatterUI && typeof window.DataFormatterUI.mount === 'function') {
+            console.log("DataFormatterUI successfully registered after direct load");
+          } else {
+            console.error("DataFormatterUI still not available after direct load");
+          }
+        };
+        document.head.appendChild(directScript);
+      }
+    }, 3000);
   </script>
   
   <!-- Health check code for data formatter -->
