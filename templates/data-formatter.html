@@ -3645,11 +3645,14 @@
             newMapFieldsBtn.setAttribute('data-handler-added', 'true');
             newMapFieldsBtn.addEventListener('click', function() {
               console.log("Map Fields button clicked");
+              console.log("Custom handler triggered for map-fields-btn");
               const container = document.getElementById('column-mapping-container');
               if (!container) {
                 console.error("Column mapping container not found");
                 return;
               }
+              console.log("Container styles:", getComputedStyle(container));
+              console.log("Formatter state:", window.formatterState);
               container.style.display = 'block';
               document.querySelectorAll('.formatter-panel').forEach(panel => {
                 panel.style.display = 'none';

@@ -1485,6 +1485,8 @@
       });
       
       // Register for map fields button click
+      // Commented out to prevent conflicts with consolidated handler in data-formatter.html
+      /*
       EventManager.register('click', {
         name: 'FileManager.showFieldMapping',
         callback: (event, element) => {
@@ -1498,6 +1500,7 @@
         mode: 'normal',
         priority: 50
       });
+      */
       
       return this;
     }
