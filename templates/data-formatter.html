@@ -3675,130 +3675,46 @@
           mapFieldsBtn.setAttribute('data-react-handler-added', 'true');
           
           // Replace all other click listeners with a single robust handler
-          mapFieldsBtn.addEventListener('click', function() {
-            // Clear previous event handlers for this button
-            const clonedBtn = mapFieldsBtn.cloneNode(true);
-            mapFieldsBtn.parentNode.replaceChild(clonedBtn, mapFieldsBtn);
-            
-            // Get reference to the replaced button
-            const newMapFieldsBtn = document.getElementById('map-fields-btn');
-            newMapFieldsBtn.setAttribute('data-react-handler-added', 'true');
-            
-            console.log("Map Fields button clicked - starting field mapping process");
-            
-            // Show the container immediately for better UX
-            const container = document.getElementById('column-mapping-container');
-            if (!container) {
-              console.error("Column mapping container not found");
-              return;
-            }
-            
-            // Update UI - show mapping container and hide other panels
-            container.style.display = 'block';
-            document.querySelectorAll('.formatter-panel').forEach(panel => {
-              panel.style.display = 'none';
-            });
-            
-            // Add loading indicator while we check React availability
-            container.innerHTML = `
-              <div class="loading-container">
-                <div class="loading-spinner"></div>
-                <p>Loading field mapping interface...</p>
-              </div>
-            `;
-            
-            // Log the action
-            if (window.appendLog && typeof window.appendLog === 'function') {
-              window.appendLog('Opening field mapping interface. Map your source columns to target fields.');
-            }
-            
-            // Check if we have the necessary data
-            if (!window.formatterState || !window.formatterState.sourceColumns || window.formatterState.sourceColumns.length === 0) {
-              console.error("No source columns available for mapping");
-              window.createEmergencyMappingInterface();
-              return;
-            }
-            
-            console.log("Attempting to initialize React Data Formatter UI");
-            
-            // Get the selected tool
-            const toolSelector = document.getElementById('tool-selector') || document.getElementById('target-tool');
-            if (!toolSelector) {
-              console.error("Tool selector not found");
-              window.createEmergencyMappingInterface();
-              return;
-            }
-            
-            const selectedTool = toolSelector.value;
-            if (!selectedTool) {
-              console.error("No tool selected");
-              window.createEmergencyMappingInterface();
-              return;
-            }
-            
-            console.log("Selected tool:", selectedTool);
-            
-            // Use setTimeout to ensure the DOM update happens before the heavy React initialization
-            setTimeout(function() {
-              try {
-                // Check for React component availability
-                if (!window.DataFormatterUI || typeof window.DataFormatterUI.mount !== 'function') {
-                  console.error("React Data Formatter UI component not found in window.DataFormatterUI");
-                  window.createEmergencyMappingInterface();
-                  return;
-                }
-                
-                // Prepare data for React component
-                const reactData = {
-                  sourceColumns: window.formatterState.sourceColumns,
-                  sampleData: window.formatterState.sampleData || [],
-                  selectedTool: selectedTool,
-                  fileId: window.formatterState.fileId
-                };
-                
-                console.log("Mounting React Data Formatter UI with data:", reactData);
-                
-                // Empty the container to remove loading indicator
-                container.innerHTML = '';
-                
-                // Mount the React component with a reference to our globally defined handler
-                window.DataFormatterUI.mount(container, reactData, function(mappings, metadata) {
-                  console.log("Mapping complete callback received with", mappings.length, "mappings");
-                  
-                  // Use the global handler function if available
-                  if (typeof window.handleMappingComplete === 'function') {
-                    window.handleMappingComplete(mappings, metadata);
-                  } else {
-                    // Fallback handling if global function is not defined
-                    console.log("No global handleMappingComplete function found, using inline handler");
-                    
-                    // Store mappings in formatterState
-                    window.formatterState.mappings = mappings;
-                    
-                    // Store metadata if available
-                    if (metadata) {
-                      window.formatterState.processingMetadata = metadata;
-                    }
-                    
-                    // Call the transformData function if available
-                    if (typeof window.transformData === 'function') {
-                      window.transformData(mappings);
-                    } else {
-                      console.error("transformData function not available");
-                    }
-                  }
-                });
-                
-                console.log("React Data Formatter UI mounted successfully");
-                
-                // Map Fields button event handler removed to prevent duplicates
-                
-              } catch (error) {
-                console.error("Error mounting React Data Formatter UI:", error);
-                window.createEmergencyMappingInterface();
-              }
-            }, 100); // Short timeout to let the DOM update
-          });
+          function attachMapFieldsHandler() {
+  const mapFieldsBtn = document.getElementById('map-fields-btn');
+  if (!mapFieldsBtn) return;
+  const clonedBtn = mapFieldsBtn.cloneNode(true);
+  mapFieldsBtn.parentNode.replaceChild(clonedBtn, mapFieldsBtn);
+  const newMapFieldsBtn = document.getElementById('map-fields-btn');
+  newMapFieldsBtn.setAttribute('data-handler-added', 'true');
+  newMapFieldsBtn.addEventListener('click', function() {
+    console.log("Map Fields button clicked");
+    const container = document.getElementById('column-mapping-container');
+    if (!container) {
+      console.error("Column mapping container not found");
+      return;
+    }
+    container.style.display = 'block';
+    document.querySelectorAll('.formatter-panel').forEach(panel => {
+      panel.style.display = 'none';
+    });
+    container.innerHTML = '';
+    if (window.DataFormatterUI && typeof window.DataFormatterUI.mount === 'function') {
+      const toolSelect = document.getElementById('target-tool');
+      let selectedTool = toolSelect ? toolSelect.value : 'response-time';
+      if (!selectedTool) {
+        selectedTool = 'response-time';
+        if (toolSelect) toolSelect.value = selectedTool;
+      }
+      const reactData = {
+        sourceColumns: window.formatterState.sourceColumns || [],
+        sampleData: window.formatterState.sampleData || [],
+        selectedTool: selectedTool,
+        fileId: window.formatterState.fileId
+      };
+      window.DataFormatterUI.mount(container, reactData, window.handleMappingComplete);
+    } else {
+      console.log("Emergency column mapping handler activated");
+      createEmergencyMappingInterface();
+    }
+  });
+}
+document.addEventListener('DOMContentLoaded', attachMapFieldsHandler);
         }
         
         // Add global function to return to formatter
