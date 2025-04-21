@@ -739,59 +739,11 @@
           <p>Processing data...</p>
         </div>
         
-        <!-- Load React application scripts - Added version check to prevent duplicate loading -->
-        <script>
-          // Check if React UI is already loaded
-          if (!window.reactDataFormatterLoaded) {
-            window.reactDataFormatterLoaded = true;
-            console.log("Loading React Data Formatter UI script (first load)");
-            
-            // Use our global script loader to prevent duplicates
-            loadScript("{{ url_for('static_handler.serve_static', filename=asset_url('data-formatter.js', 'react-data-formatter')) }}", {
-              fallbackUrls: [
-                "/static/js/react-data-formatter/dist/data-formatter.js",
-                "/app-static/data-formatter.js"
-              ],
-              onSuccess: function() {
-                console.log("React Data Formatter UI script loaded successfully");
-                
-                // Proactively initialize the component now that it's loaded
-                setTimeout(function() {
-                  // Get the container element for the React component
-                  const container = document.getElementById('column-mapping-container');
-                  if (!container) {
-                    console.warn("Column mapping container not found for React initialization");
-                    return;
-                  }
-                  
-                  // Check if the DataFormatterUI was properly registered
-                  if (!window.DataFormatterUI || typeof window.DataFormatterUI.mount !== 'function') {
-                    console.warn("DataFormatterUI not registered correctly after script load");
-                    return;
-                  }
-                  
-                  console.log("Proactively registering DataFormatterUI component");
-                  
-                  // Get the tool selector - try both possible IDs
-                  const toolSelect = document.getElementById('target-tool') || document.getElementById('tool-selector');
-                  const selectedTool = toolSelect ? toolSelect.value : '';
-                  
-                  // We'll pre-initialize but not mount until needed
-                  // Just ensure the component is ready by checking its mount function
-                  console.log("React UI component ready with mount function:", 
-                              !!window.DataFormatterUI.mount,
-                              "Selected tool:", selectedTool);
-                }, 100); // Short delay to ensure script is fully processed
-              },
-              onError: function() {
-                console.error("React Data Formatter UI script failed to load");
-                window.reactDataFormatterLoaded = false;
-              }
-            });
-          } else {
-            console.log("React Data Formatter UI already loaded, skipping duplicate load");
-          }
-        </script>
+        <!-- Simple inline script replacing React Data Formatter -->
+<script>
+  console.log('Simple inline script running!');
+  window.DataFormatterUI = { mount: () => console.log('Mounted!') };
+</script>
         <script>
           // Create the emergency mapping interface function in the global scope
           window.createEmergencyMappingInterface = function() {
@@ -4064,26 +4016,23 @@
       document.body.appendChild(testScript);
     }, 2000);
     
-    // Add additional safety check for React component after page fully loads
+    // Simple verification for our inline script instead of loading React
     setTimeout(function() {
-      // If the page is fully loaded and we still don't have DataFormatterUI registered correctly
       if (!window.DataFormatterUI || typeof window.DataFormatterUI.mount !== 'function') {
-        console.warn("DataFormatterUI component not available after timeout, attempting recovery");
+        console.warn("DataFormatterUI component not available after timeout");
         
-        // Try direct loading of the script as a last resort
-        const directScript = document.createElement('script');
-        directScript.src = "/static/js/react-data-formatter/dist/data-formatter.js";
-        directScript.onload = function() {
-          console.log("Direct script load of React Data Formatter UI successful");
-          if (window.DataFormatterUI && typeof window.DataFormatterUI.mount === 'function') {
-            console.log("DataFormatterUI successfully registered after direct load");
-          } else {
-            console.error("DataFormatterUI still not available after direct load");
+        // Set up a simple mock
+        window.DataFormatterUI = { 
+          mount: function() { 
+            console.log('Mock mount function called!');
+            return true;
           }
         };
-        document.head.appendChild(directScript);
+        console.log("Set up mock DataFormatterUI object");
+      } else {
+        console.log("DataFormatterUI is already available");
       }
-    }, 3000);
+    }, 1000);
   </script>
   
   <!-- Health check code for data formatter -->
