@@ -1586,6 +1586,46 @@
             const mapFieldsBtn = document.getElementById('map-fields-btn');
             
             if (mapFieldsBtn) {
+              function attachMapFieldsHandler() {
+                const mapFieldsBtn = document.getElementById('map-fields-btn');
+                if (!mapFieldsBtn) return;
+                const clonedBtn = mapFieldsBtn.cloneNode(true);
+                mapFieldsBtn.parentNode.replaceChild(clonedBtn, mapFieldsBtn);
+                const newMapFieldsBtn = document.getElementById('map-fields-btn');
+                newMapFieldsBtn.setAttribute('data-handler-added', 'true');
+                newMapFieldsBtn.addEventListener('click', function() {
+                  console.log("Map Fields button clicked");
+                  const container = document.getElementById('column-mapping-container');
+                  if (!container) {
+                    console.error("Column mapping container not found");
+                    return;
+                  }
+                  container.style.display = 'block';
+                  document.querySelectorAll('.formatter-panel').forEach(panel => {
+                    panel.style.display = 'none';
+                  });
+                  container.innerHTML = '';
+                  if (window.DataFormatterUI && typeof window.DataFormatterUI.mount === 'function') {
+                    const toolSelect = document.getElementById('target-tool');
+                    let selectedTool = toolSelect ? toolSelect.value : 'response-time';
+                    if (!selectedTool) {
+                      selectedTool = 'response-time';
+                      if (toolSelect) toolSelect.value = selectedTool;
+                    }
+                    const reactData = {
+                      sourceColumns: window.formatterState.sourceColumns || [],
+                      sampleData: window.formatterState.sampleData || [],
+                      selectedTool: selectedTool,
+                      fileId: window.formatterState.fileId
+                    };
+                    window.DataFormatterUI.mount(container, reactData, window.handleMappingComplete);
+                  } else {
+                    console.log("Emergency column mapping handler activated");
+                    createEmergencyMappingInterface();
+                  }
+                });
+              }
+              document.addEventListener('DOMContentLoaded', attachMapFieldsHandler);
             }
             
             // Function to create a simple mapping interface when the React one fails
