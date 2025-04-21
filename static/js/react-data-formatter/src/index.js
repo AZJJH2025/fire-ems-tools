@@ -1,3 +1,5 @@
+console.log('[index.js] Script execution started');
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { ThemeProvider, createTheme } from '@material-ui/core/styles';
@@ -72,9 +74,13 @@ function unmount(container) {
 // Expose the mount and unmount functions for external use
 export { mount, unmount };
 
+console.log('[index.js] Before window.DataFormatterUI assignment');
+
 // Create a global object for non-module access
 if (typeof window !== 'undefined') {
+  console.log('[index.js] Inside window check, assigning DataFormatterUI');
   window.DataFormatterUI = { mount, unmount };
+  console.log('[index.js] After window.DataFormatterUI assignment');
 }
 
 // For development/testing - render directly if running standalone
