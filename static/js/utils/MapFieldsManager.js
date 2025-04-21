@@ -369,7 +369,7 @@ FireEMS.Utils.MapFieldsManager = (function() {
       id: 'other',
       label: 'Other Fields',
       icon: 'more_horiz',
-      description: 'Fields that don't fit into other categories',
+      description: "Fields that don't fit into other categories",
       order: 70
     }
   ];
