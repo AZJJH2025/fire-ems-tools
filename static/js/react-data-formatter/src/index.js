@@ -1,3 +1,4 @@
+console.log('[index.js] **EARLY STARTUP LOG**');
 console.log('[index.js] Script execution started');
 
 import React from 'react';

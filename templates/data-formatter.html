@@ -749,7 +749,7 @@
             // Use our global script loader to prevent duplicates
             loadScript("{{ url_for('static_handler.serve_static', filename=asset_url('data-formatter.js', 'react-data-formatter')) }}", {
               fallbackUrls: [
-                "/static/js/react-data-formatter/dist/data-formatter.5f80d6903c30464e3664.js",
+                "/static/js/react-data-formatter/dist/data-formatter.4c7d3db503cd174916de.js",
                 "/app-static/data-formatter.js"
               ],
               onSuccess: function() {
@@ -4072,7 +4072,7 @@
         
         // Try direct loading of the script as a last resort
         const directScript = document.createElement('script');
-        directScript.src = "/static/js/react-data-formatter/dist/data-formatter.5f80d6903c30464e3664.js";
+        directScript.src = "/static/js/react-data-formatter/dist/data-formatter.4c7d3db503cd174916de.js";
         directScript.onload = function() {
           console.log("Direct script load of React Data Formatter UI successful");
           if (window.DataFormatterUI && typeof window.DataFormatterUI.mount === 'function') {
