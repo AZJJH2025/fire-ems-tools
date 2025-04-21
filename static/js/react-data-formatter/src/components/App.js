@@ -3,6 +3,7 @@ import { Box, Typography, CircularProgress, Paper, Button } from '@material-ui/c
 import { useData } from '../context/DataContext';
 import ColumnMappingUI from './ColumnMappingUI';
 import ErrorDisplay from './ErrorDisplay';
+import ErrorBoundary from './ErrorBoundary';
 
 const App = ({ onMappingComplete }) => {
   const { state } = useData();
@@ -66,13 +67,15 @@ const App = ({ onMappingComplete }) => {
     );
   }
   
-  // Render the column mapping UI
+  // Render the column mapping UI with ErrorBoundary
   return (
-    <Box p={2}>
-      <ColumnMappingUI
-        onMappingComplete={handleMappingComplete}
-      />
-    </Box>
+    <ErrorBoundary>
+      <Box p={2}>
+        <ColumnMappingUI
+          onMappingComplete={handleMappingComplete}
+        />
+      </Box>
+    </ErrorBoundary>
   );
 };
 

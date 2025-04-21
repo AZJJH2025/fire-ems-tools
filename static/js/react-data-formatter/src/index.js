@@ -43,13 +43,18 @@ function mount(container, data, onMappingComplete) {
     return;
   }
 
+  // Import ErrorBoundary dynamically to avoid circular dependencies
+  const ErrorBoundary = require('./components/ErrorBoundary').default;
+  
   ReactDOM.render(
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <DataProvider initialData={data}>
-        <App onMappingComplete={onMappingComplete} />
-      </DataProvider>
-    </ThemeProvider>,
+    <ErrorBoundary>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <DataProvider initialData={data}>
+          <App onMappingComplete={onMappingComplete} />
+        </DataProvider>
+      </ThemeProvider>
+    </ErrorBoundary>,
     container
   );
 }
