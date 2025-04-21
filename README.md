@@ -1,6 +1,17 @@
 # FireEMS.ai - Fire & EMS Analytics Tools
 
-FireEMS.ai is a comprehensive suite of analytics tools designed for Fire and Emergency Medical Services agencies. The platform provides data visualization, incident logging, response time analysis, and more to help emergency services improve operations and decision-making.
+FireEMS.ai is a comprehensive suite of analytics tools designed for Fire and Emergency Medical Services agencies. This platform empowers emergency response organizations to optimize their operations through advanced data analytics, visualization, and reporting tools.
+
+Our suite provides essential tools for:
+
+- Analyzing response times and improving coverage areas
+- Tracking incidents with HIPAA-compliant logging
+- Visualizing call volumes and identifying service gaps
+- Standardizing and transforming data from various CAD systems
+- Evaluating station performance metrics
+- Creating interactive maps for operational planning
+
+By combining modern web technologies with specialized analytics designed for emergency services, FireEMS.ai helps departments make data-driven decisions to enhance public safety and operational efficiency.
 
 ## Features
 
@@ -75,7 +86,11 @@ The application includes a resilience framework with emergency mode functionalit
 - Enhanced resilience testing
 - Mobile UI improvements
 
-## Installation
+## Backend Setup
+
+The FireEMS.ai platform is built on a Flask backend with Python, providing RESTful APIs and server-side rendering for the analytics tools.
+
+### Installation
 
 1. Clone the repository
 ```bash
@@ -83,19 +98,32 @@ git clone https://github.com/your-org/fire-ems-tools.git
 cd fire-ems-tools
 ```
 
-2. Install dependencies
+2. Create and activate a virtual environment (recommended)
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+3. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Run the application
+### Running the Development Server
+
+Start the Flask development server:
 ```bash
 python app.py
 ```
 
-4. Access the application
+The application will be accessible at:
 ```
 http://localhost:5005
+```
+
+For development with automatic reloading:
+```bash
+FLASK_ENV=development python app.py
 ```
 
 ## React Data Formatter Setup
@@ -122,13 +150,101 @@ The React application uses dependencies like `@material-ui/core` and `react-beau
 
 The `MapFieldsManager.js` file in `/static/js/utils/` provides utility functions for mapping data fields in the application's UI. It works in conjunction with the React data formatter to standardize and transform field values.
 
+## Deployment
+
+FireEMS.ai is designed to be deployed to various production environments depending on your organization's needs.
+
+### Docker Deployment
+
+The application includes a Dockerfile and docker-compose.yml for containerized deployment:
+
+```bash
+docker-compose up -d
+```
+
+### Production Server
+
+For production deployment, we recommend using Gunicorn as a WSGI server:
+
+```bash
+gunicorn --workers=4 --bind=0.0.0.0:8000 wsgi:app
+```
+
+### Render Deployment
+
+The application includes a render.yaml configuration file for deployment to the Render platform. Refer to [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md) for detailed instructions.
+
+## Testing
+
+FireEMS.ai includes comprehensive test suites for both backend and frontend components.
+
+### Backend Tests
+
+Run the backend Python tests using pytest:
+
+```bash
+pytest
+```
+
+For specific test categories:
+
+```bash
+# Run API tests
+pytest tests/api/
+
+# Run route tests
+pytest tests/routes/
+
+# Run with coverage report
+pytest --cov=. tests/
+```
+
+### Frontend Tests
+
+For testing React components:
+
+```bash
+cd static/js/react-data-formatter
+npm test
+```
+
+### End-to-End Tests
+
+Run end-to-end tests with Playwright:
+
+```bash
+cd e2e
+npm install
+npx playwright test
+```
+
+## Environment Variables
+
+FireEMS.ai uses environment variables for configuration in production environments:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `FLASK_ENV` | Environment setting (development, testing, production) | `development` |
+| `DATABASE_URL` | Database connection string | `sqlite:///instance/fire_ems.db` |
+| `SECRET_KEY` | Flask secret key for session management | Generated randomly |
+| `REDIS_URL` | Redis connection URL (if using Redis) | None |
+| `LOG_LEVEL` | Logging level (DEBUG, INFO, WARNING, ERROR) | `INFO` |
+
 ## Data Formatter Testing
 
 For testing the Data Formatter specifically, refer to [DATA_FORMATTER_TESTING.md](DATA_FORMATTER_TESTING.md).
 
 ## Contributing
 
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to contribute to this project.
+We welcome contributions from the community! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes and commit (`git commit -m 'Add some amazing feature'`)
+4. Push to your branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+For more details, please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
