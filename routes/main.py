@@ -55,7 +55,11 @@ def fire_map_pro():
 @bp.route('/data-formatter')
 def data_formatter():
     """Data Formatter route"""
-    return render_template('data-formatter.html')
+    try:
+        return render_template('data-formatter.html')
+    except Exception as e:
+        logger.error(f"Error rendering data-formatter: {str(e)}", exc_info=True)
+        raise
     
 @bp.route('/data-formatter-test')
 def data_formatter_test():
