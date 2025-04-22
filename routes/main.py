@@ -7,7 +7,7 @@ This module defines the routes for the main pages of the application, including:
 - Static pages
 """
 
-from flask import Blueprint, render_template, redirect, url_for, request, session
+from flask import Blueprint, render_template, redirect, url_for, request, session, current_app
 import os
 import json
 import logging
@@ -56,9 +56,11 @@ def fire_map_pro():
 def data_formatter():
     """Data Formatter route"""
     try:
-        return render_template('data-formatter.html')
+        template = render_template('data-formatter.html')
+        current_app.logger.info("Successfully rendered data-formatter.html")
+        return template
     except Exception as e:
-        logger.error(f"Error rendering data-formatter: {str(e)}", exc_info=True)
+        current_app.logger.error(f"Failed to render data-formatter: {str(e)}", exc_info=True)
         raise
     
 @bp.route('/data-formatter-test')
