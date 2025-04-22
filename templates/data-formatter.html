@@ -3634,13 +3634,18 @@
         // Initialize the React application when map fields button is clicked
         if (mapFieldsBtn && !mapFieldsBtn.getAttribute('data-react-handler-added')) {
           mapFieldsBtn.setAttribute('data-react-handler-added', 'true');
+          <!-- build-id: 25a1842-{{ 'now'|date('%s') }} -->
           
           // Replace all other click listeners with a single robust handler
           console.log("DOMContentLoaded listener for attachMapFieldsHandler registered");
           function attachMapFieldsHandler() {
             console.log("Attempting to register mapFieldsBtn handler");
+            console.log("Script execution: document.readyState =", document.readyState);
             const mapFieldsBtn = document.getElementById('map-fields-btn');
-            if (!mapFieldsBtn) return;
+            if (!mapFieldsBtn) {
+              console.error("mapFieldsBtn not found in DOM, elements:", document.querySelectorAll('[id="map-fields-btn"]').length);
+              return;
+            }
             console.log("mapFieldsBtn found, attaching handler:", mapFieldsBtn);
             const clonedBtn = mapFieldsBtn.cloneNode(true);
             mapFieldsBtn.parentNode.replaceChild(clonedBtn, mapFieldsBtn);
