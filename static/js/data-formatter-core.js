@@ -1752,8 +1752,8 @@
         // File input change event
         EventManager.attach('data-file', 'change');
         
-        // Map fields button click
-        EventManager.attach('map-fields-btn', 'click');
+        // Map fields button click - commented out to prevent conflicts with consolidated handler
+        // EventManager.attach('map-fields-btn', 'click');
         
         // Download button click
         EventManager.attach('download-btn', 'click');

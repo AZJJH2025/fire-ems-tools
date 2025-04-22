@@ -3638,8 +3638,10 @@
           // Replace all other click listeners with a single robust handler
           console.log("DOMContentLoaded listener for attachMapFieldsHandler registered");
           function attachMapFieldsHandler() {
+            console.log("Attempting to register mapFieldsBtn handler");
             const mapFieldsBtn = document.getElementById('map-fields-btn');
             if (!mapFieldsBtn) return;
+            console.log("mapFieldsBtn found, attaching handler:", mapFieldsBtn);
             const clonedBtn = mapFieldsBtn.cloneNode(true);
             mapFieldsBtn.parentNode.replaceChild(clonedBtn, mapFieldsBtn);
             const newMapFieldsBtn = document.getElementById('map-fields-btn');
