@@ -60,7 +60,7 @@ def data_formatter():
         current_app.logger.info("Successfully rendered data-formatter.html")
         return template
     except Exception as e:
-        current_app.logger.error(f"Failed to render data-formatter: {str(e)}", exc_info=True)
+        current_app.logger.error(f"Data-formatter error: {str(e)}", exc_info=True)
         raise
     
 @bp.route('/data-formatter-test')
