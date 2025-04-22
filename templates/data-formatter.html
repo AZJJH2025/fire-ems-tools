@@ -3636,6 +3636,7 @@
           mapFieldsBtn.setAttribute('data-react-handler-added', 'true');
           
           // Replace all other click listeners with a single robust handler
+          console.log("DOMContentLoaded listener for attachMapFieldsHandler registered");
           function attachMapFieldsHandler() {
             const mapFieldsBtn = document.getElementById('map-fields-btn');
             if (!mapFieldsBtn) return;
@@ -3644,15 +3645,18 @@
             const newMapFieldsBtn = document.getElementById('map-fields-btn');
             newMapFieldsBtn.setAttribute('data-handler-added', 'true');
             newMapFieldsBtn.addEventListener('click', function() {
-              console.log("Map Fields button clicked");
               console.log("Custom handler triggered for map-fields-btn");
+              console.log("Button element:", newMapFieldsBtn);
+              const containerElement = document.getElementById('column-mapping-container');
+              console.log("Container element:", containerElement);
+              console.log("Container styles:", containerElement ? getComputedStyle(containerElement) : "Container not found");
+              console.log("Formatter state:", window.formatterState);
+              console.log("DataFormatterUI available:", !!window.DataFormatterUI, typeof window.DataFormatterUI?.mount);
               const container = document.getElementById('column-mapping-container');
               if (!container) {
                 console.error("Column mapping container not found");
                 return;
               }
-              console.log("Container styles:", getComputedStyle(container));
-              console.log("Formatter state:", window.formatterState);
               container.style.display = 'block';
               document.querySelectorAll('.formatter-panel').forEach(panel => {
                 panel.style.display = 'none';
