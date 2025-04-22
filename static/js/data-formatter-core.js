@@ -285,6 +285,14 @@
       // Log initialization
       console.log('[StateManager] State initialized:', this.getStatus());
       
+      // Ensure window.formatterState initialization
+      window.formatterState = window.formatterState || {};
+      window.formatterState.initialized = true;
+      window.formatterState.sourceColumns = window.formatterState.sourceColumns || [];
+      window.formatterState.sampleData = window.formatterState.sampleData || [];
+      window.formatterState.fileId = window.formatterState.fileId || 'default';
+      console.log("StateManager init: window.formatterState =", window.formatterState);
+      
       return this;
     }
   };
@@ -1319,6 +1327,14 @@
       }
       
       previewContainer.innerHTML = html;
+      
+      // Ensure window.formatterState initialization
+      window.formatterState = window.formatterState || {};
+      window.formatterState.sourceColumns = window.formatterState.sourceColumns || StateManager.get('sourceColumns') || [];
+      window.formatterState.sampleData = window.formatterState.sampleData || StateManager.get('sampleData') || [];
+      window.formatterState.fileId = window.formatterState.fileId || StateManager.get('fileName') || 'default';
+      window.formatterState.initialized = true;
+      console.log("FileManager.updatePreview: window.formatterState =", window.formatterState);
     },
     
     // Add entry to the transformation log

@@ -8,6 +8,12 @@
 (function() {
   console.log("🔄 Data Formatter Emergency Mode Test loaded");
   
+  // Skip emergency mode if formatterState is already initialized
+  if (window.formatterState && window.formatterState.initialized) {
+    console.log("Skipping emergency mode: formatterState initialized");
+    return;
+  }
+  
   // Wait for DOM and framework to load
   document.addEventListener('DOMContentLoaded', function() {
     // Check if we're on the Data Formatter page
