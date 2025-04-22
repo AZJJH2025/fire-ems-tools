@@ -486,7 +486,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Map Fields button handling
+  // Map Fields button handling - commented out to prevent conflicts with consolidated handler in data-formatter.html
+  /*
   if (mapFieldsBtn) {
     mapFieldsBtn.addEventListener('click', function() {
       // Validate required data is available
@@ -522,6 +523,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
+  */
 
   // Download button handling
   if (downloadBtn) {
