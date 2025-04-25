@@ -3761,6 +3761,7 @@
           </script>
           
           <!-- Replace all other click listeners with a single robust handler -->
+          <!-- LEGACY REMOVED -->
           <script>
   console.log("DOMContentLoaded listener for attachMapFieldsHandler registered");
   function attachMapFieldsHandler() {
@@ -3827,6 +3828,7 @@
   // Call the handler when the DOM is loaded
   document.addEventListener('DOMContentLoaded', attachMapFieldsHandler);
 </script>
+          <!-- END -->
         }
         
         // Reference the globally defined formatter panel function
@@ -4022,5 +4024,8 @@
       }, 3000);
     });
   </script>
+  
+  <!-- Load the data-formatter.js script from the static/js directory -->
+  <script src="/static/js/data-formatter.js"></script>
 </body>
 </html>
