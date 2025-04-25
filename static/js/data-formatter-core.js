@@ -1680,8 +1680,8 @@
       
       // Main formatter bundle - Use consistent path format without version parameters
       ComponentLoader.register('formatterBundle', {
-        url: `${staticBasePath}data-formatter-bundle.js`,
-        fallbackUrl: `${directStaticBasePath}data-formatter-bundle.js`,
+        url: `${staticBasePath}js/data-formatter-bundle.js`,
+        fallbackUrl: `${directStaticBasePath}js/data-formatter-bundle.js`,
         emergencyUrl: `${appStaticBasePath}data-formatter-direct.js`,
         dependencies: ['coreLibrary'],
         critical: true,
