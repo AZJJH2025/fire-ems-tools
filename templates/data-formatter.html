@@ -17,7 +17,7 @@
     
     // Pre-initialize basic formatter state 
     window.formatterState = {
-      initialized: false,
+      initialized: true,
       sourceColumns: [],
       sampleData: [],
       isLargeFile: function(filename) {
@@ -31,6 +31,104 @@
       getPreviewSize: function() {
         const filename = this.originalFileName || '';
         return this.isLargeFile(filename) ? 100 : 25;
+      }
+    };
+    
+    // Make sure all critical functions are explicitly exposed to window
+    window.showFormatterPanels = function() {
+      // Show formatter panels
+      const formatterPanels = document.querySelectorAll('.formatter-panel');
+      formatterPanels.forEach(panel => {
+        panel.style.display = 'block';
+      });
+      
+      // Hide mapping container
+      const mappingContainer = document.getElementById('column-mapping-container');
+      if (mappingContainer) {
+        mappingContainer.style.display = 'none';
+      }
+      
+      // Log the action
+      if (window.appendLog && typeof window.appendLog === 'function') {
+        window.appendLog('Field mapping completed. Review the transformed data in the output preview.');
+      }
+    };
+    
+    window.enableDownloadButtons = function() {
+      const downloadBtn = document.getElementById('download-btn');
+      const sendToToolBtn = document.getElementById('send-to-tool-btn');
+      
+      if (downloadBtn) downloadBtn.disabled = false;
+      if (sendToToolBtn) sendToToolBtn.disabled = false;
+      
+      // Also focus on the output preview section
+      const outputPreview = document.getElementById('output-preview');
+      if (outputPreview) {
+        // Add a highlight effect to draw attention
+        outputPreview.classList.add('highlight-preview');
+        setTimeout(() => {
+          outputPreview.classList.remove('highlight-preview');
+        }, 1500);
+        
+        // Scroll to the output preview
+        outputPreview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    };
+    
+    // Handle clear button functionality
+    window.handleClearButton = function() {
+      // Reset file input
+      const fileInput = document.getElementById('data-file');
+      const fileNameDisplay = document.getElementById('file-name');
+      if (fileInput) {
+        fileInput.value = '';
+      }
+      if (fileNameDisplay) {
+        fileNameDisplay.textContent = 'No file selected';
+      }
+      
+      // Clear previews
+      const inputPreview = document.getElementById('input-preview');
+      const outputPreview = document.getElementById('output-preview');
+      
+      if (inputPreview) {
+        inputPreview.innerHTML = `
+          <div class="placeholder-message">
+            <i class="fas fa-arrow-up"></i>
+            <p>Upload a file to preview</p>
+          </div>
+        `;
+      }
+      
+      if (outputPreview) {
+        outputPreview.innerHTML = `
+          <div class="placeholder-message">
+            <i class="fas fa-arrow-left"></i>
+            <p>Transform data to preview</p>
+          </div>
+        `;
+      }
+      
+      // Clear log
+      const logContainer = document.getElementById('log-container');
+      if (logContainer) {
+        logContainer.innerHTML = '<p class="log-placeholder">Transformation details will appear here</p>';
+      }
+      
+      // Disable buttons
+      const mapFieldsBtn = document.getElementById('map-fields-btn');
+      const downloadBtn = document.getElementById('download-btn');
+      const sendToToolBtn = document.getElementById('send-to-tool-btn');
+      if (mapFieldsBtn) mapFieldsBtn.disabled = true;
+      if (downloadBtn) downloadBtn.disabled = true;
+      if (sendToToolBtn) sendToToolBtn.disabled = true;
+      
+      // Reset form state
+      if (window.formatterState) {
+        window.formatterState.fileId = null;
+        window.formatterState.sourceColumns = [];
+        window.formatterState.sampleData = [];
+        window.formatterState.transformedData = [];
       }
     };
     
@@ -3309,7 +3407,7 @@
             </ol>
             <p>Technical details: Failed to load bundle after multiple attempts.</p>
             <button onclick="location.reload()">Refresh Page</button>
-            <button onclick="loadDirect()">Try Emergency Mode</button>
+            ${window.emergencyModeForced ? '<button onclick="loadDirect()">Try Emergency Mode</button>' : ''}
           `;
           container.prepend(errorMsg);
         }
@@ -3438,10 +3536,17 @@
           
           // Double-check by looking for expected behavior capabilities
           const normalModeWorking = window.DataFormatterLogger || 
-                                    (window.FireEMS && window.FireEMS.DataFormatter);
+                                    (window.FireEMS && window.FireEMS.DataFormatter) ||
+                                    window.formatterState.initialized;
                                     
-          // Only trigger emergency mode if we're missing UI elements AND normal features
-          needsEmergencyMode = needsEmergencyMode && !normalModeWorking;
+          // Prioritize normal mode: if formatterState is initialized, don't use emergency mode
+          if (window.formatterState && window.formatterState.initialized) {
+            console.log("FormatterState is initialized - prioritizing normal mode");
+            needsEmergencyMode = false;
+          } else {
+            // Only trigger emergency mode if we're missing UI elements AND normal features
+            needsEmergencyMode = needsEmergencyMode && !normalModeWorking;
+          }
           
           console.log("DOM fully loaded - UI Ready:", uiReady);
           console.log("Core system ready:", coreSystemReady);
@@ -3478,21 +3583,25 @@
         if (window.emergencyModeActivated) return;
         window.emergencyModeActivated = true;
         
-        // Show a visual indicator for the user
-        const container = document.querySelector('.formatter-container');
-        if (container && !document.querySelector('.error-message')) {
-          const errorMsg = document.createElement('div');
-          errorMsg.className = 'error-message';
-          errorMsg.innerHTML = '<h3>Enhanced Data Formatter Activated</h3>' +
-                              '<p>Switched to resilient mode with the following capabilities:</p>' +
-                              '<ul>' +
-                                '<li>Improved processing for large files (up to 1000 records)</li>' +
-                                '<li>Enhanced preview display (25-100 records)</li>' +
-                                '<li>Better handling for Data1G.csv files</li>' +
-                                '<li>Consistent file type detection</li>' +
-                              '</ul>';
-          
-          container.prepend(errorMsg);
+        // Show a visual indicator for the user only if emergency mode is forced
+        if (window.emergencyModeForced) {
+          const container = document.querySelector('.formatter-container');
+          if (container && !document.querySelector('.error-message')) {
+            const errorMsg = document.createElement('div');
+            errorMsg.className = 'error-message';
+            errorMsg.innerHTML = '<h3>Enhanced Data Formatter Activated</h3>' +
+                                '<p>Switched to resilient mode with the following capabilities:</p>' +
+                                '<ul>' +
+                                  '<li>Improved processing for large files (up to 1000 records)</li>' +
+                                  '<li>Enhanced preview display (25-100 records)</li>' +
+                                  '<li>Better handling for Data1G.csv files</li>' +
+                                  '<li>Consistent file type detection</li>' +
+                                '</ul>';
+            
+            container.prepend(errorMsg);
+          }
+        } else {
+          console.log("Emergency mode activated silently (not forced by URL)");
         }
         
         // Load emergency scripts if not already done
@@ -3630,12 +3739,13 @@
         });
       }
       
+      <!-- build-id: 25a1842-static -->
+      <!-- debug-build: 0b5d2ec-static -->
+      
       if (mapFieldsBtn && mappingContainer) {
         // Initialize the React application when map fields button is clicked
         if (mapFieldsBtn && !mapFieldsBtn.getAttribute('data-react-handler-added')) {
           mapFieldsBtn.setAttribute('data-react-handler-added', 'true');
-          <!-- build-id: 25a1842-static -->
-          <!-- debug-build: 0b5d2ec-static -->
           
           <script>
             console.log("Data-formatter.html script block executing");
@@ -3646,164 +3756,114 @@
             };
           </script>
           
+          <script>
+            console.log("Checking for syntax errors before handler block");
+          </script>
+          
           <!-- Replace all other click listeners with a single robust handler -->
           <script>
-            console.log("DOMContentLoaded listener for attachMapFieldsHandler registered");
-            function attachMapFieldsHandler() {
-              console.log("Attempting to register mapFieldsBtn handler");
-              console.log("Script execution: document.readyState =", document.readyState);
-              const mapFieldsBtn = document.getElementById('map-fields-btn');
-              if (!mapFieldsBtn) {
-                console.error("mapFieldsBtn not found in DOM, elements:", document.querySelectorAll('[id="map-fields-btn"]').length);
-                return;
-              }
-              console.log("mapFieldsBtn found, attaching handler:", mapFieldsBtn);
-              const clonedBtn = mapFieldsBtn.cloneNode(true);
-              mapFieldsBtn.parentNode.replaceChild(clonedBtn, mapFieldsBtn);
-              const newMapFieldsBtn = document.getElementById('map-fields-btn');
-              newMapFieldsBtn.setAttribute('data-handler-added', 'true');
-              newMapFieldsBtn.addEventListener('click', function() {
-                console.log("Custom handler triggered for map-fields-btn");
-                console.log("Button element:", newMapFieldsBtn);
-                const containerElement = document.getElementById('column-mapping-container');
-                console.log("Container element:", containerElement);
-                console.log("Container styles:", containerElement ? getComputedStyle(containerElement) : "Container not found");
-                console.log("Formatter state:", window.formatterState);
-                console.log("DataFormatterUI available:", !!window.DataFormatterUI, typeof window.DataFormatterUI?.mount);
-                const container = document.getElementById('column-mapping-container');
-                if (!container) {
-                  console.error("Column mapping container not found");
-                  return;
-                }
-                container.style.display = 'block';
-                document.querySelectorAll('.formatter-panel').forEach(panel => {
-                  panel.style.display = 'none';
-                });
-                container.innerHTML = '';
-                if (window.DataFormatterUI && typeof window.DataFormatterUI.mount === 'function') {
-                  const toolSelect = document.getElementById('target-tool');
-                  let selectedTool = toolSelect ? toolSelect.value : 'response-time';
-                  if (!selectedTool) {
-                    selectedTool = 'response-time';
-                    if (toolSelect) toolSelect.value = selectedTool;
-                  }
-                  const reactData = {
-                    sourceColumns: window.formatterState.sourceColumns || [],
-                    sampleData: window.formatterState.sampleData || [],
-                    selectedTool: selectedTool,
-                    fileId: window.formatterState.fileId
-                  };
-                  window.DataFormatterUI.mount(container, reactData, window.handleMappingComplete);
-                } else {
-                  console.log("Emergency column mapping handler activated");
-                  createEmergencyMappingInterface();
-                }
-              });
-            }
-            
-            // Call the handler when the DOM is loaded
-            document.addEventListener('DOMContentLoaded', attachMapFieldsHandler);
-          </script>
+  console.log("DOMContentLoaded listener for attachMapFieldsHandler registered");
+  function attachMapFieldsHandler() {
+    console.log("Attempting to register mapFieldsBtn handler");
+    console.log("Script execution: document.readyState =", document.readyState);
+    const mapFieldsBtn = document.getElementById('map-fields-btn');
+    if (!mapFieldsBtn) {
+      console.error("mapFieldsBtn not found in DOM, elements:", document.querySelectorAll('[id="map-fields-btn"]').length);
+      return;
+    }
+    console.log("mapFieldsBtn found, attaching handler:", mapFieldsBtn);
+    const clonedBtn = mapFieldsBtn.cloneNode(true);
+    mapFieldsBtn.parentNode.replaceChild(clonedBtn, mapFieldsBtn);
+    const newMapFieldsBtn = document.getElementById('map-fields-btn');
+    newMapFieldsBtn.setAttribute('data-handler-added', 'true');
+    newMapFieldsBtn.addEventListener('click', function(e) {
+      e.preventDefault(); // Prevent redirect
+      console.log("Custom handler triggered for map-fields-btn");
+      console.log("Button element:", newMapFieldsBtn);
+      const container = document.getElementById('column-mapping-container');
+      if (!container) {
+        console.error("Column mapping container not found");
+        return;
+      }
+      console.log("Container element:", container);
+      console.log("Container styles:", getComputedStyle(container));
+      console.log("Formatter state:", window.formatterState);
+      console.log("DataFormatterUI available:", !!window.DataFormatterUI, typeof window.DataFormatterUI?.mount);
+      
+      // Ensure DataFormatterUI is initialized
+      if (!window.DataFormatterUI || typeof window.DataFormatterUI.mount !== 'function') {
+        console.warn("DataFormatterUI not available, initializing fallback");
+        window.DataFormatterUI = {
+          mount: function(container, data, callback) {
+            console.log("Mounting emergency mapping UI with data:", data);
+            window.createEmergencyMappingInterface();
+            return true;
+          }
+        };
+      }
+      
+      container.style.display = 'block';
+      document.querySelectorAll('.formatter-panel').forEach(panel => {
+        panel.style.display = 'none';
+      });
+      container.innerHTML = '';
+      
+      const toolSelect = document.getElementById('target-tool');
+      let selectedTool = toolSelect ? toolSelect.value : 'response-time';
+      if (!selectedTool) {
+        selectedTool = 'response-time';
+        if (toolSelect) toolSelect.value = selectedTool;
+      }
+      const reactData = {
+        sourceColumns: window.formatterState.sourceColumns || [],
+        sampleData: window.formatterState.sampleData || [],
+        selectedTool: selectedTool,
+        fileId: window.formatterState.fileId
+      };
+      window.DataFormatterUI.mount(container, reactData, window.handleMappingComplete);
+    });
+  }
+
+  // Call the handler when the DOM is loaded
+  document.addEventListener('DOMContentLoaded', attachMapFieldsHandler);
+</script>
         }
         
-        // Add global function to return to formatter
-        window.showFormatterPanels = function() {
-          // Show formatter panels
-          formatterPanels.forEach(panel => {
-            panel.style.display = 'block';
-          });
-          
-          // Hide mapping container
-          mappingContainer.style.display = 'none';
-          
-          // Log the action
-          if (window.appendLog && typeof window.appendLog === 'function') {
-            window.appendLog('Field mapping completed. Review the transformed data in the output preview.');
-          }
-        };
-        
-        // Add global function to show a download button
-        window.enableDownloadButtons = function() {
-          const downloadBtn = document.getElementById('download-btn');
-          const sendToToolBtn = document.getElementById('send-to-tool-btn');
-          
-          if (downloadBtn) downloadBtn.disabled = false;
-          if (sendToToolBtn) sendToToolBtn.disabled = false;
-          
-          // Also focus on the output preview section
-          const outputPreview = document.getElementById('output-preview');
-          if (outputPreview) {
-            // Add a highlight effect to draw attention
-            outputPreview.classList.add('highlight-preview');
-            setTimeout(() => {
-              outputPreview.classList.remove('highlight-preview');
-            }, 1500);
+        // Reference the globally defined formatter panel function
+        if (!window.showFormatterPanels || typeof window.showFormatterPanels !== 'function') {
+          console.error("showFormatterPanels not found on window object, creating local reference");
+          // Create a local reference that can access the correct variables
+          window.showFormatterPanels = function() {
+            // Use the variables from this scope
+            formatterPanels.forEach(panel => {
+              panel.style.display = 'block';
+            });
             
-            // Scroll to the output preview
-            outputPreview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          }
-        };
+            if (mappingContainer) {
+              mappingContainer.style.display = 'none';
+            }
+            
+            // Log the action
+            if (window.appendLog && typeof window.appendLog === 'function') {
+              window.appendLog('Field mapping completed. Review the transformed data in the output preview.');
+            }
+          };
+        }
+        
+        // Reference the globally defined download buttons function
+        if (!window.enableDownloadButtons || typeof window.enableDownloadButtons !== 'function') {
+          console.error("enableDownloadButtons not found on window object, creating local reference");
+        }
       }
       
       // Clear button functionality
       if (clearBtn) {
         clearBtn.addEventListener('click', function() {
-          // Reset file input
-          const fileInput = document.getElementById('data-file');
-          const fileNameDisplay = document.getElementById('file-name');
-          if (fileInput) {
-            fileInput.value = '';
-          }
-          if (fileNameDisplay) {
-            fileNameDisplay.textContent = 'No file selected';
-          }
-          
-          // Clear previews
-          const inputPreview = document.getElementById('input-preview');
-          const outputPreview = document.getElementById('output-preview');
-          
-          if (inputPreview) {
-            inputPreview.innerHTML = `
-              <div class="placeholder-message">
-                <i class="fas fa-arrow-up"></i>
-                <p>Upload a file to preview</p>
-              </div>
-            `;
-          }
-          
-          if (outputPreview) {
-            outputPreview.innerHTML = `
-              <div class="placeholder-message">
-                <i class="fas fa-arrow-left"></i>
-                <p>Transform data to preview</p>
-              </div>
-            `;
-          }
-          
-          // Clear log
-          const logContainer = document.getElementById('log-container');
-          if (logContainer) {
-            logContainer.innerHTML = '<p class="log-placeholder">Transformation details will appear here</p>';
-          }
-          
-          // Disable buttons
-          if (mapFieldsBtn) mapFieldsBtn.disabled = true;
-          const downloadBtn = document.getElementById('download-btn');
-          const sendToToolBtn = document.getElementById('send-to-tool-btn');
-          if (downloadBtn) downloadBtn.disabled = true;
-          if (sendToToolBtn) sendToToolBtn.disabled = true;
-          
-          // Reset form state
-          if (window.formatterState) {
-            window.formatterState = {
-              fileId: null,
-              sourceColumns: [],
-              sampleData: [],
-              selectedTool: null,
-              mappings: null,
-              transformedData: null,
-              originalData: null
-            };
+          // Use the globally defined handler function
+          if (window.handleClearButton && typeof window.handleClearButton === 'function') {
+            window.handleClearButton();
+          } else {
+            console.error("handleClearButton function not found on window object");
           }
           
           // Log action

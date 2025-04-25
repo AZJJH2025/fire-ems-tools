@@ -27,6 +27,12 @@
   });
   
   function setupTest() {
+    // Only show emergency test panel when emergency mode is forced
+    if (!window.emergencyModeForced) {
+      console.log("Emergency test panel hidden - not in forced emergency mode");
+      return;
+    }
+    
     // Find the Send to Tool button to modify/test
     const sendBtn = document.getElementById('send-to-tool-btn');
     if (!sendBtn) {

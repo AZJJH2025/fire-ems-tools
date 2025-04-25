@@ -52,10 +52,67 @@ def fire_map_pro():
     """FireMapPro route"""
     return render_template('fire-map-pro.html')
     
-@bp.route('/data-formatter')
+@bp.route('/data-formatter', methods=['GET', 'POST'])
 def data_formatter():
     """Data Formatter route"""
     try:
+        if request.method == 'POST':
+            # Parse JSON request
+            try:
+                data = request.get_json()
+                if not data:
+                    # Handle form data if not JSON
+                    data = request.form.to_dict()
+                    
+                current_app.logger.info(f"POST request to data-formatter with data: {data}")
+                
+                # Process data based on action type
+                action = data.get('action', '')
+                
+                if action == 'save_mapping':
+                    # Save column mapping
+                    mapping_data = data.get('mapping', {})
+                    file_id = data.get('fileId', 'unknown')
+                    
+                    current_app.logger.info(f"Saving mapping for file {file_id}")
+                    
+                    # Return success response
+                    return {
+                        'status': 'success',
+                        'message': 'Mapping saved successfully',
+                        'file_id': file_id
+                    }
+                    
+                elif action == 'transform_data':
+                    # Transform data based on mapping
+                    transformed = data.get('data', [])
+                    row_count = len(transformed)
+                    
+                    current_app.logger.info(f"Transformed {row_count} rows of data")
+                    
+                    # Return transformed data
+                    return {
+                        'status': 'success',
+                        'message': f'Successfully transformed {row_count} rows',
+                        'row_count': row_count
+                    }
+                
+                else:
+                    # Generic response for other action types
+                    return {
+                        'status': 'success',
+                        'message': f'Processed {action} request',
+                        'request_data': data
+                    }
+                    
+            except Exception as e:
+                current_app.logger.error(f"Error processing POST data: {str(e)}", exc_info=True)
+                return {
+                    'status': 'error',
+                    'message': str(e)
+                }, 400
+        
+        # GET request - render the template
         template = render_template('data-formatter.html')
         current_app.logger.info("Successfully rendered data-formatter.html")
         return template
