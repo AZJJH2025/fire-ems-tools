@@ -5,8 +5,8 @@ services:
     name: fire-ems-tools
     env: python
     plan: free
-    buildCommand: chmod +x ./build.sh && ./build.sh
-    startCommand: 'gunicorn "app:create_app()"'
+    buildCommand: chmod +x ./build_simple.sh && ./build_simple.sh
+    startCommand: 'python -m gunicorn "app:create_app()"'
     envVars:
       - key: PYTHON_VERSION
         value: 3.9.0
