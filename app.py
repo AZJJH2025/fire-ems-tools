@@ -22,6 +22,13 @@ def home():
 def serve_static(path):
     return send_from_directory("static", path)
 
+@app.route('/static/data-formatter-bundle.js')
+def df_bundle():
+    # Always return the real bundle regardless of query-string
+    return send_from_directory('static/js',
+                               'data-formatter-bundle.js',
+                               mimetype='text/javascript')
+
 @app.route("/api/status")
 def status():
     return jsonify({"status": "🚀 Fire EMS API is Live!"})
