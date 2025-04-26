@@ -22,10 +22,25 @@ logger = logging.getLogger('direct_wsgi')
 
 logger.info('Starting direct_wsgi.py application wrapper')
 
-# Import the application directly - no factory
+# Import the application using factory pattern
 try:
-    from app import app
-    logger.info('Successfully imported app directly')
+    # Apply deployment fixes first
+    import fix_deployment
+    fix_deployment.apply_fixes()
+    logger.info("Applied deployment fixes")
+    
+    # Import and create the application
+    from app import create_app
+    app = create_app()
+    logger.info('Successfully created app using factory pattern')
+    
+    # Run database table fixes if needed
+    try:
+        from database import db
+        fix_deployment.fix_database_tables(app, db)
+        logger.info("Database tables fixed successfully")
+    except Exception as e:
+        logger.error(f"Error fixing database tables: {str(e)}")
 except Exception as e:
     logger.error(f'Failed to import app directly: {str(e)}')
     logger.error(traceback.format_exc())

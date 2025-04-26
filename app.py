@@ -45,6 +45,7 @@ from config import config
 
 # Initialize Flask extensions
 csrf = CSRFProtect()
+login_manager = LoginManager()
 
 # Limiter will be initialized in create_app function
 limiter = None
