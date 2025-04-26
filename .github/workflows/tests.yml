@@ -21,7 +21,7 @@ jobs:
           - routes
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
@@ -68,21 +68,21 @@ jobs:
         coverage report
     
     - name: Upload test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-results-${{ matrix.python-version }}-${{ matrix.test-group }}
         path: test_report.xml
       if: always() && matrix.test-group != 'performance'
     
     - name: Upload performance results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: performance-results-${{ matrix.python-version }}
         path: test_report.json
       if: always() && matrix.test-group == 'performance'
     
     - name: Upload coverage report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: coverage-report-${{ matrix.python-version }}-${{ matrix.test-group }}
         path: coverage.xml
@@ -92,10 +92,10 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Download all test artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         path: ./test-artifacts
     
@@ -171,7 +171,7 @@ if perf_files:
     runs-on: ubuntu-latest
     environment: staging
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Setup deployment
       run: echo "Setting up staging deployment"
@@ -188,7 +188,7 @@ if perf_files:
     runs-on: ubuntu-latest
     environment: production
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Setup deployment
       run: echo "Setting up production deployment"

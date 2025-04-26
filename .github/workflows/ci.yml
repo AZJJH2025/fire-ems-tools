@@ -14,7 +14,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -33,7 +33,7 @@ jobs:
       run: |
         python visual_regression_test.py
     - name: Upload visual regression results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: visual-regression-results
         path: visual_regression/reports/
@@ -41,7 +41,7 @@ jobs:
   setup-test-data:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -54,12 +54,12 @@ jobs:
       run: |
         python tests/data_generators/generate_test_data.py --standard
     - name: Upload test data
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-data
         path: tests/test_data/
     - name: Upload test fixtures
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-fixtures
         path: tests/fixtures/
@@ -72,7 +72,7 @@ jobs:
         python-version: [3.10, 3.11, 3.12]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
@@ -83,12 +83,12 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         pip install pytest pytest-cov
     - name: Download test data
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: test-data
         path: tests/test_data/
     - name: Download test fixtures
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: test-fixtures
         path: tests/fixtures/
@@ -96,7 +96,7 @@ jobs:
       run: |
         python run_all_tests.py --simplified
     - name: Upload test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: simplified-test-results-${{ matrix.python-version }}
         path: test-results/
@@ -107,7 +107,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -117,7 +117,7 @@ jobs:
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Set up Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '18'
     - name: Install Playwright
@@ -134,7 +134,7 @@ jobs:
         chmod +x run_e2e_tests.sh
         ./run_e2e_tests.sh
     - name: Upload E2E test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: e2e-test-results
         path: e2e/test-results/
@@ -145,7 +145,7 @@ jobs:
     if: github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -160,7 +160,7 @@ jobs:
         bandit -r . -x ./tests,./venv
         safety check
     - name: Set up Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '18'
     - name: Install Playwright
@@ -176,7 +176,7 @@ jobs:
       run: |
         npx playwright test e2e/tests/security.spec.js
     - name: Upload security test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: security-test-results
         path: e2e/test-results/
@@ -187,9 +187,9 @@ jobs:
     if: github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '18'
     - name: Set up Python
@@ -213,7 +213,7 @@ jobs:
       run: |
         npx playwright test e2e/tests/accessibility.spec.js
     - name: Upload accessibility test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: accessibility-test-results
         path: e2e/test-results/
@@ -224,9 +224,9 @@ jobs:
     if: github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '18'
     - name: Set up Python
@@ -250,7 +250,7 @@ jobs:
       run: |
         npx playwright test e2e/tests/responsive.spec.js
     - name: Upload responsive test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: responsive-test-results
         path: e2e/test-results/
@@ -261,7 +261,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -275,7 +275,7 @@ jobs:
       run: |
         python run_coverage.py
     - name: Upload coverage results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: coverage-results
         path: coverage_reports/
@@ -286,7 +286,7 @@ jobs:
     if: github.event_name == 'schedule'
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -297,12 +297,12 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         pip install aiohttp matplotlib numpy
     - name: Download test data
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: test-data
         path: tests/test_data/
     - name: Download test fixtures
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: test-fixtures
         path: tests/fixtures/
@@ -323,7 +323,7 @@ jobs:
       run: |
         python performance_test.py --type endpoint --users 5 --requests-per-endpoint 20
     - name: Upload performance results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: performance-results
         path: performance_results/
@@ -334,7 +334,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -352,7 +352,7 @@ jobs:
       run: |
         python graphql_api_test.py test
     - name: Upload GraphQL test reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: graphql-test-reports
         path: graphql_test_reports/
@@ -363,7 +363,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -377,12 +377,12 @@ jobs:
       run: |
         npm install -g newman
     - name: Download test data
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: test-data
         path: tests/test_data/
     - name: Download test fixtures
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: test-fixtures
         path: tests/fixtures/
@@ -404,7 +404,7 @@ jobs:
         python api_testing_framework.py load --endpoint department --requests 20
         python api_testing_framework.py load --endpoint incidents --requests 20
     - name: Upload API test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: api-test-results
         path: api_test_reports/
