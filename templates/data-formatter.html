@@ -4030,7 +4030,11 @@
   <!-- Load the data-formatter.js script as a module from the static/js directory -->
   <script type="module" src="/static/js/data-formatter.js" defer></script>
   
-  <!-- Load the field mapping fix script -->
-  <script src="/static/js/data-formatter-field-mapping-fix.js" defer></script>
+  <!-- Load React and ReactDOM directly to ensure they're available -->
+  <script src="https://cdn.jsdelivr.net/npm/react@17/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@17/umd/react-dom.production.min.js"></script>
+  
+  <!-- Load the improved field mapping fix script -->
+  <script src="/static/js/data-formatter-field-mapping-fix-v2.js" defer></script>
 </body>
 </html>
