@@ -45,7 +45,6 @@ from config import config
 
 # Initialize Flask extensions
 csrf = CSRFProtect()
-login_manager = LoginManager()
 
 # Limiter will be initialized in create_app function
 limiter = None
@@ -154,6 +153,14 @@ def create_app(config_name='default'):
     # Register custom static file handling
     from static_middleware import register_static_handler
     register_static_handler(app)
+    
+    # Special route for data-formatter-bundle.js to handle both with and without query parameters
+    @app.route('/static/data-formatter-bundle.js')
+    def df_bundle():
+        # Always return the real bundle regardless of query-string
+        return send_from_directory('static/js',
+                                 'data-formatter-bundle.js',
+                                 mimetype='text/javascript')
         
     # Direct static file serving for emergencies - Enhanced robust version
     @app.route('/app-static/<path:filename>')
