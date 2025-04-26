@@ -1,0 +1,25 @@
+{
+  "description": "Get all departments",
+  "query": "query GetDepartments { departments { id name code department_type num_stations } }",
+  "variables": {},
+  "auth_required": true,
+  "role": "admin",
+  "expected_status": 200,
+  "validation_rules": [
+    {
+      "type": "no_errors"
+    },
+    {
+      "type": "has_data"
+    },
+    {
+      "type": "field_exists",
+      "path": "data.departments"
+    },
+    {
+      "type": "array_length",
+      "path": "data.departments",
+      "min": 1
+    }
+  ]
+}

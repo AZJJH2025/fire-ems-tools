@@ -1,0 +1,11 @@
+Call Number,Unit Name,Incident Date,Incident Time,Unit Dispatch Date,Unit Dispatch Time,Unit Arrival Date,Unit Arrival Time,Incident Address,Incident Latitude,Incident Longitude,Call Type,Priority
+CAD-2025-001,Engine 1,01/01/2025,08:15:00,01/01/2025,08:15:30,01/01/2025,08:23:12,123 Main St,37.7749,-122.4194,Structure Fire,High
+CAD-2025-002,Engine 2,01/01/2025,09:30:00,01/01/2025,09:30:45,01/01/2025,09:37:45,456 Oak Ave,37.7746,-122.4196,Medical Emergency,Medium
+CAD-2025-003,Medic 1,01/01/2025,10:45:00,01/01/2025,10:45:20,01/01/2025,10:52:10,789 Pine St,37.7740,-122.4190,Traffic Collision,High
+CAD-2025-004,Medic 2,01/01/2025,13:20:00,01/01/2025,13:20:10,01/01/2025,13:26:30,321 Elm St,37.7752,-122.4198,Medical Emergency,Low
+CAD-2025-005,Engine 1,01/02/2025,07:45:00,01/02/2025,07:45:30,01/02/2025,07:51:45,654 Maple Dr,37.7755,-122.4200,Gas Leak,Medium
+CAD-2025-006,Medic 1,01/02/2025,11:30:00,01/02/2025,11:30:15,01/02/2025,11:36:20,987 Cedar Blvd,37.7748,-122.4192,Medical Emergency,High
+CAD-2025-007,Engine 2,01/02/2025,14:15:00,01/02/2025,14:15:45,01/02/2025,14:24:10,741 Birch St,37.7751,-122.4195,Hazardous Materials,High
+CAD-2025-008,Medic 2,01/02/2025,17:00:00,01/02/2025,17:00:10,01/02/2025,17:06:45,852 Walnut Ave,37.7747,-122.4193,Medical Emergency,Medium
+CAD-2025-009,Engine 1,01/03/2025,06:30:00,01/03/2025,06:30:20,01/03/2025,06:38:30,963 Cherry St,37.7750,-122.4197,Structure Fire,High
+CAD-2025-010,Medic 1,01/03/2025,09:45:00,01/03/2025,09:45:05,01/03/2025,09:50:30,159 Pear Dr,37.7745,-122.4191,Medical Emergency,Low

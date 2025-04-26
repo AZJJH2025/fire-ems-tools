@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Documentation - {{ department.name }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        .dept-header {
+            background: linear-gradient(135deg, {{ department.primary_color }} 0%, {{ department.secondary_color }} 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .dept-title {
+            font-size: 2rem;
+            margin: 0 0 0.5rem 0;
+        }
+        
+        .dept-subtitle {
+            opacity: 0.8;
+            margin: 0;
+        }
+        
+        .content-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        
+        .api-section {
+            margin-bottom: 3rem;
+        }
+        
+        .api-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .api-section-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid {{ department.primary_color }};
+            padding-bottom: 0.5rem;
+            display: inline-block;
+        }
+        
+        .api-info {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .api-key-container {
+            display: flex;
+            margin-bottom: 1rem;
+        }
+        
+        .api-key-container input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px 0 0 4px;
+            font-family: monospace;
+            background-color: #f8f9fa;
+        }
+        
+        .api-key-container button {
+            padding: 0.75rem 1rem;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-left: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+        
+        .api-status {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .status-active {
+            background-color: #2ecc71;
+        }
+        
+        .status-inactive {
+            background-color: #e74c3c;
+        }
+        
+        .endpoint {
+            margin-bottom: 2rem;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .http-method {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-right: 1rem;
+            min-width: 60px;
+            text-align: center;
+        }
+        
+        .method-get {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .method-post {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .method-put {
+            background-color: #f39c12;
+            color: white;
+        }
+        
+        .method-delete {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .endpoint-url {
+            font-family: monospace;
+            flex: 1;
+        }
+        
+        .endpoint-body {
+            padding: 1rem;
+        }
+        
+        .endpoint-description {
+            margin-bottom: 1rem;
+        }
+        
+        .parameter-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        
+        .parameter-table th,
+        .parameter-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .parameter-table th {
+            background-color: #f8f9fa;
+            font-weight: 500;
+        }
+        
+        .code-sample {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: monospace;
+            margin-bottom: 1rem;
+        }
+        
+        .code-request {
+            margin-bottom: 1rem;
+        }
+        
+        .code-title {
+            color: #7f8c8d;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+        }
+        
+        .required-badge {
+            background-color: #e74c3c;
+            color: white;
+            padding: 0.1rem 0.35rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+        
+        .optional-badge {
+            background-color: #7f8c8d;
+            color: white;
+            padding: 0.1rem 0.35rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">
+            <a href="/dept/{{ department.code }}">
+                {% if department.logo_url %}
+                    <img src="{{ department.logo_url }}" alt="{{ department.name }} Logo" height="30">
+                {% else %}
+                    <i class="fas fa-fire"></i> {{ department.name }}
+                {% endif %}
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="/dept/{{ department.code }}">Home</a>
+            <a href="/dept/{{ department.code }}/dashboard">Dashboard</a>
+            
+            {% if department.features_enabled.get('incident_logger', True) %}
+                <a href="/dept/{{ department.code }}/incident-logger">Incident Logger</a>
+            {% endif %}
+            
+            {% if current_user.is_admin() or current_user.is_super_admin() %}
+                <a href="/dept/{{ department.code }}/stations">Stations</a>
+                <a href="/dept/{{ department.code }}/users">Users</a>
+                <a href="/dept/{{ department.code }}/settings">Settings</a>
+                <a href="/dept/{{ department.code }}/api-docs" class="active">API Docs</a>
+            {% endif %}
+        </div>
+        <div class="user-menu">
+            <div class="user-dropdown">
+                <button class="user-button">
+                    <i class="fas fa-user-circle"></i> {{ current_user.name }}
+                </button>
+                <div class="dropdown-content">
+                    {% if current_user.is_super_admin() %}
+                        <a href="/admin/dashboard"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a>
+                    {% endif %}
+                    <a href="/dept/{{ department.code }}/users/{{ current_user.id }}"><i class="fas fa-user-cog"></i> Profile</a>
+                    <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <header class="dept-header">
+        <div class="container">
+            <h1 class="dept-title">API Documentation</h1>
+            <p class="dept-subtitle">Integrate with {{ department.name }}'s data</p>
+        </div>
+    </header>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="container">
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash flash-{{ category }}">
+                        {{ message }}
+                        <span class="flash-dismiss">&times;</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <script>
+            // Flash message dismiss functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                const dismissButtons = document.querySelectorAll('.flash-dismiss');
+                dismissButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        this.parentElement.style.display = 'none';
+                    });
+                });
+            });
+        </script>
+        {% endif %}
+    {% endwith %}
+    
+    <main class="container">
+        <div class="content-container">
+            <div class="api-section">
+                <h2 class="api-section-title">API Overview</h2>
+                <p>
+                    The {{ department.name }} API allows external applications to access and update department data.
+                    This documentation describes the available endpoints and how to use them.
+                </p>
+                
+                <div class="api-info">
+                    <div class="api-status">
+                        <span class="status-indicator {{ 'status-active' if department.api_enabled else 'status-inactive' }}"></span>
+                        <strong>API Status:</strong> {{ 'Active' if department.api_enabled else 'Inactive' }}
+                    </div>
+                    
+                    {% if department.api_enabled and department.api_key %}
+                        <div>
+                            <label for="api-key">Your API Key:</label>
+                            <div class="api-key-container">
+                                <input type="text" id="api-key" value="{{ department.api_key }}" readonly>
+                                <button id="copy-api-key"><i class="fas fa-copy"></i> Copy</button>
+                            </div>
+                            <p class="help-text">This key authenticates requests from your applications. Keep it secure and don't share it publicly.</p>
+                        </div>
+                    {% else %}
+                        <div>
+                            <p>
+                                {% if not department.api_enabled %}
+                                    API access is currently disabled. Enable it in the <a href="/dept/{{ department.code }}/settings">Department Settings</a> to generate an API key.
+                                {% else %}
+                                    No API key found. Generate one in the <a href="/dept/{{ department.code }}/settings">Department Settings</a>.
+                                {% endif %}
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <h3>Authentication</h3>
+                <p>All API requests require authentication using your API key. You can include it in either:</p>
+                <ul>
+                    <li>The <code>X-API-Key</code> HTTP header (recommended)</li>
+                    <li>A query parameter: <code>?api_key=YOUR_API_KEY</code></li>
+                </ul>
+                
+                <div class="code-sample">
+                    # Using the X-API-Key header (recommended)<br>
+                    curl -H "X-API-Key: {{ department.api_key or 'YOUR_API_KEY' }}" \<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;{{ request.host_url }}api/v1/department
+                    <br><br>
+                    # Using a query parameter<br>
+                    curl {{ request.host_url }}api/v1/department?api_key={{ department.api_key or 'YOUR_API_KEY' }}
+                </div>
+
+                <h3>Rate Limits</h3>
+                <p>To ensure service availability and prevent abuse, API requests are subject to rate limiting. Rate limits are applied per API key and vary by endpoint:</p>
+                
+                <table class="parameter-table">
+                    <thead>
+                        <tr>
+                            <th>Endpoint</th>
+                            <th>Rate Limit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>GET /api/v1/department</code></td>
+                            <td>100 requests per hour<br>30 requests per minute</td>
+                        </tr>
+                        <tr>
+                            <td><code>GET /api/v1/incidents</code></td>
+                            <td>100 requests per hour<br>20 requests per minute</td>
+                        </tr>
+                        <tr>
+                            <td><code>GET /api/v1/incidents/{id}</code></td>
+                            <td>300 requests per hour<br>60 requests per minute</td>
+                        </tr>
+                        <tr>
+                            <td><code>POST /api/v1/incidents</code></td>
+                            <td>50 requests per hour<br>10 requests per minute</td>
+                        </tr>
+                        <tr>
+                            <td><code>GET /api/v1/stations</code></td>
+                            <td>100 requests per hour<br>30 requests per minute</td>
+                        </tr>
+                        <tr>
+                            <td><code>GET /api/v1/stations/{id}</code></td>
+                            <td>300 requests per hour<br>60 requests per minute</td>
+                        </tr>
+                        <tr>
+                            <td><code>POST /api/v1/stations</code></td>
+                            <td>30 requests per hour<br>5 requests per minute</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <p>When a rate limit is exceeded, the API will return a <code>429 Too Many Requests</code> error. The response will include headers indicating the limit and when it will reset:</p>
+                
+                <ul>
+                    <li><code>X-RateLimit-Limit</code>: The rate limit period (e.g., "100 per 1 hour")</li>
+                    <li><code>X-RateLimit-Remaining</code>: The number of requests remaining in the current window</li>
+                    <li><code>X-RateLimit-Reset</code>: The time when the rate limit will reset (in seconds)</li>
+                </ul>
+            </div>
+            
+            <div class="api-section">
+                <h2 class="api-section-title">Endpoints</h2>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-get">GET</span>
+                        <span class="endpoint-url">/api/v1/department</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="endpoint-description">Get department information</div>
+                        
+                        <h4>Parameters</h4>
+                        <table class="parameter-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>None</td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <h4>Example Request</h4>
+                        <div class="code-sample code-request">
+                            curl -H "X-API-Key: {{ department.api_key or 'YOUR_API_KEY' }}" \<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;{{ request.host_url }}api/v1/department
+                        </div>
+                        
+                        <h4>Example Response</h4>
+                        <div class="code-sample">
+                            {<br>
+                            &nbsp;&nbsp;"success": true,<br>
+                            &nbsp;&nbsp;"department": {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"id": {{ department.id }},<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"code": "{{ department.code }}",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"name": "{{ department.name }}",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"department_type": "{{ department.department_type }}",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"num_stations": {{ department.num_stations }},<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;/* Additional department details omitted for brevity */<br>
+                            &nbsp;&nbsp;}<br>
+                            }
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-get">GET</span>
+                        <span class="endpoint-url">/api/v1/incidents</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="endpoint-description">Get all incidents for your department</div>
+                        
+                        <h4>Parameters</h4>
+                        <table class="parameter-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>start_date <span class="optional-badge">Optional</span></td>
+                                    <td>String</td>
+                                    <td>Filter incidents on or after this date (ISO format: YYYY-MM-DD)</td>
+                                </tr>
+                                <tr>
+                                    <td>end_date <span class="optional-badge">Optional</span></td>
+                                    <td>String</td>
+                                    <td>Filter incidents on or before this date (ISO format: YYYY-MM-DD)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <h4>Example Request</h4>
+                        <div class="code-sample code-request">
+                            # Get all incidents<br>
+                            curl -H "X-API-Key: {{ department.api_key or 'YOUR_API_KEY' }}" \<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;{{ request.host_url }}api/v1/incidents<br>
+                            <br>
+                            # Get incidents within a date range<br>
+                            curl -H "X-API-Key: {{ department.api_key or 'YOUR_API_KEY' }}" \<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"{{ request.host_url }}api/v1/incidents?start_date=2023-01-01&end_date=2023-12-31"
+                        </div>
+                        
+                        <h4>Example Response</h4>
+                        <div class="code-sample">
+                            {<br>
+                            &nbsp;&nbsp;"success": true,<br>
+                            &nbsp;&nbsp;"department_id": {{ department.id }},<br>
+                            &nbsp;&nbsp;"department_name": "{{ department.name }}",<br>
+                            &nbsp;&nbsp;"incident_count": 2,<br>
+                            &nbsp;&nbsp;"incidents": [<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;{<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id": 1,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"department_id": {{ department.id }},<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"title": "Medical Emergency",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"incident_number": "23-00001",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"incident_date": "2023-06-15T10:30:00",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"incident_type": "EMS",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/* Additional incident details omitted for brevity */<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;{<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id": 2,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/* Second incident omitted for brevity */<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                            &nbsp;&nbsp;]<br>
+                            }
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-get">GET</span>
+                        <span class="endpoint-url">/api/v1/incidents/{incident_id}</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="endpoint-description">Get a specific incident by ID</div>
+                        
+                        <h4>Parameters</h4>
+                        <table class="parameter-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>incident_id <span class="required-badge">Required</span></td>
+                                    <td>Integer</td>
+                                    <td>The ID of the incident to retrieve (in the URL path)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <h4>Example Request</h4>
+                        <div class="code-sample code-request">
+                            curl -H "X-API-Key: {{ department.api_key or 'YOUR_API_KEY' }}" \<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;{{ request.host_url }}api/v1/incidents/123
+                        </div>
+                        
+                        <h4>Example Response</h4>
+                        <div class="code-sample">
+                            {<br>
+                            &nbsp;&nbsp;"success": true,<br>
+                            &nbsp;&nbsp;"incident": {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"id": 123,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"department_id": {{ department.id }},<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"title": "Medical Emergency",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"incident_number": "23-00456",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"incident_date": "2023-07-23T14:30:00",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"incident_type": "EMS",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"location": "123 Main St",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"latitude": 37.7749,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"longitude": -122.4194,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"data": {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"patient_info": {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"age": 45,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"gender": "Male",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"chief_complaint": "Chest Pain"<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"created_at": "2023-07-23T14:35:20",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"updated_at": "2023-07-23T14:35:20"<br>
+                            &nbsp;&nbsp;}<br>
+                            }
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-post">POST</span>
+                        <span class="endpoint-url">/api/v1/incidents</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="endpoint-description">Create a new incident</div>
+                        
+                        <h4>Parameters</h4>
+                        <table class="parameter-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>incident_title <span class="required-badge">Required</span></td>
+                                    <td>String</td>
+                                    <td>A descriptive title for the incident</td>
+                                </tr>
+                                <tr>
+                                    <td>incident_number <span class="required-badge">Required</span></td>
+                                    <td>String</td>
+                                    <td>The department-assigned incident number</td>
+                                </tr>
+                                <tr>
+                                    <td>incident_date <span class="required-badge">Required</span></td>
+                                    <td>String</td>
+                                    <td>Date and time of the incident (ISO format)</td>
+                                </tr>
+                                <tr>
+                                    <td>incident_type <span class="required-badge">Required</span></td>
+                                    <td>String</td>
+                                    <td>Type of incident (e.g., "Fire", "EMS", "Hazmat")</td>
+                                </tr>
+                                <tr>
+                                    <td>location <span class="optional-badge">Optional</span></td>
+                                    <td>String</td>
+                                    <td>Address or description of the location</td>
+                                </tr>
+                                <tr>
+                                    <td>latitude <span class="optional-badge">Optional</span></td>
+                                    <td>Number</td>
+                                    <td>Latitude coordinate</td>
+                                </tr>
+                                <tr>
+                                    <td>longitude <span class="optional-badge">Optional</span></td>
+                                    <td>Number</td>
+                                    <td>Longitude coordinate</td>
+                                </tr>
+                                <tr>
+                                    <td>* <span class="optional-badge">Optional</span></td>
+                                    <td>Any</td>
+                                    <td>Additional fields will be stored in the data property</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <h4>Example Request</h4>
+                        <div class="code-sample code-request">
+                            curl -X POST \<br>
+                            &nbsp;&nbsp;-H "X-API-Key: {{ department.api_key or 'YOUR_API_KEY' }}" \<br>
+                            &nbsp;&nbsp;-H "Content-Type: application/json" \<br>
+                            &nbsp;&nbsp;-d '{<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"incident_title": "Medical Emergency",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"incident_number": "23-00456",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"incident_date": "2023-07-23T14:30:00",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"incident_type": "EMS",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"location": "123 Main St",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"latitude": 37.7749,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"longitude": -122.4194,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"patient_info": {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"age": 45,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"gender": "Male",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"chief_complaint": "Chest Pain"<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                            &nbsp;&nbsp;}' \<br>
+                            &nbsp;&nbsp;{{ request.host_url }}api/v1/incidents
+                        </div>
+                        
+                        <h4>Example Response</h4>
+                        <div class="code-sample">
+                            {<br>
+                            &nbsp;&nbsp;"success": true,<br>
+                            &nbsp;&nbsp;"message": "Incident created successfully via API",<br>
+                            &nbsp;&nbsp;"incident_id": 123<br>
+                            }
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-get">GET</span>
+                        <span class="endpoint-url">/api/v1/stations</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="endpoint-description">Get all stations for your department</div>
+                        
+                        <h4>Parameters</h4>
+                        <table class="parameter-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>None</td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <h4>Example Request</h4>
+                        <div class="code-sample code-request">
+                            curl -H "X-API-Key: {{ department.api_key or 'YOUR_API_KEY' }}" \<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;{{ request.host_url }}api/v1/stations
+                        </div>
+                        
+                        <h4>Example Response</h4>
+                        <div class="code-sample">
+                            {<br>
+                            &nbsp;&nbsp;"success": true,<br>
+                            &nbsp;&nbsp;"department_id": {{ department.id }},<br>
+                            &nbsp;&nbsp;"department_name": "{{ department.name }}",<br>
+                            &nbsp;&nbsp;"station_count": 2,<br>
+                            &nbsp;&nbsp;"stations": [<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;{<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id": 1,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"name": "Headquarters",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"station_number": "1",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"address": "123 Main St",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"city": "Anytown",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"state": "AZ",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"zip_code": "85001",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"latitude": 33.4484,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"longitude": -112.0740,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"personnel_count": 25,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"apparatus": {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"engine": 2,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ladder": 1,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ambulance": 2<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"created_at": "2023-05-01T08:00:00"<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;{<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"id": 2,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/* Second station omitted for brevity */<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                            &nbsp;&nbsp;]<br>
+                            }
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-get">GET</span>
+                        <span class="endpoint-url">/api/v1/stations/{station_id}</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="endpoint-description">Get a specific station by ID</div>
+                        
+                        <h4>Parameters</h4>
+                        <table class="parameter-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>station_id <span class="required-badge">Required</span></td>
+                                    <td>Integer</td>
+                                    <td>The ID of the station to retrieve (in the URL path)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <h4>Example Request</h4>
+                        <div class="code-sample code-request">
+                            curl -H "X-API-Key: {{ department.api_key or 'YOUR_API_KEY' }}" \<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;{{ request.host_url }}api/v1/stations/1
+                        </div>
+                        
+                        <h4>Example Response</h4>
+                        <div class="code-sample">
+                            {<br>
+                            &nbsp;&nbsp;"success": true,<br>
+                            &nbsp;&nbsp;"station": {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"id": 1,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"name": "Headquarters",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"station_number": "1",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"address": "123 Main St",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"city": "Anytown",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"state": "AZ",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"zip_code": "85001",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"latitude": 33.4484,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"longitude": -112.0740,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"personnel_count": 25,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"apparatus": {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"engine": 2,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ladder": 1,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ambulance": 2<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"created_at": "2023-05-01T08:00:00"<br>
+                            &nbsp;&nbsp;}<br>
+                            }
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="http-method method-post">POST</span>
+                        <span class="endpoint-url">/api/v1/stations</span>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="endpoint-description">Create a new station</div>
+                        
+                        <h4>Parameters</h4>
+                        <table class="parameter-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>name <span class="required-badge">Required</span></td>
+                                    <td>String</td>
+                                    <td>The name of the station</td>
+                                </tr>
+                                <tr>
+                                    <td>station_number <span class="required-badge">Required</span></td>
+                                    <td>String</td>
+                                    <td>The station number (must be unique in your department)</td>
+                                </tr>
+                                <tr>
+                                    <td>address <span class="optional-badge">Optional</span></td>
+                                    <td>String</td>
+                                    <td>Street address of the station</td>
+                                </tr>
+                                <tr>
+                                    <td>city <span class="optional-badge">Optional</span></td>
+                                    <td>String</td>
+                                    <td>City where the station is located</td>
+                                </tr>
+                                <tr>
+                                    <td>state <span class="optional-badge">Optional</span></td>
+                                    <td>String</td>
+                                    <td>State where the station is located</td>
+                                </tr>
+                                <tr>
+                                    <td>zip_code <span class="optional-badge">Optional</span></td>
+                                    <td>String</td>
+                                    <td>ZIP code of the station</td>
+                                </tr>
+                                <tr>
+                                    <td>latitude <span class="optional-badge">Optional</span></td>
+                                    <td>Number</td>
+                                    <td>Latitude coordinate</td>
+                                </tr>
+                                <tr>
+                                    <td>longitude <span class="optional-badge">Optional</span></td>
+                                    <td>Number</td>
+                                    <td>Longitude coordinate</td>
+                                </tr>
+                                <tr>
+                                    <td>personnel_count <span class="optional-badge">Optional</span></td>
+                                    <td>Integer</td>
+                                    <td>Number of personnel assigned to this station</td>
+                                </tr>
+                                <tr>
+                                    <td>apparatus <span class="optional-badge">Optional</span></td>
+                                    <td>Object</td>
+                                    <td>Dictionary of apparatus types and counts (e.g., {"engine": 2, "ambulance": 1})</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <h4>Example Request</h4>
+                        <div class="code-sample code-request">
+                            curl -X POST \<br>
+                            &nbsp;&nbsp;-H "X-API-Key: {{ department.api_key or 'YOUR_API_KEY' }}" \<br>
+                            &nbsp;&nbsp;-H "Content-Type: application/json" \<br>
+                            &nbsp;&nbsp;-d '{<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"name": "North Station",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"station_number": "3",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"address": "456 North Ave",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"city": "Anytown",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"state": "AZ",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"zip_code": "85002",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"latitude": 33.4681,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"longitude": -112.0648,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"personnel_count": 15,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"apparatus": {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"engine": 1,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"ambulance": 1,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"brush": 1<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                            &nbsp;&nbsp;}' \<br>
+                            &nbsp;&nbsp;{{ request.host_url }}api/v1/stations
+                        </div>
+                        
+                        <h4>Example Response</h4>
+                        <div class="code-sample">
+                            {<br>
+                            &nbsp;&nbsp;"success": true,<br>
+                            &nbsp;&nbsp;"message": "Station created successfully via API",<br>
+                            &nbsp;&nbsp;"station_id": 3<br>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="api-section">
+                <h2 class="api-section-title">Error Handling</h2>
+                <p>
+                    When an error occurs, the API returns a JSON object with an error message and an appropriate HTTP status code:
+                </p>
+                
+                <div class="code-sample">
+                    {<br>
+                    &nbsp;&nbsp;"error": "Invalid API key"<br>
+                    }
+                </div>
+                
+                <h4>Common Error Codes</h4>
+                <table class="parameter-table">
+                    <thead>
+                        <tr>
+                            <th>Status Code</th>
+                            <th>Description</th>
+                            <th>Possible Reasons</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>400</td>
+                            <td>Bad Request</td>
+                            <td>Missing required fields, invalid data format</td>
+                        </tr>
+                        <tr>
+                            <td>401</td>
+                            <td>Unauthorized</td>
+                            <td>Invalid or missing API key</td>
+                        </tr>
+                        <tr>
+                            <td>403</td>
+                            <td>Forbidden</td>
+                            <td>API access is disabled for your department</td>
+                        </tr>
+                        <tr>
+                            <td>404</td>
+                            <td>Not Found</td>
+                            <td>Requested resource does not exist</td>
+                        </tr>
+                        <tr>
+                            <td>429</td>
+                            <td>Too Many Requests</td>
+                            <td>Rate limit exceeded</td>
+                        </tr>
+                        <tr>
+                            <td>500</td>
+                            <td>Internal Server Error</td>
+                            <td>Server encountered an unexpected error</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h4>Handling Rate Limits</h4>
+                <p>
+                    When you receive a 429 error, your client should back off and retry after a delay. 
+                    The response includes an <code>X-RateLimit-Reset</code> header that indicates when the rate limit will reset.
+                </p>
+                
+                <div class="code-sample">
+                    # Example of handling rate limits in Python<br>
+                    import time<br>
+                    import requests<br><br>
+                    
+                    API_KEY = "{{ department.api_key or 'YOUR_API_KEY' }}"<br>
+                    BASE_URL = "{{ request.host_url }}api/v1"<br><br>
+                    
+                    def make_request_with_backoff(endpoint, max_retries=3):<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;for attempt in range(max_retries):<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;response = requests.get(<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;f"{BASE_URL}/{endpoint}",<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;headers={"X-API-Key": API_KEY}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)<br><br>
+                    
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if response.status_code == 429:<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Get the reset time and wait<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;reset_time = int(response.headers.get('X-RateLimit-Reset', 60))<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print(f"Rate limit exceeded. Waiting {reset_time} seconds...")<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;time.sleep(reset_time)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue<br><br>
+                    
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return response<br><br>
+                    
+                    &nbsp;&nbsp;&nbsp;&nbsp;return None # Max retries exceeded
+                </div>
+            </div>
+            
+            {% if department.api_enabled and department.api_key %}
+                <div class="api-section">
+                    <h2 class="api-section-title">Integration Examples</h2>
+                    <p>Here are code samples for integrating with our API in different programming languages:</p>
+                    
+                    <h4>Python</h4>
+                    <div class="code-sample">
+                        import requests<br><br>
+                        
+                        API_KEY = "{{ department.api_key }}"<br>
+                        BASE_URL = "{{ request.host_url }}api/v1"<br><br>
+                        
+                        # Get department info<br>
+                        response = requests.get(<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;f"{BASE_URL}/department",<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;headers={"X-API-Key": API_KEY}<br>
+                        )<br>
+                        print(response.json())<br><br>
+                        
+                        # Create a new incident<br>
+                        new_incident = {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;"incident_title": "Structure Fire",<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;"incident_number": "23-00789",<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;"incident_date": "2023-08-15T18:45:00",<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;"incident_type": "Fire",<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;"location": "456 Oak Street"<br>
+                        }<br><br>
+                        
+                        response = requests.post(<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;f"{BASE_URL}/incidents",<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;headers={"X-API-Key": API_KEY},<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;json=new_incident<br>
+                        )<br>
+                        print(response.json())
+                    </div>
+                    
+                    <h4>JavaScript</h4>
+                    <div class="code-sample">
+                        const API_KEY = "{{ department.api_key }}";<br>
+                        const BASE_URL = "{{ request.host_url }}api/v1";<br><br>
+                        
+                        // Get department info<br>
+                        fetch(`${BASE_URL}/department`, {<br>
+                        &nbsp;&nbsp;headers: {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;"X-API-Key": API_KEY<br>
+                        &nbsp;&nbsp;}<br>
+                        })<br>
+                        .then(response => response.json())<br>
+                        .then(data => console.log(data))<br>
+                        .catch(error => console.error('Error:', error));<br><br>
+                        
+                        // Create a new incident<br>
+                        const newIncident = {<br>
+                        &nbsp;&nbsp;incident_title: "Vehicle Accident",<br>
+                        &nbsp;&nbsp;incident_number: "23-00345",<br>
+                        &nbsp;&nbsp;incident_date: "2023-09-10T08:15:00",<br>
+                        &nbsp;&nbsp;incident_type: "MVA",<br>
+                        &nbsp;&nbsp;location: "Main St & Oak Ave"<br>
+                        };<br><br>
+                        
+                        fetch(`${BASE_URL}/incidents`, {<br>
+                        &nbsp;&nbsp;method: 'POST',<br>
+                        &nbsp;&nbsp;headers: {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;"X-API-Key": API_KEY,<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;"Content-Type": "application/json"<br>
+                        &nbsp;&nbsp;},<br>
+                        &nbsp;&nbsp;body: JSON.stringify(newIncident)<br>
+                        })<br>
+                        .then(response => response.json())<br>
+                        .then(data => console.log(data))<br>
+                        .catch(error => console.error('Error:', error));
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Copy API key to clipboard
+            const copyButton = document.getElementById('copy-api-key');
+            if (copyButton) {
+                copyButton.addEventListener('click', function() {
+                    const apiKeyInput = document.getElementById('api-key');
+                    apiKeyInput.select();
+                    document.execCommand('copy');
+                    
+                    // Show feedback
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    
+                    // Reset after 2 seconds
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                    }, 2000);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

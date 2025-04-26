@@ -1,0 +1,3440 @@
+{
+  "metadata": {
+    "created": "2025-04-05T21:46:45.958102",
+    "id": "ed42112d-78a1-41d0-b48f-950303aabbe8",
+    "version": "1.0"
+  },
+  "data": [
+    {
+      "id": "3bf29fb9-3617-45cc-a2b4-3e61e17583de",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-73706",
+      "type": "Medical Emergency",
+      "category": "EMS",
+      "priority": 2,
+      "location": {
+        "latitude": 47.59276558622536,
+        "longitude": -122.37159344778213,
+        "address": "3828 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98165"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-142-6437"
+      },
+      "times": {
+        "received": "2024-04-06T12:25:44.948431",
+        "dispatched": "2024-04-06T12:25:44.948431",
+        "first_unit_enroute": "2024-04-06T12:27:16.948431",
+        "first_unit_arrived": "2024-04-06T12:42:04.948431",
+        "last_unit_cleared": "2024-04-06T13:55:04.948431"
+      },
+      "units": [
+        {
+          "unit_id": "E-8",
+          "unit_type": "Engine",
+          "station_id": "STA-14",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-04-06T12:25:44.948431",
+            "enroute": "2024-04-06T12:27:31.948431",
+            "arrived": "2024-04-06T12:41:23.948431",
+            "cleared": "2024-04-06T13:50:57.948431"
+          }
+        },
+        {
+          "unit_id": "B-6",
+          "unit_type": "Battalion Chief",
+          "station_id": "STA-13",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-04-06T12:25:44.948431",
+            "enroute": "2024-04-06T12:27:25.948431",
+            "arrived": "2024-04-06T12:43:33.948431",
+            "cleared": "2024-04-06T13:48:12.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Medical Emergency",
+      "created_at": "2025-04-05T21:46:45.950645",
+      "updated_at": "2025-04-05T21:46:45.950646"
+    },
+    {
+      "id": "85067f52-8785-401a-aeb7-b57b8f26308f",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-93257",
+      "type": "Stroke",
+      "category": "EMS",
+      "priority": 5,
+      "location": {
+        "latitude": 47.69830413264924,
+        "longitude": -122.30573065683292,
+        "address": "9655 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98134"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-354-6731"
+      },
+      "times": {
+        "received": "2024-04-20T05:26:36.948431",
+        "dispatched": "2024-04-20T05:26:36.948431",
+        "first_unit_enroute": "2024-04-20T05:28:34.948431",
+        "first_unit_arrived": "2024-04-20T05:43:29.948431",
+        "last_unit_cleared": "2024-04-20T07:02:29.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-11",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-1",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-04-20T05:26:36.948431",
+            "enroute": "2024-04-20T05:28:18.948431",
+            "arrived": "2024-04-20T05:43:06.948431",
+            "cleared": "2024-04-20T06:57:22.948431"
+          }
+        },
+        {
+          "unit_id": "M-15",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-3",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-04-20T05:26:36.948431",
+            "enroute": "2024-04-20T05:28:08.948431",
+            "arrived": "2024-04-20T05:44:46.948431",
+            "cleared": "2024-04-20T07:02:33.948431"
+          }
+        },
+        {
+          "unit_id": "M-9",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-8",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-04-20T05:26:36.948431",
+            "enroute": "2024-04-20T05:28:21.948431",
+            "arrived": "2024-04-20T05:42:57.948431",
+            "cleared": "2024-04-20T07:05:07.948431"
+          }
+        }
+      ],
+      "outcome": "Fire Extinguished",
+      "notes": "Test incident generated for Stroke",
+      "created_at": "2025-04-05T21:46:45.950332",
+      "updated_at": "2025-04-05T21:46:45.950333"
+    },
+    {
+      "id": "a038e0ef-2af2-44d2-909b-e8fac0069adc",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-26713",
+      "type": "Fall",
+      "category": "EMS",
+      "priority": 1,
+      "location": {
+        "latitude": 47.66779195614023,
+        "longitude": -122.5662923984091,
+        "address": "8148 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98121"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-112-7047"
+      },
+      "times": {
+        "received": "2024-05-09T01:03:04.948431",
+        "dispatched": "2024-05-09T01:03:04.948431",
+        "first_unit_enroute": "2024-05-09T01:05:10.948431",
+        "first_unit_arrived": "2024-05-09T01:08:45.948431",
+        "last_unit_cleared": "2024-05-09T01:24:45.948431"
+      },
+      "units": [
+        {
+          "unit_id": "L-9",
+          "unit_type": "Ladder/Truck",
+          "station_id": "STA-8",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-05-09T01:03:04.948431",
+            "enroute": "2024-05-09T01:05:31.948431",
+            "arrived": "2024-05-09T01:07:36.948431",
+            "cleared": "2024-05-09T01:30:58.948431"
+          }
+        },
+        {
+          "unit_id": "C-1",
+          "unit_type": "Command",
+          "station_id": "STA-15",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-05-09T01:03:04.948431",
+            "enroute": "2024-05-09T01:05:30.948431",
+            "arrived": "2024-05-09T01:06:52.948431",
+            "cleared": "2024-05-09T01:15:25.948431"
+          }
+        },
+        {
+          "unit_id": "L-3",
+          "unit_type": "Ladder/Truck",
+          "station_id": "STA-16",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-05-09T01:03:04.948431",
+            "enroute": "2024-05-09T01:05:15.948431",
+            "arrived": "2024-05-09T01:10:43.948431",
+            "cleared": "2024-05-09T01:25:34.948431"
+          }
+        },
+        {
+          "unit_id": "M-15",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-17",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-05-09T01:03:04.948431",
+            "enroute": "2024-05-09T01:04:54.948431",
+            "arrived": "2024-05-09T01:07:19.948431",
+            "cleared": "2024-05-09T01:28:39.948431"
+          }
+        }
+      ],
+      "outcome": "False Alarm",
+      "notes": "Test incident generated for Fall",
+      "created_at": "2025-04-05T21:46:45.950883",
+      "updated_at": "2025-04-05T21:46:45.950884"
+    },
+    {
+      "id": "ba35b060-21d5-4a72-9d99-243cb272a1ac",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-21924",
+      "type": "Respiratory Distress",
+      "category": "EMS",
+      "priority": 5,
+      "location": {
+        "latitude": 47.562784022861074,
+        "longitude": -122.17327650679954,
+        "address": "439 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98127"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-172-7756"
+      },
+      "times": {
+        "received": "2024-05-24T22:33:40.948431",
+        "dispatched": "2024-05-24T22:33:40.948431",
+        "first_unit_enroute": "2024-05-24T22:34:45.948431",
+        "first_unit_arrived": "2024-05-24T22:43:37.948431",
+        "last_unit_cleared": "2024-05-25T00:42:37.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-3",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-15",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-05-24T22:33:40.948431",
+            "enroute": "2024-05-24T22:34:51.948431",
+            "arrived": "2024-05-24T22:45:17.948431",
+            "cleared": "2024-05-25T00:38:26.948431"
+          }
+        },
+        {
+          "unit_id": "E-8",
+          "unit_type": "Engine",
+          "station_id": "STA-18",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-05-24T22:33:40.948431",
+            "enroute": "2024-05-24T22:35:09.948431",
+            "arrived": "2024-05-24T22:44:58.948431",
+            "cleared": "2024-05-25T00:34:26.948431"
+          }
+        }
+      ],
+      "outcome": "Other",
+      "notes": "Test incident generated for Respiratory Distress",
+      "created_at": "2025-04-05T21:46:45.951162",
+      "updated_at": "2025-04-05T21:46:45.951163"
+    },
+    {
+      "id": "49bc8863-1aaf-4d32-b381-d0e962055bcb",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-52225",
+      "type": "Public Assist",
+      "category": "Service",
+      "priority": 3,
+      "location": {
+        "latitude": 47.745831957529305,
+        "longitude": -122.40579597506238,
+        "address": "365 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98197"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-288-7936"
+      },
+      "times": {
+        "received": "2024-06-12T19:35:32.948431",
+        "dispatched": "2024-06-12T19:35:32.948431",
+        "first_unit_enroute": "2024-06-12T19:38:05.948431",
+        "first_unit_arrived": "2024-06-12T19:47:24.948431",
+        "last_unit_cleared": "2024-06-12T20:49:24.948431"
+      },
+      "units": [
+        {
+          "unit_id": "E-3",
+          "unit_type": "Engine",
+          "station_id": "STA-9",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-06-12T19:35:32.948431",
+            "enroute": "2024-06-12T19:37:45.948431",
+            "arrived": "2024-06-12T19:47:27.948431",
+            "cleared": "2024-06-12T20:47:16.948431"
+          }
+        },
+        {
+          "unit_id": "M-4",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-3",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-06-12T19:35:32.948431",
+            "enroute": "2024-06-12T19:38:29.948431",
+            "arrived": "2024-06-12T19:45:32.948431",
+            "cleared": "2024-06-12T20:52:18.948431"
+          }
+        },
+        {
+          "unit_id": "M-18",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-17",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-06-12T19:35:32.948431",
+            "enroute": "2024-06-12T19:37:43.948431",
+            "arrived": "2024-06-12T19:46:00.948431",
+            "cleared": "2024-06-12T20:52:57.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Public Assist",
+      "created_at": "2025-04-05T21:46:45.949077",
+      "updated_at": "2025-04-05T21:46:45.949078"
+    },
+    {
+      "id": "846997e0-9ba9-409b-bc2f-8ef45196bfbd",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-65053",
+      "type": "Trash/Dumpster Fire",
+      "category": "Fire",
+      "priority": 1,
+      "location": {
+        "latitude": 47.81922107063837,
+        "longitude": -122.46406738447651,
+        "address": "9417 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98186"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-340-5410"
+      },
+      "times": {
+        "received": "2024-06-14T22:39:03.948431",
+        "dispatched": "2024-06-14T22:39:03.948431",
+        "first_unit_enroute": "2024-06-14T22:40:03.948431",
+        "first_unit_arrived": "2024-06-14T22:48:19.948431",
+        "last_unit_cleared": "2024-06-14T23:21:19.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-15",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-17",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-06-14T22:39:03.948431",
+            "enroute": "2024-06-14T22:39:43.948431",
+            "arrived": "2024-06-14T22:47:39.948431",
+            "cleared": "2024-06-14T23:20:50.948431"
+          }
+        },
+        {
+          "unit_id": "M-5",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-15",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-06-14T22:39:03.948431",
+            "enroute": "2024-06-14T22:40:33.948431",
+            "arrived": "2024-06-14T22:49:49.948431",
+            "cleared": "2024-06-14T23:19:06.948431"
+          }
+        }
+      ],
+      "outcome": "Other",
+      "notes": "Test incident generated for Trash/Dumpster Fire",
+      "created_at": "2025-04-05T21:46:45.950410",
+      "updated_at": "2025-04-05T21:46:45.950411"
+    },
+    {
+      "id": "ca41aa2d-b75b-403e-87d3-3076f0a39c2d",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-17943",
+      "type": "Cardiac Arrest",
+      "category": "EMS",
+      "priority": 2,
+      "location": {
+        "latitude": 47.57317210365307,
+        "longitude": -121.97105052968375,
+        "address": "9622 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98168"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-208-2763"
+      },
+      "times": {
+        "received": "2024-06-22T23:54:42.948431",
+        "dispatched": "2024-06-22T23:54:42.948431",
+        "first_unit_enroute": "2024-06-22T23:56:11.948431",
+        "first_unit_arrived": "2024-06-23T00:08:36.948431",
+        "last_unit_cleared": "2024-06-23T00:50:36.948431"
+      },
+      "units": [
+        {
+          "unit_id": "C-9",
+          "unit_type": "Command",
+          "station_id": "STA-19",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-06-22T23:54:42.948431",
+            "enroute": "2024-06-22T23:56:14.948431",
+            "arrived": "2024-06-23T00:09:17.948431",
+            "cleared": "2024-06-23T00:52:17.948431"
+          }
+        },
+        {
+          "unit_id": "L-5",
+          "unit_type": "Ladder/Truck",
+          "station_id": "STA-4",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-06-22T23:54:42.948431",
+            "enroute": "2024-06-22T23:56:06.948431",
+            "arrived": "2024-06-23T00:09:34.948431",
+            "cleared": "2024-06-23T00:40:51.948431"
+          }
+        },
+        {
+          "unit_id": "M-16",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-12",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-06-22T23:54:42.948431",
+            "enroute": "2024-06-22T23:56:24.948431",
+            "arrived": "2024-06-23T00:10:04.948431",
+            "cleared": "2024-06-23T00:46:39.948431"
+          }
+        },
+        {
+          "unit_id": "L-4",
+          "unit_type": "Ladder/Truck",
+          "station_id": "STA-15",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-06-22T23:54:42.948431",
+            "enroute": "2024-06-22T23:56:29.948431",
+            "arrived": "2024-06-23T00:09:50.948431",
+            "cleared": "2024-06-23T00:41:36.948431"
+          }
+        }
+      ],
+      "outcome": "Treated and Released",
+      "notes": "Test incident generated for Cardiac Arrest",
+      "created_at": "2025-04-05T21:46:45.949008",
+      "updated_at": "2025-04-05T21:46:45.949009"
+    },
+    {
+      "id": "01fd4165-3724-4799-a0ea-67d6281520fb",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-49436",
+      "type": "Medical Emergency",
+      "category": "EMS",
+      "priority": 4,
+      "location": {
+        "latitude": 47.62649057624156,
+        "longitude": -122.47556731874337,
+        "address": "2923 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98160"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-207-5685"
+      },
+      "times": {
+        "received": "2024-06-25T20:42:10.948431",
+        "dispatched": "2024-06-25T20:42:10.948431",
+        "first_unit_enroute": "2024-06-25T20:44:58.948431",
+        "first_unit_arrived": "2024-06-25T20:49:42.948431",
+        "last_unit_cleared": "2024-06-25T21:34:42.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-12",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-3",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-06-25T20:42:10.948431",
+            "enroute": "2024-06-25T20:44:28.948431",
+            "arrived": "2024-06-25T20:48:52.948431",
+            "cleared": "2024-06-25T21:37:51.948431"
+          }
+        },
+        {
+          "unit_id": "M-7",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-3",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-06-25T20:42:10.948431",
+            "enroute": "2024-06-25T20:44:44.948431",
+            "arrived": "2024-06-25T20:48:29.948431",
+            "cleared": "2024-06-25T21:43:41.948431"
+          }
+        },
+        {
+          "unit_id": "E-5",
+          "unit_type": "Engine",
+          "station_id": "STA-11",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-06-25T20:42:10.948431",
+            "enroute": "2024-06-25T20:44:54.948431",
+            "arrived": "2024-06-25T20:50:14.948431",
+            "cleared": "2024-06-25T21:39:29.948431"
+          }
+        },
+        {
+          "unit_id": "E-6",
+          "unit_type": "Engine",
+          "station_id": "STA-19",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-06-25T20:42:10.948431",
+            "enroute": "2024-06-25T20:45:21.948431",
+            "arrived": "2024-06-25T20:48:31.948431",
+            "cleared": "2024-06-25T21:41:05.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Medical Emergency",
+      "created_at": "2025-04-05T21:46:45.951061",
+      "updated_at": "2025-04-05T21:46:45.951062"
+    },
+    {
+      "id": "8b256ce2-7f6f-49d9-a0c4-96bcbdc1e3cf",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-82047",
+      "type": "Respiratory Distress",
+      "category": "EMS",
+      "priority": 3,
+      "location": {
+        "latitude": 47.41277510348615,
+        "longitude": -122.43632231236701,
+        "address": "7168 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98191"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-537-6878"
+      },
+      "times": {
+        "received": "2024-07-03T09:01:51.948431",
+        "dispatched": "2024-07-03T09:01:51.948431",
+        "first_unit_enroute": "2024-07-03T09:02:25.948431",
+        "first_unit_arrived": "2024-07-03T09:08:53.948431",
+        "last_unit_cleared": "2024-07-03T09:52:53.948431"
+      },
+      "units": [
+        {
+          "unit_id": "B-4",
+          "unit_type": "Battalion Chief",
+          "station_id": "STA-3",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-07-03T09:01:51.948431",
+            "enroute": "2024-07-03T09:02:39.948431",
+            "arrived": "2024-07-03T09:10:22.948431",
+            "cleared": "2024-07-03T09:47:54.948431"
+          }
+        },
+        {
+          "unit_id": "L-1",
+          "unit_type": "Ladder/Truck",
+          "station_id": "STA-3",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-07-03T09:01:51.948431",
+            "enroute": "2024-07-03T09:02:00.948431",
+            "arrived": "2024-07-03T09:08:36.948431",
+            "cleared": "2024-07-03T09:43:03.948431"
+          }
+        },
+        {
+          "unit_id": "E-1",
+          "unit_type": "Engine",
+          "station_id": "STA-8",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-07-03T09:01:51.948431",
+            "enroute": "2024-07-03T09:02:55.948431",
+            "arrived": "2024-07-03T09:09:23.948431",
+            "cleared": "2024-07-03T09:51:53.948431"
+          }
+        },
+        {
+          "unit_id": "E-1",
+          "unit_type": "Engine",
+          "station_id": "STA-7",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-07-03T09:01:51.948431",
+            "enroute": "2024-07-03T09:02:44.948431",
+            "arrived": "2024-07-03T09:08:50.948431",
+            "cleared": "2024-07-03T09:56:26.948431"
+          }
+        }
+      ],
+      "outcome": "Refused Treatment",
+      "notes": "Test incident generated for Respiratory Distress",
+      "created_at": "2025-04-05T21:46:45.949923",
+      "updated_at": "2025-04-05T21:46:45.949925"
+    },
+    {
+      "id": "23907b31-503a-4af3-9d9c-ebd6aaf252f9",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-88212",
+      "type": "Medical Emergency",
+      "category": "EMS",
+      "priority": 4,
+      "location": {
+        "latitude": 47.571435801642686,
+        "longitude": -122.06103705684286,
+        "address": "2933 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98186"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-832-3671"
+      },
+      "times": {
+        "received": "2024-07-06T17:02:14.948431",
+        "dispatched": "2024-07-06T17:02:14.948431",
+        "first_unit_enroute": "2024-07-06T17:04:47.948431",
+        "first_unit_arrived": "2024-07-06T17:19:02.948431",
+        "last_unit_cleared": "2024-07-06T17:40:02.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-3",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-20",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-07-06T17:02:14.948431",
+            "enroute": "2024-07-06T17:05:09.948431",
+            "arrived": "2024-07-06T17:19:42.948431",
+            "cleared": "2024-07-06T17:40:30.948431"
+          }
+        },
+        {
+          "unit_id": "E-3",
+          "unit_type": "Engine",
+          "station_id": "STA-20",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-07-06T17:02:14.948431",
+            "enroute": "2024-07-06T17:04:38.948431",
+            "arrived": "2024-07-06T17:18:02.948431",
+            "cleared": "2024-07-06T17:39:22.948431"
+          }
+        }
+      ],
+      "outcome": "Other",
+      "notes": "Test incident generated for Medical Emergency",
+      "created_at": "2025-04-05T21:46:45.949848",
+      "updated_at": "2025-04-05T21:46:45.949849"
+    },
+    {
+      "id": "8a54b04b-e552-4ac7-9ca0-c1eb054d353d",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-28814",
+      "type": "Traumatic Injury",
+      "category": "EMS",
+      "priority": 1,
+      "location": {
+        "latitude": 47.79326021103348,
+        "longitude": -122.61822720359241,
+        "address": "100 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98180"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-409-9072"
+      },
+      "times": {
+        "received": "2024-07-14T01:02:18.948431",
+        "dispatched": "2024-07-14T01:02:18.948431",
+        "first_unit_enroute": "2024-07-14T01:04:59.948431",
+        "first_unit_arrived": "2024-07-14T01:19:28.948431",
+        "last_unit_cleared": "2024-07-14T03:18:28.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-4",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-3",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-07-14T01:02:18.948431",
+            "enroute": "2024-07-14T01:05:26.948431",
+            "arrived": "2024-07-14T01:20:25.948431",
+            "cleared": "2024-07-14T03:19:17.948431"
+          }
+        },
+        {
+          "unit_id": "E-6",
+          "unit_type": "Engine",
+          "station_id": "STA-9",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-07-14T01:02:18.948431",
+            "enroute": "2024-07-14T01:05:07.948431",
+            "arrived": "2024-07-14T01:20:17.948431",
+            "cleared": "2024-07-14T03:25:02.948431"
+          }
+        },
+        {
+          "unit_id": "E-9",
+          "unit_type": "Engine",
+          "station_id": "STA-7",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-07-14T01:02:18.948431",
+            "enroute": "2024-07-14T01:05:05.948431",
+            "arrived": "2024-07-14T01:20:22.948431",
+            "cleared": "2024-07-14T03:24:15.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Traumatic Injury",
+      "created_at": "2025-04-05T21:46:45.950458",
+      "updated_at": "2025-04-05T21:46:45.950459"
+    },
+    {
+      "id": "3d983855-e8d6-4e2f-ad0b-3c1060af874d",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-36131",
+      "type": "Traumatic Injury",
+      "category": "EMS",
+      "priority": 2,
+      "location": {
+        "latitude": 47.57622098748845,
+        "longitude": -122.34010048001882,
+        "address": "2316 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98197"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-875-6248"
+      },
+      "times": {
+        "received": "2024-07-14T15:44:38.948431",
+        "dispatched": "2024-07-14T15:44:38.948431",
+        "first_unit_enroute": "2024-07-14T15:47:02.948431",
+        "first_unit_arrived": "2024-07-14T15:55:03.948431",
+        "last_unit_cleared": "2024-07-14T16:37:03.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-12",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-15",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-07-14T15:44:38.948431",
+            "enroute": "2024-07-14T15:47:18.948431",
+            "arrived": "2024-07-14T15:53:45.948431",
+            "cleared": "2024-07-14T16:40:57.948431"
+          }
+        },
+        {
+          "unit_id": "M-5",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-7",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-07-14T15:44:38.948431",
+            "enroute": "2024-07-14T15:46:55.948431",
+            "arrived": "2024-07-14T15:53:09.948431",
+            "cleared": "2024-07-14T16:27:22.948431"
+          }
+        },
+        {
+          "unit_id": "C-4",
+          "unit_type": "Command",
+          "station_id": "STA-10",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-07-14T15:44:38.948431",
+            "enroute": "2024-07-14T15:47:14.948431",
+            "arrived": "2024-07-14T15:54:24.948431",
+            "cleared": "2024-07-14T16:43:32.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Traumatic Injury",
+      "created_at": "2025-04-05T21:46:45.950050",
+      "updated_at": "2025-04-05T21:46:45.950052"
+    },
+    {
+      "id": "db714f08-464e-4752-a8c4-510ae599652f",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-17496",
+      "type": "Traumatic Injury",
+      "category": "EMS",
+      "priority": 1,
+      "location": {
+        "latitude": 47.807635550314544,
+        "longitude": -122.0908422157599,
+        "address": "4846 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98114"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-132-3821"
+      },
+      "times": {
+        "received": "2024-07-19T18:22:33.948431",
+        "dispatched": "2024-07-19T18:22:33.948431",
+        "first_unit_enroute": "2024-07-19T18:24:29.948431",
+        "first_unit_arrived": "2024-07-19T18:27:51.948431",
+        "last_unit_cleared": "2024-07-19T18:46:51.948431"
+      },
+      "units": [
+        {
+          "unit_id": "B-5",
+          "unit_type": "Battalion Chief",
+          "station_id": "STA-20",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-07-19T18:22:33.948431",
+            "enroute": "2024-07-19T18:24:53.948431",
+            "arrived": "2024-07-19T18:29:01.948431",
+            "cleared": "2024-07-19T18:38:04.948431"
+          }
+        },
+        {
+          "unit_id": "E-3",
+          "unit_type": "Engine",
+          "station_id": "STA-3",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-07-19T18:22:33.948431",
+            "enroute": "2024-07-19T18:24:12.948431",
+            "arrived": "2024-07-19T18:29:28.948431",
+            "cleared": "2024-07-19T18:51:28.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Traumatic Injury",
+      "created_at": "2025-04-05T21:46:45.948604",
+      "updated_at": "2025-04-05T21:46:45.948606"
+    },
+    {
+      "id": "7dcc773e-7186-48d8-aa54-9cc57c95c967",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-35812",
+      "type": "Medical Emergency",
+      "category": "EMS",
+      "priority": 3,
+      "location": {
+        "latitude": 47.66356088564147,
+        "longitude": -121.97070074438963,
+        "address": "1784 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98194"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-171-9853"
+      },
+      "times": {
+        "received": "2024-07-26T23:48:56.948431",
+        "dispatched": "2024-07-26T23:48:56.948431",
+        "first_unit_enroute": "2024-07-26T23:50:07.948431",
+        "first_unit_arrived": "2024-07-26T23:59:58.948431",
+        "last_unit_cleared": "2024-07-27T01:07:58.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-8",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-16",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-07-26T23:48:56.948431",
+            "enroute": "2024-07-26T23:49:49.948431",
+            "arrived": "2024-07-27T00:00:32.948431",
+            "cleared": "2024-07-27T01:10:36.948431"
+          }
+        },
+        {
+          "unit_id": "C-4",
+          "unit_type": "Command",
+          "station_id": "STA-3",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-07-26T23:48:56.948431",
+            "enroute": "2024-07-26T23:50:01.948431",
+            "arrived": "2024-07-27T00:01:11.948431",
+            "cleared": "2024-07-27T01:01:03.948431"
+          }
+        },
+        {
+          "unit_id": "M-13",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-13",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-07-26T23:48:56.948431",
+            "enroute": "2024-07-26T23:50:12.948431",
+            "arrived": "2024-07-27T00:01:18.948431",
+            "cleared": "2024-07-27T01:09:52.948431"
+          }
+        },
+        {
+          "unit_id": "E-3",
+          "unit_type": "Engine",
+          "station_id": "STA-18",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-07-26T23:48:56.948431",
+            "enroute": "2024-07-26T23:50:01.948431",
+            "arrived": "2024-07-27T00:00:49.948431",
+            "cleared": "2024-07-27T01:10:43.948431"
+          }
+        },
+        {
+          "unit_id": "H-1",
+          "unit_type": "HazMat",
+          "station_id": "STA-13",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-07-26T23:48:56.948431",
+            "enroute": "2024-07-26T23:50:10.948431",
+            "arrived": "2024-07-27T00:01:56.948431",
+            "cleared": "2024-07-27T00:59:59.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Medical Emergency",
+      "created_at": "2025-04-05T21:46:45.951267",
+      "updated_at": "2025-04-05T21:46:45.951268"
+    },
+    {
+      "id": "83ae3bfa-b8c3-41c1-96c1-2b5338cbe672",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-99047",
+      "type": "Other EMS",
+      "category": "EMS",
+      "priority": 4,
+      "location": {
+        "latitude": 47.612518619197324,
+        "longitude": -122.34232181879665,
+        "address": "5183 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98132"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-509-6016"
+      },
+      "times": {
+        "received": "2024-08-01T03:29:44.948431",
+        "dispatched": "2024-08-01T03:29:44.948431",
+        "first_unit_enroute": "2024-08-01T03:30:19.948431",
+        "first_unit_arrived": "2024-08-01T03:35:38.948431",
+        "last_unit_cleared": "2024-08-01T05:33:38.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-18",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-19",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-08-01T03:29:44.948431",
+            "enroute": "2024-08-01T03:30:08.948431",
+            "arrived": "2024-08-01T03:36:52.948431",
+            "cleared": "2024-08-01T05:29:00.948431"
+          }
+        },
+        {
+          "unit_id": "O-3",
+          "unit_type": "Other",
+          "station_id": "STA-4",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-08-01T03:29:44.948431",
+            "enroute": "2024-08-01T03:30:46.948431",
+            "arrived": "2024-08-01T03:35:52.948431",
+            "cleared": "2024-08-01T05:27:31.948431"
+          }
+        },
+        {
+          "unit_id": "M-10",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-3",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-08-01T03:29:44.948431",
+            "enroute": "2024-08-01T03:29:54.948431",
+            "arrived": "2024-08-01T03:33:49.948431",
+            "cleared": "2024-08-01T05:30:13.948431"
+          }
+        },
+        {
+          "unit_id": "E-2",
+          "unit_type": "Engine",
+          "station_id": "STA-11",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-08-01T03:29:44.948431",
+            "enroute": "2024-08-01T03:30:31.948431",
+            "arrived": "2024-08-01T03:36:06.948431",
+            "cleared": "2024-08-01T05:27:14.948431"
+          }
+        },
+        {
+          "unit_id": "M-3",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-17",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-08-01T03:29:44.948431",
+            "enroute": "2024-08-01T03:30:17.948431",
+            "arrived": "2024-08-01T03:34:50.948431",
+            "cleared": "2024-08-01T05:41:56.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Other EMS",
+      "created_at": "2025-04-05T21:46:45.949583",
+      "updated_at": "2025-04-05T21:46:45.949584"
+    },
+    {
+      "id": "2e41c8fe-78b6-4ff4-92c3-a478eb1f4de5",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-48708",
+      "type": "Vehicle Fire",
+      "category": "Fire",
+      "priority": 3,
+      "location": {
+        "latitude": 47.61682614811123,
+        "longitude": -122.4316555398932,
+        "address": "5343 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98122"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-640-6401"
+      },
+      "times": {
+        "received": "2024-08-08T10:36:40.948431",
+        "dispatched": "2024-08-08T10:36:40.948431",
+        "first_unit_enroute": "2024-08-08T10:38:08.948431",
+        "first_unit_arrived": "2024-08-08T10:51:57.948431",
+        "last_unit_cleared": "2024-08-08T12:07:57.948431"
+      },
+      "units": [
+        {
+          "unit_id": "B-1",
+          "unit_type": "Battalion Chief",
+          "station_id": "STA-2",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-08-08T10:36:40.948431",
+            "enroute": "2024-08-08T10:37:42.948431",
+            "arrived": "2024-08-08T10:53:17.948431",
+            "cleared": "2024-08-08T12:08:52.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Vehicle Fire",
+      "created_at": "2025-04-05T21:46:45.948660",
+      "updated_at": "2025-04-05T21:46:45.948662"
+    },
+    {
+      "id": "eb08e6ea-295e-487d-b0bc-db9308418586",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-20870",
+      "type": "Structure Fire",
+      "category": "Fire",
+      "priority": 4,
+      "location": {
+        "latitude": 47.576159989115894,
+        "longitude": -122.34687415567801,
+        "address": "4365 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98178"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-842-9312"
+      },
+      "times": {
+        "received": "2024-08-08T18:12:40.948431",
+        "dispatched": "2024-08-08T18:12:40.948431",
+        "first_unit_enroute": "2024-08-08T18:14:15.948431",
+        "first_unit_arrived": "2024-08-08T18:24:32.948431",
+        "last_unit_cleared": "2024-08-08T18:38:32.948431"
+      },
+      "units": [
+        {
+          "unit_id": "L-4",
+          "unit_type": "Ladder/Truck",
+          "station_id": "STA-13",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-08-08T18:12:40.948431",
+            "enroute": "2024-08-08T18:14:44.948431",
+            "arrived": "2024-08-08T18:25:30.948431",
+            "cleared": "2024-08-08T18:44:36.948431"
+          }
+        },
+        {
+          "unit_id": "B-4",
+          "unit_type": "Battalion Chief",
+          "station_id": "STA-14",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-08-08T18:12:40.948431",
+            "enroute": "2024-08-08T18:14:31.948431",
+            "arrived": "2024-08-08T18:23:16.948431",
+            "cleared": "2024-08-08T18:40:23.948431"
+          }
+        },
+        {
+          "unit_id": "C-7",
+          "unit_type": "Command",
+          "station_id": "STA-6",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-08-08T18:12:40.948431",
+            "enroute": "2024-08-08T18:14:29.948431",
+            "arrived": "2024-08-08T18:26:07.948431",
+            "cleared": "2024-08-08T18:34:52.948431"
+          }
+        },
+        {
+          "unit_id": "L-4",
+          "unit_type": "Ladder/Truck",
+          "station_id": "STA-5",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-08-08T18:12:40.948431",
+            "enroute": "2024-08-08T18:14:34.948431",
+            "arrived": "2024-08-08T18:22:57.948431",
+            "cleared": "2024-08-08T18:35:11.948431"
+          }
+        },
+        {
+          "unit_id": "E-9",
+          "unit_type": "Engine",
+          "station_id": "STA-17",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-08-08T18:12:40.948431",
+            "enroute": "2024-08-08T18:14:01.948431",
+            "arrived": "2024-08-08T18:25:34.948431",
+            "cleared": "2024-08-08T18:34:14.948431"
+          }
+        }
+      ],
+      "outcome": "False Alarm",
+      "notes": "Test incident generated for Structure Fire",
+      "created_at": "2025-04-05T21:46:45.950604",
+      "updated_at": "2025-04-05T21:46:45.950605"
+    },
+    {
+      "id": "c64830ad-e80d-48be-a947-efcacdf2898b",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-19183",
+      "type": "Cardiac Arrest",
+      "category": "EMS",
+      "priority": 4,
+      "location": {
+        "latitude": 47.5640294323222,
+        "longitude": -122.53048871458304,
+        "address": "2011 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98132"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-702-2550"
+      },
+      "times": {
+        "received": "2024-09-11T13:36:34.948431",
+        "dispatched": "2024-09-11T13:36:34.948431",
+        "first_unit_enroute": "2024-09-11T13:37:49.948431",
+        "first_unit_arrived": "2024-09-11T13:47:17.948431",
+        "last_unit_cleared": "2024-09-11T14:25:17.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-6",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-13",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-09-11T13:36:34.948431",
+            "enroute": "2024-09-11T13:38:08.948431",
+            "arrived": "2024-09-11T13:47:28.948431",
+            "cleared": "2024-09-11T14:25:37.948431"
+          }
+        },
+        {
+          "unit_id": "M-12",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-20",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-09-11T13:36:34.948431",
+            "enroute": "2024-09-11T13:37:23.948431",
+            "arrived": "2024-09-11T13:46:43.948431",
+            "cleared": "2024-09-11T14:24:56.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Cardiac Arrest",
+      "created_at": "2025-04-05T21:46:45.948529",
+      "updated_at": "2025-04-05T21:46:45.948531"
+    },
+    {
+      "id": "5804f93a-5781-4537-b7e2-3915a554dce6",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-63899",
+      "type": "Stroke",
+      "category": "EMS",
+      "priority": 3,
+      "location": {
+        "latitude": 47.58658200386758,
+        "longitude": -122.49573524569156,
+        "address": "4740 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98177"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-136-5471"
+      },
+      "times": {
+        "received": "2024-09-22T04:21:33.948431",
+        "dispatched": "2024-09-22T04:21:33.948431",
+        "first_unit_enroute": "2024-09-22T04:24:33.948431",
+        "first_unit_arrived": "2024-09-22T04:32:05.948431",
+        "last_unit_cleared": "2024-09-22T06:24:05.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-3",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-2",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-09-22T04:21:33.948431",
+            "enroute": "2024-09-22T04:24:39.948431",
+            "arrived": "2024-09-22T04:32:55.948431",
+            "cleared": "2024-09-22T06:25:38.948431"
+          }
+        },
+        {
+          "unit_id": "R-3",
+          "unit_type": "Rescue",
+          "station_id": "STA-20",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-09-22T04:21:33.948431",
+            "enroute": "2024-09-22T04:24:58.948431",
+            "arrived": "2024-09-22T04:32:33.948431",
+            "cleared": "2024-09-22T06:19:31.948431"
+          }
+        },
+        {
+          "unit_id": "M-6",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-15",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-09-22T04:21:33.948431",
+            "enroute": "2024-09-22T04:24:48.948431",
+            "arrived": "2024-09-22T04:30:35.948431",
+            "cleared": "2024-09-22T06:19:22.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Stroke",
+      "created_at": "2025-04-05T21:46:45.951315",
+      "updated_at": "2025-04-05T21:46:45.951316"
+    },
+    {
+      "id": "8b639951-3e78-428e-b2e7-ab71223fde70",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-77234",
+      "type": "Other EMS",
+      "category": "EMS",
+      "priority": 1,
+      "location": {
+        "latitude": 47.76019275651265,
+        "longitude": -122.27775633488392,
+        "address": "307 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98156"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-822-1238"
+      },
+      "times": {
+        "received": "2024-09-22T22:00:45.948431",
+        "dispatched": "2024-09-22T22:00:45.948431",
+        "first_unit_enroute": "2024-09-22T22:02:32.948431",
+        "first_unit_arrived": "2024-09-22T22:06:53.948431",
+        "last_unit_cleared": "2024-09-22T23:51:53.948431"
+      },
+      "units": [
+        {
+          "unit_id": "H-8",
+          "unit_type": "HazMat",
+          "station_id": "STA-17",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-09-22T22:00:45.948431",
+            "enroute": "2024-09-22T22:02:36.948431",
+            "arrived": "2024-09-22T22:06:31.948431",
+            "cleared": "2024-09-22T23:55:07.948431"
+          }
+        },
+        {
+          "unit_id": "L-7",
+          "unit_type": "Ladder/Truck",
+          "station_id": "STA-9",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-09-22T22:00:45.948431",
+            "enroute": "2024-09-22T22:02:36.948431",
+            "arrived": "2024-09-22T22:08:10.948431",
+            "cleared": "2024-09-22T23:43:16.948431"
+          }
+        }
+      ],
+      "outcome": "Other",
+      "notes": "Test incident generated for Other EMS",
+      "created_at": "2025-04-05T21:46:45.949274",
+      "updated_at": "2025-04-05T21:46:45.949276"
+    },
+    {
+      "id": "66feb208-707c-444c-8104-eb855ea37e4f",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-18106",
+      "type": "Medical Emergency",
+      "category": "EMS",
+      "priority": 3,
+      "location": {
+        "latitude": 47.7398986839598,
+        "longitude": -122.27354525632093,
+        "address": "7739 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98180"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-203-3206"
+      },
+      "times": {
+        "received": "2024-09-23T06:16:06.948431",
+        "dispatched": "2024-09-23T06:16:06.948431",
+        "first_unit_enroute": "2024-09-23T06:17:27.948431",
+        "first_unit_arrived": "2024-09-23T06:21:09.948431",
+        "last_unit_cleared": "2024-09-23T06:55:09.948431"
+      },
+      "units": [
+        {
+          "unit_id": "E-5",
+          "unit_type": "Engine",
+          "station_id": "STA-10",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-09-23T06:16:06.948431",
+            "enroute": "2024-09-23T06:17:25.948431",
+            "arrived": "2024-09-23T06:22:34.948431",
+            "cleared": "2024-09-23T06:59:27.948431"
+          }
+        },
+        {
+          "unit_id": "E-4",
+          "unit_type": "Engine",
+          "station_id": "STA-15",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-09-23T06:16:06.948431",
+            "enroute": "2024-09-23T06:17:27.948431",
+            "arrived": "2024-09-23T06:22:22.948431",
+            "cleared": "2024-09-23T06:47:39.948431"
+          }
+        }
+      ],
+      "outcome": "Refused Treatment",
+      "notes": "Test incident generated for Medical Emergency",
+      "created_at": "2025-04-05T21:46:45.949493",
+      "updated_at": "2025-04-05T21:46:45.949495"
+    },
+    {
+      "id": "fd1e7d2a-cff5-4dfc-bf2c-9425f9b842aa",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-15776",
+      "type": "Smoke Investigation",
+      "category": "Fire",
+      "priority": 1,
+      "location": {
+        "latitude": 47.484768330090674,
+        "longitude": -122.6025477814213,
+        "address": "674 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98194"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-252-1763"
+      },
+      "times": {
+        "received": "2024-09-24T16:18:19.948431",
+        "dispatched": "2024-09-24T16:18:19.948431",
+        "first_unit_enroute": "2024-09-24T16:18:50.948431",
+        "first_unit_arrived": "2024-09-24T16:30:44.948431",
+        "last_unit_cleared": "2024-09-24T18:04:44.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-12",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-9",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-09-24T16:18:19.948431",
+            "enroute": "2024-09-24T16:18:58.948431",
+            "arrived": "2024-09-24T16:29:22.948431",
+            "cleared": "2024-09-24T18:13:19.948431"
+          }
+        },
+        {
+          "unit_id": "L-6",
+          "unit_type": "Ladder/Truck",
+          "station_id": "STA-16",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-09-24T16:18:19.948431",
+            "enroute": "2024-09-24T16:18:58.948431",
+            "arrived": "2024-09-24T16:29:40.948431",
+            "cleared": "2024-09-24T17:59:01.948431"
+          }
+        }
+      ],
+      "outcome": "Treated and Released",
+      "notes": "Test incident generated for Smoke Investigation",
+      "created_at": "2025-04-05T21:46:45.950928",
+      "updated_at": "2025-04-05T21:46:45.950929"
+    },
+    {
+      "id": "d0fcd0a2-de6c-46a2-9b9e-b8b89c9a5f0c",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-13238",
+      "type": "Medical Emergency",
+      "category": "EMS",
+      "priority": 3,
+      "location": {
+        "latitude": 47.617807448748714,
+        "longitude": -122.36036256749053,
+        "address": "5600 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98127"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-224-9270"
+      },
+      "times": {
+        "received": "2024-10-07T15:04:17.948431",
+        "dispatched": "2024-10-07T15:04:17.948431",
+        "first_unit_enroute": "2024-10-07T15:07:17.948431",
+        "first_unit_arrived": "2024-10-07T15:15:34.948431",
+        "last_unit_cleared": "2024-10-07T16:46:34.948431"
+      },
+      "units": [
+        {
+          "unit_id": "L-9",
+          "unit_type": "Ladder/Truck",
+          "station_id": "STA-13",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-10-07T15:04:17.948431",
+            "enroute": "2024-10-07T15:07:33.948431",
+            "arrived": "2024-10-07T15:14:10.948431",
+            "cleared": "2024-10-07T16:37:58.948431"
+          }
+        },
+        {
+          "unit_id": "M-5",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-6",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-10-07T15:04:17.948431",
+            "enroute": "2024-10-07T15:07:21.948431",
+            "arrived": "2024-10-07T15:16:51.948431",
+            "cleared": "2024-10-07T16:54:32.948431"
+          }
+        }
+      ],
+      "outcome": "Refused Treatment",
+      "notes": "Test incident generated for Medical Emergency",
+      "created_at": "2025-04-05T21:46:45.951205",
+      "updated_at": "2025-04-05T21:46:45.951206"
+    },
+    {
+      "id": "8b336cd2-fc1a-44c9-accb-697a9decef7b",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-69309",
+      "type": "Respiratory Distress",
+      "category": "EMS",
+      "priority": 1,
+      "location": {
+        "latitude": 47.56910025866658,
+        "longitude": -122.12796840364123,
+        "address": "1864 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98111"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-898-8879"
+      },
+      "times": {
+        "received": "2024-10-16T23:14:37.948431",
+        "dispatched": "2024-10-16T23:14:37.948431",
+        "first_unit_enroute": "2024-10-16T23:15:56.948431",
+        "first_unit_arrived": "2024-10-16T23:22:43.948431",
+        "last_unit_cleared": "2024-10-17T00:31:43.948431"
+      },
+      "units": [
+        {
+          "unit_id": "L-9",
+          "unit_type": "Ladder/Truck",
+          "station_id": "STA-20",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-10-16T23:14:37.948431",
+            "enroute": "2024-10-16T23:15:40.948431",
+            "arrived": "2024-10-16T23:24:01.948431",
+            "cleared": "2024-10-17T00:41:43.948431"
+          }
+        },
+        {
+          "unit_id": "M-1",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-14",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-10-16T23:14:37.948431",
+            "enroute": "2024-10-16T23:16:09.948431",
+            "arrived": "2024-10-16T23:23:06.948431",
+            "cleared": "2024-10-17T00:24:11.948431"
+          }
+        }
+      ],
+      "outcome": "Treated and Released",
+      "notes": "Test incident generated for Respiratory Distress",
+      "created_at": "2025-04-05T21:46:45.950970",
+      "updated_at": "2025-04-05T21:46:45.950971"
+    },
+    {
+      "id": "c55ff2bb-14cf-4915-856d-955b0153e2a9",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-95940",
+      "type": "Medical Emergency",
+      "category": "EMS",
+      "priority": 4,
+      "location": {
+        "latitude": 47.551697098667596,
+        "longitude": -122.23963361736142,
+        "address": "8074 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98176"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-584-1749"
+      },
+      "times": {
+        "received": "2024-10-20T16:00:32.948431",
+        "dispatched": "2024-10-20T16:00:32.948431",
+        "first_unit_enroute": "2024-10-20T16:02:55.948431",
+        "first_unit_arrived": "2024-10-20T16:13:44.948431",
+        "last_unit_cleared": "2024-10-20T17:30:44.948431"
+      },
+      "units": [
+        {
+          "unit_id": "B-7",
+          "unit_type": "Battalion Chief",
+          "station_id": "STA-18",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-10-20T16:00:32.948431",
+            "enroute": "2024-10-20T16:03:22.948431",
+            "arrived": "2024-10-20T16:12:41.948431",
+            "cleared": "2024-10-20T17:23:11.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Medical Emergency",
+      "created_at": "2025-04-05T21:46:45.949971",
+      "updated_at": "2025-04-05T21:46:45.949973"
+    },
+    {
+      "id": "2552086a-a47d-40f3-8c3e-7799935cf85f",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-60901",
+      "type": "Stroke",
+      "category": "EMS",
+      "priority": 1,
+      "location": {
+        "latitude": 47.67289618336664,
+        "longitude": -122.08053310770664,
+        "address": "2312 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98180"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-151-6593"
+      },
+      "times": {
+        "received": "2024-10-26T22:18:49.948431",
+        "dispatched": "2024-10-26T22:18:49.948431",
+        "first_unit_enroute": "2024-10-26T22:21:30.948431",
+        "first_unit_arrived": "2024-10-26T22:29:58.948431",
+        "last_unit_cleared": "2024-10-26T23:40:58.948431"
+      },
+      "units": [
+        {
+          "unit_id": "E-3",
+          "unit_type": "Engine",
+          "station_id": "STA-13",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-10-26T22:18:49.948431",
+            "enroute": "2024-10-26T22:21:33.948431",
+            "arrived": "2024-10-26T22:31:51.948431",
+            "cleared": "2024-10-26T23:43:41.948431"
+          }
+        },
+        {
+          "unit_id": "C-8",
+          "unit_type": "Command",
+          "station_id": "STA-19",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-10-26T22:18:49.948431",
+            "enroute": "2024-10-26T22:21:34.948431",
+            "arrived": "2024-10-26T22:29:03.948431",
+            "cleared": "2024-10-26T23:35:43.948431"
+          }
+        },
+        {
+          "unit_id": "E-9",
+          "unit_type": "Engine",
+          "station_id": "STA-14",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-10-26T22:18:49.948431",
+            "enroute": "2024-10-26T22:21:09.948431",
+            "arrived": "2024-10-26T22:31:26.948431",
+            "cleared": "2024-10-26T23:50:58.948431"
+          }
+        },
+        {
+          "unit_id": "M-19",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-8",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-10-26T22:18:49.948431",
+            "enroute": "2024-10-26T22:21:33.948431",
+            "arrived": "2024-10-26T22:30:09.948431",
+            "cleared": "2024-10-26T23:38:28.948431"
+          }
+        },
+        {
+          "unit_id": "L-4",
+          "unit_type": "Ladder/Truck",
+          "station_id": "STA-15",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-10-26T22:18:49.948431",
+            "enroute": "2024-10-26T22:21:26.948431",
+            "arrived": "2024-10-26T22:29:52.948431",
+            "cleared": "2024-10-26T23:31:24.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Stroke",
+      "created_at": "2025-04-05T21:46:45.949434",
+      "updated_at": "2025-04-05T21:46:45.949436"
+    },
+    {
+      "id": "8892b792-5de6-400e-b3fb-5eeaa544f2d4",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-97912",
+      "type": "Water Problem",
+      "category": "Service",
+      "priority": 3,
+      "location": {
+        "latitude": 47.626641293455066,
+        "longitude": -122.14867107575861,
+        "address": "6303 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98139"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-164-4514"
+      },
+      "times": {
+        "received": "2024-11-13T09:48:38.948431",
+        "dispatched": "2024-11-13T09:48:38.948431",
+        "first_unit_enroute": "2024-11-13T09:51:21.948431",
+        "first_unit_arrived": "2024-11-13T09:59:29.948431",
+        "last_unit_cleared": "2024-11-13T11:47:29.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-12",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-9",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-11-13T09:48:38.948431",
+            "enroute": "2024-11-13T09:51:30.948431",
+            "arrived": "2024-11-13T09:57:46.948431",
+            "cleared": "2024-11-13T11:48:59.948431"
+          }
+        },
+        {
+          "unit_id": "E-4",
+          "unit_type": "Engine",
+          "station_id": "STA-18",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-11-13T09:48:38.948431",
+            "enroute": "2024-11-13T09:50:54.948431",
+            "arrived": "2024-11-13T10:01:26.948431",
+            "cleared": "2024-11-13T11:57:20.948431"
+          }
+        },
+        {
+          "unit_id": "L-1",
+          "unit_type": "Ladder/Truck",
+          "station_id": "STA-8",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-11-13T09:48:38.948431",
+            "enroute": "2024-11-13T09:51:50.948431",
+            "arrived": "2024-11-13T09:58:08.948431",
+            "cleared": "2024-11-13T11:50:38.948431"
+          }
+        },
+        {
+          "unit_id": "E-4",
+          "unit_type": "Engine",
+          "station_id": "STA-6",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-11-13T09:48:38.948431",
+            "enroute": "2024-11-13T09:51:26.948431",
+            "arrived": "2024-11-13T09:58:24.948431",
+            "cleared": "2024-11-13T11:52:38.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Water Problem",
+      "created_at": "2025-04-05T21:46:45.949350",
+      "updated_at": "2025-04-05T21:46:45.949351"
+    },
+    {
+      "id": "34b38afb-8406-45d1-bef3-d1f09b7fe774",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-65359",
+      "type": "Cardiac Arrest",
+      "category": "EMS",
+      "priority": 3,
+      "location": {
+        "latitude": 47.65954331459098,
+        "longitude": -122.14934496247405,
+        "address": "6787 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98183"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-610-8102"
+      },
+      "times": {
+        "received": "2024-11-22T09:34:43.948431",
+        "dispatched": "2024-11-22T09:34:43.948431",
+        "first_unit_enroute": "2024-11-22T09:37:11.948431",
+        "first_unit_arrived": "2024-11-22T09:45:15.948431",
+        "last_unit_cleared": "2024-11-22T11:10:15.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-4",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-1",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-11-22T09:34:43.948431",
+            "enroute": "2024-11-22T09:36:42.948431",
+            "arrived": "2024-11-22T09:44:20.948431",
+            "cleared": "2024-11-22T11:14:17.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Cardiac Arrest",
+      "created_at": "2025-04-05T21:46:45.950367",
+      "updated_at": "2025-04-05T21:46:45.950368"
+    },
+    {
+      "id": "35f36658-43d3-431f-825f-80fe7657f811",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-18647",
+      "type": "Stroke",
+      "category": "EMS",
+      "priority": 2,
+      "location": {
+        "latitude": 47.745997679746885,
+        "longitude": -122.51519136819046,
+        "address": "1030 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98191"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-327-3100"
+      },
+      "times": {
+        "received": "2024-11-22T22:31:53.948431",
+        "dispatched": "2024-11-22T22:31:53.948431",
+        "first_unit_enroute": "2024-11-22T22:34:26.948431",
+        "first_unit_arrived": "2024-11-22T22:45:24.948431",
+        "last_unit_cleared": "2024-11-22T23:37:24.948431"
+      },
+      "units": [
+        {
+          "unit_id": "E-1",
+          "unit_type": "Engine",
+          "station_id": "STA-5",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-11-22T22:31:53.948431",
+            "enroute": "2024-11-22T22:34:22.948431",
+            "arrived": "2024-11-22T22:46:46.948431",
+            "cleared": "2024-11-22T23:33:05.948431"
+          }
+        },
+        {
+          "unit_id": "M-17",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-20",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-11-22T22:31:53.948431",
+            "enroute": "2024-11-22T22:34:34.948431",
+            "arrived": "2024-11-22T22:45:46.948431",
+            "cleared": "2024-11-22T23:29:02.948431"
+          }
+        },
+        {
+          "unit_id": "O-3",
+          "unit_type": "Other",
+          "station_id": "STA-10",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-11-22T22:31:53.948431",
+            "enroute": "2024-11-22T22:33:57.948431",
+            "arrived": "2024-11-22T22:45:49.948431",
+            "cleared": "2024-11-22T23:34:52.948431"
+          }
+        }
+      ],
+      "outcome": "Treated and Released",
+      "notes": "Test incident generated for Stroke",
+      "created_at": "2025-04-05T21:46:45.949651",
+      "updated_at": "2025-04-05T21:46:45.949653"
+    },
+    {
+      "id": "dd26d5f3-a39b-4228-9e6f-2d22c8e52f9f",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-93190",
+      "type": "Other EMS",
+      "category": "EMS",
+      "priority": 2,
+      "location": {
+        "latitude": 47.56195915253504,
+        "longitude": -122.31664780404748,
+        "address": "5138 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98188"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-882-2436"
+      },
+      "times": {
+        "received": "2024-11-23T18:45:01.948431",
+        "dispatched": "2024-11-23T18:45:01.948431",
+        "first_unit_enroute": "2024-11-23T18:46:47.948431",
+        "first_unit_arrived": "2024-11-23T18:50:41.948431",
+        "last_unit_cleared": "2024-11-23T19:53:41.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-16",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-10",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-11-23T18:45:01.948431",
+            "enroute": "2024-11-23T18:46:31.948431",
+            "arrived": "2024-11-23T18:49:02.948431",
+            "cleared": "2024-11-23T19:55:06.948431"
+          }
+        },
+        {
+          "unit_id": "L-9",
+          "unit_type": "Ladder/Truck",
+          "station_id": "STA-19",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-11-23T18:45:01.948431",
+            "enroute": "2024-11-23T18:46:20.948431",
+            "arrived": "2024-11-23T18:48:42.948431",
+            "cleared": "2024-11-23T19:57:46.948431"
+          }
+        },
+        {
+          "unit_id": "M-18",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-13",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-11-23T18:45:01.948431",
+            "enroute": "2024-11-23T18:46:46.948431",
+            "arrived": "2024-11-23T18:48:47.948431",
+            "cleared": "2024-11-23T19:45:51.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Other EMS",
+      "created_at": "2025-04-05T21:46:45.950506",
+      "updated_at": "2025-04-05T21:46:45.950507"
+    },
+    {
+      "id": "c848af05-eae9-4a39-82ca-36b29d0986dc",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-48071",
+      "type": "Public Assist",
+      "category": "Service",
+      "priority": 5,
+      "location": {
+        "latitude": 47.648590213557505,
+        "longitude": -122.46724629965593,
+        "address": "3027 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98188"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-722-7991"
+      },
+      "times": {
+        "received": "2024-12-01T21:33:46.948431",
+        "dispatched": "2024-12-01T21:33:46.948431",
+        "first_unit_enroute": "2024-12-01T21:35:16.948431",
+        "first_unit_arrived": "2024-12-01T21:46:11.948431",
+        "last_unit_cleared": "2024-12-01T22:35:11.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-1",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-4",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-12-01T21:33:46.948431",
+            "enroute": "2024-12-01T21:35:02.948431",
+            "arrived": "2024-12-01T21:46:54.948431",
+            "cleared": "2024-12-01T22:31:02.948431"
+          }
+        },
+        {
+          "unit_id": "M-1",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-19",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-12-01T21:33:46.948431",
+            "enroute": "2024-12-01T21:35:35.948431",
+            "arrived": "2024-12-01T21:47:53.948431",
+            "cleared": "2024-12-01T22:36:52.948431"
+          }
+        },
+        {
+          "unit_id": "M-11",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-1",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-12-01T21:33:46.948431",
+            "enroute": "2024-12-01T21:35:20.948431",
+            "arrived": "2024-12-01T21:46:05.948431",
+            "cleared": "2024-12-01T22:44:23.948431"
+          }
+        },
+        {
+          "unit_id": "B-5",
+          "unit_type": "Brush",
+          "station_id": "STA-15",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-12-01T21:33:46.948431",
+            "enroute": "2024-12-01T21:35:43.948431",
+            "arrived": "2024-12-01T21:45:38.948431",
+            "cleared": "2024-12-01T22:37:33.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Public Assist",
+      "created_at": "2025-04-05T21:46:45.949787",
+      "updated_at": "2025-04-05T21:46:45.949788"
+    },
+    {
+      "id": "73195590-63d7-4675-a4eb-d80e25813486",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-81339",
+      "type": "Traumatic Injury",
+      "category": "EMS",
+      "priority": 1,
+      "location": {
+        "latitude": 47.609086104266865,
+        "longitude": -122.33603393852655,
+        "address": "4735 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98190"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-728-4379"
+      },
+      "times": {
+        "received": "2024-12-13T14:06:25.948431",
+        "dispatched": "2024-12-13T14:06:25.948431",
+        "first_unit_enroute": "2024-12-13T14:09:16.948431",
+        "first_unit_arrived": "2024-12-13T14:20:59.948431",
+        "last_unit_cleared": "2024-12-13T16:13:59.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-17",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-19",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-12-13T14:06:25.948431",
+            "enroute": "2024-12-13T14:09:00.948431",
+            "arrived": "2024-12-13T14:22:38.948431",
+            "cleared": "2024-12-13T16:13:44.948431"
+          }
+        },
+        {
+          "unit_id": "L-4",
+          "unit_type": "Ladder/Truck",
+          "station_id": "STA-14",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-12-13T14:06:25.948431",
+            "enroute": "2024-12-13T14:09:32.948431",
+            "arrived": "2024-12-13T14:19:34.948431",
+            "cleared": "2024-12-13T16:07:15.948431"
+          }
+        },
+        {
+          "unit_id": "L-6",
+          "unit_type": "Ladder/Truck",
+          "station_id": "STA-20",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-12-13T14:06:25.948431",
+            "enroute": "2024-12-13T14:09:03.948431",
+            "arrived": "2024-12-13T14:21:46.948431",
+            "cleared": "2024-12-13T16:17:35.948431"
+          }
+        }
+      ],
+      "outcome": "Refused Treatment",
+      "notes": "Test incident generated for Traumatic Injury",
+      "created_at": "2025-04-05T21:46:45.948862",
+      "updated_at": "2025-04-05T21:46:45.948864"
+    },
+    {
+      "id": "a06a1779-e9fe-4ba4-8c52-598285ecf864",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-66939",
+      "type": "Medical Emergency",
+      "category": "EMS",
+      "priority": 3,
+      "location": {
+        "latitude": 47.79658506249736,
+        "longitude": -122.20822222541196,
+        "address": "4278 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98179"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-816-2733"
+      },
+      "times": {
+        "received": "2024-12-14T05:20:22.948431",
+        "dispatched": "2024-12-14T05:20:22.948431",
+        "first_unit_enroute": "2024-12-14T05:21:54.948431",
+        "first_unit_arrived": "2024-12-14T05:36:43.948431",
+        "last_unit_cleared": "2024-12-14T06:46:43.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-18",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-12",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-12-14T05:20:22.948431",
+            "enroute": "2024-12-14T05:21:29.948431",
+            "arrived": "2024-12-14T05:38:41.948431",
+            "cleared": "2024-12-14T06:41:56.948431"
+          }
+        },
+        {
+          "unit_id": "C-6",
+          "unit_type": "Command",
+          "station_id": "STA-11",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-12-14T05:20:22.948431",
+            "enroute": "2024-12-14T05:21:38.948431",
+            "arrived": "2024-12-14T05:35:31.948431",
+            "cleared": "2024-12-14T06:39:03.948431"
+          }
+        },
+        {
+          "unit_id": "M-20",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-1",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-12-14T05:20:22.948431",
+            "enroute": "2024-12-14T05:22:16.948431",
+            "arrived": "2024-12-14T05:36:08.948431",
+            "cleared": "2024-12-14T06:51:24.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Medical Emergency",
+      "created_at": "2025-04-05T21:46:45.948931",
+      "updated_at": "2025-04-05T21:46:45.948932"
+    },
+    {
+      "id": "538df38c-98a1-4dd7-bbfe-33222ff4117a",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-59173",
+      "type": "Smoke Investigation",
+      "category": "Fire",
+      "priority": 3,
+      "location": {
+        "latitude": 47.71091326763694,
+        "longitude": -122.47465956510054,
+        "address": "2731 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98129"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-636-3081"
+      },
+      "times": {
+        "received": "2024-12-14T07:34:43.948431",
+        "dispatched": "2024-12-14T07:34:43.948431",
+        "first_unit_enroute": "2024-12-14T07:37:21.948431",
+        "first_unit_arrived": "2024-12-14T07:42:14.948431",
+        "last_unit_cleared": "2024-12-14T09:09:14.948431"
+      },
+      "units": [
+        {
+          "unit_id": "E-6",
+          "unit_type": "Engine",
+          "station_id": "STA-6",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-12-14T07:34:43.948431",
+            "enroute": "2024-12-14T07:37:19.948431",
+            "arrived": "2024-12-14T07:42:35.948431",
+            "cleared": "2024-12-14T09:11:33.948431"
+          }
+        },
+        {
+          "unit_id": "E-8",
+          "unit_type": "Engine",
+          "station_id": "STA-2",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-12-14T07:34:43.948431",
+            "enroute": "2024-12-14T07:36:57.948431",
+            "arrived": "2024-12-14T07:43:56.948431",
+            "cleared": "2024-12-14T09:10:55.948431"
+          }
+        },
+        {
+          "unit_id": "M-7",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-17",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-12-14T07:34:43.948431",
+            "enroute": "2024-12-14T07:37:40.948431",
+            "arrived": "2024-12-14T07:41:03.948431",
+            "cleared": "2024-12-14T08:59:23.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Smoke Investigation",
+      "created_at": "2025-04-05T21:46:45.950157",
+      "updated_at": "2025-04-05T21:46:45.950158"
+    },
+    {
+      "id": "52ecb708-cff3-4db7-b2f6-4f067eea2889",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-45935",
+      "type": "Traumatic Injury",
+      "category": "EMS",
+      "priority": 3,
+      "location": {
+        "latitude": 47.61048036035723,
+        "longitude": -122.33194131752782,
+        "address": "8741 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98147"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-699-6699"
+      },
+      "times": {
+        "received": "2024-12-17T07:22:13.948431",
+        "dispatched": "2024-12-17T07:22:13.948431",
+        "first_unit_enroute": "2024-12-17T07:24:21.948431",
+        "first_unit_arrived": "2024-12-17T07:35:31.948431",
+        "last_unit_cleared": "2024-12-17T09:31:31.948431"
+      },
+      "units": [
+        {
+          "unit_id": "E-6",
+          "unit_type": "Engine",
+          "station_id": "STA-8",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-12-17T07:22:13.948431",
+            "enroute": "2024-12-17T07:24:09.948431",
+            "arrived": "2024-12-17T07:36:35.948431",
+            "cleared": "2024-12-17T09:33:43.948431"
+          }
+        },
+        {
+          "unit_id": "M-7",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-19",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-12-17T07:22:13.948431",
+            "enroute": "2024-12-17T07:24:23.948431",
+            "arrived": "2024-12-17T07:36:43.948431",
+            "cleared": "2024-12-17T09:31:41.948431"
+          }
+        },
+        {
+          "unit_id": "O-6",
+          "unit_type": "Other",
+          "station_id": "STA-15",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-12-17T07:22:13.948431",
+            "enroute": "2024-12-17T07:24:02.948431",
+            "arrived": "2024-12-17T07:35:09.948431",
+            "cleared": "2024-12-17T09:29:30.948431"
+          }
+        },
+        {
+          "unit_id": "M-18",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-12",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-12-17T07:22:13.948431",
+            "enroute": "2024-12-17T07:24:49.948431",
+            "arrived": "2024-12-17T07:36:34.948431",
+            "cleared": "2024-12-17T09:36:17.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Traumatic Injury",
+      "created_at": "2025-04-05T21:46:45.950750",
+      "updated_at": "2025-04-05T21:46:45.950751"
+    },
+    {
+      "id": "082968f4-0bc3-4504-b98d-7e2a4fdef977",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-87508",
+      "type": "Psychiatric",
+      "category": "EMS",
+      "priority": 5,
+      "location": {
+        "latitude": 47.66975325258904,
+        "longitude": -122.67012246721913,
+        "address": "6754 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98119"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-113-7514"
+      },
+      "times": {
+        "received": "2024-12-20T20:48:27.948431",
+        "dispatched": "2024-12-20T20:48:27.948431",
+        "first_unit_enroute": "2024-12-20T20:50:43.948431",
+        "first_unit_arrived": "2024-12-20T20:58:16.948431",
+        "last_unit_cleared": "2024-12-20T22:24:16.948431"
+      },
+      "units": [
+        {
+          "unit_id": "H-4",
+          "unit_type": "HazMat",
+          "station_id": "STA-10",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-12-20T20:48:27.948431",
+            "enroute": "2024-12-20T20:50:54.948431",
+            "arrived": "2024-12-20T20:56:26.948431",
+            "cleared": "2024-12-20T22:20:18.948431"
+          }
+        },
+        {
+          "unit_id": "E-3",
+          "unit_type": "Engine",
+          "station_id": "STA-16",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-12-20T20:48:27.948431",
+            "enroute": "2024-12-20T20:50:20.948431",
+            "arrived": "2024-12-20T20:59:10.948431",
+            "cleared": "2024-12-20T22:17:31.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Psychiatric",
+      "created_at": "2025-04-05T21:46:45.950108",
+      "updated_at": "2025-04-05T21:46:45.950109"
+    },
+    {
+      "id": "89e6af7d-4ab3-412a-99a5-eaeecef12df4",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2024-86137",
+      "type": "Structure Fire",
+      "category": "Fire",
+      "priority": 4,
+      "location": {
+        "latitude": 47.64746119425601,
+        "longitude": -122.39896923104337,
+        "address": "2180 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98163"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-885-4482"
+      },
+      "times": {
+        "received": "2024-12-27T13:21:22.948431",
+        "dispatched": "2024-12-27T13:21:22.948431",
+        "first_unit_enroute": "2024-12-27T13:23:13.948431",
+        "first_unit_arrived": "2024-12-27T13:26:25.948431",
+        "last_unit_cleared": "2024-12-27T15:14:25.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-4",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-4",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2024-12-27T13:21:22.948431",
+            "enroute": "2024-12-27T13:23:39.948431",
+            "arrived": "2024-12-27T13:28:06.948431",
+            "cleared": "2024-12-27T15:21:40.948431"
+          }
+        }
+      ],
+      "outcome": "Treated and Released",
+      "notes": "Test incident generated for Structure Fire",
+      "created_at": "2025-04-05T21:46:45.951004",
+      "updated_at": "2025-04-05T21:46:45.951005"
+    },
+    {
+      "id": "b1a4a000-2c1b-4330-9609-0f382aa01acb",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2025-13993",
+      "type": "Structure Fire",
+      "category": "Fire",
+      "priority": 2,
+      "location": {
+        "latitude": 47.435941735153904,
+        "longitude": -122.43093220039948,
+        "address": "507 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98185"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-248-5083"
+      },
+      "times": {
+        "received": "2025-01-03T05:37:25.948431",
+        "dispatched": "2025-01-03T05:37:25.948431",
+        "first_unit_enroute": "2025-01-03T05:39:23.948431",
+        "first_unit_arrived": "2025-01-03T05:47:58.948431",
+        "last_unit_cleared": "2025-01-03T07:37:58.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-19",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-11",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-01-03T05:37:25.948431",
+            "enroute": "2025-01-03T05:39:21.948431",
+            "arrived": "2025-01-03T05:49:30.948431",
+            "cleared": "2025-01-03T07:45:41.948431"
+          }
+        },
+        {
+          "unit_id": "E-7",
+          "unit_type": "Engine",
+          "station_id": "STA-5",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-01-03T05:37:25.948431",
+            "enroute": "2025-01-03T05:38:57.948431",
+            "arrived": "2025-01-03T05:47:44.948431",
+            "cleared": "2025-01-03T07:37:44.948431"
+          }
+        },
+        {
+          "unit_id": "E-5",
+          "unit_type": "Engine",
+          "station_id": "STA-7",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-01-03T05:37:25.948431",
+            "enroute": "2025-01-03T05:39:06.948431",
+            "arrived": "2025-01-03T05:48:55.948431",
+            "cleared": "2025-01-03T07:45:08.948431"
+          }
+        },
+        {
+          "unit_id": "E-2",
+          "unit_type": "Engine",
+          "station_id": "STA-2",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-01-03T05:37:25.948431",
+            "enroute": "2025-01-03T05:39:09.948431",
+            "arrived": "2025-01-03T05:49:41.948431",
+            "cleared": "2025-01-03T07:40:40.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Structure Fire",
+      "created_at": "2025-04-05T21:46:45.950212",
+      "updated_at": "2025-04-05T21:46:45.950213"
+    },
+    {
+      "id": "922d4dd2-11ac-4fb1-a9d5-6e7ce63d5964",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2025-54608",
+      "type": "Stroke",
+      "category": "EMS",
+      "priority": 4,
+      "location": {
+        "latitude": 47.80569475149783,
+        "longitude": -122.53917127550547,
+        "address": "3439 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98135"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-551-6218"
+      },
+      "times": {
+        "received": "2025-01-05T12:17:16.948431",
+        "dispatched": "2025-01-05T12:17:16.948431",
+        "first_unit_enroute": "2025-01-05T12:19:08.948431",
+        "first_unit_arrived": "2025-01-05T12:27:08.948431",
+        "last_unit_cleared": "2025-01-05T13:18:08.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-11",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-3",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-01-05T12:17:16.948431",
+            "enroute": "2025-01-05T12:19:18.948431",
+            "arrived": "2025-01-05T12:25:09.948431",
+            "cleared": "2025-01-05T13:25:17.948431"
+          }
+        },
+        {
+          "unit_id": "L-7",
+          "unit_type": "Ladder/Truck",
+          "station_id": "STA-13",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-01-05T12:17:16.948431",
+            "enroute": "2025-01-05T12:19:29.948431",
+            "arrived": "2025-01-05T12:25:44.948431",
+            "cleared": "2025-01-05T13:12:29.948431"
+          }
+        }
+      ],
+      "outcome": "False Alarm",
+      "notes": "Test incident generated for Stroke",
+      "created_at": "2025-04-05T21:46:45.949710",
+      "updated_at": "2025-04-05T21:46:45.949712"
+    },
+    {
+      "id": "5826333c-9603-450d-abd8-6a3720f14b07",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2025-41725",
+      "type": "Traumatic Injury",
+      "category": "EMS",
+      "priority": 3,
+      "location": {
+        "latitude": 47.81637924445269,
+        "longitude": -122.12512947034344,
+        "address": "7943 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98156"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-134-7130"
+      },
+      "times": {
+        "received": "2025-01-07T21:53:53.948431",
+        "dispatched": "2025-01-07T21:53:53.948431",
+        "first_unit_enroute": "2025-01-07T21:55:50.948431",
+        "first_unit_arrived": "2025-01-07T22:03:13.948431",
+        "last_unit_cleared": "2025-01-07T23:18:13.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-4",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-18",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-01-07T21:53:53.948431",
+            "enroute": "2025-01-07T21:55:20.948431",
+            "arrived": "2025-01-07T22:02:20.948431",
+            "cleared": "2025-01-07T23:24:39.948431"
+          }
+        },
+        {
+          "unit_id": "H-6",
+          "unit_type": "HazMat",
+          "station_id": "STA-8",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-01-07T21:53:53.948431",
+            "enroute": "2025-01-07T21:55:56.948431",
+            "arrived": "2025-01-07T22:03:02.948431",
+            "cleared": "2025-01-07T23:16:04.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Traumatic Injury",
+      "created_at": "2025-04-05T21:46:45.948722",
+      "updated_at": "2025-04-05T21:46:45.948723"
+    },
+    {
+      "id": "0245be47-51a3-49e4-b627-492dc1f42c5b",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2025-41271",
+      "type": "Medical Emergency",
+      "category": "EMS",
+      "priority": 3,
+      "location": {
+        "latitude": 47.45667336700853,
+        "longitude": -122.49472628553305,
+        "address": "9238 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98183"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-378-5341"
+      },
+      "times": {
+        "received": "2025-01-09T06:12:27.948431",
+        "dispatched": "2025-01-09T06:12:27.948431",
+        "first_unit_enroute": "2025-01-09T06:14:14.948431",
+        "first_unit_arrived": "2025-01-09T06:25:51.948431",
+        "last_unit_cleared": "2025-01-09T06:59:51.948431"
+      },
+      "units": [
+        {
+          "unit_id": "E-2",
+          "unit_type": "Engine",
+          "station_id": "STA-7",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-01-09T06:12:27.948431",
+            "enroute": "2025-01-09T06:14:15.948431",
+            "arrived": "2025-01-09T06:26:37.948431",
+            "cleared": "2025-01-09T06:57:22.948431"
+          }
+        },
+        {
+          "unit_id": "M-3",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-16",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-01-09T06:12:27.948431",
+            "enroute": "2025-01-09T06:14:11.948431",
+            "arrived": "2025-01-09T06:24:07.948431",
+            "cleared": "2025-01-09T06:54:22.948431"
+          }
+        },
+        {
+          "unit_id": "C-1",
+          "unit_type": "Command",
+          "station_id": "STA-11",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-01-09T06:12:27.948431",
+            "enroute": "2025-01-09T06:14:28.948431",
+            "arrived": "2025-01-09T06:26:11.948431",
+            "cleared": "2025-01-09T06:59:48.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Medical Emergency",
+      "created_at": "2025-04-05T21:46:45.948793",
+      "updated_at": "2025-04-05T21:46:45.948795"
+    },
+    {
+      "id": "fd50928c-591d-4e43-b8d3-498ef4fcb991",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2025-20360",
+      "type": "Cardiac Arrest",
+      "category": "EMS",
+      "priority": 3,
+      "location": {
+        "latitude": 47.41425415879632,
+        "longitude": -122.25080055168297,
+        "address": "1390 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98117"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-426-2662"
+      },
+      "times": {
+        "received": "2025-01-10T02:38:13.948431",
+        "dispatched": "2025-01-10T02:38:13.948431",
+        "first_unit_enroute": "2025-01-10T02:40:30.948431",
+        "first_unit_arrived": "2025-01-10T02:49:47.948431",
+        "last_unit_cleared": "2025-01-10T03:45:47.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-8",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-13",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-01-10T02:38:13.948431",
+            "enroute": "2025-01-10T02:41:00.948431",
+            "arrived": "2025-01-10T02:50:25.948431",
+            "cleared": "2025-01-10T03:37:38.948431"
+          }
+        },
+        {
+          "unit_id": "E-9",
+          "unit_type": "Engine",
+          "station_id": "STA-15",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-01-10T02:38:13.948431",
+            "enroute": "2025-01-10T02:40:36.948431",
+            "arrived": "2025-01-10T02:47:50.948431",
+            "cleared": "2025-01-10T03:40:43.948431"
+          }
+        },
+        {
+          "unit_id": "B-4",
+          "unit_type": "Brush",
+          "station_id": "STA-7",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-01-10T02:38:13.948431",
+            "enroute": "2025-01-10T02:40:23.948431",
+            "arrived": "2025-01-10T02:49:17.948431",
+            "cleared": "2025-01-10T03:41:41.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Cardiac Arrest",
+      "created_at": "2025-04-05T21:46:45.950695",
+      "updated_at": "2025-04-05T21:46:45.950696"
+    },
+    {
+      "id": "8f28d6ca-cba0-4218-80d9-73b1b462a486",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2025-27702",
+      "type": "Traumatic Injury",
+      "category": "EMS",
+      "priority": 3,
+      "location": {
+        "latitude": 47.714902562160525,
+        "longitude": -122.06515729619518,
+        "address": "7103 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98194"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-227-8893"
+      },
+      "times": {
+        "received": "2025-01-10T08:11:37.948431",
+        "dispatched": "2025-01-10T08:11:37.948431",
+        "first_unit_enroute": "2025-01-10T08:12:52.948431",
+        "first_unit_arrived": "2025-01-10T08:18:42.948431",
+        "last_unit_cleared": "2025-01-10T09:55:42.948431"
+      },
+      "units": [
+        {
+          "unit_id": "E-8",
+          "unit_type": "Engine",
+          "station_id": "STA-7",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-01-10T08:11:37.948431",
+            "enroute": "2025-01-10T08:12:59.948431",
+            "arrived": "2025-01-10T08:20:16.948431",
+            "cleared": "2025-01-10T09:49:05.948431"
+          }
+        }
+      ],
+      "outcome": "Treated and Released",
+      "notes": "Test incident generated for Traumatic Injury",
+      "created_at": "2025-04-05T21:46:45.950784",
+      "updated_at": "2025-04-05T21:46:45.950785"
+    },
+    {
+      "id": "e08423d6-2606-4a39-bd80-d3fd59a9cdac",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2025-60928",
+      "type": "Vehicle Fire",
+      "category": "Fire",
+      "priority": 2,
+      "location": {
+        "latitude": 47.5240660923385,
+        "longitude": -122.58947713810913,
+        "address": "1824 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98175"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-287-6431"
+      },
+      "times": {
+        "received": "2025-01-18T12:14:22.948431",
+        "dispatched": "2025-01-18T12:14:22.948431",
+        "first_unit_enroute": "2025-01-18T12:15:21.948431",
+        "first_unit_arrived": "2025-01-18T12:23:20.948431",
+        "last_unit_cleared": "2025-01-18T13:33:20.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-9",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-6",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-01-18T12:14:22.948431",
+            "enroute": "2025-01-18T12:14:52.948431",
+            "arrived": "2025-01-18T12:24:53.948431",
+            "cleared": "2025-01-18T13:40:18.948431"
+          }
+        }
+      ],
+      "outcome": "Treated and Released",
+      "notes": "Test incident generated for Vehicle Fire",
+      "created_at": "2025-04-05T21:46:45.950541",
+      "updated_at": "2025-04-05T21:46:45.950542"
+    },
+    {
+      "id": "79f3aa12-fe79-4fd1-b747-ac22ff860ab9",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2025-94613",
+      "type": "Public Assist",
+      "category": "Service",
+      "priority": 3,
+      "location": {
+        "latitude": 47.59773070990026,
+        "longitude": -122.34858381816778,
+        "address": "7964 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98139"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-367-5555"
+      },
+      "times": {
+        "received": "2025-01-25T15:18:22.948431",
+        "dispatched": "2025-01-25T15:18:22.948431",
+        "first_unit_enroute": "2025-01-25T15:20:55.948431",
+        "first_unit_arrived": "2025-01-25T15:32:14.948431",
+        "last_unit_cleared": "2025-01-25T16:30:14.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-7",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-15",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-01-25T15:18:22.948431",
+            "enroute": "2025-01-25T15:20:28.948431",
+            "arrived": "2025-01-25T15:32:20.948431",
+            "cleared": "2025-01-25T16:38:58.948431"
+          }
+        },
+        {
+          "unit_id": "M-10",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-18",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-01-25T15:18:22.948431",
+            "enroute": "2025-01-25T15:21:24.948431",
+            "arrived": "2025-01-25T15:32:00.948431",
+            "cleared": "2025-01-25T16:29:33.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Public Assist",
+      "created_at": "2025-04-05T21:46:45.949216",
+      "updated_at": "2025-04-05T21:46:45.949217"
+    },
+    {
+      "id": "04efb6b8-ed53-40dc-8d29-1d423433a209",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2025-42391",
+      "type": "Smoke Investigation",
+      "category": "Fire",
+      "priority": 3,
+      "location": {
+        "latitude": 47.57347924148836,
+        "longitude": -122.55185418022533,
+        "address": "9911 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98113"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-772-3543"
+      },
+      "times": {
+        "received": "2025-02-15T09:43:08.948431",
+        "dispatched": "2025-02-15T09:43:08.948431",
+        "first_unit_enroute": "2025-02-15T09:45:41.948431",
+        "first_unit_arrived": "2025-02-15T09:57:34.948431",
+        "last_unit_cleared": "2025-02-15T10:53:34.948431"
+      },
+      "units": [
+        {
+          "unit_id": "R-1",
+          "unit_type": "Rescue",
+          "station_id": "STA-5",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-02-15T09:43:08.948431",
+            "enroute": "2025-02-15T09:46:09.948431",
+            "arrived": "2025-02-15T09:56:17.948431",
+            "cleared": "2025-02-15T10:55:18.948431"
+          }
+        },
+        {
+          "unit_id": "R-1",
+          "unit_type": "Rescue",
+          "station_id": "STA-8",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-02-15T09:43:08.948431",
+            "enroute": "2025-02-15T09:45:21.948431",
+            "arrived": "2025-02-15T09:55:46.948431",
+            "cleared": "2025-02-15T10:55:51.948431"
+          }
+        },
+        {
+          "unit_id": "E-3",
+          "unit_type": "Engine",
+          "station_id": "STA-11",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-02-15T09:43:08.948431",
+            "enroute": "2025-02-15T09:45:19.948431",
+            "arrived": "2025-02-15T09:57:03.948431",
+            "cleared": "2025-02-15T11:00:53.948431"
+          }
+        },
+        {
+          "unit_id": "O-1",
+          "unit_type": "Other",
+          "station_id": "STA-3",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-02-15T09:43:08.948431",
+            "enroute": "2025-02-15T09:45:32.948431",
+            "arrived": "2025-02-15T09:56:45.948431",
+            "cleared": "2025-02-15T10:48:47.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Smoke Investigation",
+      "created_at": "2025-04-05T21:46:45.949157",
+      "updated_at": "2025-04-05T21:46:45.949158"
+    },
+    {
+      "id": "eb239f56-f3ac-4cf7-9fcc-f9d730c745c5",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2025-60122",
+      "type": "Medical Emergency",
+      "category": "EMS",
+      "priority": 4,
+      "location": {
+        "latitude": 47.69839506923189,
+        "longitude": -122.31859075749962,
+        "address": "9649 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98143"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-113-3271"
+      },
+      "times": {
+        "received": "2025-02-23T15:51:59.948431",
+        "dispatched": "2025-02-23T15:51:59.948431",
+        "first_unit_enroute": "2025-02-23T15:52:32.948431",
+        "first_unit_arrived": "2025-02-23T16:04:31.948431",
+        "last_unit_cleared": "2025-02-23T17:52:31.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-8",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-20",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-02-23T15:51:59.948431",
+            "enroute": "2025-02-23T15:53:02.948431",
+            "arrived": "2025-02-23T16:03:02.948431",
+            "cleared": "2025-02-23T17:47:18.948431"
+          }
+        },
+        {
+          "unit_id": "L-6",
+          "unit_type": "Ladder/Truck",
+          "station_id": "STA-10",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-02-23T15:51:59.948431",
+            "enroute": "2025-02-23T15:52:44.948431",
+            "arrived": "2025-02-23T16:04:22.948431",
+            "cleared": "2025-02-23T17:47:16.948431"
+          }
+        },
+        {
+          "unit_id": "E-6",
+          "unit_type": "Engine",
+          "station_id": "STA-15",
+          "personnel_count": 3,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-02-23T15:51:59.948431",
+            "enroute": "2025-02-23T15:52:05.948431",
+            "arrived": "2025-02-23T16:03:10.948431",
+            "cleared": "2025-02-23T17:50:57.948431"
+          }
+        },
+        {
+          "unit_id": "E-1",
+          "unit_type": "Engine",
+          "station_id": "STA-15",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-02-23T15:51:59.948431",
+            "enroute": "2025-02-23T15:52:17.948431",
+            "arrived": "2025-02-23T16:05:16.948431",
+            "cleared": "2025-02-23T18:00:24.948431"
+          }
+        },
+        {
+          "unit_id": "B-7",
+          "unit_type": "Battalion Chief",
+          "station_id": "STA-17",
+          "personnel_count": 2,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-02-23T15:51:59.948431",
+            "enroute": "2025-02-23T15:52:34.948431",
+            "arrived": "2025-02-23T16:04:09.948431",
+            "cleared": "2025-02-23T17:58:37.948431"
+          }
+        }
+      ],
+      "outcome": "Treated and Released",
+      "notes": "Test incident generated for Medical Emergency",
+      "created_at": "2025-04-05T21:46:45.951121",
+      "updated_at": "2025-04-05T21:46:45.951122"
+    },
+    {
+      "id": "c218f17b-706d-408a-9855-74657ed1e897",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2025-55786",
+      "type": "Respiratory Distress",
+      "category": "EMS",
+      "priority": 1,
+      "location": {
+        "latitude": 47.63168254326434,
+        "longitude": -122.32446747522398,
+        "address": "5768 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98146"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-762-3732"
+      },
+      "times": {
+        "received": "2025-03-04T16:29:27.948431",
+        "dispatched": "2025-03-04T16:29:27.948431",
+        "first_unit_enroute": "2025-03-04T16:30:36.948431",
+        "first_unit_arrived": "2025-03-04T16:37:00.948431",
+        "last_unit_cleared": "2025-03-04T17:20:00.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-1",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-12",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-03-04T16:29:27.948431",
+            "enroute": "2025-03-04T16:30:58.948431",
+            "arrived": "2025-03-04T16:37:57.948431",
+            "cleared": "2025-03-04T17:27:58.948431"
+          }
+        }
+      ],
+      "outcome": "Canceled En Route",
+      "notes": "Test incident generated for Respiratory Distress",
+      "created_at": "2025-04-05T21:46:45.950283",
+      "updated_at": "2025-04-05T21:46:45.950284"
+    },
+    {
+      "id": "d6519633-6221-4f57-847d-03b31ea48d8a",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2025-59330",
+      "type": "Public Assist",
+      "category": "Service",
+      "priority": 3,
+      "location": {
+        "latitude": 47.64475929130718,
+        "longitude": -122.25276502310612,
+        "address": "7946 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98190"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-899-8304"
+      },
+      "times": {
+        "received": "2025-03-19T17:07:33.948431",
+        "dispatched": "2025-03-19T17:07:33.948431",
+        "first_unit_enroute": "2025-03-19T17:08:37.948431",
+        "first_unit_arrived": "2025-03-19T17:17:06.948431",
+        "last_unit_cleared": "2025-03-19T17:40:06.948431"
+      },
+      "units": [
+        {
+          "unit_id": "M-13",
+          "unit_type": "Ambulance/Medic",
+          "station_id": "STA-17",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-03-19T17:07:33.948431",
+            "enroute": "2025-03-19T17:08:22.948431",
+            "arrived": "2025-03-19T17:16:48.948431",
+            "cleared": "2025-03-19T17:32:34.948431"
+          }
+        }
+      ],
+      "outcome": "Canceled En Route",
+      "notes": "Test incident generated for Public Assist",
+      "created_at": "2025-04-05T21:46:45.950248",
+      "updated_at": "2025-04-05T21:46:45.950249"
+    },
+    {
+      "id": "97067037-d6a4-4360-a5c5-bb065a37fc3a",
+      "department_id": "a8136a01-1a53-463b-9078-9481781be48a",
+      "call_number": "2025-48790",
+      "type": "Lift Assist",
+      "category": "Service",
+      "priority": 3,
+      "location": {
+        "latitude": 47.625158034696426,
+        "longitude": -122.27272982738945,
+        "address": "9836 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98132"
+      },
+      "caller_info": {
+        "name": "Anonymous",
+        "phone": "555-708-5797"
+      },
+      "times": {
+        "received": "2025-03-24T14:53:12.948431",
+        "dispatched": "2025-03-24T14:53:12.948431",
+        "first_unit_enroute": "2025-03-24T14:55:12.948431",
+        "first_unit_arrived": "2025-03-24T15:00:08.948431",
+        "last_unit_cleared": "2025-03-24T15:21:08.948431"
+      },
+      "units": [
+        {
+          "unit_id": "E-3",
+          "unit_type": "Engine",
+          "station_id": "STA-4",
+          "personnel_count": 4,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-03-24T14:53:12.948431",
+            "enroute": "2025-03-24T14:55:19.948431",
+            "arrived": "2025-03-24T14:58:16.948431",
+            "cleared": "2025-03-24T15:30:01.948431"
+          }
+        },
+        {
+          "unit_id": "L-2",
+          "unit_type": "Ladder/Truck",
+          "station_id": "STA-8",
+          "personnel_count": 5,
+          "status": "Cleared",
+          "times": {
+            "dispatched": "2025-03-24T14:53:12.948431",
+            "enroute": "2025-03-24T14:55:23.948431",
+            "arrived": "2025-03-24T14:58:26.948431",
+            "cleared": "2025-03-24T15:18:10.948431"
+          }
+        }
+      ],
+      "outcome": "Transport to Hospital",
+      "notes": "Test incident generated for Lift Assist",
+      "created_at": "2025-04-05T21:46:45.951356",
+      "updated_at": "2025-04-05T21:46:45.951357"
+    }
+  ]
+}

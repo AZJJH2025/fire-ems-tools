@@ -1,0 +1,1 @@
+"""Migration scripts for the Fire-EMS Tools application."""

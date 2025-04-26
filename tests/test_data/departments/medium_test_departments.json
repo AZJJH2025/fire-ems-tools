@@ -1,0 +1,45 @@
+{
+  "metadata": {
+    "created": "2025-04-05T21:46:45.967053",
+    "id": "e63101a3-c284-4c03-bb89-b96ecd83939d",
+    "version": "1.0"
+  },
+  "data": [
+    {
+      "id": "0e9026fd-f4a2-433d-b257-64e94c0686c0",
+      "name": "Springfield Fire-EMS",
+      "type": "Combined",
+      "size": "metro",
+      "service_area": "County-wide",
+      "station_count": 93,
+      "personnel_count": 3861,
+      "vehicle_count": 175,
+      "annual_budget": 171652058,
+      "contact": {
+        "phone": "555-713-9163",
+        "email": "info@springfieldfire-ems.gov",
+        "address": "723 Main Street"
+      },
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    },
+    {
+      "id": "78cf218b-52c8-49c6-b558-a2a783740e04",
+      "name": "Westview Fire",
+      "type": "Combined",
+      "size": "metro",
+      "service_area": "Mixed",
+      "station_count": 69,
+      "personnel_count": 1120,
+      "vehicle_count": 208,
+      "annual_budget": 81313139,
+      "contact": {
+        "phone": "555-682-1144",
+        "email": "info@westviewfire.gov",
+        "address": "202 Main Street"
+      },
+      "created_at": "2023-01-01T00:00:00Z",
+      "updated_at": "2023-01-01T00:00:00Z"
+    }
+  ]
+}

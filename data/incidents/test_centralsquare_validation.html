@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central Square Data Validation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #results {
+            margin-top: 20px;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .warning {
+            color: orange;
+            font-weight: bold;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Central Square Data Validator</h1>
+    <p>This tool validates Central Square CAD data processing for the Response Time Analyzer.</p>
+    
+    <div>
+        <button id="loadTestData">Load Small Test Data</button>
+        <button id="loadLargeTestData">Load Large Test Data</button>
+        <button id="processData">Process Data</button>
+        <button id="validateChartData">Validate Chart Data</button>
+    </div>
+    
+    <div id="results">
+        <h2>Results</h2>
+        <div id="output"></div>
+    </div>
+    
+    <script src="../static/data-formatter.js"></script>
+    <script>
+        // Mock functions needed by the data-formatter.js
+        function appendLog(message, level) {
+            console.log(`[${level || 'info'}] ${message}`);
+            const output = document.getElementById('output');
+            output.innerHTML += `<div class="${level || 'info'}">${message}</div>`;
+        }
+
+        // Test Data
+        let originalData = [];
+        let processedData = [];
+        
+        // Button click handlers
+        document.getElementById('loadTestData').addEventListener('click', async function() {
+            try {
+                const response = await fetch('../data/incidents/test_centralsquare_incidents.csv');
+                const csvText = await response.text();
+                originalData = parseCSV(csvText);
+                
+                const output = document.getElementById('output');
+                output.innerHTML = `<div class="success">Loaded ${originalData.length} test records</div>`;
+                output.innerHTML += `<h3>Sample Record:</h3>`;
+                output.innerHTML += `<pre>${JSON.stringify(originalData[0], null, 2)}</pre>`;
+                
+                // Display the data in a table
+                output.innerHTML += `<h3>Input Data:</h3>`;
+                output.innerHTML += createTable(originalData);
+            } catch (error) {
+                const output = document.getElementById('output');
+                output.innerHTML = `<div class="error">Error loading test data: ${error.message}</div>`;
+            }
+        });
+        
+        document.getElementById('loadLargeTestData').addEventListener('click', async function() {
+            try {
+                const response = await fetch('../data/incidents/test_centralsquare_large.csv');
+                const csvText = await response.text();
+                originalData = parseCSV(csvText);
+                
+                const output = document.getElementById('output');
+                output.innerHTML = `<div class="success">Loaded ${originalData.length} test records</div>`;
+                output.innerHTML += `<h3>Sample Record:</h3>`;
+                output.innerHTML += `<pre>${JSON.stringify(originalData[0], null, 2)}</pre>`;
+                
+                // Display the data in a table - limit to first 5 records for large datasets
+                output.innerHTML += `<h3>Input Data (first 5 records):</h3>`;
+                output.innerHTML += createTable(originalData.slice(0, 5));
+            } catch (error) {
+                const output = document.getElementById('output');
+                output.innerHTML = `<div class="error">Error loading large test data: ${error.message}</div>`;
+            }
+        });
+        
+        document.getElementById('processData').addEventListener('click', function() {
+            try {
+                if (originalData.length === 0) {
+                    throw new Error("Please load test data first");
+                }
+                
+                const output = document.getElementById('output');
+                output.innerHTML = '';
+                
+                // First detect if this is Central Square format
+                const isCentralSquare = detectCentralSquareFormat(originalData[0]);
+                output.innerHTML += `<div class="${isCentralSquare ? 'success' : 'error'}">
+                    Central Square Format Detection: ${isCentralSquare ? 'YES' : 'NO'}
+                </div>`;
+                
+                if (isCentralSquare) {
+                    // Process the data
+                    processedData = processCentralSquareData(originalData, 'response-time');
+                    
+                    output.innerHTML += `<div class="success">Processed ${processedData.length} records</div>`;
+                    output.innerHTML += `<h3>Sample Processed Record:</h3>`;
+                    output.innerHTML += `<pre>${JSON.stringify(processedData[0], null, 2)}</pre>`;
+                    
+                    // Display the processed data in a table (limited to 5 records if large)
+                    output.innerHTML += `<h3>Processed Data (${processedData.length > 5 ? 'first 5 of ' + processedData.length : processedData.length} records):</h3>`;
+                    output.innerHTML += createTable(processedData.length > 5 ? processedData.slice(0, 5) : processedData);
+                } else {
+                    output.innerHTML += `<div class="error">Data was not detected as Central Square format</div>`;
+                }
+            } catch (error) {
+                const output = document.getElementById('output');
+                output.innerHTML += `<div class="error">Error processing data: ${error.message}</div>`;
+                console.error(error);
+            }
+        });
+        
+        document.getElementById('validateChartData').addEventListener('click', function() {
+            try {
+                if (processedData.length === 0) {
+                    throw new Error("Please process the data first");
+                }
+                
+                const output = document.getElementById('output');
+                output.innerHTML = '';
+                
+                // Validate required fields for charts
+                const results = validateDataForCharts(processedData);
+                
+                // Display validation results
+                output.innerHTML += `<h3>Chart Data Validation Results:</h3>`;
+                
+                for (const [chart, result] of Object.entries(results)) {
+                    output.innerHTML += `<h4>${chart} Chart:</h4>`;
+                    output.innerHTML += `<div class="${result.valid ? 'success' : 'error'}">
+                        ${result.valid ? 'VALID' : 'INVALID'}: ${result.message}
+                    </div>`;
+                    
+                    if (result.details) {
+                        output.innerHTML += `<pre>${result.details}</pre>`;
+                    }
+                }
+            } catch (error) {
+                const output = document.getElementById('output');
+                output.innerHTML += `<div class="error">Error validating chart data: ${error.message}</div>`;
+                console.error(error);
+            }
+        });
+        
+        // Utility functions
+        function parseCSV(text) {
+            const lines = text.split('\n');
+            const headers = lines[0].split(',');
+            
+            return lines.slice(1).filter(line => line.trim().length > 0).map(line => {
+                const values = line.split(',');
+                const record = {};
+                
+                headers.forEach((header, i) => {
+                    record[header] = values[i];
+                });
+                
+                return record;
+            });
+        }
+        
+        function createTable(data) {
+            if (!data || data.length === 0) return '<p>No data</p>';
+            
+            const headers = Object.keys(data[0]);
+            let html = '<table>';
+            
+            // Table header
+            html += '<tr>';
+            headers.forEach(header => {
+                html += `<th>${header}</th>`;
+            });
+            html += '</tr>';
+            
+            // Table rows
+            data.forEach(row => {
+                html += '<tr>';
+                headers.forEach(header => {
+                    html += `<td>${row[header] !== undefined ? row[header] : ''}</td>`;
+                });
+                html += '</tr>';
+            });
+            
+            html += '</table>';
+            return html;
+        }
+        
+        function validateDataForCharts(data) {
+            const results = {
+                time: { valid: false, message: '', details: '' },
+                location: { valid: false, message: '', details: '' },
+                responseTime: { valid: false, message: '', details: '' },
+                map: { valid: false, message: '', details: '' }
+            };
+            
+            // Validate time chart data
+            const timeDataValid = data.some(record => record['Reported_obj']);
+            results.time.valid = timeDataValid;
+            results.time.message = timeDataValid ? 
+                'Data has valid Reported_obj Date objects' : 
+                'Data is missing Reported_obj Date objects required for time chart';
+            
+            if (timeDataValid) {
+                const sampleRecord = data.find(record => record['Reported_obj']);
+                results.time.details = `Sample Reported_obj: ${sampleRecord['Reported_obj']}`;
+            }
+            
+            // Validate location chart data
+            const locationDataValid = data.some(record => record['Incident City']);
+            results.location.valid = locationDataValid;
+            results.location.message = locationDataValid ? 
+                'Data has valid Incident City fields' : 
+                'Data is missing Incident City field required for location chart';
+            
+            if (locationDataValid) {
+                const cities = {};
+                data.forEach(record => {
+                    if (record['Incident City']) {
+                        cities[record['Incident City']] = (cities[record['Incident City']] || 0) + 1;
+                    }
+                });
+                results.location.details = `Cities: ${JSON.stringify(cities)}`;
+            }
+            
+            // Validate response time data
+            const responseTimeValid = data.some(record => record['Response Time (min)'] !== undefined);
+            results.responseTime.valid = responseTimeValid;
+            results.responseTime.message = responseTimeValid ? 
+                'Data has valid Response Time (min) fields' : 
+                'Data is missing Response Time (min) field required for response time analysis';
+            
+            if (responseTimeValid) {
+                const responseTimes = data
+                    .filter(record => record['Response Time (min)'] !== undefined)
+                    .map(record => record['Response Time (min)']);
+                const avgTime = responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length;
+                results.responseTime.details = `Average Response Time: ${avgTime.toFixed(2)} minutes`;
+            }
+            
+            // Validate map data
+            const mapDataValid = data.some(record => 
+                record['Latitude'] !== undefined && 
+                record['Longitude'] !== undefined &&
+                record['validCoordinates'] === true
+            );
+            results.map.valid = mapDataValid;
+            results.map.message = mapDataValid ? 
+                'Data has valid coordinate fields' : 
+                'Data is missing valid coordinate fields required for map';
+            
+            if (mapDataValid) {
+                const validCoords = data.filter(record => record['validCoordinates'] === true).length;
+                results.map.details = `${validCoords} of ${data.length} records have valid coordinates`;
+            }
+            
+            return results;
+        }
+    </script>
+</body>
+</html>

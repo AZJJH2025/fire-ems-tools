@@ -1,0 +1,45 @@
+# Blueprint for Render deployment
+services:
+  # Web Service
+  - type: web
+    name: fire-ems-tools
+    env: python
+    plan: free
+    buildCommand: chmod +x ./build.sh && ./build.sh
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: fire-ems-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: fire-ems-redis
+          property: connectionString
+      - key: FLASK_ENV
+        value: production
+      - key: RENDER
+        value: "true"
+      - key: SECRET_KEY
+        generateValue: true
+    healthCheckPath: /
+
+# Database
+databases:
+  - name: fire-ems-db
+    databaseName: fire_ems
+    user: fire_ems_user
+    plan: standard
+
+# Redis
+services:
+  - type: redis
+    name: fire-ems-redis
+    ipAllowList: # required
+      - source: 0.0.0.0/0
+        description: everywhere
+    plan: free # optional (defaults to starter)
+    maxmemoryPolicy: volatile-lru # optional (defaults to allkeys-lru)

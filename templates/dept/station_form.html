@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'Edit' if station else 'Add' }} Station - {{ department.name }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        .dept-header {
+            background: linear-gradient(135deg, {{ department.primary_color }} 0%, {{ department.secondary_color }} 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .dept-title {
+            font-size: 2rem;
+            margin: 0 0 0.5rem 0;
+        }
+        
+        .dept-subtitle {
+            opacity: 0.8;
+            margin: 0;
+        }
+        
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        
+        .form-section {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1rem;
+        }
+        
+        .form-section-title {
+            font-size: 1.25rem;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid {{ department.primary_color }};
+            padding-bottom: 0.5rem;
+            display: inline-block;
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -0.5rem;
+        }
+        
+        .form-group {
+            flex: 1;
+            min-width: 250px;
+            padding: 0 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .required-label::after {
+            content: " *";
+            color: #e74c3c;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: {{ department.primary_color }};
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        .help-text {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-top: 0.25rem;
+        }
+        
+        .apparatus-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+        
+        .apparatus-input {
+            display: flex;
+            align-items: center;
+        }
+        
+        .apparatus-input label {
+            margin-right: 0.5rem;
+            margin-bottom: 0;
+            min-width: 80px;
+        }
+        
+        .apparatus-input input[type="number"] {
+            width: 60px;
+            padding: 0.5rem;
+            text-align: center;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+        
+        .form-actions .btn {
+            min-width: 120px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">
+            <a href="/dept/{{ department.code }}">
+                {% if department.logo_url %}
+                    <img src="{{ department.logo_url }}" alt="{{ department.name }} Logo" height="30">
+                {% else %}
+                    <i class="fas fa-fire"></i> {{ department.name }}
+                {% endif %}
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="/dept/{{ department.code }}">Home</a>
+            <a href="/dept/{{ department.code }}/dashboard">Dashboard</a>
+            
+            {% if department.features_enabled.get('incident_logger', True) %}
+                <a href="/dept/{{ department.code }}/incident-logger">Incident Logger</a>
+            {% endif %}
+            
+            {% if current_user.is_admin() or current_user.is_super_admin() %}
+                <a href="/dept/{{ department.code }}/stations" class="active">Stations</a>
+                <a href="/dept/{{ department.code }}/users">Users</a>
+                <a href="/dept/{{ department.code }}/settings">Settings</a>
+            {% endif %}
+        </div>
+        <div class="user-menu">
+            <div class="user-dropdown">
+                <button class="user-button">
+                    <i class="fas fa-user-circle"></i> {{ current_user.name }}
+                </button>
+                <div class="dropdown-content">
+                    {% if current_user.is_super_admin() %}
+                        <a href="/admin/dashboard"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a>
+                    {% endif %}
+                    <a href="/dept/{{ department.code }}/users/{{ current_user.id }}"><i class="fas fa-user-cog"></i> Profile</a>
+                    <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <header class="dept-header">
+        <div class="container">
+            <h1 class="dept-title">{{ 'Edit' if station else 'Add New' }} Station</h1>
+            <p class="dept-subtitle">{% if station %}Update station information{% else %}Add a new station to your department{% endif %}</p>
+        </div>
+    </header>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="container">
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash flash-{{ category }}">
+                        {{ message }}
+                        <span class="flash-dismiss">&times;</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <script>
+            // Flash message dismiss functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                const dismissButtons = document.querySelectorAll('.flash-dismiss');
+                dismissButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        this.parentElement.style.display = 'none';
+                    });
+                });
+            });
+        </script>
+        {% endif %}
+    {% endwith %}
+    
+    <main class="container">
+        <div class="form-container">
+            <form action="{{ url_for('dept_edit_station', dept_code=department.code, station_id=station.id) if station else url_for('dept_add_station', dept_code=department.code) }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-section">
+                    <h3 class="form-section-title">Station Information</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name" class="required-label">Station Name</label>
+                            <input type="text" id="name" name="name" value="{{ station.name if station else '' }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="station_number" class="required-label">Station Number</label>
+                            <input type="text" id="station_number" name="station_number" value="{{ station.station_number if station else '' }}" required>
+                            <p class="help-text">Unique identifier for this station (e.g. "1", "23", "HQ")</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3 class="form-section-title">Address & Location</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="address">Street Address</label>
+                            <input type="text" id="address" name="address" value="{{ station.address if station else '' }}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="city">City</label>
+                            <input type="text" id="city" name="city" value="{{ station.city if station else '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="state">State</label>
+                            <input type="text" id="state" name="state" value="{{ station.state if station else '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="zip_code">ZIP Code</label>
+                            <input type="text" id="zip_code" name="zip_code" value="{{ station.zip_code if station else '' }}">
+                        </div>
+                    </div>
+                    
+                    {% if station %}
+                    <div class="form-row">
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <label>
+                                    <input type="checkbox" name="update_location" value="true"> Update location coordinates from address
+                                </label>
+                                <p class="help-text">Current coordinates: {{ station.latitude }}, {{ station.longitude }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-section">
+                    <h3 class="form-section-title">Station Details</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="personnel_count">Personnel Count</label>
+                            <input type="number" id="personnel_count" name="personnel_count" min="0" value="{{ station.personnel_count if station else '0' }}">
+                            <p class="help-text">Number of personnel assigned to this station</p>
+                        </div>
+                    </div>
+                    
+                    <h4>Apparatus</h4>
+                    <p class="help-text">Enter the number of each apparatus type at this station</p>
+                    
+                    <div class="apparatus-inputs">
+                        <div class="apparatus-input">
+                            <label for="apparatus_engine">Engines:</label>
+                            <input type="number" id="apparatus_engine" name="apparatus_engine" min="0" value="{{ station.apparatus.get('engine', 0) if station and station.apparatus else '0' }}">
+                        </div>
+                        
+                        <div class="apparatus-input">
+                            <label for="apparatus_ladder">Ladders:</label>
+                            <input type="number" id="apparatus_ladder" name="apparatus_ladder" min="0" value="{{ station.apparatus.get('ladder', 0) if station and station.apparatus else '0' }}">
+                        </div>
+                        
+                        <div class="apparatus-input">
+                            <label for="apparatus_ambulance">Ambulances:</label>
+                            <input type="number" id="apparatus_ambulance" name="apparatus_ambulance" min="0" value="{{ station.apparatus.get('ambulance', 0) if station and station.apparatus else '0' }}">
+                        </div>
+                        
+                        <div class="apparatus-input">
+                            <label for="apparatus_rescue">Rescues:</label>
+                            <input type="number" id="apparatus_rescue" name="apparatus_rescue" min="0" value="{{ station.apparatus.get('rescue', 0) if station and station.apparatus else '0' }}">
+                        </div>
+                        
+                        <div class="apparatus-input">
+                            <label for="apparatus_tanker">Tankers:</label>
+                            <input type="number" id="apparatus_tanker" name="apparatus_tanker" min="0" value="{{ station.apparatus.get('tanker', 0) if station and station.apparatus else '0' }}">
+                        </div>
+                        
+                        <div class="apparatus-input">
+                            <label for="apparatus_brush">Brush:</label>
+                            <input type="number" id="apparatus_brush" name="apparatus_brush" min="0" value="{{ station.apparatus.get('brush', 0) if station and station.apparatus else '0' }}">
+                        </div>
+                        
+                        <div class="apparatus-input">
+                            <label for="apparatus_command">Command:</label>
+                            <input type="number" id="apparatus_command" name="apparatus_command" min="0" value="{{ station.apparatus.get('command', 0) if station and station.apparatus else '0' }}">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <a href="{{ url_for('dept_stations', dept_code=department.code) }}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">{{ 'Save Changes' if station else 'Add Station' }}</button>
+                </div>
+            </form>
+        </div>
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Form validation
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function(event) {
+                // Get required fields
+                const name = document.getElementById('name');
+                const stationNumber = document.getElementById('station_number');
+                
+                let isValid = true;
+                
+                // Validate name
+                if (!name.value.trim()) {
+                    name.classList.add('field-invalid');
+                    isValid = false;
+                } else {
+                    name.classList.remove('field-invalid');
+                }
+                
+                // Validate station number
+                if (!stationNumber.value.trim()) {
+                    stationNumber.classList.add('field-invalid');
+                    isValid = false;
+                } else {
+                    stationNumber.classList.remove('field-invalid');
+                }
+                
+                if (!isValid) {
+                    event.preventDefault();
+                    alert('Please fill in all required fields');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help & Documentation - {{ department.name }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        .help-section {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .help-section h2 {
+            color: {{ department.primary_color }};
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .help-topic {
+            margin-bottom: 30px;
+        }
+        .help-topic h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .help-search {
+            margin-bottom: 30px;
+        }
+        .help-search input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .toc {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 30px;
+        }
+        .toc-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        .toc ul {
+            list-style-type: none;
+            padding-left: 15px;
+        }
+        .toc li {
+            margin-bottom: 5px;
+        }
+        .toc a {
+            color: {{ department.primary_color }};
+            text-decoration: none;
+        }
+        .toc a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">
+            <a href="/dept/{{ department.code }}">
+                {% if department.logo_url %}
+                    <img src="{{ department.logo_url }}" alt="{{ department.name }} Logo" height="30">
+                {% else %}
+                    <i class="fas fa-fire"></i> {{ department.name }}
+                {% endif %}
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="/dept/{{ department.code }}">Home</a>
+            
+            {% if department.features_enabled.get('dashboard', True) %}
+                <a href="/dept/{{ department.code }}/dashboard">Dashboard</a>
+            {% endif %}
+            
+            <a href="/dept/{{ department.code }}/incidents">Incidents</a>
+            
+            {% if department.features_enabled.get('incident_logger', True) %}
+                <a href="/dept/{{ department.code }}/incident-logger">Incident Logger</a>
+            {% endif %}
+            
+            {% if department.features_enabled.get('call_density', True) %}
+                <a href="/dept/{{ department.code }}/call-density">Call Density</a>
+            {% endif %}
+            
+            {% if department.features_enabled.get('isochrone_map', True) %}
+                <a href="/dept/{{ department.code }}/isochrone-map">Isochrone Map</a>
+            {% endif %}
+            
+            {% if current_user.is_admin() or current_user.is_super_admin() %}
+                <a href="/dept/{{ department.code }}/stations">Stations</a>
+                <a href="/dept/{{ department.code }}/users">Users</a>
+            {% endif %}
+            
+            <a href="/dept/{{ department.code }}/help" class="active">Help</a>
+        </div>
+        <div class="user-menu">
+            <div class="user-dropdown">
+                <button class="user-button">
+                    <i class="fas fa-user-circle"></i> {{ current_user.name }}
+                </button>
+                <div class="dropdown-content">
+                    {% if current_user.is_super_admin() %}
+                        <a href="/admin/dashboard"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a>
+                    {% endif %}
+                    <a href="/dept/{{ department.code }}/users/{{ current_user.id }}"><i class="fas fa-user-cog"></i> Profile</a>
+                    <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <main class="container">
+        <div class="content-header">
+            <h1 class="content-title">Help & Documentation</h1>
+        </div>
+        
+        <div class="help-search">
+            <input type="text" id="helpSearch" placeholder="Search for help topics..." onkeyup="searchHelp()">
+        </div>
+        
+        <div class="toc">
+            <div class="toc-title">Table of Contents</div>
+            <ul>
+                <li><a href="#getting-started">Getting Started</a></li>
+                <li><a href="#features">Features Overview</a></li>
+                <li><a href="#incidents">Managing Incidents</a></li>
+                <li><a href="#stations">Station Management</a></li>
+                <li><a href="#users">User Management</a></li>
+                <li><a href="#faq">FAQ</a></li>
+            </ul>
+        </div>
+        
+        <div class="help-section" id="getting-started">
+            <h2>Getting Started</h2>
+            
+            <div class="help-topic">
+                <h3>Navigating the Portal</h3>
+                <p>The department portal is organized into several sections accessible from the navigation menu:</p>
+                <ul>
+                    <li><strong>Home</strong> - Overview of department features and quick links</li>
+                    <li><strong>Dashboard</strong> - Statistics and visual representations of your department data</li>
+                    <li><strong>Incidents</strong> - Browse, search, and view incident reports</li>
+                    <li><strong>Incident Logger</strong> - Log and manage incident reports</li>
+                    <li><strong>Call Density</strong> - View geographic heat maps of incident locations</li>
+                    <li><strong>Isochrone Map</strong> - Analyze response time coverage</li>
+                    <li><strong>Stations</strong> - Manage your department's stations and resources</li>
+                    <li><strong>Users</strong> - Manage department users (admin only)</li>
+                    <li><strong>Settings</strong> - Configure department preferences (admin only)</li>
+                </ul>
+            </div>
+            
+            <div class="help-topic">
+                <h3>User Roles</h3>
+                <p>The system has three user roles with different permissions:</p>
+                <ul>
+                    <li><strong>Admin</strong> - Full access to all department features and settings</li>
+                    <li><strong>Manager</strong> - Can view all data and manage incidents and stations</li>
+                    <li><strong>User</strong> - Basic access to view and log incidents</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="help-section" id="features">
+            <h2>Features Overview</h2>
+            
+            <div class="help-topic">
+                <h3>Incident Logger</h3>
+                <p>The Incident Logger allows you to record detailed information about emergency incidents:</p>
+                <ul>
+                    <li>Record incident number, date, time, location, and type</li>
+                    <li>Track resources dispatched and response times</li>
+                    <li>Document patient information with HIPAA compliance</li>
+                    <li>Upload images and additional files</li>
+                </ul>
+            </div>
+            
+            <div class="help-topic">
+                <h3>Call Density Heatmap</h3>
+                <p>Visualize incident hotspots across your service area:</p>
+                <ul>
+                    <li>View geographic distribution of incidents</li>
+                    <li>Filter by incident type, date range, and time of day</li>
+                    <li>Identify high-activity areas for resource planning</li>
+                </ul>
+            </div>
+            
+            <div class="help-topic">
+                <h3>Isochrone Map</h3>
+                <p>Analyze response time coverage from your stations:</p>
+                <ul>
+                    <li>Visualize 4, 8, and 12-minute response zones</li>
+                    <li>Identify coverage gaps in your service area</li>
+                    <li>Plan optimal locations for new stations</li>
+                </ul>
+            </div>
+            
+            <div class="help-topic">
+                <h3>Department Dashboard</h3>
+                <p>Get a quick overview of your department's activity and performance:</p>
+                <ul>
+                    <li>View incident counts by type and time period</li>
+                    <li>Monitor response time metrics</li>
+                    <li>Track resource utilization</li>
+                    <li>See recent incidents and activity</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="help-section" id="incidents">
+            <h2>Managing Incidents</h2>
+            
+            <div class="help-topic">
+                <h3>Creating a New Incident</h3>
+                <p>To create a new incident:</p>
+                <ol>
+                    <li>Navigate to the Incident Logger from the main menu</li>
+                    <li>Click the "New Incident" button</li>
+                    <li>Fill in all required fields (marked with *)</li>
+                    <li>Add additional details as needed</li>
+                    <li>Click "Save Incident" to create the record</li>
+                </ol>
+            </div>
+            
+            <div class="help-topic">
+                <h3>Viewing Incidents</h3>
+                <p>You can view all incidents in the Incidents section:</p>
+                <ul>
+                    <li>Use filters to narrow down results by date, type, etc.</li>
+                    <li>Click on any incident to view detailed information</li>
+                    <li>Export incident reports to PDF or CSV format</li>
+                </ul>
+            </div>
+            
+            <div class="help-topic">
+                <h3>Editing Incidents</h3>
+                <p>To edit an existing incident:</p>
+                <ol>
+                    <li>Navigate to the specific incident's details page</li>
+                    <li>Click the "Edit" button at the top of the page</li>
+                    <li>Make necessary changes to the incident details</li>
+                    <li>Click "Save Changes" to update the record</li>
+                </ol>
+                <p><strong>Note:</strong> All changes are logged in the incident's history for accountability.</p>
+            </div>
+        </div>
+        
+        <div class="help-section" id="stations">
+            <h2>Station Management</h2>
+            
+            <div class="help-topic">
+                <h3>Adding a Station</h3>
+                <p>To add a new station to your department:</p>
+                <ol>
+                    <li>Navigate to the Stations section</li>
+                    <li>Click "Add Station"</li>
+                    <li>Enter station details (name, number, address, etc.)</li>
+                    <li>Add apparatus information</li>
+                    <li>Click "Save Station" to create the record</li>
+                </ol>
+            </div>
+            
+            <div class="help-topic">
+                <h3>Managing Station Resources</h3>
+                <p>For each station, you can manage:</p>
+                <ul>
+                    <li>Personnel count and assignments</li>
+                    <li>Apparatus inventory (engines, ambulances, etc.)</li>
+                    <li>Equipment and resources</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="help-section" id="users">
+            <h2>User Management</h2>
+            
+            <div class="help-topic">
+                <h3>Adding Users</h3>
+                <p>Administrators can add new users:</p>
+                <ol>
+                    <li>Navigate to the Users section</li>
+                    <li>Click "Add User"</li>
+                    <li>Enter user details (name, email, etc.)</li>
+                    <li>Select appropriate role (User, Manager, Admin)</li>
+                    <li>Click "Save User" to create the account</li>
+                </ol>
+            </div>
+            
+            <div class="help-topic">
+                <h3>Managing User Accounts</h3>
+                <p>Administrators can manage existing users:</p>
+                <ul>
+                    <li>Edit user information and roles</li>
+                    <li>Reset passwords</li>
+                    <li>Activate or deactivate accounts</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="help-section" id="faq">
+            <h2>Frequently Asked Questions</h2>
+            
+            <div class="help-topic">
+                <h3>How do I reset my password?</h3>
+                <p>To reset your password, click on your profile name in the top-right corner, select "Profile", and use the "Change Password" option. If you're locked out of your account, contact your department administrator.</p>
+            </div>
+            
+            <div class="help-topic">
+                <h3>Is my data secure?</h3>
+                <p>Yes. All data is encrypted in transit and at rest. Patient information is stored in compliance with HIPAA requirements. Access is limited to authorized users within your department only.</p>
+            </div>
+            
+            <div class="help-topic">
+                <h3>How do I export incident data?</h3>
+                <p>From the Incidents page, use the "Export" button to download incident data in various formats (CSV, Excel, PDF). You can export all data or filtered results.</p>
+            </div>
+            
+            <div class="help-topic">
+                <h3>Can I access the system on mobile devices?</h3>
+                <p>Yes, the system is responsive and works on all modern mobile devices, tablets, and desktop computers.</p>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        function searchHelp() {
+            // Get the search input
+            var input = document.getElementById("helpSearch");
+            var filter = input.value.toUpperCase();
+            
+            // Get all help topics
+            var helpTopics = document.getElementsByClassName("help-topic");
+            
+            // Loop through all help topics
+            for (var i = 0; i < helpTopics.length; i++) {
+                var h3 = helpTopics[i].getElementsByTagName("h3")[0];
+                var content = helpTopics[i].textContent || helpTopics[i].innerText;
+                
+                // If the topic matches the search...
+                if (content.toUpperCase().indexOf(filter) > -1) {
+                    helpTopics[i].style.display = "";
+                } else {
+                    helpTopics[i].style.display = "none";
+                }
+            }
+            
+            // Hide section headers if all topics are hidden
+            var helpSections = document.getElementsByClassName("help-section");
+            for (var i = 0; i < helpSections.length; i++) {
+                var visibleTopics = 0;
+                var topics = helpSections[i].getElementsByClassName("help-topic");
+                
+                for (var j = 0; j < topics.length; j++) {
+                    if (topics[j].style.display !== "none") {
+                        visibleTopics++;
+                    }
+                }
+                
+                if (visibleTopics === 0) {
+                    helpSections[i].style.display = "none";
+                } else {
+                    helpSections[i].style.display = "";
+                }
+            }
+        }
+    </script>
+</body>
+</html>

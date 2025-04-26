@@ -1,0 +1,123 @@
+/**
+ * Fixes for CSS visibility and control issues
+ */
+
+/* Force visibility for drawing tools - using extremely high z-index to override everything */
+.leaflet-draw,
+.leaflet-draw.leaflet-control {
+    display: block !important;
+    z-index: 99999 !important; /* Extremely high z-index */
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    position: absolute !important; /* Changed to absolute instead of relative */
+    top: 10px !important; /* Ensure it's positioned correctly */
+    right: 10px !important;
+}
+
+.leaflet-draw-toolbar {
+    display: block !important;
+    visibility: visible !important;
+    z-index: 99999 !important; /* Extremely high z-index to match parent */
+    background: white !important;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.4) !important;
+    border-radius: 4px !important;
+    padding: 2px !important;
+    position: relative !important; /* Preserve proper layout */
+}
+
+.leaflet-draw-toolbar a {
+    display: block !important;
+    width: 30px !important;
+    height: 30px !important;
+    line-height: 30px !important;
+    text-align: center !important;
+    background-color: white !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    margin-bottom: 2px !important;
+    border-radius: 4px !important;
+    color: #333 !important;
+}
+
+.leaflet-draw-actions {
+    display: block !important;
+    z-index: 100000 !important; /* Even higher than the toolbar */
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    left: 36px !important;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.4) !important;
+    border-radius: 4px !important;
+    position: absolute !important; /* Ensure proper stacking */
+}
+
+.leaflet-draw-actions a {
+    display: block !important;
+    visibility: visible !important;
+    background: white !important;
+    color: #333 !important;
+    padding: 0 8px !important;
+    font-size: 13px !important;
+    line-height: 28px !important;
+    text-decoration: none !important;
+}
+
+.leaflet-draw-actions a:hover {
+    background-color: #f4f4f4 !important;
+}
+
+/* Fix pane z-indices - force all map panes to have low z-index */
+.leaflet-map-pane {
+    z-index: 1 !important; /* Very low z-index */
+}
+
+.leaflet-tile-pane {
+    z-index: 2 !important;
+}
+
+.leaflet-overlay-pane {
+    z-index: 3 !important;
+}
+
+.leaflet-marker-pane {
+    z-index: 4 !important;
+}
+
+.leaflet-tooltip-pane {
+    z-index: 5 !important;
+}
+
+.leaflet-popup-pane {
+    z-index: 6 !important;
+}
+
+/* Override Leaflet's built-in stacking */
+.leaflet-pane {
+    z-index: 1 !important;
+}
+
+/* Force controls to stay on top */
+.leaflet-top, 
+.leaflet-bottom {
+    z-index: 4000 !important;
+    position: absolute !important;
+}
+
+/* Make sure base layers work properly */
+.base-layers .radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.base-layers .radio-group label {
+    cursor: pointer;
+    font-weight: normal;
+    margin-left: 5px;
+    user-select: none;
+}
+
+.base-layers .radio-group input[type="radio"] {
+    cursor: pointer;
+}

@@ -1,0 +1,884 @@
+{
+  "metadata": {
+    "created": "2025-04-05T21:46:46.397438",
+    "id": "280c8841-5eec-4e5e-a1a0-e5f04df9288a",
+    "version": "1.0"
+  },
+  "data": [
+    {
+      "id": "c9f62932-2122-498b-8803-031b3f4e089f",
+      "name": "Station 1",
+      "department_id": "7b7d12b0-e3f8-4c94-8e76-14389b3927c6",
+      "type": "Headquarters",
+      "staffing": {
+        "model": "Career",
+        "personnel": 19
+      },
+      "location": {
+        "latitude": 47.50767160911265,
+        "longitude": -122.55473608744305,
+        "address": "7350 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98193"
+      },
+      "apparatus": [
+        {
+          "id": "ea70c55c-eaa0-4846-9b65-18c042e55f2f",
+          "type": "Ambulance/Medic",
+          "designation": "Medic 3",
+          "status": "In Service",
+          "year": 2014,
+          "make": "Rosenbauer",
+          "model": "Arrow XT",
+          "capabilities": [
+            "Advanced Life Support",
+            "Transport"
+          ],
+          "crew_size": 2
+        },
+        {
+          "id": "8357af41-a850-41d3-a12e-353fe4cffeab",
+          "type": "Ladder/Truck",
+          "designation": "Truck 2",
+          "status": "Out for Maintenance",
+          "year": 2004,
+          "make": "KME",
+          "model": "Enforcer",
+          "capabilities": [
+            "Aerial Device",
+            "Ground Ladders",
+            "Ventilation",
+            "110' Aerial"
+          ],
+          "crew_size": 4
+        },
+        {
+          "id": "3792c504-644a-4d7e-b2c6-0e91ab996e7a",
+          "type": "Command",
+          "designation": "Command 1",
+          "status": "In Service",
+          "year": 2001,
+          "make": "Seagrave",
+          "model": "Enforcer",
+          "capabilities": [],
+          "crew_size": 1
+        },
+        {
+          "id": "0944693f-eae9-43ce-bc25-9be12c6cbdc7",
+          "type": "Engine",
+          "designation": "Engine 6",
+          "status": "In Service",
+          "year": 2001,
+          "make": "KME",
+          "model": "Velocity",
+          "capabilities": [
+            "Pump",
+            "Water Tank",
+            "Basic Life Support",
+            "Advanced Life Support"
+          ],
+          "crew_size": 4
+        },
+        {
+          "id": "549741d8-d8ad-48c5-bdf2-79d5b7c7656e",
+          "type": "Engine",
+          "designation": "Engine 9",
+          "status": "In Service",
+          "year": 2012,
+          "make": "Seagrave",
+          "model": "Cyclone",
+          "capabilities": [
+            "Pump",
+            "Water Tank",
+            "Basic Life Support",
+            "Advanced Life Support"
+          ],
+          "crew_size": 4
+        },
+        {
+          "id": "1dc13500-d530-4d8e-b0e2-5afa05bea124",
+          "type": "Battalion Chief",
+          "designation": "Battalion 3",
+          "status": "In Service",
+          "year": 2007,
+          "make": "Rosenbauer",
+          "model": "Enforcer",
+          "capabilities": [],
+          "crew_size": 1
+        },
+        {
+          "id": "9387eb1b-3b6b-44d3-9ffa-fcb3d0ccaa35",
+          "type": "Ambulance/Medic",
+          "designation": "Medic 2",
+          "status": "Out for Maintenance",
+          "year": 2005,
+          "make": "Pierce",
+          "model": "Custom",
+          "capabilities": [
+            "Advanced Life Support",
+            "Transport"
+          ],
+          "crew_size": 2
+        }
+      ],
+      "area_served_sq_miles": 6,
+      "built_year": 1981,
+      "last_renovated": 2008,
+      "features": [
+        "Fitness Room",
+        "Community Room",
+        "Decontamination Area",
+        "Kitchen",
+        "Fuel Station",
+        "Safe Haven",
+        "Hose Tower",
+        "Training Room"
+      ],
+      "created_at": "2025-04-05T21:46:46.395529",
+      "updated_at": "2025-04-05T21:46:46.395534"
+    },
+    {
+      "id": "976e36a0-ece0-4b0f-a6c3-543ab05dd425",
+      "name": "Station 2",
+      "department_id": "7b7d12b0-e3f8-4c94-8e76-14389b3927c6",
+      "type": "Fire",
+      "staffing": {
+        "model": "Combination",
+        "personnel": {
+          "career": 5,
+          "volunteer": 5
+        }
+      },
+      "location": {
+        "latitude": 47.7726622822071,
+        "longitude": -122.55643586929968,
+        "address": "5441 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98149"
+      },
+      "apparatus": [
+        {
+          "id": "d07399e7-1687-40a3-8836-2a68e55fbd8b",
+          "type": "Brush",
+          "designation": "Brush 1",
+          "status": "In Service",
+          "year": 2008,
+          "make": "E-ONE",
+          "model": "Arrow XT",
+          "capabilities": [
+            "Wildland",
+            "Off-Road",
+            "Pump and Roll"
+          ],
+          "crew_size": 3
+        },
+        {
+          "id": "f3a498fc-23f9-42c9-978b-c410565d1776",
+          "type": "Engine",
+          "designation": "Engine 3",
+          "status": "In Service",
+          "year": 2006,
+          "make": "Pierce",
+          "model": "Custom",
+          "capabilities": [
+            "Pump",
+            "Water Tank",
+            "Basic Life Support"
+          ],
+          "crew_size": 3
+        }
+      ],
+      "area_served_sq_miles": 13,
+      "built_year": 2017,
+      "last_renovated": 2001,
+      "features": [
+        "Fuel Station",
+        "Hose Tower",
+        "Kitchen",
+        "Training Room",
+        "Decontamination Area",
+        "Backup Generator",
+        "Community Room",
+        "Maintenance Bay"
+      ],
+      "created_at": "2025-04-05T21:46:46.395587",
+      "updated_at": "2025-04-05T21:46:46.395589"
+    },
+    {
+      "id": "7aa31588-7edb-4f55-81b7-e7481dd1a385",
+      "name": "Station 3",
+      "department_id": "7b7d12b0-e3f8-4c94-8e76-14389b3927c6",
+      "type": "Combined",
+      "staffing": {
+        "model": "Day Career/Night Volunteer",
+        "personnel": 10
+      },
+      "location": {
+        "latitude": 47.786185281079234,
+        "longitude": -122.2236375407326,
+        "address": "9729 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98198"
+      },
+      "apparatus": [
+        {
+          "id": "788bc1f9-3271-4876-8f4a-0f099bda4923",
+          "type": "Rescue",
+          "designation": "Rescue 1",
+          "status": "In Service",
+          "year": 2002,
+          "make": "Spartan",
+          "model": "Cyclone",
+          "capabilities": [
+            "Vehicle Extrication",
+            "Technical Rescue",
+            "Water Rescue"
+          ],
+          "crew_size": 3
+        },
+        {
+          "id": "41c4f0a1-78a8-4fb8-bec5-d5263151b860",
+          "type": "Ambulance/Medic",
+          "designation": "Medic 3",
+          "status": "In Service",
+          "year": 2002,
+          "make": "Pierce",
+          "model": "Velocity",
+          "capabilities": [
+            "Advanced Life Support",
+            "Transport"
+          ],
+          "crew_size": 2
+        },
+        {
+          "id": "596c359c-8b5b-4ef8-81af-c298d894ea31",
+          "type": "Brush",
+          "designation": "Brush 1",
+          "status": "Out for Maintenance",
+          "year": 2005,
+          "make": "Rosenbauer",
+          "model": "Cyclone",
+          "capabilities": [
+            "Wildland",
+            "Off-Road",
+            "Pump and Roll"
+          ],
+          "crew_size": 2
+        }
+      ],
+      "area_served_sq_miles": 4,
+      "built_year": 1952,
+      "last_renovated": 2004,
+      "features": [
+        "Sleeping Quarters",
+        "Fitness Room",
+        "Maintenance Bay",
+        "Training Room"
+      ],
+      "created_at": "2025-04-05T21:46:46.395629",
+      "updated_at": "2025-04-05T21:46:46.395630"
+    },
+    {
+      "id": "202ca08c-ba10-4e4c-b0de-31fd0dbb3c71",
+      "name": "Station 4",
+      "department_id": "7b7d12b0-e3f8-4c94-8e76-14389b3927c6",
+      "type": "Special Operations",
+      "staffing": {
+        "model": "Cross-staffed",
+        "personnel": 10
+      },
+      "location": {
+        "latitude": 47.84168206226784,
+        "longitude": -122.21063842646417,
+        "address": "2196 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98155"
+      },
+      "apparatus": [
+        {
+          "id": "22a49d0a-4aa4-4960-a816-9fa52aa10be0",
+          "type": "Rescue",
+          "designation": "Rescue 2",
+          "status": "In Service",
+          "year": 2001,
+          "make": "Spartan",
+          "model": "Cyclone",
+          "capabilities": [
+            "Vehicle Extrication",
+            "Technical Rescue"
+          ],
+          "crew_size": 4
+        },
+        {
+          "id": "7992ece1-561a-4bb8-9770-313016b0c90d",
+          "type": "Boat",
+          "designation": "Marine 2",
+          "status": "In Service",
+          "year": 2022,
+          "make": "E-ONE",
+          "model": "Cyclone",
+          "capabilities": [
+            "Water Rescue",
+            "Fire Suppression"
+          ],
+          "crew_size": 2
+        },
+        {
+          "id": "e912013c-92cf-4686-b7ec-f0990ae32f53",
+          "type": "HazMat",
+          "designation": "HazMat 1",
+          "status": "In Service",
+          "year": 2016,
+          "make": "Rosenbauer",
+          "model": "Custom",
+          "capabilities": [
+            "Chemical Detection",
+            "Decontamination",
+            "Containment"
+          ],
+          "crew_size": 6
+        },
+        {
+          "id": "74e9412c-478f-475d-a894-b6785074cab6",
+          "type": "Engine",
+          "designation": "Engine 3",
+          "status": "Out for Maintenance",
+          "year": 2006,
+          "make": "Spartan",
+          "model": "Quantum",
+          "capabilities": [
+            "Pump",
+            "Water Tank",
+            "Basic Life Support",
+            "Advanced Life Support"
+          ],
+          "crew_size": 4
+        }
+      ],
+      "area_served_sq_miles": 9,
+      "built_year": 1994,
+      "last_renovated": 2006,
+      "features": [
+        "Kitchen",
+        "Decontamination Area",
+        "Training Room",
+        "Sleeping Quarters",
+        "Community Room",
+        "Fitness Room"
+      ],
+      "created_at": "2025-04-05T21:46:46.395674",
+      "updated_at": "2025-04-05T21:46:46.395675"
+    },
+    {
+      "id": "40153ea3-42da-49f7-9116-37a9674e7f58",
+      "name": "Station 5",
+      "department_id": "7b7d12b0-e3f8-4c94-8e76-14389b3927c6",
+      "type": "Special Operations",
+      "staffing": {
+        "model": "Day Career/Night Volunteer",
+        "personnel": 13
+      },
+      "location": {
+        "latitude": 47.65607801042,
+        "longitude": -122.31341449674973,
+        "address": "5387 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98110"
+      },
+      "apparatus": [
+        {
+          "id": "22118006-f961-4e9b-a225-f11e41a218e4",
+          "type": "Boat",
+          "designation": "Marine 2",
+          "status": "In Service",
+          "year": 2010,
+          "make": "E-ONE",
+          "model": "Enforcer",
+          "capabilities": [
+            "Water Rescue",
+            "Fire Suppression"
+          ],
+          "crew_size": 1
+        },
+        {
+          "id": "1dd46eb9-9034-422a-9104-92bb4ad3aecb",
+          "type": "Rescue",
+          "designation": "Rescue 3",
+          "status": "In Service",
+          "year": 2008,
+          "make": "Spartan",
+          "model": "Quantum",
+          "capabilities": [
+            "Vehicle Extrication",
+            "Technical Rescue",
+            "Confined Space"
+          ],
+          "crew_size": 3
+        },
+        {
+          "id": "8da03796-373b-4a9c-b733-f67f7c956fc9",
+          "type": "Engine",
+          "designation": "Engine 2",
+          "status": "Out for Maintenance",
+          "year": 2001,
+          "make": "Seagrave",
+          "model": "Velocity",
+          "capabilities": [
+            "Pump",
+            "Water Tank",
+            "Basic Life Support"
+          ],
+          "crew_size": 4
+        }
+      ],
+      "area_served_sq_miles": 13,
+      "built_year": 1968,
+      "last_renovated": 2005,
+      "features": [
+        "Maintenance Bay",
+        "Backup Generator",
+        "Fitness Room",
+        "Sleeping Quarters",
+        "Hose Tower"
+      ],
+      "created_at": "2025-04-05T21:46:46.395714",
+      "updated_at": "2025-04-05T21:46:46.395715"
+    },
+    {
+      "id": "409f8bb2-6222-448f-9baa-cca8f931486a",
+      "name": "Station 6",
+      "department_id": "7b7d12b0-e3f8-4c94-8e76-14389b3927c6",
+      "type": "Special Operations",
+      "staffing": {
+        "model": "Part-time",
+        "personnel": 12
+      },
+      "location": {
+        "latitude": 47.38910772017701,
+        "longitude": -122.45236361559874,
+        "address": "5515 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98146"
+      },
+      "apparatus": [
+        {
+          "id": "a1f959d6-f246-4d03-ae26-64cfde5a9316",
+          "type": "Boat",
+          "designation": "Marine 2",
+          "status": "Out for Maintenance",
+          "year": 2015,
+          "make": "E-ONE",
+          "model": "Arrow XT",
+          "capabilities": [
+            "Water Rescue",
+            "Fire Suppression"
+          ],
+          "crew_size": 3
+        },
+        {
+          "id": "79a6f8cd-b06d-4d46-8b7b-49cfd1720332",
+          "type": "Engine",
+          "designation": "Engine 3",
+          "status": "In Service",
+          "year": 2021,
+          "make": "Spartan",
+          "model": "Custom",
+          "capabilities": [
+            "Pump",
+            "Water Tank",
+            "Basic Life Support",
+            "Advanced Life Support"
+          ],
+          "crew_size": 3
+        },
+        {
+          "id": "e43c2c32-959a-4e35-b665-27a1fdca8a9b",
+          "type": "Rescue",
+          "designation": "Rescue 1",
+          "status": "In Service",
+          "year": 2015,
+          "make": "Rosenbauer",
+          "model": "Quantum",
+          "capabilities": [
+            "Vehicle Extrication",
+            "Technical Rescue"
+          ],
+          "crew_size": 3
+        },
+        {
+          "id": "183412e1-e12b-43a8-9f5a-e1a22208d2b0",
+          "type": "Ambulance/Medic",
+          "designation": "Medic 7",
+          "status": "In Service",
+          "year": 2015,
+          "make": "E-ONE",
+          "model": "Enforcer",
+          "capabilities": [
+            "Advanced Life Support",
+            "Transport"
+          ],
+          "crew_size": 2
+        }
+      ],
+      "area_served_sq_miles": 11,
+      "built_year": 1954,
+      "last_renovated": 2021,
+      "features": [
+        "Backup Generator",
+        "Decontamination Area",
+        "Hose Tower",
+        "Fitness Room",
+        "Maintenance Bay",
+        "Training Room"
+      ],
+      "created_at": "2025-04-05T21:46:46.395758",
+      "updated_at": "2025-04-05T21:46:46.395759"
+    },
+    {
+      "id": "8675a1c6-0833-49e9-bb65-6af251985d91",
+      "name": "Station 7",
+      "department_id": "7b7d12b0-e3f8-4c94-8e76-14389b3927c6",
+      "type": "Special Operations",
+      "staffing": {
+        "model": "Part-time",
+        "personnel": 15
+      },
+      "location": {
+        "latitude": 47.50333996682455,
+        "longitude": -122.35595797433625,
+        "address": "1736 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98189"
+      },
+      "apparatus": [
+        {
+          "id": "04eb82aa-f7a5-4da3-83ac-2e624922744c",
+          "type": "Engine",
+          "designation": "Engine 7",
+          "status": "In Service",
+          "year": 2012,
+          "make": "Spartan",
+          "model": "Cyclone",
+          "capabilities": [
+            "Pump",
+            "Water Tank",
+            "Basic Life Support"
+          ],
+          "crew_size": 3
+        },
+        {
+          "id": "00475fba-9624-460a-9be5-1b43adc07abe",
+          "type": "HazMat",
+          "designation": "HazMat 1",
+          "status": "In Service",
+          "year": 2007,
+          "make": "Seagrave",
+          "model": "Quantum",
+          "capabilities": [
+            "Chemical Detection",
+            "Decontamination",
+            "Containment"
+          ],
+          "crew_size": 3
+        },
+        {
+          "id": "84ac9509-3123-4c10-9ae7-30e7363b7e29",
+          "type": "Boat",
+          "designation": "Marine 1",
+          "status": "In Service",
+          "year": 2001,
+          "make": "E-ONE",
+          "model": "Quantum",
+          "capabilities": [
+            "Water Rescue",
+            "Fire Suppression"
+          ],
+          "crew_size": 1
+        },
+        {
+          "id": "f4429baf-df46-4a32-8e45-bdc4035dc5c9",
+          "type": "Rescue",
+          "designation": "Rescue 3",
+          "status": "In Service",
+          "year": 2021,
+          "make": "E-ONE",
+          "model": "Custom",
+          "capabilities": [
+            "Vehicle Extrication",
+            "Technical Rescue",
+            "Water Rescue",
+            "Confined Space"
+          ],
+          "crew_size": 6
+        },
+        {
+          "id": "35cd05e2-6763-4d80-af38-1edea7e37c45",
+          "type": "Ambulance/Medic",
+          "designation": "Medic 7",
+          "status": "In Service",
+          "year": 2021,
+          "make": "Rosenbauer",
+          "model": "Cyclone",
+          "capabilities": [
+            "Basic Life Support",
+            "Transport"
+          ],
+          "crew_size": 2
+        }
+      ],
+      "area_served_sq_miles": 10,
+      "built_year": 2006,
+      "last_renovated": 2017,
+      "features": [
+        "Fuel Station",
+        "Community Room",
+        "Decontamination Area",
+        "Hose Tower",
+        "Fitness Room",
+        "Backup Generator",
+        "Sleeping Quarters"
+      ],
+      "created_at": "2025-04-05T21:46:46.395808",
+      "updated_at": "2025-04-05T21:46:46.395809"
+    },
+    {
+      "id": "b876f367-2db4-4f59-a860-7ea08a92f749",
+      "name": "Station 8",
+      "department_id": "7b7d12b0-e3f8-4c94-8e76-14389b3927c6",
+      "type": "Fire",
+      "staffing": {
+        "model": "Combination",
+        "personnel": {
+          "career": 6,
+          "volunteer": 6
+        }
+      },
+      "location": {
+        "latitude": 47.591605237969254,
+        "longitude": -122.40885668860454,
+        "address": "6910 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98194"
+      },
+      "apparatus": [
+        {
+          "id": "92432db9-1049-4e53-89bd-66bf428b9efd",
+          "type": "Engine",
+          "designation": "Engine 9",
+          "status": "In Service",
+          "year": 2016,
+          "make": "Spartan",
+          "model": "Custom",
+          "capabilities": [
+            "Pump",
+            "Water Tank",
+            "Basic Life Support"
+          ],
+          "crew_size": 3
+        },
+        {
+          "id": "81dd6cbc-6b25-4f03-936d-12bb35ef1c8c",
+          "type": "Ladder/Truck",
+          "designation": "Truck 2",
+          "status": "Out for Maintenance",
+          "year": 2019,
+          "make": "KME",
+          "model": "Velocity",
+          "capabilities": [
+            "Aerial Device",
+            "Ground Ladders",
+            "Ventilation",
+            "75' Aerial"
+          ],
+          "crew_size": 4
+        },
+        {
+          "id": "f23b5f16-d312-4821-aec6-200c8b567aa2",
+          "type": "Brush",
+          "designation": "Brush 2",
+          "status": "Out for Maintenance",
+          "year": 2007,
+          "make": "Rosenbauer",
+          "model": "Quantum",
+          "capabilities": [
+            "Wildland",
+            "Off-Road",
+            "Pump and Roll"
+          ],
+          "crew_size": 3
+        },
+        {
+          "id": "be5ad6bb-b3cf-4b87-a4fc-6e6455a5ad6c",
+          "type": "Ambulance/Medic",
+          "designation": "Medic 3",
+          "status": "In Service",
+          "year": 2009,
+          "make": "Rosenbauer",
+          "model": "Cyclone",
+          "capabilities": [
+            "Advanced Life Support",
+            "Transport"
+          ],
+          "crew_size": 2
+        }
+      ],
+      "area_served_sq_miles": 3,
+      "built_year": 1982,
+      "last_renovated": 2008,
+      "features": [
+        "Sleeping Quarters",
+        "Fitness Room",
+        "Training Room"
+      ],
+      "created_at": "2025-04-05T21:46:46.395852",
+      "updated_at": "2025-04-05T21:46:46.395853"
+    },
+    {
+      "id": "e9556390-70e0-4efd-8eae-a3718f765dab",
+      "name": "Station 9",
+      "department_id": "7b7d12b0-e3f8-4c94-8e76-14389b3927c6",
+      "type": "Volunteer",
+      "staffing": {
+        "model": "Volunteer",
+        "personnel": 12
+      },
+      "location": {
+        "latitude": 47.647083485918856,
+        "longitude": -122.5761796964462,
+        "address": "1946 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98137"
+      },
+      "apparatus": [
+        {
+          "id": "f2cc65d7-937c-4bc4-917e-288f53aee7c2",
+          "type": "Water Tender",
+          "designation": "Tender 1",
+          "status": "In Service",
+          "year": 2013,
+          "make": "Spartan",
+          "model": "Custom",
+          "capabilities": [
+            "2000 Gallon Tank",
+            "Water Supply"
+          ],
+          "crew_size": 2
+        },
+        {
+          "id": "14260187-506f-4547-83fb-568d6bfd61c5",
+          "type": "Engine",
+          "designation": "Engine 1",
+          "status": "In Service",
+          "year": 2008,
+          "make": "E-ONE",
+          "model": "Velocity",
+          "capabilities": [
+            "Pump",
+            "Water Tank",
+            "Basic Life Support"
+          ],
+          "crew_size": 3
+        },
+        {
+          "id": "b03af947-b6c8-44d1-9395-b3b355b5b912",
+          "type": "Ambulance/Medic",
+          "designation": "Medic 2",
+          "status": "In Service",
+          "year": 2008,
+          "make": "Pierce",
+          "model": "Cyclone",
+          "capabilities": [
+            "Basic Life Support",
+            "Transport"
+          ],
+          "crew_size": 2
+        }
+      ],
+      "area_served_sq_miles": 8,
+      "built_year": 1972,
+      "last_renovated": 2012,
+      "features": [
+        "Safe Haven",
+        "Maintenance Bay",
+        "Training Room",
+        "Community Room",
+        "Sleeping Quarters",
+        "Kitchen",
+        "Fuel Station"
+      ],
+      "created_at": "2025-04-05T21:46:46.395889",
+      "updated_at": "2025-04-05T21:46:46.395890"
+    },
+    {
+      "id": "d55cad0f-e42b-4d4b-b8cb-729b5763e437",
+      "name": "Station 10",
+      "department_id": "7b7d12b0-e3f8-4c94-8e76-14389b3927c6",
+      "type": "Fire",
+      "staffing": {
+        "model": "Part-time",
+        "personnel": 15
+      },
+      "location": {
+        "latitude": 47.76101748666278,
+        "longitude": -122.51836321618099,
+        "address": "650 Example Street",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98167"
+      },
+      "apparatus": [
+        {
+          "id": "97f0a561-49ba-4ae6-8e46-fccd44867149",
+          "type": "Engine",
+          "designation": "Engine 3",
+          "status": "In Service",
+          "year": 2003,
+          "make": "E-ONE",
+          "model": "Enforcer",
+          "capabilities": [
+            "Pump",
+            "Water Tank",
+            "Basic Life Support"
+          ],
+          "crew_size": 4
+        },
+        {
+          "id": "4f8d3dc5-077b-49a9-95b6-46de5c154cbb",
+          "type": "Ambulance/Medic",
+          "designation": "Medic 4",
+          "status": "In Service",
+          "year": 2016,
+          "make": "Pierce",
+          "model": "Velocity",
+          "capabilities": [
+            "Basic Life Support",
+            "Transport"
+          ],
+          "crew_size": 2
+        }
+      ],
+      "area_served_sq_miles": 10,
+      "built_year": 2019,
+      "last_renovated": 2012,
+      "features": [
+        "Decontamination Area",
+        "Hose Tower",
+        "Sleeping Quarters",
+        "Safe Haven",
+        "Kitchen",
+        "Training Room"
+      ],
+      "created_at": "2025-04-05T21:46:46.395920",
+      "updated_at": "2025-04-05T21:46:46.395921"
+    }
+  ]
+}

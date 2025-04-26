@@ -1,0 +1,22 @@
+{
+  "description": "Get department incidents",
+  "query": "query GetIncidents($departmentId: ID!) { incidents(departmentId: $departmentId) { id title incident_number incident_date incident_type location latitude longitude } }",
+  "variables": {
+    "departmentId": "1"
+  },
+  "auth_required": true,
+  "role": "user",
+  "expected_status": 200,
+  "validation_rules": [
+    {
+      "type": "no_errors"
+    },
+    {
+      "type": "has_data"
+    },
+    {
+      "type": "field_exists",
+      "path": "data.incidents"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+STATION_ID,STATION_NAME,STATION_ADDRESS,STATION_CITY,STATION_STATE,STATION_ZIP,STATION_LAT,STATION_LONG,STATION_TYPE,ACTIVE_STATUS
+101,"Fire Station 101","1234 Main St","Phoenix","AZ","85004",33.4484,-112.0740,"Engine",1
+102,"Fire Station 102","5678 Central Ave","Phoenix","AZ","85012",33.4785,-111.9853,"Ladder",1
+103,"Fire Station 103","9101 North Rd","Scottsdale","AZ","85251",33.5129,-111.9279,"Engine/Medic",1
+104,"Fire Station 104","1121 South Blvd","Tempe","AZ","85282",33.3883,-111.9431,"Medic",1
+105,"Fire Station 105","3141 East Pkwy","Mesa","AZ","85204",33.4152,-111.8315,"Engine/Ladder",1

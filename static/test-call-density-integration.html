@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call Density Heatmap Integration Test</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="call-density-heatmap.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            border-left: 4px solid #2196F3;
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #2196F3;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .secondary-button {
+            background-color: #2196F3;
+        }
+        .secondary-button:hover {
+            background-color: #0b7dda;
+        }
+        .test-result {
+            margin-top: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #fff;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .error {
+            color: #c62828;
+            background-color: #ffebee;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        .success {
+            color: #2e7d32;
+            background-color: #e8f5e9;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Call Density Heatmap Integration Test</h1>
+        
+        <div class="test-section">
+            <h2>1. Testing Component Availability</h2>
+            <p>This test verifies that the DataStandardizer and DataDisplayComponents are loaded correctly.</p>
+            <button id="check-components">Check Component Availability</button>
+            <div id="components-result" class="test-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>2. Testing Data Standardization</h2>
+            <p>This test runs sample data through the DataStandardizer to verify field mapping and coordinate handling.</p>
+            <button id="test-standardization">Run Standardization Test</button>
+            <div id="standardization-result" class="test-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>3. Testing Coordinate Handling</h2>
+            <p>This test verifies that the integration can handle various coordinate formats.</p>
+            <button id="test-coordinates">Test Coordinate Handling</button>
+            <div id="coordinates-result" class="test-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>4. Testing DataTable Creation</h2>
+            <p>This test creates a DataTable component with sample data.</p>
+            <button id="test-datatable">Create Test DataTable</button>
+            <div id="datatable-container"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>5. Testing GeoJSON Export</h2>
+            <p>This test verifies the GeoJSON export functionality.</p>
+            <button id="test-geojson">Test GeoJSON Export</button>
+            <div id="geojson-result" class="test-result"></div>
+        </div>
+    </div>
+
+    <!-- Load the required scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Data standardization and visualization utilities -->
+    <script src="js/utils/data-standardizer.js"></script>
+    <script src="js/components/data-display-components.js"></script>
+    
+    <!-- Integration script -->
+    <script src="js/utils/integration/data-components-integration-heatmap.js"></script>
+    
+    <script>
+        // Test data with different coordinate formats
+        const testData = [
+            {
+                id: "CALL-001",
+                type: "EMS",
+                timestamp: "2023-04-12T14:30:45",
+                latitude: 33.448376, 
+                longitude: -112.074036
+            },
+            {
+                incident_id: "CALL-002", 
+                call_type: "FIRE",
+                date: "2023-04-12",
+                time: "15:45:30",
+                lat: 33.425537, 
+                lng: -111.940002
+            },
+            {
+                call_id: "CALL-003",
+                incident_type: "HAZMAT",
+                incident_date: "2023-04-12",
+                incident_time: "16:15:00",
+                coordinates: "33.306160, -111.841250"
+            },
+            {
+                id: "CALL-004",
+                nature: "SERVICE",
+                datetime: "2023-04-12T17:30:00",
+                x: -112.269100,
+                y: 33.494170
+            },
+            {
+                incident_number: "CALL-005",
+                call_nature: "RESCUE",
+                reported_date: "2023-04-12",
+                reported_time: "18:45:00",
+                geometry: {
+                    type: "Point",
+                    coordinates: [-111.789000, 33.352820]
+                }
+            }
+        ];
+
+        // Wait for page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Test 1: Check components availability
+            document.getElementById('check-components').addEventListener('click', function() {
+                const resultDiv = document.getElementById('components-result');
+                resultDiv.textContent = '';
+                
+                try {
+                    // Check DataStandardizer
+                    const standardizerAvailable = window.FireEMS && 
+                                                 window.FireEMS.Utils && 
+                                                 window.FireEMS.Utils.DataStandardizer;
+                    
+                    // Check DataDisplayComponents
+                    const dataTableAvailable = window.FireEMS && 
+                                              window.FireEMS.Components && 
+                                              window.FireEMS.Components.DataTable;
+                    
+                    const searchFilterAvailable = window.FireEMS && 
+                                                 window.FireEMS.Components && 
+                                                 window.FireEMS.Components.SearchFilter;
+                    
+                    const dataExporterAvailable = window.FireEMS && 
+                                                 window.FireEMS.Components && 
+                                                 window.FireEMS.Components.DataExporter;
+                    
+                    // Check integration
+                    const integrationAvailable = window.FireEMS && 
+                                               window.FireEMS.Integration && 
+                                               window.FireEMS.Integration.CallDensityHeatmap;
+                    
+                    // Create result
+                    let result = "Component Availability:\n";
+                    result += `DataStandardizer: ${standardizerAvailable ? 'AVAILABLE ✅' : 'NOT AVAILABLE ❌'}\n`;
+                    result += `DataTable: ${dataTableAvailable ? 'AVAILABLE ✅' : 'NOT AVAILABLE ❌'}\n`;
+                    result += `SearchFilter: ${searchFilterAvailable ? 'AVAILABLE ✅' : 'NOT AVAILABLE ❌'}\n`;
+                    result += `DataExporter: ${dataExporterAvailable ? 'AVAILABLE ✅' : 'NOT AVAILABLE ❌'}\n`;
+                    result += `CallDensityHeatmap Integration: ${integrationAvailable ? 'AVAILABLE ✅' : 'NOT AVAILABLE ❌'}\n`;
+                    
+                    // Check versions if available
+                    if (window.checkDataStandardizer) {
+                        const status = window.checkDataStandardizer();
+                        result += `\nDataStandardizer Status:\n`;
+                        result += `- Utility: ${status.utility}\n`;
+                        result += `- Version: ${status.version}\n`;
+                        result += `- Status: ${status.status}\n`;
+                        result += `- Available Methods: ${status.methods.join(', ')}\n`;
+                    }
+                    
+                    // Display result
+                    resultDiv.classList.remove('error');
+                    resultDiv.classList.add('success');
+                    resultDiv.textContent = result;
+                } catch (error) {
+                    resultDiv.classList.remove('success');
+                    resultDiv.classList.add('error');
+                    resultDiv.textContent = `Error checking components: ${error.message}\n${error.stack}`;
+                }
+            });
+            
+            // Test 2: Test data standardization
+            document.getElementById('test-standardization').addEventListener('click', function() {
+                const resultDiv = document.getElementById('standardization-result');
+                resultDiv.textContent = '';
+                
+                try {
+                    if (!window.FireEMS || !window.FireEMS.Utils || !window.FireEMS.Utils.DataStandardizer) {
+                        throw new Error("DataStandardizer is not available");
+                    }
+                    
+                    const DataStandardizer = window.FireEMS.Utils.DataStandardizer;
+                    
+                    // Standardize test data
+                    const standardized = DataStandardizer.standardize(testData);
+                    
+                    // Format result
+                    let result = "Data Standardization Results:\n\n";
+                    standardized.forEach((item, index) => {
+                        result += `Item ${index + 1}:\n`;
+                        result += `- Incident ID: ${item['Incident ID'] || 'N/A'}\n`;
+                        result += `- Incident Type: ${item['Incident Type'] || 'N/A'}\n`;
+                        result += `- Incident Date: ${item['Incident Date'] || 'N/A'}\n`;
+                        result += `- Incident Time: ${item['Incident Time'] || 'N/A'}\n`;
+                        result += `- Latitude: ${item['Latitude'] || 'N/A'}\n`;
+                        result += `- Longitude: ${item['Longitude'] || 'N/A'}\n`;
+                        result += `- Original Fields: ${Object.keys(testData[index]).join(', ')}\n`;
+                        result += `- Standardized Fields: ${Object.keys(item).join(', ')}\n\n`;
+                    });
+                    
+                    // Display result
+                    resultDiv.classList.remove('error');
+                    resultDiv.classList.add('success');
+                    resultDiv.textContent = result;
+                } catch (error) {
+                    resultDiv.classList.remove('success');
+                    resultDiv.classList.add('error');
+                    resultDiv.textContent = `Error testing standardization: ${error.message}\n${error.stack}`;
+                }
+            });
+            
+            // Test 3: Test coordinate handling
+            document.getElementById('test-coordinates').addEventListener('click', function() {
+                const resultDiv = document.getElementById('coordinates-result');
+                resultDiv.textContent = '';
+                
+                try {
+                    if (!window.FireEMS || !window.FireEMS.Integration || !window.FireEMS.Integration.CallDensityHeatmap) {
+                        throw new Error("CallDensityHeatmap Integration is not available");
+                    }
+                    
+                    const Integration = window.FireEMS.Integration.CallDensityHeatmap;
+                    
+                    // Test coordinate handling for each item
+                    let result = "Coordinate Handling Results:\n\n";
+                    
+                    testData.forEach((item, index) => {
+                        result += `Item ${index + 1} (${item.id || item.incident_id || item.call_id || 'Unknown'}):\n`;
+                        result += `- Input Format: `;
+                        
+                        if (item.latitude !== undefined && item.longitude !== undefined) {
+                            result += `latitude/longitude fields\n`;
+                        } else if (item.lat !== undefined && item.lng !== undefined) {
+                            result += `lat/lng fields\n`;
+                        } else if (item.coordinates !== undefined) {
+                            result += `combined coordinates string: "${item.coordinates}"\n`;
+                        } else if (item.x !== undefined && item.y !== undefined) {
+                            result += `x/y coordinate fields\n`;
+                        } else if (item.geometry && item.geometry.coordinates) {
+                            result += `GeoJSON format\n`;
+                        } else {
+                            result += `unknown\n`;
+                        }
+                        
+                        // Get coordinates using integration
+                        const coords = Integration.state.getStandardizedCoordinates || 
+                                      window.getStandardizedCoordinates;
+                                      
+                        if (typeof coords === 'function') {
+                            const coordsResult = coords(item);
+                            if (coordsResult) {
+                                result += `- Extracted: lat=${coordsResult.lat}, lng=${coordsResult.lng}\n`;
+                            } else {
+                                result += `- Extraction failed\n`;
+                            }
+                        } else {
+                            // Fallback to testing with DataStandardizer
+                            if (window.FireEMS.Utils.DataStandardizer) {
+                                const coordsResult = window.FireEMS.Utils.DataStandardizer.getCoordinates(item);
+                                if (coordsResult) {
+                                    result += `- Extracted (via DataStandardizer): lat=${coordsResult.lat}, lng=${coordsResult.lng}\n`;
+                                } else {
+                                    result += `- Extraction failed via DataStandardizer\n`;
+                                }
+                            } else {
+                                result += `- No coordinate extraction function available\n`;
+                            }
+                        }
+                        
+                        result += '\n';
+                    });
+                    
+                    // Display result
+                    resultDiv.classList.remove('error');
+                    resultDiv.classList.add('success');
+                    resultDiv.textContent = result;
+                } catch (error) {
+                    resultDiv.classList.remove('success');
+                    resultDiv.classList.add('error');
+                    resultDiv.textContent = `Error testing coordinate handling: ${error.message}\n${error.stack}`;
+                }
+            });
+            
+            // Test 4: Test DataTable creation
+            document.getElementById('test-datatable').addEventListener('click', function() {
+                const container = document.getElementById('datatable-container');
+                container.innerHTML = '';
+                
+                try {
+                    if (!window.FireEMS || !window.FireEMS.Components || !window.FireEMS.Components.DataTable) {
+                        throw new Error("DataTable component is not available");
+                    }
+                    
+                    const DataTable = window.FireEMS.Components.DataTable;
+                    const DataStandardizer = window.FireEMS.Utils.DataStandardizer;
+                    
+                    // Standardize test data
+                    const standardized = DataStandardizer ? DataStandardizer.standardize(testData) : testData;
+                    
+                    // Create a basic container with styling
+                    container.innerHTML = `
+                        <div class="data-table-container" style="display: block;">
+                            <div class="data-table-description">
+                                <h3>Test Data Table</h3>
+                                <p>This is a demonstration of the DataTable component with standardized data.</p>
+                            </div>
+                            <div id="test-data-table"></div>
+                        </div>
+                    `;
+                    
+                    // Create data table
+                    const dataTable = DataTable.create('test-data-table', standardized, {
+                        pageSize: 10,
+                        visibleColumns: ['Incident ID', 'Incident Type', 'Latitude', 'Longitude', 'Incident Date', 'Incident Time'],
+                        columnLabels: {
+                            'Incident ID': 'ID',
+                            'Incident Type': 'Type',
+                            'Incident Date': 'Date',
+                            'Incident Time': 'Time'
+                        },
+                        columnTypes: {
+                            'Latitude': 'coordinate',
+                            'Longitude': 'coordinate',
+                            'Incident Date': 'date',
+                            'Incident Time': 'time'
+                        },
+                        initialSortColumn: 'Incident Date',
+                        initialSortDirection: 'desc',
+                        showSearch: true,
+                        exportFilename: 'test-data'
+                    });
+                    
+                    // Add success message
+                    const successMessage = document.createElement('div');
+                    successMessage.className = 'success';
+                    successMessage.textContent = 'DataTable created successfully!';
+                    container.appendChild(successMessage);
+                    
+                } catch (error) {
+                    const errorMessage = document.createElement('div');
+                    errorMessage.className = 'error';
+                    errorMessage.textContent = `Error creating DataTable: ${error.message}`;
+                    container.appendChild(errorMessage);
+                }
+            });
+            
+            // Test 5: Test GeoJSON export
+            document.getElementById('test-geojson').addEventListener('click', function() {
+                const resultDiv = document.getElementById('geojson-result');
+                resultDiv.textContent = '';
+                
+                try {
+                    if (!window.FireEMS || !window.FireEMS.Utils || !window.FireEMS.Utils.DataStandardizer) {
+                        throw new Error("DataStandardizer is not available");
+                    }
+                    
+                    const DataStandardizer = window.FireEMS.Utils.DataStandardizer;
+                    
+                    // Standardize test data
+                    const standardized = DataStandardizer.standardize(testData);
+                    
+                    // Create GeoJSON
+                    const geojson = {
+                        type: 'FeatureCollection',
+                        features: standardized.map(item => {
+                            // Get coordinates
+                            const lat = parseFloat(item.Latitude || item.latitude || item.lat);
+                            const lng = parseFloat(item.Longitude || item.longitude || item.lng);
+                            
+                            // Skip invalid coordinates
+                            if (isNaN(lat) || isNaN(lng) || !isFinite(lat) || !isFinite(lng)) {
+                                return null;
+                            }
+                            
+                            // Create GeoJSON feature
+                            return {
+                                type: 'Feature',
+                                geometry: {
+                                    type: 'Point',
+                                    coordinates: [lng, lat] // GeoJSON uses [longitude, latitude] order
+                                },
+                                properties: {
+                                    id: item['Incident ID'] || item.id || '',
+                                    type: item['Incident Type'] || item.type || 'Unknown',
+                                    date: item['Incident Date'] || '',
+                                    time: item['Incident Time'] || '',
+                                    address: item.Address || item.address || ''
+                                }
+                            };
+                        }).filter(Boolean) // Remove any null features
+                    };
+                    
+                    // Display GeoJSON
+                    resultDiv.classList.remove('error');
+                    resultDiv.classList.add('success');
+                    resultDiv.textContent = JSON.stringify(geojson, null, 2);
+                    
+                } catch (error) {
+                    resultDiv.classList.remove('success');
+                    resultDiv.classList.add('error');
+                    resultDiv.textContent = `Error creating GeoJSON: ${error.message}\n${error.stack}`;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

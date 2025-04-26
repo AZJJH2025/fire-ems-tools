@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Medical Sections</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #3498db;
+            margin-top: 30px;
+        }
+        .patient-entry {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .form-section {
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        select[multiple] {
+            height: 120px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button.secondary-btn {
+            background-color: #95a5a6;
+        }
+        button.secondary-btn:hover {
+            background-color: #7f8c8d;
+        }
+        .patient-basic-info {
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .debug-panel {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .debug-panel pre {
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .nkda-checkbox {
+            margin-bottom: 10px;
+        }
+        .allergy-select-group {
+            margin-top: 10px;
+        }
+        .field-help {
+            color: #7f8c8d;
+            font-size: 0.85em;
+        }
+        .log-container {
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 3px;
+            border-bottom: 1px solid #ddd;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Medical Sections Test Page</h1>
+        
+        <div class="log-container" id="log-container">
+            <div class="log-entry">Test started...</div>
+        </div>
+        
+        <div class="actions">
+            <button id="add-patient-btn">Add Patient</button>
+            <button id="test-select2-btn" class="secondary-btn">Test Select2</button>
+            <button id="run-tests-btn" class="secondary-btn">Run All Tests</button>
+        </div>
+        
+        <div id="patients-container">
+            <div class="patient-entry" id="patient-1">
+                <h2>Patient #1</h2>
+                
+                <div class="patient-basic-info">
+                    <div class="form-group">
+                        <label for="patient-age-1">Age</label>
+                        <input type="number" id="patient-age-1" name="patient-age-1" min="0" max="120">
+                    </div>
+                    <div class="form-group">
+                        <label for="patient-gender-1">Gender</label>
+                        <select id="patient-gender-1" name="patient-gender-1">
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="patient-complaint-1">Chief Complaint</label>
+                        <input type="text" id="patient-complaint-1" name="patient-complaint-1">
+                    </div>
+                </div>
+                
+                <!-- Medical sections will be inserted here by the MedicalSectionsManager -->
+                
+                <div class="vitals-section">
+                    <h5>Vital Signs</h5>
+                    <table class="vitals-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>BP</th>
+                                <th>Pulse</th>
+                                <th>Resp</th>
+                                <th>SpO2</th>
+                                <th>GCS</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="vitals-rows-1">
+                            <!-- Vitals rows go here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="debug-panel">
+            <h2>Debug Panel</h2>
+            <button id="check-medical-sections-btn">Check Medical Sections</button>
+            <button id="get-medical-data-btn">Get Medical Data</button>
+            <button id="set-test-data-btn">Set Test Data</button>
+            <div id="debug-output"></div>
+        </div>
+    </div>
+    
+    <!-- Include jQuery and Select2 for enhanced selects -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    
+    <!-- Include our bundled modules -->
+    <script src="static/dist/components-bundle.bundle.js"></script>
+    <script src="static/dist/nfirs-bundle.bundle.js"></script>
+    
+    <script>
+        // Custom logger
+        function log(message) {
+            const logContainer = document.getElementById('log-container');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.textContent = message;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(message);
+        }
+        
+        // Override console.log to also show in our log panel
+        const originalConsoleLog = console.log;
+        console.log = function() {
+            // Call the original console.log
+            originalConsoleLog.apply(console, arguments);
+            
+            // Add to our log panel
+            const message = Array.from(arguments).map(arg => {
+                if (typeof arg === 'object') {
+                    try {
+                        return JSON.stringify(arg);
+                    } catch (e) {
+                        return String(arg);
+                    }
+                }
+                return String(arg);
+            }).join(' ');
+            
+            log(message);
+        };
+        
+        // Patient template for adding new patients
+        function createPatientTemplate(index) {
+            return `
+                <div class="patient-entry" id="patient-${index}">
+                    <h2>Patient #${index}</h2>
+                    
+                    <div class="patient-basic-info">
+                        <div class="form-group">
+                            <label for="patient-age-${index}">Age</label>
+                            <input type="number" id="patient-age-${index}" name="patient-age-${index}" min="0" max="120">
+                        </div>
+                        <div class="form-group">
+                            <label for="patient-gender-${index}">Gender</label>
+                            <select id="patient-gender-${index}" name="patient-gender-${index}">
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="patient-complaint-${index}">Chief Complaint</label>
+                            <input type="text" id="patient-complaint-${index}" name="patient-complaint-${index}">
+                        </div>
+                    </div>
+                    
+                    <!-- Medical sections will be inserted here by the MedicalSectionsManager -->
+                    
+                    <div class="vitals-section">
+                        <h5>Vital Signs</h5>
+                        <table class="vitals-table">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>BP</th>
+                                    <th>Pulse</th>
+                                    <th>Resp</th>
+                                    <th>SpO2</th>
+                                    <th>GCS</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="vitals-rows-${index}">
+                                <!-- Vitals rows go here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Add patient button handler
+        document.getElementById('add-patient-btn').addEventListener('click', function() {
+            const patientsContainer = document.getElementById('patients-container');
+            const patientCount = patientsContainer.querySelectorAll('.patient-entry').length + 1;
+            
+            // Add new patient
+            const patientHTML = createPatientTemplate(patientCount);
+            patientsContainer.insertAdjacentHTML('beforeend', patientHTML);
+            
+            log(`Added patient #${patientCount}`);
+            
+            // Dispatch a custom event for the Medical Sections Manager
+            document.dispatchEvent(new CustomEvent('patientAdded', {
+                detail: { patientIndex: patientCount }
+            }));
+        });
+        
+        // Test Select2 button handler
+        document.getElementById('test-select2-btn').addEventListener('click', function() {
+            if (typeof $ !== 'undefined' && $.fn && $.fn.select2) {
+                log('Select2 is available, initializing...');
+                
+                try {
+                    $('.medical-history-select, .medications-select, .allergies-select').select2({
+                        placeholder: 'Select or type here...',
+                        tags: true,
+                        width: '100%'
+                    });
+                    
+                    log('Select2 initialized successfully');
+                } catch (error) {
+                    log(`Error initializing Select2: ${error.message}`);
+                }
+            } else {
+                log('Select2 is not available');
+            }
+        });
+        
+        // Check medical sections button handler
+        document.getElementById('check-medical-sections-btn').addEventListener('click', function() {
+            if (window.FireEMS && window.FireEMS.Components && window.FireEMS.Components.Medical) {
+                log('Checking for missing medical sections...');
+                const fixedCount = window.FireEMS.Components.Medical.checkAndFixMedicalSections();
+                log(`Fixed ${fixedCount} patient(s) medical sections`);
+            } else {
+                log('Medical Sections component not available');
+            }
+        });
+        
+        // Get medical data button handler
+        document.getElementById('get-medical-data-btn').addEventListener('click', function() {
+            if (window.FireEMS && window.FireEMS.Components && window.FireEMS.Components.Medical) {
+                const debugOutput = document.getElementById('debug-output');
+                const patientsContainer = document.getElementById('patients-container');
+                const patientCount = patientsContainer.querySelectorAll('.patient-entry').length;
+                
+                let allData = {};
+                
+                for (let i = 1; i <= patientCount; i++) {
+                    const data = window.FireEMS.Components.Medical.getMedicalData(i);
+                    allData[`patient_${i}`] = data;
+                }
+                
+                debugOutput.innerHTML = `<pre>${JSON.stringify(allData, null, 2)}</pre>`;
+                log(`Retrieved medical data for ${patientCount} patient(s)`);
+            } else {
+                log('Medical Sections component not available');
+            }
+        });
+        
+        // Set test data button handler
+        document.getElementById('set-test-data-btn').addEventListener('click', function() {
+            if (window.FireEMS && window.FireEMS.Components && window.FireEMS.Components.Medical) {
+                // Test data for patient 1
+                const patientData = {
+                    medical_history: ['hypertension', 'diabetes', 'asthma'],
+                    medications: ['lisinopril', 'metformin', 'albuterol'],
+                    allergies: ['penicillin', 'sulfa'],
+                    nkda: false
+                };
+                
+                window.FireEMS.Components.Medical.setMedicalData(1, patientData);
+                log('Set test medical data for patient #1');
+                
+                // If we have more patients, set some different data
+                const patientsContainer = document.getElementById('patients-container');
+                const patientCount = patientsContainer.querySelectorAll('.patient-entry').length;
+                
+                if (patientCount > 1) {
+                    const patient2Data = {
+                        medical_history: ['stroke', 'cancer'],
+                        medications: ['warfarin', 'oxycodone'],
+                        allergies: [],
+                        nkda: true
+                    };
+                    
+                    window.FireEMS.Components.Medical.setMedicalData(2, patient2Data);
+                    log('Set test medical data for patient #2');
+                }
+            } else {
+                log('Medical Sections component not available');
+            }
+        });
+        
+        // Run all tests button handler
+        document.getElementById('run-tests-btn').addEventListener('click', function() {
+            log('Running automated tests...');
+            
+            // Test 1: Check if Components bundle is loaded
+            if (window.FireEMS && window.FireEMS.Components) {
+                log('✅ Components bundle loaded successfully');
+            } else {
+                log('❌ Components bundle not loaded');
+            }
+            
+            // Test 2: Check if NFIRS bundle is loaded
+            if (window.NFIRS) {
+                log('✅ NFIRS bundle loaded successfully');
+            } else {
+                log('❌ NFIRS bundle not loaded');
+            }
+            
+            // Test 3: Check if Medical Sections component is available
+            if (window.FireEMS && window.FireEMS.Components && window.FireEMS.Components.Medical) {
+                log('✅ Medical Sections component available');
+                
+                // Test 4: Check if medical sections are added
+                const patientEntry = document.querySelector('.patient-entry');
+                const medicalHistoryContainer = patientEntry.querySelector('.medical-history-container');
+                
+                if (medicalHistoryContainer) {
+                    log('✅ Medical sections added to patient');
+                } else {
+                    log('❌ Medical sections not added to patient');
+                    
+                    // Try to add medical sections
+                    log('Attempting to fix medical sections...');
+                    window.FireEMS.Components.Medical.checkAndFixMedicalSections();
+                    
+                    // Check again
+                    setTimeout(() => {
+                        const checkAgain = patientEntry.querySelector('.medical-history-container');
+                        if (checkAgain) {
+                            log('✅ Medical sections successfully fixed');
+                        } else {
+                            log('❌ Medical sections still not fixed');
+                        }
+                    }, 500);
+                }
+                
+                // Test 5: Check NKDA checkbox functionality
+                log('Testing NKDA checkbox...');
+                const nkdaCheckbox = document.getElementById('nkda-1');
+                const allergiesSelect = document.getElementById('allergies-1');
+                
+                if (nkdaCheckbox && allergiesSelect) {
+                    // Toggle NKDA checkbox
+                    nkdaCheckbox.checked = true;
+                    nkdaCheckbox.dispatchEvent(new Event('change'));
+                    
+                    setTimeout(() => {
+                        if (allergiesSelect.disabled) {
+                            log('✅ NKDA checkbox correctly disables allergies select');
+                        } else {
+                            log('❌ NKDA checkbox does not disable allergies select');
+                        }
+                        
+                        // Toggle back
+                        nkdaCheckbox.checked = false;
+                        nkdaCheckbox.dispatchEvent(new Event('change'));
+                        
+                        setTimeout(() => {
+                            if (!allergiesSelect.disabled) {
+                                log('✅ NKDA checkbox correctly enables allergies select when unchecked');
+                            } else {
+                                log('❌ NKDA checkbox does not enable allergies select when unchecked');
+                            }
+                            
+                            log('All tests completed');
+                        }, 100);
+                    }, 100);
+                } else {
+                    log('❌ NKDA checkbox or allergies select not found');
+                }
+            } else {
+                log('❌ Medical Sections component not available');
+            }
+        });
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Page loaded, checking components...');
+            
+            // Check if components are loaded
+            if (window.FireEMS && window.FireEMS.Components) {
+                log('Components bundle loaded successfully');
+                
+                // Check if medical sections component is available
+                if (window.FireEMS.Components.Medical) {
+                    log('Medical Sections component available, initializing...');
+                    window.FireEMS.Components.Medical.initialize();
+                } else {
+                    log('Medical Sections component not available');
+                }
+            } else {
+                log('Components bundle not loaded');
+            }
+        });
+    </script>
+</body>
+</html>

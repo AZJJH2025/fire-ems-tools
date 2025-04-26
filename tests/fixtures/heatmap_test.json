@@ -1,0 +1,22 @@
+{
+  "name": "heatmap_test",
+  "metadata": {
+    "created": "2025-04-05T21:46:46.679790",
+    "id": "1c14a388-6c75-402b-b547-19cfbf7710b1",
+    "version": "1.0",
+    "dataset_ids": [
+      "2c223ad0-fdb7-4891-af90-894606fa6804",
+      "524676e2-9524-482a-bb31-1e43c9ee1cae"
+    ]
+  },
+  "datasets": [
+    {
+      "name": "heatmap_test_department",
+      "category": "departments"
+    },
+    {
+      "name": "heatmap_test_incidents",
+      "category": "incidents"
+    }
+  ]
+}

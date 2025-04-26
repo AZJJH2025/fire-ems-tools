@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Department - FireEMS.ai Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/admin-styles.css">
+    <style>
+        .delete-warning {
+            color: #e74c3c;
+            background-color: #fadbd8;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        
+        .confirmation-form {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+            border-color: #c0392b;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .department-info {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .department-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .department-code {
+            color: #7f8c8d;
+            margin-bottom: 0.5rem;
+        }
+        
+        .department-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .detail-item {
+            background-color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-fire-extinguisher"></i> FireEMS.ai Admin
+                </div>
+                <div class="user-info">
+                    <span class="user-avatar">A</span>
+                    <span class="user-name">Admin</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <nav>
+        <div class="container">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="/admin/dashboard" class="nav-link">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/departments" class="nav-link active">
+                        <i class="fas fa-building"></i> Departments
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/users" class="nav-link">
+                        <i class="fas fa-users"></i> Users
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/settings" class="nav-link">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main class="container">
+        <div class="content-header">
+            <h1 class="content-title">Delete Department</h1>
+            <a href="/admin/departments/{{ department.id }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Department
+            </a>
+        </div>
+        
+        <div class="confirmation-form">
+            <div class="department-info">
+                <div class="department-name">{{ department.name }}</div>
+                <div class="department-code">Code: {{ department.code }}</div>
+                <div class="department-details">
+                    <div class="detail-item">
+                        <i class="fas fa-map-marker-alt"></i> {{ department.city or 'No location' }}, {{ department.state or '' }}
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-building"></i> {{ department.num_stations }} station{{ 's' if department.num_stations != 1 else '' }}
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-users"></i> {{ department.users|length }} user{{ 's' if department.users|length != 1 else '' }}
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-clipboard-list"></i> {{ department.incidents|length }} incident{{ 's' if department.incidents|length != 1 else '' }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="delete-warning">
+                <h3><i class="fas fa-exclamation-triangle"></i> Warning: This action cannot be undone</h3>
+                <p>You are about to delete this department and <strong>all associated data</strong> including:</p>
+                <ul>
+                    <li><strong>{{ department.stations|length }}</strong> stations</li>
+                    <li><strong>{{ department.users|length }}</strong> users and their accounts</li>
+                    <li><strong>{{ department.incidents|length }}</strong> incidents and their data</li>
+                    <li>All department settings, API keys, and configuration</li>
+                </ul>
+                <p>This action is permanent and cannot be reversed. All data will be permanently deleted.</p>
+            </div>
+            
+            <form action="/admin/departments/{{ department.id }}/delete" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group">
+                    <label for="confirmation_code">To confirm, please enter the department code: <strong>{{ department.code }}</strong></label>
+                    <input type="text" id="confirmation_code" name="confirmation_code" class="form-control" required>
+                </div>
+                
+                <div class="form-actions">
+                    <a href="/admin/departments/{{ department.id }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Permanently Delete Department
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+</body>
+</html>

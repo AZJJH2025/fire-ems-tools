@@ -1,0 +1,38 @@
+[run]
+source = .
+omit = 
+    */tests/*
+    */test_*
+    */e2e/*
+    */.github/*
+    */venv/*
+    */env/*
+    */virtualenv/*
+    */.vscode/*
+    setup.py
+    run_*.py
+    */fixtures/*
+    */node_modules/*
+    */scripts/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    def __str__
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    pass
+    raise ImportError
+    except ImportError:
+    DEBUG
+    if settings.DEBUG
+    if DEBUG
+fail_under = 80
+
+[html]
+directory = coverage_html_report
+title = Fire-EMS Tools Coverage Report
+
+[xml]
+output = coverage.xml

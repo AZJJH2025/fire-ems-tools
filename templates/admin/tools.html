@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tool Management - FireEMS.ai Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/admin-styles.css">
+    <style>
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #e1f5fe;
+            color: #0288d1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+        
+        .tool-icon {
+            background-color: #e8f5e9;
+            color: #43a047;
+        }
+        
+        .user-icon {
+            background-color: #fff8e1;
+            color: #ffa000;
+        }
+        
+        .usage-icon {
+            background-color: #ffebee;
+            color: #e53935;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0.5rem 0;
+        }
+        
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 1rem;
+        }
+        
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .tool-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background-color: #4a89dc;
+        }
+        
+        .tool-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .tool-icon-wrap {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #f8f9fa;
+            color: #4a89dc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .tool-title {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #2c3e50;
+        }
+        
+        .tool-description {
+            color: #7f8c8d;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+        
+        .tool-status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+        
+        .status-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .status-ready {
+            color: #2ecc71;
+        }
+        
+        .status-planned {
+            color: #e67e22;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 22px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #4a89dc;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(22px);
+        }
+        
+        .tool-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .tool-btn {
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            border: none;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .btn-view {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+        }
+        
+        .btn-view:hover {
+            background-color: #e9ecef;
+        }
+        
+        .btn-stats {
+            background-color: #e8f5e9;
+            color: #43a047;
+        }
+        
+        .btn-stats:hover {
+            background-color: #c8e6c9;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin: 0;
+        }
+        
+        .section-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .bulk-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            background-color: white;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .bulk-title {
+            font-weight: 500;
+            color: #2c3e50;
+            margin: 0;
+        }
+        
+        .bulk-btn {
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            border: none;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .btn-enable-all {
+            background-color: #e8f5e9;
+            color: #43a047;
+        }
+        
+        .btn-disable-all {
+            background-color: #ffebee;
+            color: #e53935;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-fire-extinguisher"></i> FireEMS.ai Admin
+                </div>
+                <div class="user-info">
+                    <span class="user-avatar">{{ current_user.name[0] }}</span>
+                    <span class="user-name">{{ current_user.name }}</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <nav>
+        <div class="container">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="/admin/dashboard" class="nav-link">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/departments" class="nav-link">
+                        <i class="fas fa-building"></i> Departments
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/users" class="nav-link">
+                        <i class="fas fa-users"></i> Users
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/tools" class="nav-link active">
+                        <i class="fas fa-tools"></i> Tools
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/settings" class="nav-link">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main class="container">
+        <div class="content-header">
+            <h1 class="content-title">Tool Management</h1>
+            <div>
+                <a href="/admin/tools/usage" class="btn btn-secondary">
+                    <i class="fas fa-chart-bar"></i> Usage Statistics
+                </a>
+                <a href="/admin/settings" class="btn btn-primary">
+                    <i class="fas fa-cog"></i> Global Settings
+                </a>
+            </div>
+        </div>
+        
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-icon tool-icon">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <div class="stat-value">{{ statistics.total_usage if statistics.total_usage else '0' }}</div>
+                <div class="stat-label">Total Tool Uses</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon usage-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="stat-value">{{ statistics.most_used if statistics.most_used else 'None' }}</div>
+                <div class="stat-label">Most Used Tool</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon user-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-value">{{ statistics.avg_per_dept if statistics.avg_per_dept else '0' }}</div>
+                <div class="stat-label">Avg. Tools Per Dept</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-plus-circle"></i>
+                </div>
+                <div class="stat-value">{{ statistics.new_activations if statistics.new_activations else '0' }}</div>
+                <div class="stat-label">New Activations</div>
+            </div>
+        </div>
+        
+        <div class="bulk-actions">
+            <h3 class="bulk-title">Bulk Actions:</h3>
+            <button class="bulk-btn btn-enable-all">
+                <i class="fas fa-toggle-on"></i> Enable All Tools
+            </button>
+            <button class="bulk-btn btn-disable-all">
+                <i class="fas fa-toggle-off"></i> Disable All Tools
+            </button>
+        </div>
+        
+        <div class="section-header">
+            <h2 class="section-title">Active Tools</h2>
+            <div class="section-actions">
+                <button class="btn btn-secondary">
+                    <i class="fas fa-sort"></i> Sort
+                </button>
+                <button class="btn btn-secondary">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+            </div>
+        </div>
+        
+        <div class="tool-grid">
+            {% for tool in tools if tool.enabled %}
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-icon-wrap">
+                        <i class="fas fa-{{ tool.icon }}"></i>
+                    </div>
+                    <h3 class="tool-title">{{ tool.name }}</h3>
+                </div>
+                <div class="tool-description">
+                    {{ tool.description }}
+                </div>
+                <div class="tool-actions">
+                    <a href="/{{ tool.route }}" class="tool-btn btn-view">
+                        <i class="fas fa-eye"></i> View Tool
+                    </a>
+                    <a href="/admin/tools/usage?tool={{ tool.route }}" class="tool-btn btn-stats">
+                        <i class="fas fa-chart-bar"></i> Stats
+                    </a>
+                </div>
+                <div class="tool-status">
+                    <div class="status-label status-ready">
+                        <i class="fas fa-check-circle"></i> Ready
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked data-route="{{ tool.route }}">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="section-header">
+            <h2 class="section-title">Available Tools</h2>
+        </div>
+        
+        <div class="tool-grid">
+            {% for tool in tools if not tool.enabled %}
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-icon-wrap">
+                        <i class="fas fa-{{ tool.icon }}"></i>
+                    </div>
+                    <h3 class="tool-title">{{ tool.name }}</h3>
+                </div>
+                <div class="tool-description">
+                    {{ tool.description }}
+                </div>
+                <div class="tool-actions">
+                    <a href="/{{ tool.route }}" class="tool-btn btn-view">
+                        <i class="fas fa-eye"></i> View Tool
+                    </a>
+                    <a href="/admin/tools/usage?tool={{ tool.route }}" class="tool-btn btn-stats">
+                        <i class="fas fa-chart-bar"></i> Stats
+                    </a>
+                </div>
+                <div class="tool-status">
+                    <div class="status-label status-ready">
+                        <i class="fas fa-check-circle"></i> Ready
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" data-route="{{ tool.route }}">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tool toggle functionality
+            const toolToggles = document.querySelectorAll('.toggle-switch input[type="checkbox"]');
+            toolToggles.forEach(toggle => {
+                toggle.addEventListener('change', function() {
+                    const toolRoute = this.getAttribute('data-route');
+                    const isEnabled = this.checked;
+                    console.log(`Tool ${toolRoute} is now ${isEnabled ? 'enabled' : 'disabled'}`);
+                    
+                    // Update the tool status via API
+                    fetch('/api/admin/tools/update_status', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            route: toolRoute,
+                            enabled: isEnabled
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Success:', data);
+                        
+                        // Update the UI to reflect the change
+                        const toolCard = this.closest('.tool-card');
+                        const statusLabel = toolCard.querySelector('.status-label');
+                        
+                        if (isEnabled) {
+                            statusLabel.textContent = 'Enabled';
+                            statusLabel.classList.add('status-ready');
+                            statusLabel.classList.remove('status-planned');
+                        } else {
+                            statusLabel.textContent = 'Disabled';
+                            statusLabel.classList.remove('status-ready');
+                            statusLabel.classList.add('status-planned');
+                        }
+                        
+                        // Reload the page after a short delay to show the change
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        alert('Failed to update tool status. Please try again.');
+                        // Reset the toggle to its previous state
+                        this.checked = !isEnabled;
+                    });
+                });
+            });
+            
+            // Bulk action buttons
+            document.querySelector('.btn-enable-all').addEventListener('click', function() {
+                const toolToggles = document.querySelectorAll('.toggle-switch input[type="checkbox"]');
+                
+                // Create an array of promises for all toggle updates
+                const updatePromises = Array.from(toolToggles).map(toggle => {
+                    // Only update if not already enabled
+                    if (!toggle.checked) {
+                        const toolRoute = toggle.getAttribute('data-route');
+                        return fetch('/api/admin/tools/update_status', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                route: toolRoute,
+                                enabled: true
+                            })
+                        }).then(response => response.json());
+                    }
+                    return Promise.resolve(); // No action needed for already enabled toggles
+                });
+                
+                // After all updates, refresh the page
+                Promise.all(updatePromises)
+                    .then(() => {
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    })
+                    .catch(error => {
+                        console.error('Error in bulk enable:', error);
+                        alert('Failed to enable all tools. Please try again.');
+                    });
+                    
+                // Update UI immediately to show action in progress
+                toolToggles.forEach(toggle => {
+                    toggle.checked = true;
+                    const toolCard = toggle.closest('.tool-card');
+                    const statusLabel = toolCard.querySelector('.status-label');
+                    statusLabel.textContent = 'Enabled';
+                    statusLabel.classList.add('status-ready');
+                    statusLabel.classList.remove('status-planned');
+                });
+            });
+            
+            document.querySelector('.btn-disable-all').addEventListener('click', function() {
+                const toolToggles = document.querySelectorAll('.toggle-switch input[type="checkbox"]');
+                
+                // Create an array of promises for all toggle updates
+                const updatePromises = Array.from(toolToggles).map(toggle => {
+                    // Only update if not already disabled
+                    if (toggle.checked) {
+                        const toolRoute = toggle.getAttribute('data-route');
+                        return fetch('/api/admin/tools/update_status', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                route: toolRoute,
+                                enabled: false
+                            })
+                        }).then(response => response.json());
+                    }
+                    return Promise.resolve(); // No action needed for already disabled toggles
+                });
+                
+                // After all updates, refresh the page
+                Promise.all(updatePromises)
+                    .then(() => {
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    })
+                    .catch(error => {
+                        console.error('Error in bulk disable:', error);
+                        alert('Failed to disable all tools. Please try again.');
+                    });
+                    
+                // Update UI immediately to show action in progress
+                toolToggles.forEach(toggle => {
+                    toggle.checked = false;
+                    const toolCard = toggle.closest('.tool-card');
+                    const statusLabel = toolCard.querySelector('.status-label');
+                    statusLabel.textContent = 'Disabled';
+                    statusLabel.classList.remove('status-ready');
+                    statusLabel.classList.add('status-planned');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

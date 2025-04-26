@@ -1,0 +1,157 @@
+// ✅ script.js is loaded!
+console.log("✅ script.js is loaded!");
+
+// ✅ Upload function
+async function uploadFile() {
+    console.log("🚀 uploadFile() function triggered!");  // Debugging log
+    const fileInput = document.getElementById('fileInput');
+    const resultDiv = document.getElementById('result');
+    const loadingDiv = document.getElementById('loading');
+
+    if (!fileInput.files.length) {
+        resultDiv.innerHTML = '<p style="color: red;">❌ Please select a file first.</p>';
+        return;
+    }
+
+    const file = fileInput.files[0];
+
+    // Validate file type
+    const validTypes = ["text/csv", "application/vnd.ms-excel", 
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"];
+    if (!validTypes.includes(file.type)) {
+        resultDiv.innerHTML = '<p style="color: red;">❌ Invalid file type. Only CSV & Excel allowed.</p>';
+        return;
+    }
+
+    // Show loading message (check if div exists)
+    if (loadingDiv) {
+        loadingDiv.style.display = 'block';
+    }
+    resultDiv.innerHTML = '';
+
+    try {
+        console.log("📤 Sending file to /api/upload...");  // Debugging log
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const response = await fetch("/api/upload", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+
+        // Hide loading indicator (check if div exists)
+        if (loadingDiv) {
+            loadingDiv.style.display = 'none';
+        }
+
+        if (!response.ok) {
+            console.error("❌ Server error:", data.error);
+            resultDiv.innerHTML = `<p style="color: red;">❌ Error: ${data.error || response.statusText}</p>`;
+            return;
+        }
+
+        console.log("✅ File uploaded successfully:", data.filename);
+        console.log("📊 Data received:", data);
+
+        // Success message with file info
+        resultDiv.innerHTML = `
+            <div style="margin-bottom: 20px;">
+                <p style="color: green;">✅ File uploaded successfully: ${data.filename}</p>
+                <p>📊 Rows: ${data.rows ? data.rows.length : (data.data ? data.data.length : 'Unknown')}</p>
+                <p>📅 First reported date: ${data.first_reported_date || 'N/A'}</p>
+            </div>
+        `;
+
+        // Create and render the table
+        renderDataTable(data, resultDiv);
+
+    } catch (error) {
+        console.error("❌ Upload error:", error);
+        resultDiv.innerHTML = `<p style="color: red;">❌ Upload error: ${error.message}</p>`;
+        if (loadingDiv) {
+            loadingDiv.style.display = 'none';
+        }
+    }
+}
+
+// Function to render table from API data
+function renderDataTable(data, container) {
+    console.log("🔨 Rendering table with data:", data);
+
+    // Create table element
+    const table = document.createElement("table");
+
+    // Create header row
+    const headerRow = document.createElement("tr");
+
+    // Determine column headers dynamically if missing
+    let columns = data.columns && Array.isArray(data.columns) ? data.columns : [];
+    if (!columns.length && data.data && data.data.length > 0) {
+        columns = Object.keys(data.data[0]);  // Extract from first row
+    }
+
+    if (columns.length === 0) {
+        console.warn("⚠️ No columns found in API response");
+        container.innerHTML += '<p style="color: red;">❌ Error: No column headers found.</p>';
+        return;
+    }
+
+    columns.forEach(column => {
+        const th = document.createElement("th");
+        th.textContent = column;
+        headerRow.appendChild(th);
+    });
+
+    table.appendChild(headerRow);
+
+    // Add data rows
+    if (data.data && Array.isArray(data.data)) {
+        data.data.forEach(row => {
+            const tr = document.createElement("tr");
+
+            columns.forEach(column => {
+                const td = document.createElement("td");
+                td.textContent = row[column] !== undefined && row[column] !== null 
+                    ? row[column] 
+                    : 'N/A';
+                tr.appendChild(td);
+            });
+
+            table.appendChild(tr);
+        });
+    } else if (data.rows && Array.isArray(data.rows)) {
+        data.rows.forEach(row => {
+            const tr = document.createElement("tr");
+
+            // Handle both object and array rows
+            if (Array.isArray(row)) {
+                row.forEach(cell => {
+                    const td = document.createElement("td");
+                    td.textContent = cell !== null ? cell : 'N/A';
+                    tr.appendChild(td);
+                });
+            } else {
+                columns.forEach(column => {
+                    const td = document.createElement("td");
+                    td.textContent = row[column] !== null ? row[column] : 'N/A';
+                    tr.appendChild(td);
+                });
+            }
+
+            table.appendChild(tr);
+        });
+    } else {
+        console.error("❌ No data property found in API response");
+        container.innerHTML += '<p style="color: red;">❌ Error: Unable to render table. Invalid data format.</p>';
+        return;
+    }
+
+    // Add table to container
+    container.appendChild(table);
+    console.log("✅ Table rendered successfully!");
+}
+
+// Make uploadFile globally accessible
+window.uploadFile = uploadFile;

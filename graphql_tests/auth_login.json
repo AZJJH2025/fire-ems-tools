@@ -1,0 +1,35 @@
+{
+  "description": "User login",
+  "query": "mutation Login($email: String!, $password: String!) { login(email: $email, password: $password) { token user { id email role } } }",
+  "variables": {
+    "email": "user@example.com",
+    "password": "user_password"
+  },
+  "auth_required": false,
+  "expected_status": 200,
+  "validation_rules": [
+    {
+      "type": "no_errors"
+    },
+    {
+      "type": "has_data"
+    },
+    {
+      "type": "field_exists",
+      "path": "data.login"
+    },
+    {
+      "type": "field_exists",
+      "path": "data.login.token"
+    },
+    {
+      "type": "field_exists",
+      "path": "data.login.user"
+    },
+    {
+      "type": "field_equals",
+      "path": "data.login.user.email",
+      "value": "user@example.com"
+    }
+  ]
+}

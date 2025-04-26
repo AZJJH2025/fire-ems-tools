@@ -1,0 +1,6 @@
+STATION_NUMBER,STATION_DESC,STREET_ADDRESS,CITY_NAME,STATE_CODE,ZIP_CODE,Y_COORDINATE,X_COORDINATE,STATION_CAPABILITIES,IS_ACTIVE
+301,"Fire Station 301","301 Broadway","New York","NY","10007",40.7127,-74.0059,"Engine/Ladder",TRUE
+302,"Fire Station 302","302 Fifth Avenue","New York","NY","10001",40.7484,-73.9857,"Engine",TRUE
+303,"Fire Station 303","303 Park Avenue","New York","NY","10022",40.7580,-73.9723,"Medic",TRUE
+304,"Fire Station 304","304 Lexington Avenue","New York","NY","10016",40.7452,-73.9784,"Engine/Medic",TRUE
+305,"Fire Station 305","305 Madison Avenue","New York","NY","10017",40.7529,-73.9804,"Ladder",TRUE

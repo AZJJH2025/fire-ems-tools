@@ -1,0 +1,339 @@
+/* Call Density Heatmap Styles */
+
+/* Map Container */
+#map-container {
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    height: 500px;
+}
+
+/* Upload Status */
+.status-success {
+    color: #2e7d32;
+    background-color: #e8f5e9;
+    padding: 8px;
+    border-radius: 4px;
+    margin-top: 10px;
+    display: inline-block;
+}
+
+.status-error {
+    color: #c62828;
+    background-color: #ffebee;
+    padding: 8px;
+    border-radius: 4px;
+    margin-top: 10px;
+    display: inline-block;
+}
+
+.status-info {
+    color: #0277bd;
+    background-color: #e1f5fe;
+    padding: 8px;
+    border-radius: 4px;
+    margin-top: 10px;
+    display: inline-block;
+}
+
+/* Filter Styles */
+.filter-section {
+    background-color: #f5f5f5;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 15px 0;
+}
+
+.filter-section h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 16px;
+    color: #333;
+}
+
+.filter-group {
+    margin-bottom: 12px;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.time-specific-filter {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Checkbox and radio groups */
+.checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    font-weight: normal;
+    margin-bottom: 0;
+}
+
+.checkbox-group input {
+    margin-right: 5px;
+}
+
+/* Slider styling */
+.slider-container {
+    display: flex;
+    align-items: center;
+}
+
+.slider {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+/* Hotspot Analysis Section */
+.analysis-section {
+    background-color: #f5f5f5;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 15px 0;
+}
+
+.analysis-section h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 16px;
+    color: #333;
+}
+
+.hotspot-stat {
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.hotspot-stat span {
+    font-weight: bold;
+}
+
+.hotspot-table {
+    margin-top: 15px;
+}
+
+.hotspot-table h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #555;
+}
+
+.heatmap-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.heatmap-table th, .heatmap-table td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.heatmap-table th {
+    background-color: #f9f9f9;
+    font-weight: bold;
+}
+
+/* Legend styling */
+.legend {
+    padding: 10px;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+    width: 160px;
+}
+
+.legend h4 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.color-box {
+    width: 15px;
+    height: 15px;
+    margin-right: 8px;
+    border: 1px solid #ccc;
+    display: inline-block;
+}
+
+/* Custom marker clusters */
+.call-density-marker {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+}
+
+.density-low {
+    background-color: #a6cee3;
+}
+
+.density-medium {
+    background-color: #6495ed;
+}
+
+.density-high {
+    background-color: #1f4eb0;
+}
+
+.density-critical {
+    background-color: #d73027;
+}
+
+/* Highlight marker for selected points */
+.highlight-marker {
+    z-index: 1000 !important;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Popup customization */
+.call-density-popup .leaflet-popup-content-wrapper {
+    border-radius: 8px;
+}
+
+.call-density-popup .leaflet-popup-content {
+    margin: 12px;
+}
+
+/* Export Section */
+.export-section {
+    margin: 15px 0;
+    text-align: center;
+}
+
+.export-section button {
+    margin: 0 5px;
+}
+
+/* Data Table Container */
+.data-table-container {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+}
+
+.data-table-description {
+    margin-bottom: 15px;
+}
+
+.data-table-description h3 {
+    margin-top: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.data-table-description p {
+    margin-bottom: 0;
+    color: #666;
+}
+
+/* Style the DataTable component */
+.fireems-datatable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+.fireems-datatable th {
+    background-color: #f0f0f0;
+    padding: 10px;
+    text-align: left;
+    border-bottom: 2px solid #ddd;
+    position: sticky;
+    top: 0;
+    font-weight: bold;
+    color: #333;
+}
+
+.fireems-datatable td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.fireems-datatable tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.fireems-datatable tr:hover {
+    background-color: #f0f0f0;
+}
+
+/* Search filter styling */
+#call-data-filter-container {
+    margin-bottom: 15px;
+}
+
+#call-data-filter-container input[type="text"] {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 300px;
+}
+
+#call-data-filter-container button {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+/* Export button styling */
+#call-data-export-container button {
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}

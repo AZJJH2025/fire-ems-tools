@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+
+{% block title %}FireEMS.ai - Fire & EMS AI Analytics Tools{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="/static/home-styles.css">
+  <style>
+    /* Developer Tools Section Styles */
+    .dev-tools {
+      background-color: #2c3e50;
+      color: #ecf0f1;
+      padding: 30px 0;
+      margin-top: 40px;
+    }
+    
+    .dev-tools h2 {
+      color: #3498db;
+      border-bottom: 1px solid #34495e;
+      padding-bottom: 10px;
+      margin-bottom: 30px;
+    }
+    
+    .dev-card {
+      background-color: #34495e;
+      border: 1px solid #2c3e50;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .dev-card .tool-icon {
+      background-color: #3498db;
+    }
+    
+    .dev-card .tool-content h3 {
+      color: #ecf0f1;
+    }
+    
+    .dev-card .tool-content p {
+      color: #bdc3c7;
+    }
+    
+    .dev-card .tool-link {
+      background-color: #2980b9;
+    }
+    
+    .dev-card .tool-link:hover {
+      background-color: #3498db;
+    }
+    
+    .dev-card .tool-status {
+      background-color: #2980b9;
+      color: #ecf0f1;
+    }
+  </style>
+{% endblock %}
+
+{% block header_icon %}fas fa-tools{% endblock %}
+{% block header_title %}FireEMS.ai{% endblock %}
+{% block header_subtitle %}Advanced AI-Powered Analytics Tools for Fire & EMS Agencies{% endblock %}
+
+{% block content %}
+  <main class="container">
+    <section class="intro">
+      <h2>Welcome to FireEMS.ai</h2>
+      <p>
+        FireEMS.ai provides specialized analytics tools designed specifically for Fire and EMS agencies.
+        Our tools help you visualize incident data, optimize response times, identify coverage gaps,
+        and make data-driven decisions to improve emergency services.
+      </p>
+    </section>
+
+    <section class="tools-grid">
+      <!-- Tool 1: Response Time Analyzer (Completed) -->
+      <div class="tool-card completed">
+        <div class="tool-icon">
+          <i class="fas fa-stopwatch"></i>
+        </div>
+        <div class="tool-content">
+          <h3>Response Time Analyzer</h3>
+          <p>Upload and analyze incident data to visualize response time patterns, identify bottlenecks, and improve performance metrics.</p>
+          <div class="tool-tags">
+            <span class="tag">CSV</span>
+            <span class="tag">Excel</span>
+            <span class="tag">Analytics</span>
+          </div>
+          <a href="/fire-ems-dashboard" class="tool-link">Open Tool</a>
+        </div>
+        <div class="tool-status">Ready</div>
+      </div>
+
+      <!-- Tool 2: Isochrone Map Generator (Completed) -->
+      <div class="tool-card completed">
+        <div class="tool-icon">
+          <i class="fas fa-map"></i>
+        </div>
+        <div class="tool-content">
+          <h3>Isochrone Map Generator</h3>
+          <p>Create coverage area maps based on emergency response travel times to visualize and optimize response boundaries.</p>
+          <div class="tool-tags">
+            <span class="tag">Mapping</span>
+            <span class="tag">Coverage</span>
+            <span class="tag">Planning</span>
+          </div>
+          <a href="/isochrone-map" class="tool-link">Open Tool</a>
+        </div>
+        <div class="tool-status">Ready</div>
+      </div>
+
+      <!-- Tool 3: Incident Logger (Now Available) -->
+      <div class="tool-card completed">
+        <div class="tool-icon">
+          <i class="fas fa-clipboard-list"></i>
+        </div>
+        <div class="tool-content">
+          <h3>Incident Logger</h3>
+          <p>Streamlined incident data entry and management system with NFIRS compliance, validation, and export capabilities.</p>
+          <div class="tool-tags">
+            <span class="tag">Data Entry</span>
+            <span class="tag">Management</span>
+            <span class="tag">NFIRS</span>
+          </div>
+          <a href="/incident-logger" class="tool-link">Open Tool</a>
+        </div>
+        <div class="tool-status">Ready</div>
+      </div>
+
+      <!-- Tool 4: Call Density Heatmap (Completed) -->
+      <div class="tool-card completed">
+        <div class="tool-icon">
+          <i class="fas fa-fire"></i>
+        </div>
+        <div class="tool-content">
+          <h3>Call Density Heatmap</h3>
+          <p>Visualize historical call data with customizable heatmaps to identify activity hotspots and optimize resource allocation.</p>
+          <div class="tool-tags">
+            <span class="tag">Mapping</span>
+            <span class="tag">Heatmap</span>
+            <span class="tag">Analysis</span>
+          </div>
+          <a href="/call-density-heatmap" class="tool-link">Open Tool</a>
+        </div>
+        <div class="tool-status">Ready</div>
+      </div>
+
+      <!-- Tool 5: Station Overview (Completed) -->
+      <div class="tool-card completed">
+        <div class="tool-icon">
+          <i class="fas fa-building"></i>
+        </div>
+        <div class="tool-content">
+          <h3>Station Overview</h3>
+          <p>Comprehensive overview of station performance, unit utilization, and response metrics by station.</p>
+          <div class="tool-tags">
+            <span class="tag">Dashboards</span>
+            <span class="tag">Metrics</span>
+            <span class="tag">KPIs</span>
+          </div>
+          <a href="/station-overview" class="tool-link">Open Tool</a>
+        </div>
+        <div class="tool-status">Ready</div>
+      </div>
+
+      <!-- Tool 6: User Guide (Completed) -->
+      <div class="tool-card completed">
+        <div class="tool-icon">
+          <i class="fas fa-book-open"></i>
+        </div>
+        <div class="tool-content">
+          <h3>User Guide</h3>
+          <p>Comprehensive documentation and tutorials for using all FireEMS.ai tools effectively.</p>
+          <div class="tool-tags">
+            <span class="tag">Documentation</span>
+            <span class="tag">Tutorials</span>
+          </div>
+          <a href="/user-guide" class="tool-link">Open Guide</a>
+        </div>
+        <div class="tool-status">Ready</div>
+      </div>
+
+      <!-- Tool 7: Call Volume Forecaster (Completed) -->
+      <div class="tool-card completed">
+        <div class="tool-icon">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="tool-content">
+          <h3>Call Volume Forecaster</h3>
+          <p>AI-powered forecasting for call volumes based on historical patterns, seasonal trends, and other factors.</p>
+          <div class="tool-tags">
+            <span class="tag">AI</span>
+            <span class="tag">Forecasting</span>
+            <span class="tag">Planning</span>
+          </div>
+          <a href="/call-volume-forecaster" class="tool-link">Open Tool</a>
+        </div>
+        <div class="tool-status">Ready</div>
+      </div>
+
+      <!-- Tool 8: Coverage Gap Finder (Completed) -->
+      <div class="tool-card completed">
+        <div class="tool-icon">
+          <i class="fas fa-search-location"></i>
+        </div>
+        <div class="tool-content">
+          <h3>Coverage Gap Finder</h3>
+          <p>Identify underserved areas in your jurisdiction to optimize station locations and resource deployment.</p>
+          <div class="tool-tags">
+            <span class="tag">Analysis</span>
+            <span class="tag">Mapping</span>
+            <span class="tag">Planning</span>
+          </div>
+          <a href="/coverage-gap-finder" class="tool-link">Open Tool</a>
+        </div>
+        <div class="tool-status">Ready</div>
+      </div>
+
+      <!-- Tool 9: FireMapPro (Completed) -->
+      <div class="tool-card completed">
+        <div class="tool-icon">
+          <i class="fas fa-map-marked-alt"></i>
+        </div>
+        <div class="tool-content">
+          <h3>FireMapPro</h3>
+          <p>Advanced interactive map creator for fire department and EMS planning with multiple data layers and measurement tools.</p>
+          <div class="tool-tags">
+            <span class="tag">Mapping</span>
+            <span class="tag">Planning</span>
+            <span class="tag">Analysis</span>
+          </div>
+          <a href="/fire-map-pro" class="tool-link">Open Tool</a>
+        </div>
+        <div class="tool-status">Ready</div>
+      </div>
+
+      <!-- Tool 10: Data Formatter (Completed) -->
+      <div class="tool-card completed">
+        <div class="tool-icon">
+          <i class="fas fa-exchange-alt"></i>
+        </div>
+        <div class="tool-content">
+          <h3>Data Formatter</h3>
+          <p>Convert, standardize, and prepare your data for seamless use with any FireEMS.ai tool. Supports multiple formats and tool-specific configurations.</p>
+          <div class="tool-tags">
+            <span class="tag">Data Prep</span>
+            <span class="tag">Conversion</span>
+            <span class="tag">Utility</span>
+          </div>
+          <a href="/data-formatter" class="tool-link">Open Tool</a>
+        </div>
+        <div class="tool-status">Ready</div>
+      </div>
+      
+      <!-- Tool 11: Quick Stats (Completed) -->
+      <div class="tool-card completed">
+        <div class="tool-icon">
+          <i class="fas fa-tachometer-alt"></i>
+        </div>
+        <div class="tool-content">
+          <h3>Quick Stats</h3>
+          <p>Instant summary metrics and KPIs from your incident data for quick analysis and reporting.</p>
+          <div class="tool-tags">
+            <span class="tag">Metrics</span>
+            <span class="tag">Reporting</span>
+            <span class="tag">Dashboard</span>
+          </div>
+          <a href="/quick-stats" class="tool-link">Open Tool</a>
+        </div>
+        <div class="tool-status">Ready</div>
+      </div>
+    </section>
+  </main>
+
+  <section class="dev-tools">
+    <div class="container">
+      <h2>Developer Tools</h2>
+      <div class="tools-grid">
+        <div class="tool-card dev-card">
+          <div class="tool-icon">
+            <i class="fas fa-code"></i>
+          </div>
+          <div class="tool-content">
+            <h3>ES6 Module Testing Dashboard</h3>
+            <p>Comprehensive testing dashboard for the ES6 module architecture. Validate components, test module interactions, and ensure backward compatibility.</p>
+            <div class="tool-tags">
+              <span class="tag">Testing</span>
+              <span class="tag">ES6 Modules</span>
+              <span class="tag">Developer</span>
+            </div>
+            <a href="/tests/module_testing_dashboard.html" class="tool-link">Open Dashboard</a>
+          </div>
+          <div class="tool-status">Developer</div>
+        </div>
+
+        <div class="tool-card dev-card">
+          <div class="tool-icon">
+            <i class="fas fa-cogs"></i>
+          </div>
+          <div class="tool-content">
+            <h3>Admin Dashboard</h3>
+            <p>Access system administration tools, user management, configuration settings, and performance monitoring for the FireEMS.ai platform.</p>
+            <div class="tool-tags">
+              <span class="tag">Admin</span>
+              <span class="tag">Settings</span>
+              <span class="tag">Configuration</span>
+            </div>
+            <a href="/admin" class="tool-link">Open Admin</a>
+          </div>
+          <div class="tool-status">Protected</div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}

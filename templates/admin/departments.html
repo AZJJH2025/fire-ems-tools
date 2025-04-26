@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Departments - FireEMS.ai Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/admin-styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-fire-extinguisher"></i> FireEMS.ai Admin
+                </div>
+                <div class="user-info">
+                    <span class="user-avatar">A</span>
+                    <span class="user-name">Admin</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <nav>
+        <div class="container">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="/admin/dashboard" class="nav-link">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/departments" class="nav-link active">
+                        <i class="fas fa-building"></i> Departments
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/users" class="nav-link">
+                        <i class="fas fa-users"></i> Users
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/tools" class="nav-link">
+                        <i class="fas fa-tools"></i> Tools
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/settings" class="nav-link">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main class="container">
+        <div class="content-header">
+            <h1 class="content-title">Departments</h1>
+            <a href="/admin/departments/register" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Register New Department
+            </a>
+        </div>
+        
+        <div class="filters">
+            <div class="search-bar">
+                <input type="text" id="departmentSearch" placeholder="Search departments...">
+                <button type="button" class="search-btn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            
+            <div class="filter-options">
+                <select id="statusFilter">
+                    <option value="all">All Statuses</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="setup">Setup Required</option>
+                </select>
+                
+                <select id="typeFilter">
+                    <option value="all">All Types</option>
+                    <option value="combined">Combined</option>
+                    <option value="fire">Fire Only</option>
+                    <option value="ems">EMS Only</option>
+                </select>
+            </div>
+        </div>
+        
+        {% if departments %}
+        <div class="department-list">
+            {% for department in departments %}
+            <div class="department-card" 
+                 data-status="{{ 'active' if department.is_active else 'inactive' }}"
+                 data-setup="{{ 'setup' if not department.setup_complete else 'complete' }}"
+                 data-type="{{ department.department_type }}">
+                <div class="department-header">
+                    <div class="department-logo">
+                        {% if department.logo_url %}
+                        <img src="{{ department.logo_url }}" alt="{{ department.name }} logo">
+                        {% else %}
+                        <i class="fas fa-fire-extinguisher"></i>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h3 class="department-name">{{ department.name }}</h3>
+                        <div class="department-code">{{ department.code }}</div>
+                    </div>
+                </div>
+                <div class="department-body">
+                    <div class="department-details">
+                        <p><strong>Type:</strong> {{ department.department_type|capitalize }}</p>
+                        <p><strong>Location:</strong> {{ department.city }}, {{ department.state }}</p>
+                        <p>
+                            <strong>Status:</strong> 
+                            {% if department.is_active %}
+                            <span class="status-badge status-active">Active</span>
+                            {% else %}
+                            <span class="status-badge status-inactive">Inactive</span>
+                            {% endif %}
+                            
+                            {% if not department.setup_complete %}
+                            <span class="status-badge status-pending">Setup Required</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="department-actions">
+                        <a href="/dept/{{ department.code }}" class="btn btn-secondary btn-sm" target="_blank">
+                            <i class="fas fa-external-link-alt"></i> View Portal
+                        </a>
+                        <a href="/admin/departments/{{ department.id }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-cog"></i> Manage
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-building"></i>
+            </div>
+            <h2>No Departments Registered</h2>
+            <p>Get started by registering your first fire/EMS department.</p>
+            <a href="/admin/departments/register" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Register New Department
+            </a>
+        </div>
+        {% endif %}
+    </main>
+    
+    <style>
+        .filters {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background-color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .search-bar {
+            display: flex;
+            flex: 1;
+            margin-right: 1rem;
+        }
+        
+        .search-bar input {
+            flex-grow: 1;
+            border-right: none;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        
+        .search-btn {
+            padding: 0.75rem 1rem;
+            background-color: #3498db;
+            color: white;
+            border: 1px solid #3498db;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+        
+        .filter-options {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .filter-options select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            color: #95a5a6;
+            margin-bottom: 1rem;
+        }
+        
+        .empty-state h2 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        
+        .empty-state p {
+            color: #7f8c8d;
+            margin-bottom: 2rem;
+        }
+        
+        .btn-sm {
+            padding: 0.35rem 0.75rem;
+            font-size: 0.85rem;
+        }
+    </style>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('departmentSearch');
+            const statusFilter = document.getElementById('statusFilter');
+            const typeFilter = document.getElementById('typeFilter');
+            const departmentCards = document.querySelectorAll('.department-card');
+            
+            function filterDepartments() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const statusValue = statusFilter.value;
+                const typeValue = typeFilter.value;
+                
+                departmentCards.forEach(card => {
+                    const departmentName = card.querySelector('.department-name').textContent.toLowerCase();
+                    const departmentCode = card.querySelector('.department-code').textContent.toLowerCase();
+                    
+                    const matchesSearch = departmentName.includes(searchTerm) || departmentCode.includes(searchTerm);
+                    const matchesStatus = statusValue === 'all' || card.dataset.status === statusValue || 
+                                         (statusValue === 'setup' && card.dataset.setup === 'setup');
+                    const matchesType = typeValue === 'all' || card.dataset.type === typeValue;
+                    
+                    if (matchesSearch && matchesStatus && matchesType) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+            
+            // Add event listeners
+            searchInput.addEventListener('input', filterDepartments);
+            statusFilter.addEventListener('change', filterDepartments);
+            typeFilter.addEventListener('change', filterDepartments);
+        });
+    </script>
+</body>
+</html>

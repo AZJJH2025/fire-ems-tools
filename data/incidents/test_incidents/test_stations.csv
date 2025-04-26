@@ -1,0 +1,4 @@
+station,name,latitude,longitude,address
+1,Test Station 1,33.4500,-112.0730,"123 Main St, Phoenix, AZ"
+2,Test Station 2,33.5500,-112.0700,"456 North Ave, Phoenix, AZ"
+3,Test Station 3,33.3500,-112.0700,"789 South Blvd, Phoenix, AZ"

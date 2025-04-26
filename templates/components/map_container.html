@@ -1,0 +1,15 @@
+{% macro map_container(map_id="map", include_legend=true, legend_title="Legend") %}
+<div id="map-container">
+    <div id="{{ map_id }}"></div>
+    {% if include_legend %}
+    <div class="map-overlay">
+        <div id="legend" class="legend">
+            <h4>{{ legend_title }}</h4>
+            <div class="legend-scale">
+                {{ caller() if caller }}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}

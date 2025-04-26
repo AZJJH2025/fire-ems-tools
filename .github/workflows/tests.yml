@@ -1,0 +1,200 @@
+name: Fire-EMS Tools Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, '3.10', '3.12']
+        test-group: 
+          - simplified
+          - error
+          - boundary
+          - performance
+          - routes
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install pytest pytest-cov coverage xmlrunner
+    
+    - name: Run simplified tests
+      if: matrix.test-group == 'simplified'
+      run: |
+        python run_all_tests.py --simplified --report xml
+    
+    - name: Run error tests
+      if: matrix.test-group == 'error'
+      run: |
+        python run_all_tests.py --error-tests --report xml
+        python run_all_tests.py --feature=api_errors --report xml
+    
+    - name: Run boundary tests
+      if: matrix.test-group == 'boundary'
+      run: |
+        python run_all_tests.py --boundary-tests --report xml
+    
+    - name: Run performance tests
+      if: matrix.test-group == 'performance' && matrix.python-version == '3.10'
+      run: |
+        python run_all_tests.py --performance --mock --report json
+        
+    - name: Run route blueprint tests
+      if: matrix.test-group == 'routes'
+      run: |
+        python run_all_tests.py --feature=routes --report xml
+    
+    - name: Generate coverage report
+      run: |
+        coverage run --source=. run_all_tests.py --simplified
+        coverage xml
+        coverage report
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results-${{ matrix.python-version }}-${{ matrix.test-group }}
+        path: test_report.xml
+      if: always() && matrix.test-group != 'performance'
+    
+    - name: Upload performance results
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-results-${{ matrix.python-version }}
+        path: test_report.json
+      if: always() && matrix.test-group == 'performance'
+    
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report-${{ matrix.python-version }}-${{ matrix.test-group }}
+        path: coverage.xml
+      if: always()
+
+  analyze:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Download all test artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: ./test-artifacts
+    
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install junitparser
+    
+    - name: Analyze test results
+      run: |
+        python -c "
+import os
+import json
+import glob
+from junitparser import JUnitXml
+
+# Collect and analyze all XML test results
+xml_files = glob.glob('./test-artifacts/test-results-*/*.xml')
+total_tests = 0
+total_failures = 0
+total_errors = 0
+total_skipped = 0
+
+for xml_file in xml_files:
+    junit = JUnitXml.fromfile(xml_file)
+    total_tests += junit.tests
+    total_failures += junit.failures
+    total_errors += junit.errors
+    total_skipped += junit.skipped
+
+print(f'Total Tests: {total_tests}')
+print(f'Failures: {total_failures}')
+print(f'Errors: {total_errors}')
+print(f'Skipped: {total_skipped}')
+print(f'Success Rate: {((total_tests - total_failures - total_errors) / total_tests) * 100:.2f}%')
+
+# Analyze performance results if available
+perf_files = glob.glob('./test-artifacts/performance-results-*/*.json')
+if perf_files:
+    print('\nPerformance Test Results:')
+    for perf_file in perf_files:
+        with open(perf_file, 'r') as f:
+            data = json.load(f)
+            if 'details' in data and 'performance' in data['details']:
+                perf_data = data['details']['performance']
+                passed = perf_data.get('passed', 0)
+                failed = perf_data.get('failed', 0)
+                total = passed + failed
+                if total > 0:
+                    print(f'  Pass Rate: {(passed / total) * 100:.2f}%')
+                    print(f'  Tests within threshold: {passed}/{total}')
+                
+                if 'slowest' in perf_data:
+                    print('  Slowest operations:')
+                    for op in perf_data['slowest'][:5]:  # Top 5 slowest
+                        print(f'    - {op[\"name\"]}: {op[\"time\"]:.3f}s (threshold: {op[\"threshold\"]:.3f}s)')
+        " > test-summary.txt
+        cat test-summary.txt
+    
+    - name: Check test success
+      run: |
+        # Fail the build if any tests failed
+        ! grep -q 'Failures: [^0]' test-summary.txt && ! grep -q 'Errors: [^0]' test-summary.txt
+
+  deploy-staging:
+    needs: analyze
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup deployment
+      run: echo "Setting up staging deployment"
+      
+    - name: Deploy to staging
+      run: echo "Deploying to staging environment"
+      
+    - name: Verify deployment
+      run: echo "Verifying staging deployment"
+
+  deploy-production:
+    needs: analyze
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup deployment
+      run: echo "Setting up production deployment"
+      
+    - name: Deploy to production
+      run: echo "Deploying to production environment"
+      
+    - name: Verify deployment
+      run: echo "Verifying production deployment"

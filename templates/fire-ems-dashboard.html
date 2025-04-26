@@ -1,0 +1,567 @@
+{% extends "base.html" %}
+
+{% block title %}🚒 Fire & EMS Data Uploader 🚑{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="/static/emergency-mode.css" />
+<!-- Leaflet CSS for Map Visualization -->
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin=""
+/>
+{% endblock %}
+
+{% block header_scripts %}
+<!-- Formatter Mode Detection & Complete Emergency Mode Removal -->
+<script>
+  // *** CRITICAL: Remove emergency parameter from URL immediately before any framework loads ***
+  const urlParams = new URLSearchParams(window.location.search);
+  const fromFormatter = urlParams.has('from_formatter');
+  const formatterDataKey = urlParams.get('formatter_data');
+  const hadEmergencyData = urlParams.has('emergency_data');
+  
+  // Create diagnostic data we can track through the process
+  window.dataTransferDiagnostic = {
+    timestamp: Date.now(),
+    version: "v2.1",
+    urlParams: Object.fromEntries(urlParams.entries()),
+    hadEmergencyData: hadEmergencyData,
+    fromFormatter: fromFormatter,
+    formatterDataKey: formatterDataKey,
+    url: window.location.href
+  };
+  console.log("📊 Data Transfer Diagnostic:", window.dataTransferDiagnostic);
+  
+  // If there's an emergency_data parameter, remove it from the URL
+  if (hadEmergencyData) {
+    // Store the emergency data ID in a variable
+    const emergencyId = urlParams.get('emergency_data');
+    window.dataTransferDiagnostic.emergencyId = emergencyId;
+    
+    // Create new URL params without the emergency parameter
+    urlParams.delete('emergency_data');
+    
+    // Create the new URL without emergency parameters
+    const newUrl = window.location.pathname + 
+                  (urlParams.toString() ? '?' + urlParams.toString() : '') +
+                  window.location.hash;
+    
+    // Replace the current URL without reloading the page
+    window.history.replaceState({}, document.title, newUrl);
+    console.log("IMPORTANT: Removed emergency_data parameter from URL to prevent framework-level emergency mode");
+    
+    // If we have emergency_data but no formatter_data, add it as formatter_data to recover
+    if (!formatterDataKey && localStorage.getItem(emergencyId)) {
+      console.log("⚠️ Recovery: Converting emergency_data to formatter_data");
+      try {
+        // Get data from emergency key
+        const emergencyData = localStorage.getItem(emergencyId);
+        // Store it with formatter key prefix for normal flow
+        const newKey = 'formatter_data_' + Date.now();
+        localStorage.setItem(newKey, emergencyData);
+        
+        // Add to URL params
+        urlParams.set('formatter_data', newKey);
+        urlParams.set('from_formatter', 'true');
+        urlParams.set('storage_method', 'localStorage');
+        
+        // Create updated URL
+        const recoveryUrl = window.location.pathname + 
+                         (urlParams.toString() ? '?' + urlParams.toString() : '') +
+                         window.location.hash;
+        
+        console.log("🔄 Recovered formatter data. Redirecting to normal flow URL...");
+        window.dataTransferDiagnostic.recovery = { newKey, recoveryUrl };
+        
+        // Store diagnostic for debugging
+        sessionStorage.setItem('data_transfer_diagnostic', JSON.stringify(window.dataTransferDiagnostic));
+        
+        // Redirect to the recovery URL
+        window.location.href = recoveryUrl;
+      } catch (error) {
+        console.error("❌ Recovery failed:", error);
+      }
+    }
+  }
+  
+  // Force direct data source mode
+  window.dataSource = {
+    fromFormatter: true, // Always treat as coming from formatter
+    isEmergency: false,  // Never treat as emergency
+    source: 'formatter'  // Always use formatter flow
+  };
+  
+  // Store diagnostic for debugging
+  sessionStorage.setItem('data_transfer_diagnostic', JSON.stringify(window.dataTransferDiagnostic));
+  
+  console.log("Data source overridden:", window.dataSource);
+</script>
+
+<!-- FireEMS Resilience Framework -->
+<script src="/static/js/emergency-scripts/framework-initialization.js"></script>
+
+<!-- Chart.js with better error handling -->
+<script src="/static/js/emergency-scripts/chartjs-loader.js"></script>
+
+<!-- DISABLE EMERGENCY MODE DEBUGGING COMPLETELY -->
+<script>
+  // Completely skip emergency mode debugging
+  console.log("Skipping emergency debugging tools - disabled for stability");
+</script>
+{% endblock %}
+
+{% block header %}
+<header class="tool-header">
+  <div class="container">
+    <h1><i class="fas fa-stopwatch"></i> Response Time Analyzer</h1>
+    <p>Upload your Fire/EMS data files for interactive visualization and analysis</p>
+  </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<!-- Troubleshooting Modal - Mobile-friendly with scrolling -->
+<div id="data-transfer-help" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 1000; overflow: auto;">
+  <div style="position: relative; width: 90%; max-width: 600px; margin: 20px auto; background-color: white; padding: 20px; border-radius: 5px; max-height: 90vh; overflow-y: auto;">
+    <button id="close-help-modal" style="position: sticky; top: 0; float: right; background: #cc0000; color: white; border: none; font-size: 18px; width: 30px; height: 30px; border-radius: 15px; cursor: pointer; z-index: 2;">×</button>
+    <h2>Data Transfer Troubleshooting</h2>
+    <p>If you're seeing this message, there may be an issue with data transfer between the Data Formatter and Response Time Analyzer.</p>
+    
+    <h3>Common Issues:</h3>
+    <ol>
+      <li><strong>Browser Privacy Settings:</strong> Some browsers or privacy extensions block sessionStorage or clear it between page navigations.</li>
+      <li><strong>Data Size:</strong> Very large datasets might exceed the browser's storage limits.</li>
+      <li><strong>Browser Compatibility:</strong> Some older browsers might have limited support for sessionStorage.</li>
+    </ol>
+    
+    <h3>Troubleshooting Steps:</h3>
+    <ol>
+      <li>Try using a different browser (Chrome or Firefox recommended)</li>
+      <li>Disable privacy extensions temporarily</li>
+      <li>Clear your browser cache and cookies</li>
+      <li>If using the Data Formatter, try downloading the file and uploading it directly to this tool</li>
+      <li>Reduce the size of your dataset (if it's very large)</li>
+    </ol>
+    
+    <p>For technical users: Check the browser console for specific error messages that might help identify the issue.</p>
+    
+    <button id="check-storage-btn" style="background-color: #0066cc; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin-top: 10px; width: 100%;">Check Storage Status</button>
+  </div>
+</div>
+
+<!-- File Upload Section -->
+<div class="file-upload-container">
+  <h2>Upload Data File</h2>
+  <!-- Upload section class added for emergency mode notifications -->
+  <div class="upload-section">
+    <!-- Emergency data notifications will be injected here -->
+  </div>
+  <div class="file-input-wrapper">
+    <input type="file" id="fileInput">
+    <button onclick="uploadFile()">Upload & Analyze</button>
+  </div>
+  <p>Accepted formats: CSV, Excel (.xls, .xlsx)</p>
+</div>
+
+<!-- Loading Indicator -->
+<div id="loading" style="display: none;">
+  ⏳ Uploading and analyzing file... Please wait.
+</div>
+
+<!-- Result Section (for any messages or quick output) -->
+<div id="result">
+  <!-- Results will be displayed here by the JavaScript -->
+  <p>Upload a file to view analytics and visualizations, or 
+  <a href="/data-formatter?tool=response-time" class="formatter-link">use the Data Formatter</a> to prepare your data first.</p>
+  <div class="formatter-info" style="background-color: #f3f9ff; padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 0.9em;">
+    <p><strong>🔍 Using the Response Time Analyzer with Data Formatter:</strong></p>
+    <p>For the best experience, ensure your data includes these key fields:</p>
+    <ul style="margin-top: 5px; padding-left: 25px;">
+      <li><strong>Unit</strong> - The responding vehicle or personnel unit</li>
+      <li><strong>Reported</strong> - When the incident was initially reported</li>
+      <li><strong>Unit Dispatched</strong> - When the unit was dispatched</li>
+      <li><strong>Unit Onscene</strong> - When the unit arrived on scene</li>
+      <li><strong>Latitude/Longitude</strong> - Coordinates for mapping</li>
+    </ul>
+    <p>The Data Formatter will help map these fields from your existing data.</p>
+  </div>
+</div>
+
+<!-- Results container for emergency mode data display -->
+<div id="results-container" style="display: none;">
+  <!-- Emergency mode results will be displayed here -->
+</div>
+
+<!-- Dashboard Section - Force visible when from formatter -->
+<div id="dashboard" {% if request.args.get('from_formatter') %}style="display: block;"{% else %}style="display: none;"{% endif %}>
+  <div class="dashboard-header">
+    <h2>📊 Data Analysis Dashboard</h2>
+    <div id="file-stats"></div>
+  </div>
+  
+  <!-- First Row: Map and Time Heatmap -->
+  <div class="dashboard-row">
+    <!-- Map visualization -->
+    <div class="dashboard-card">
+      <h3>📍 Incident Map</h3>
+      <div id="incident-map"></div>
+    </div>
+    
+    <!-- Time patterns heatmap -->
+    <div class="dashboard-card">
+      <h3>⏰ Incidents by Time (Day/Hour)</h3>
+      <div id="time-chart"></div>
+    </div>
+  </div>
+  
+  <!-- Second Row: Unit Activity and Location Charts -->
+  <div class="dashboard-row">
+    <!-- Unit activity chart -->
+    <div class="dashboard-card">
+      <h3>🚒 Unit Activity</h3>
+      <div class="chart-container">
+        <canvas id="unit-chart" width="400" height="200"></canvas>
+      </div>
+    </div>
+    
+    <!-- Location/city chart -->
+    <div class="dashboard-card">
+      <h3>🏙️ Incidents by Location</h3>
+      <div class="chart-container">
+        <canvas id="location-chart" width="400" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Data table section -->
+  <div class="dashboard-row">
+    <div class="dashboard-card full-width">
+      <h3>📋 Incident Data Table</h3>
+      <div id="data-table"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Force dashboard visible script -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Check if coming from formatter
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('from_formatter') || urlParams.has('formatter_data')) {
+      console.log("🔍 Formatter data detected - forcing dashboard visible");
+      document.getElementById('dashboard').style.display = 'block';
+      
+      // Also hide file upload container
+      const uploadContainer = document.querySelector('.file-upload-container');
+      if (uploadContainer) {
+        uploadContainer.style.display = 'none';
+      }
+      
+      // Add data message in result area
+      const resultContainer = document.getElementById('result');
+      if (resultContainer) {
+        resultContainer.innerHTML = `
+          <div style="background-color: #e3f2fd; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+            <strong>📊 Data received from Data Formatter</strong><br>
+            Charts are being created below. If they don't appear, please check console for errors.
+          </div>
+        `;
+      }
+    }
+  });
+</script>
+{% endblock %}
+
+{% block scripts %}
+<!-- DISABLE EMERGENCY MODE COMPLETELY -->
+<script>
+  // Dummy process function that does nothing
+  window.processEmergencyData = function(data) {
+    console.log("Emergency data processing disabled - data will be loaded through normal flow");
+    return false;
+  };
+  
+  console.log("Emergency mode completely bypassed - v2");
+</script>
+
+<!-- Force reload key files with a random version to break caching -->
+<script>
+  // This will force a reload of critical files for the data formatter flow
+  setTimeout(function() {
+    // Always apply cache busting for emergency-related parameters
+    if (window.location.search.indexOf('from_formatter') !== -1 ||
+        window.location.search.indexOf('formatter_data') !== -1 ||
+        window.location.pathname === '/fire-ems-dashboard') {
+      
+      console.log("🧹 Cache busting for Fire-EMS dashboard components...");
+      
+      // Add a debug message to the page
+      const debugDiv = document.createElement('div');
+      debugDiv.style.cssText = "position: fixed; bottom: 10px; right: 10px; background: rgba(33, 150, 243, 0.8); color: white; padding: 8px; font-size: 12px; z-index: 9999; border-radius: 4px;";
+      debugDiv.innerHTML = `Response Time Analyzer v2.1 (${new Date().toLocaleTimeString()})`;
+      document.body.appendChild(debugDiv);
+      setTimeout(() => debugDiv.style.opacity = "0", 10000);
+      setTimeout(() => debugDiv.remove(), 12000);
+    }
+    
+    // Force reload data-formatter.js with random version if on data formatter page
+    if (window.location.pathname === '/data-formatter') {
+      console.log("🧹 Cache busting for Data Formatter components...");
+      const timestamp = Date.now();
+      
+      // Force reload data-formatter.js
+      const formatterScript = document.createElement('script');
+      formatterScript.src = "/static/data-formatter.js?v=" + timestamp;
+      document.head.appendChild(formatterScript);
+      
+      // Force reload data-formatter-integration.js 
+      const integrationScript = document.createElement('script');
+      integrationScript.src = "/static/data-formatter-integration.js?v=" + timestamp;
+      document.head.appendChild(integrationScript);
+      
+      // Add a debug message to the page
+      const debugDiv = document.createElement('div');
+      debugDiv.style.cssText = "position: fixed; bottom: 10px; right: 10px; background: rgba(76, 175, 80, 0.8); color: white; padding: 8px; font-size: 12px; z-index: 9999; border-radius: 4px;";
+      debugDiv.innerHTML = `Data Formatter v2.1 (${new Date().toLocaleTimeString()})`;
+      document.body.appendChild(debugDiv);
+      setTimeout(() => debugDiv.style.opacity = "0", 10000);
+      setTimeout(() => debugDiv.remove(), 12000);
+    }
+  }, 500);
+</script>
+
+<!-- SKIP EMERGENCY MODE LIBRARY -->
+<script>
+  console.log("Skipping emergency mode library - disabled for stability");
+</script>
+
+<!-- Leaflet JS for Maps -->
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""
+></script>
+
+<!-- Chart syntax fix -->
+<script src="/static/js/emergency-scripts/chart-syntax-fix.js"></script>
+
+<!-- Chart Manager Script with multi-path support -->
+<script src="/static/js/emergency-scripts/chart-manager-loader.js"></script>
+
+<!-- Emergency Mode Scripts with multiple path options -->
+<script src="/static/js/emergency-scripts/fallback-loader.js"></script>
+<!-- DISABLED: This script was forcing emergency mode and interfering with formatter data flow 
+<script src="/static/js/emergency-scripts/prevent-mode-switch-loader.js"></script>
+-->
+
+<!-- Dashboard Script -->
+<script src="/static/js/emergency-scripts/dashboard-loader.js"></script>
+
+<!-- Direct Chart.js injection -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+
+<!-- Load Emergency Fix script for direct chart rendering -->
+<script src="/static/emergency-fix.js"></script>
+
+<!-- CRITICAL: Direct chart rendering fix for formatter data -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Wait a bit to ensure all resources are loaded
+    setTimeout(function() {
+      console.log("🔄 Running direct chart rendering fix...");
+      
+      // Check if there are any canvas elements with no visible charts
+      const canvases = document.querySelectorAll('canvas');
+      const emptyCanvases = Array.from(canvases).filter(canvas => {
+        const computed = window.getComputedStyle(canvas);
+        return computed.display !== 'none' && !canvas.getContext('2d').getImageData(0, 0, 1, 1).data[3];
+      });
+      
+      console.log(`Found ${emptyCanvases.length} empty canvases of ${canvases.length} total`);
+      
+      // If we found empty canvases, try to recreate charts
+      if (emptyCanvases.length > 0 || canvases.length === 0) {
+        console.log("Attempting to recreate charts directly...");
+        
+        // Check if we have data to work with
+        if (window.formattedData && Array.isArray(window.formattedData)) {
+          console.log(`Found formatted data with ${window.formattedData.length} records`);
+          
+          // Try to create unit chart
+          const unitChart = document.getElementById('unit-chart');
+          if (unitChart) {
+            try {
+              // Collect unit data
+              const unitCounts = {};
+              window.formattedData.forEach(record => {
+                if (record.Unit) {
+                  unitCounts[record.Unit] = (unitCounts[record.Unit] || 0) + 1;
+                }
+              });
+              
+              // Get top units
+              const sortedUnits = Object.entries(unitCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 8);
+                
+              if (sortedUnits.length > 0) {
+                // Create chart
+                new Chart(unitChart, {
+                  type: 'bar',
+                  data: {
+                    labels: sortedUnits.map(u => u[0]),
+                    datasets: [{
+                      label: 'Incident Count',
+                      data: sortedUnits.map(u => u[1]),
+                      backgroundColor: [
+                        'rgba(54, 162, 235, 0.6)',
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(255, 159, 64, 0.6)',
+                        'rgba(153, 102, 255, 0.6)',
+                        'rgba(255, 99, 132, 0.6)',
+                        'rgba(255, 205, 86, 0.6)',
+                        'rgba(201, 203, 207, 0.6)',
+                        'rgba(100, 120, 140, 0.6)'
+                      ]
+                    }]
+                  },
+                  options: {
+                    responsive: true,
+                    plugins: {
+                      title: {
+                        display: true,
+                        text: 'Incidents by Unit'
+                      }
+                    }
+                  }
+                });
+                console.log("✅ Unit chart created directly");
+              }
+            } catch(e) {
+              console.error("❌ Error creating unit chart:", e);
+            }
+          }
+          
+          // Try to create location chart
+          const locationChart = document.getElementById('location-chart');
+          if (locationChart) {
+            try {
+              // Collect location data
+              const locationCounts = {};
+              window.formattedData.forEach(record => {
+                const location = record['Incident City'] || 'Unknown';
+                if (location !== 'Unknown') {
+                  locationCounts[location] = (locationCounts[location] || 0) + 1;
+                }
+              });
+              
+              // Get top locations
+              const sortedLocations = Object.entries(locationCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+                
+              if (sortedLocations.length > 0) {
+                // Create chart
+                new Chart(locationChart, {
+                  type: 'pie',
+                  data: {
+                    labels: sortedLocations.map(l => l[0]),
+                    datasets: [{
+                      data: sortedLocations.map(l => l[1]),
+                      backgroundColor: [
+                        'rgba(54, 162, 235, 0.6)',
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(255, 159, 64, 0.6)',
+                        'rgba(153, 102, 255, 0.6)',
+                        'rgba(255, 99, 132, 0.6)'
+                      ]
+                    }]
+                  },
+                  options: {
+                    responsive: true,
+                    plugins: {
+                      title: {
+                        display: true,
+                        text: 'Incidents by Location'
+                      }
+                    }
+                  }
+                });
+                console.log("✅ Location chart created directly");
+              }
+            } catch(e) {
+              console.error("❌ Error creating location chart:", e);
+            }
+          }
+        } else {
+          // Try to create dummy charts to verify Chart.js is working
+          console.log("No data found, creating dummy charts to test Chart.js...");
+          
+          // Unit chart
+          const unitChart = document.getElementById('unit-chart');
+          if (unitChart) {
+            try {
+              new Chart(unitChart, {
+                type: 'bar',
+                data: {
+                  labels: ['Example Unit 1', 'Example Unit 2', 'Example Unit 3'],
+                  datasets: [{
+                    label: 'Example Data',
+                    data: [12, 19, 3],
+                    backgroundColor: ['rgba(54, 162, 235, 0.6)', 'rgba(75, 192, 192, 0.6)', 'rgba(255, 159, 64, 0.6)']
+                  }]
+                },
+                options: {
+                  responsive: true,
+                  plugins: {
+                    title: {
+                      display: true,
+                      text: 'Example Chart - No Data'
+                    }
+                  }
+                }
+              });
+              console.log("✅ Example unit chart created");
+            } catch(e) {
+              console.error("❌ Error creating example unit chart:", e);
+            }
+          }
+          
+          // Location chart
+          const locationChart = document.getElementById('location-chart');
+          if (locationChart) {
+            try {
+              new Chart(locationChart, {
+                type: 'pie',
+                data: {
+                  labels: ['Example Location 1', 'Example Location 2', 'Example Location 3'],
+                  datasets: [{
+                    data: [5, 10, 3],
+                    backgroundColor: ['rgba(54, 162, 235, 0.6)', 'rgba(75, 192, 192, 0.6)', 'rgba(255, 159, 64, 0.6)']
+                  }]
+                },
+                options: {
+                  responsive: true,
+                  plugins: {
+                    title: {
+                      display: true,
+                      text: 'Example Chart - No Data'
+                    }
+                  }
+                }
+              });
+              console.log("✅ Example location chart created");
+            } catch(e) {
+              console.error("❌ Error creating example location chart:", e);
+            }
+          }
+        }
+      } else {
+        console.log("✅ Charts appear to be rendered properly, no fix needed");
+      }
+    }, 3000); // Wait 3 seconds to ensure everything is loaded
+  });
+</script>
+{% endblock %}

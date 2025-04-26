@@ -1,0 +1,40 @@
+Incident ID,Incident Date,Incident Time,Incident Type,Priority,Responding Station,Address,City,Latitude,Longitude
+INC-2023-10001,2023-10-01,08:15:23,"Medical Emergency",High,101,"18845 N Camino Del Sol","Sun City West",33.6776,-112.2973
+INC-2023-10002,2023-10-01,09:30:15,"Structure Fire",High,102,"20598 N Sunglow Dr","Sun City West",33.6907,-112.2753
+INC-2023-10003,2023-10-01,10:45:37,"Traffic Collision",Medium,103,"13250 W Deer Valley Dr","Sun City West",33.6689,-112.3456
+INC-2023-10004,2023-10-01,11:20:12,"Medical Emergency",Medium,104,"25012 N 119th Ave","Sun City",33.7231,-112.3169
+INC-2023-10005,2023-10-01,12:05:45,"Brush Fire",Medium,106,"20199 W Patton Rd","Wittmann",33.8432,-112.3814
+INC-2023-10006,2023-10-01,13:15:33,"Medical Emergency",High,231,"25320 S Sun Lakes Blvd","Sun Lakes",33.2092,-111.8567
+INC-2023-10007,2023-10-01,14:45:22,"Gas Leak",High,232,"25130 S Alma School Rd","Sun Lakes",33.2094,-111.8428
+INC-2023-10008,2023-10-01,15:30:11,"Structure Fire",High,321,"4780 N 190th Ave","Litchfield Park",33.5079,-112.5401
+INC-2023-10009,2023-10-01,16:20:45,"Medical Emergency",Medium,324,"25150 W MC85","Buckeye",33.4389,-112.5919
+INC-2023-10010,2023-10-01,17:10:32,"Traffic Collision",High,326,"19850 W Arlington Rd","Buckeye",33.3556,-112.4517
+INC-2023-10011,2023-10-01,18:25:17,"Medical Emergency",Medium,328,"29876 W Taylor St","Buckeye",33.4588,-112.6553
+INC-2023-10012,2023-10-01,19:45:29,"Structure Fire",High,329,"26205 W Beardsley Pkwy","Buckeye",33.6571,-112.6052
+INC-2023-10013,2023-10-01,20:30:14,"Medical Emergency",Medium,341,"36420 W Salome Hwy","Tonopah",33.4945,-112.9405
+INC-2023-10014,2023-10-02,07:10:25,"Medical Emergency",Medium,101,"19105 N Camino Del Sol","Sun City West",33.6812,-112.2966
+INC-2023-10015,2023-10-02,08:30:38,"Medical Emergency",High,102,"20730 N Stardust Blvd","Sun City West",33.6922,-112.2733
+INC-2023-10016,2023-10-02,09:45:52,"Traffic Collision",High,103,"13500 W Deer Valley Dr","Sun City West",33.6694,-112.3491
+INC-2023-10017,2023-10-02,10:15:19,"Medical Emergency",Medium,104,"24880 N 118th Ave","Sun City",33.7223,-112.3164
+INC-2023-10018,2023-10-02,11:40:29,"Medical Emergency",Medium,106,"20400 W Patton Rd","Wittmann",33.8425,-112.3834
+INC-2023-10019,2023-10-02,12:55:41,"Structure Fire",High,231,"25530 S Sun Lakes Blvd","Sun Lakes",33.2076,-112.8582
+INC-2023-10020,2023-10-02,13:20:17,"Medical Emergency",Medium,232,"24920 S Alma School Rd","Sun Lakes",33.2112,-111.8408
+INC-2023-10021,2023-10-02,14:35:28,"Medical Emergency",High,321,"4650 N 188th Ave","Litchfield Park",33.5087,-112.5376
+INC-2023-10022,2023-10-02,15:50:39,"Hazardous Materials",High,324,"25300 W MC85","Buckeye",33.4381,-112.5939
+INC-2023-10023,2023-10-02,16:25:51,"Medical Emergency",Medium,326,"20050 W Arlington Rd","Buckeye",33.3549,-112.4537
+INC-2023-10024,2023-10-02,17:40:12,"Medical Emergency",Medium,328,"30020 W Taylor St","Buckeye",33.4583,-112.6572
+INC-2023-10025,2023-10-02,18:15:33,"Traffic Collision",High,329,"26080 W Beardsley Pkwy","Buckeye",33.6576,-112.6032
+INC-2023-10026,2023-10-02,19:30:45,"Medical Emergency",Medium,341,"36600 W Salome Hwy","Tonopah",33.4938,-112.9429
+INC-2023-10027,2023-10-03,08:05:22,"Medical Emergency",Medium,101,"18930 N Camino Del Sol","Sun City West",33.6785,-112.2969
+INC-2023-10028,2023-10-03,09:20:37,"Medical Emergency",Medium,102,"20550 N Stardust Blvd","Sun City West",33.6895,-112.2744
+INC-2023-10029,2023-10-03,10:35:48,"Medical Emergency",High,103,"13375 W Deer Valley Dr","Sun City West",33.6690,-112.3467
+INC-2023-10030,2023-10-03,11:50:59,"Traffic Collision",High,104,"24975 N 120th Ave","Sun City",33.7227,-112.3175
+INC-2023-10031,2023-10-03,12:15:14,"Brush Fire",Medium,106,"20250 W Patton Rd","Wittmann",33.8430,-112.3818
+INC-2023-10032,2023-10-03,13:30:26,"Medical Emergency",Medium,231,"25400 S Sun Lakes Blvd","Sun Lakes",33.2088,-111.8570
+INC-2023-10033,2023-10-03,14:45:37,"Medical Emergency",Medium,232,"25075 S Alma School Rd","Sun Lakes",33.2097,-111.8423
+INC-2023-10034,2023-10-03,15:10:48,"Structure Fire",High,321,"4700 N 190th Ave","Litchfield Park",33.5080,-112.5393
+INC-2023-10035,2023-10-03,16:25:59,"Medical Emergency",Medium,324,"25175 W MC85","Buckeye",33.4387,-112.5923
+INC-2023-10036,2023-10-03,17:40:11,"Medical Emergency",Medium,326,"19900 W Arlington Rd","Buckeye",33.3553,-112.4520
+INC-2023-10037,2023-10-03,18:55:22,"Medical Emergency",High,328,"29900 W Taylor St","Buckeye",33.4587,-112.6555
+INC-2023-10038,2023-10-03,19:20:33,"Traffic Collision",High,329,"26150 W Beardsley Pkwy","Buckeye",33.6572,-112.6048
+INC-2023-10039,2023-10-03,20:35:44,"Medical Emergency",Medium,341,"36550 W Salome Hwy","Tonopah",33.4940,-112.9422
