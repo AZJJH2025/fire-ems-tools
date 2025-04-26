@@ -6,7 +6,7 @@ services:
     env: python
     plan: free
     buildCommand: chmod +x ./build_simple.sh && ./build_simple.sh
-    startCommand: gunicorn app:create_app
+    startCommand: gunicorn app:create_app --log-level debug
     envVars:
       - key: PYTHON_VERSION
         value: 3.9.0
