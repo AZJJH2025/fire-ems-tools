@@ -41,7 +41,11 @@
     
     // Create script element
     const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/@material-ui/core@4.12.3/umd/material-ui.production.min.js';
+    // Try to use local file first, fall back to CDN
+    const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    script.src = isDev 
+        ? 'https://cdn.jsdelivr.net/npm/@material-ui/core@4.12.3/umd/material-ui.production.min.js'
+        : '/static/vendor/material-ui/material-ui.production.min.js';
     script.crossOrigin = 'anonymous';
     
     // Set up load handlers
@@ -97,7 +101,11 @@
     
     // Create script element
     const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/react-beautiful-dnd@13.1.0/dist/react-beautiful-dnd.min.js';
+    // Try to use local file first, fall back to CDN
+    const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    script.src = isDev 
+        ? 'https://cdn.jsdelivr.net/npm/react-beautiful-dnd@13.1.0/dist/react-beautiful-dnd.min.js'
+        : '/static/vendor/react-beautiful-dnd/react-beautiful-dnd.min.js';
     script.crossOrigin = 'anonymous';
     
     // Set up load handlers
