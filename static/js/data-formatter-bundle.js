@@ -765,18 +765,80 @@
     Logger.info(`Successfully transformed ${transformedData.length} rows of data`);
   };
   
+  // Helper function to hide all loading spinners
+  function hideAllSpinners() {
+    Logger.info("Hiding all loading spinners");
+    const spinners = document.querySelectorAll('.loading-container, .loading-spinner, .processing');
+    spinners.forEach(spinner => {
+      if (spinner) {
+        spinner.style.display = 'none';
+      }
+    });
+  }
+  
   // Helper function to update output preview with transformed data
   function updateOutputPreview(data) {
-    if (!data || !data.length) return;
-    
-    const previewContainer = document.getElementById('output-preview');
-    if (!previewContainer) {
-      Logger.error("Output preview container not found");
+    Logger.info(`updateOutputPreview called with ${data ? data.length : 0} rows`);
+    console.log("OUTPUT PREVIEW DATA:", data); // CRITICAL DEBUG - Logs the actual data
+
+    if (!data || !data.length) {
+      Logger.error("No data provided to updateOutputPreview");
       return;
     }
     
+    // Hide all loading spinners first
+    hideAllSpinners();
+    
+    // Try multiple ways to find the output preview container
+    let previewContainer = document.getElementById('output-preview');
+    
+    if (!previewContainer) {
+      Logger.warn("Output preview not found by ID, trying querySelector...");
+      previewContainer = document.querySelector('#output-preview');
+    }
+    
+    if (!previewContainer) {
+      Logger.warn("Output preview not found by querySelector, trying by class...");
+      previewContainer = document.querySelector('.data-preview');
+    }
+    
+    if (!previewContainer) {
+      Logger.error("Output preview container not found - critical path issue");
+      console.error("OUTPUT PREVIEW ELEMENT MISSING - Cannot display transformed data");
+      
+      // Find all elements that could contain it
+      const allDivs = document.querySelectorAll('div');
+      const possibleContainers = Array.from(allDivs).filter(div => 
+        div.id?.includes('preview') || 
+        div.className?.includes('preview')
+      );
+      console.log("POSSIBLE PREVIEW CONTAINERS:", possibleContainers);
+      
+      // Last resort - try to find/recreate the preview container
+      const previewSection = document.querySelector('.preview-container');
+      if (previewSection) {
+        Logger.info("Found preview container parent, recreating output preview");
+        previewSection.innerHTML = `
+          <h3>Output Preview</h3>
+          <div id="output-preview" class="data-preview"></div>
+        `;
+        previewContainer = document.getElementById('output-preview');
+      }
+      
+      if (!previewContainer) {
+        Logger.error("Could not find or recreate output preview container - giving up");
+        return;
+      }
+    }
+    
+    Logger.info(`Found output preview container: ${previewContainer.id} with class ${previewContainer.className}`);
+    
+    // Ensure preview container is visible
+    previewContainer.style.display = 'block';
+    
     // Clear previous content
     previewContainer.innerHTML = '';
+    console.log("CLEARED PREVIEW CONTAINER");
     
     // Create table for preview (show up to 50 rows for performance)
     const previewRows = data.slice(0, 50);
