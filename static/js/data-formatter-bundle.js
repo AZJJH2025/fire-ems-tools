@@ -281,15 +281,35 @@
   
   window.enableDownloadButtons = function() {
     Logger.info("enableDownloadButtons called");
-    // Find download buttons and enable them
+    
+    // Find download buttons by both ID and class
     const downloadButtons = document.querySelectorAll('.download-btn');
-    downloadButtons.forEach(button => {
+    const downloadBtn = document.getElementById('download-btn');
+    const sendToToolBtn = document.getElementById('send-to-tool-btn');
+    
+    // Add specific buttons to our list
+    const allButtons = [...downloadButtons];
+    if (downloadBtn && !allButtons.includes(downloadBtn)) {
+      allButtons.push(downloadBtn);
+    }
+    if (sendToToolBtn && !allButtons.includes(sendToToolBtn)) {
+      allButtons.push(sendToToolBtn);
+    }
+    
+    // Enable all buttons
+    allButtons.forEach(button => {
       if (button) {
+        Logger.info(`Enabling button: ${button.id || 'unnamed'}`);
         button.disabled = false;
         button.classList.remove('disabled');
         
+        // Add active class for styling
+        if (!button.classList.contains('active')) {
+          button.classList.add('active');
+        }
+        
         // Add event listeners for download functionality
-        if (!button.getAttribute('data-listener-added')) {
+        if (button.id === 'download-btn' && !button.getAttribute('data-listener-added')) {
           button.setAttribute('data-listener-added', 'true');
           button.addEventListener('click', function(e) {
             e.preventDefault();
@@ -299,6 +319,8 @@
         }
       }
     });
+    
+    Logger.info(`Enabled ${allButtons.length} buttons for download/send operations`);
   };
   
   // Function to download transformed data in various formats
@@ -813,6 +835,13 @@
   
   // Handle file input change - process uploaded file
   function initFileInputHandler() {
+    // Check if we already have transformed data and enable buttons if needed
+    if (window.formatterState && window.formatterState.transformedData && 
+        window.formatterState.transformedData.length > 0) {
+      Logger.info("Found existing transformed data during initialization, enabling download buttons");
+      setTimeout(window.enableDownloadButtons, 500); // Delay to ensure DOM is ready
+    }
+    
     const fileInput = document.getElementById('data-file');
     if (!fileInput) {
       Logger.error("File input element not found");
