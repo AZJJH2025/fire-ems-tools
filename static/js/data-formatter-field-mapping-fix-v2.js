@@ -48,8 +48,8 @@
       // Set debug mode if URL parameter present
       this.state.debugMode = new URLSearchParams(window.location.search).has('debug_formatter');
       
-      // Directly load the React component file
-      this.loadReactComponent();
+      // Load the dependency loader first
+      this.loadDependencyLoader();
       
       // Patch the map fields button click handler
       this.patchMapFieldsButton();
@@ -63,15 +63,26 @@
       console.log('[FieldMappingFix] Initialization complete');
     },
 
-    // Load the React component directly
-    loadReactComponent: function() {
+    // Load the dependency loader which will handle all React components in the proper order
+    loadDependencyLoader: function() {
+      // Check if already loaded
+      if (window.DependencyLoader) {
+        console.log('[FieldMappingFix] Dependency loader already available');
+        return;
+      }
+      
       const script = document.createElement('script');
-      script.src = this.config.reactComponentPath;
+      script.src = '/static/js/data-formatter-dependency-loader.js';
       script.onload = () => {
-        console.log('[FieldMappingFix] React component loaded successfully');
+        console.log('[FieldMappingFix] Dependency loader loaded successfully');
+        
+        // Listen for dependencies loaded event
+        window.addEventListener('dataFormatterDependenciesLoaded', () => {
+          console.log('[FieldMappingFix] All dependencies loaded successfully');
+        });
       };
       script.onerror = () => {
-        console.error('[FieldMappingFix] Failed to load React component');
+        console.error('[FieldMappingFix] Failed to load dependency loader');
       };
       document.head.appendChild(script);
     },
@@ -219,12 +230,52 @@
         
         console.log('[FieldMappingFix] Column mapping container found:', columnMappingContainer);
         
+        // Show loading state
+        columnMappingContainer.innerHTML = '<div class="loading-container"><div class="loading-spinner"></div><p>Loading field mapping interface...</p></div>';
+        
+        // Wait for dependency loader to finish if it's still loading
+        if (window.DependencyLoader && !window.DependencyLoader.allDependenciesLoaded()) {
+          console.log('[FieldMappingFix] Waiting for dependencies to load...');
+          
+          // Add a listener for when dependencies are loaded
+          window.addEventListener('dataFormatterDependenciesLoaded', function() {
+            console.log('[FieldMappingFix] Dependencies loaded, retrying component initialization');
+            setTimeout(() => initializeReactComponent(), 100);
+          }, { once: true });
+          
+          return false;
+        }
+        
         // Check if React and DataFormatterUI are loaded
         if (!window.React || !window.ReactDOM || !window.DataFormatterUI) {
           console.error('[FieldMappingFix] Required libraries not loaded:',
             { React: !!window.React, ReactDOM: !!window.ReactDOM, DataFormatterUI: !!window.DataFormatterUI });
           
-          // Show error message
+          // Try to load them via the dependency loader
+          if (window.DependencyLoader) {
+            window.DependencyLoader.loadAllDependencies()
+              .then(() => {
+                console.log('[FieldMappingFix] Dependencies loaded via dependency loader, retrying');
+                setTimeout(() => initializeReactComponent(), 100);
+              })
+              .catch(error => {
+                console.error('[FieldMappingFix] Failed to load dependencies:', error);
+                
+                // Show error message
+                columnMappingContainer.innerHTML = `
+                  <div class="error-container" style="padding: 20px; background: #f8d7da; color: #721c24; border-radius: 5px; text-align: center;">
+                    <h3>Error Loading Libraries</h3>
+                    <p>Could not load required JavaScript libraries for field mapping.</p>
+                    <p>Technical details: ${error.message}</p>
+                    <button class="primary-btn" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; margin-top: 10px; cursor: pointer;" onclick="window.showFormatterPanels()">Return to Formatter</button>
+                  </div>
+                `;
+              });
+            
+            return false;
+          }
+          
+          // Show error message if dependency loader isn't available
           columnMappingContainer.innerHTML = `
             <div class="error-container" style="padding: 20px; background: #f8d7da; color: #721c24; border-radius: 5px; text-align: center;">
               <h3>Error Loading Libraries</h3>
