@@ -11,9 +11,12 @@ from flask_login import LoginManager
 import os
 import logging
 import traceback
+import re
+import hashlib
 from datetime import datetime, timedelta
 import json
 import secrets
+from werkzeug.routing import BaseConverter
 from app_utils import init_limiter, safe_limit, require_api_key
 from asset_utils import init_asset_utils
 
@@ -68,6 +71,15 @@ def create_app(config_name='default'):
     app = Flask(__name__, 
                 template_folder=template_folder,
                 static_folder=None)
+                
+    # Create hash regex converter for dynamic routes
+    class HashConverter(BaseConverter):
+        def __init__(self, url_map):
+            super(HashConverter, self).__init__(url_map)
+            self.regex = r'[a-f0-9]{8,64}'  # Match hex hash strings of 8-64 chars
+
+    # Register the custom converter
+    app.url_map.converters['hash'] = HashConverter
     
     # Initialize rate limiter
     init_limiter(app)
@@ -94,8 +106,34 @@ def create_app(config_name='default'):
     # Configure security headers
     @app.after_request
     def add_security_headers(response):
-        # Set Content Security Policy
-        response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; connect-src 'self'"
+        # Determine if we're in development or production mode
+        is_dev = app.config.get('ENV', 'development') == 'development'
+        
+        if is_dev:
+            # Development CSP - more relaxed to allow external resources during development
+            csp_directives = [
+                "default-src 'self'",
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net", 
+                "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net https://fonts.googleapis.com",
+                "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net",
+                "img-src 'self' data: https:",
+                "connect-src 'self'",
+                "report-uri /api/csp-report"
+            ]
+        else:
+            # Production CSP - strict with self-hosted fonts and no external dependencies
+            csp_directives = [
+                "default-src 'self'",
+                "script-src 'self'", 
+                "style-src 'self'",
+                "font-src 'self'",
+                "img-src 'self' data:",
+                "connect-src 'self'",
+                "report-uri /api/csp-report"
+            ]
+        
+        # Join all directives with semicolons
+        response.headers['Content-Security-Policy'] = "; ".join(csp_directives)
         
         # Set X-Content-Type-Options
         response.headers['X-Content-Type-Options'] = 'nosniff'
@@ -131,7 +169,8 @@ def create_app(config_name='default'):
     # Initialize extensions
     db.init_app(app)
     
-    # Set up Flask-Login
+    # Set up Flask-Login using the global login_manager instance
+    global login_manager
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
     login_manager.login_message_category = 'info'
@@ -155,13 +194,251 @@ def create_app(config_name='default'):
     from static_middleware import register_static_handler
     register_static_handler(app)
     
-    # Special route for data-formatter-bundle.js to handle both with and without query parameters
+    # Enhanced route for data-formatter-bundle.js with robust error handling and diagnostics
     @app.route('/static/data-formatter-bundle.js')
     def df_bundle():
-        # Always return the real bundle regardless of query-string
-        return send_from_directory('static/js',
-                                 'data-formatter-bundle.js',
-                                 mimetype='text/javascript')
+        """Serve data-formatter-bundle.js with comprehensive error handling and diagnostics.
+        This route handles both direct requests and requests with query parameters."""
+        import os
+        import logging
+        import glob
+        from flask import send_from_directory, make_response, current_app, request
+        
+        # Setup dedicated logger for bundle issues
+        bundle_logger = logging.getLogger('app.data_formatter_bundle')
+        if not bundle_logger.handlers:
+            file_handler = logging.FileHandler('data_formatter_bundle.log')
+            file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+            bundle_logger.addHandler(file_handler)
+            bundle_logger.setLevel(logging.DEBUG)
+            
+        bundle_logger.info(f"Bundle request received with query: {request.query_string.decode('utf-8') if request.query_string else 'None'}")
+            
+        # Set the correct paths for the bundle (check both locations)
+        static_dir = os.path.join(os.getcwd(), 'static')
+        js_dir = os.path.join(static_dir, 'js')
+        bundle_path_js_dir = os.path.join(js_dir, 'data-formatter-bundle.js')
+        bundle_path_static_dir = os.path.join(static_dir, 'data-formatter-bundle.js')
+        
+        # Check which version of the bundle file exists
+        if os.path.exists(bundle_path_js_dir) and os.path.getsize(bundle_path_js_dir) > 0:
+            bundle_path = bundle_path_js_dir
+            serving_dir = js_dir
+            file_name = 'data-formatter-bundle.js'
+            bundle_logger.info(f"Found bundle in JS directory: {bundle_path}")
+        elif os.path.exists(bundle_path_static_dir) and os.path.getsize(bundle_path_static_dir) > 0:
+            bundle_path = bundle_path_static_dir
+            serving_dir = static_dir
+            file_name = 'data-formatter-bundle.js'
+            bundle_logger.info(f"Found bundle in static directory: {bundle_path}")
+        else:
+            bundle_logger.error("Bundle file not found in any known location")
+            
+            # Try to find any similarly named files to help diagnose issues
+            all_similar_files = []
+            try:
+                # Look in js directory
+                if os.path.exists(js_dir):
+                    js_similar_files = glob.glob(os.path.join(js_dir, 'data-formatter*.js'))
+                    all_similar_files.extend(js_similar_files)
+                    bundle_logger.info(f"Found similar files in js dir: {', '.join(js_similar_files)}")
+                
+                # Look in static directory
+                static_similar_files = glob.glob(os.path.join(static_dir, 'data-formatter*.js'))
+                all_similar_files.extend(static_similar_files)
+                bundle_logger.info(f"Found similar files in static dir: {', '.join(static_similar_files)}")
+                
+                # Look in react-data-formatter directory
+                react_dir = os.path.join(js_dir, 'react-data-formatter', 'dist')
+                if os.path.exists(react_dir):
+                    react_similar_files = glob.glob(os.path.join(react_dir, 'data-formatter*.js'))
+                    all_similar_files.extend(react_similar_files)
+                    bundle_logger.info(f"Found similar files in react dir: {', '.join(react_similar_files)}")
+                
+                # If we found any files, use the newest/largest one
+                if all_similar_files:
+                    # Sort by modification time, newest first
+                    all_similar_files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+                    # Use the newest file
+                    bundle_path = all_similar_files[0]
+                    serving_dir = os.path.dirname(bundle_path)
+                    file_name = os.path.basename(bundle_path)
+                    bundle_logger.info(f"Selected alternative bundle: {bundle_path}")
+                else:
+                    bundle_logger.error("No alternative bundle files found")
+                    return "Error: No data formatter bundle found in any location", 404
+            except Exception as e:
+                bundle_logger.error(f"Error finding similar files: {str(e)}")
+                return f"Error finding data-formatter-bundle.js: {str(e)}", 500
+        
+        try:
+            # Use send_from_directory for most reliable file serving
+            bundle_logger.info(f"Serving bundle from {serving_dir}, file: {file_name}")
+            response = send_from_directory(serving_dir, 
+                                        file_name,
+                                        mimetype='application/javascript')
+            
+            # Ensure correct content type
+            response.headers['Content-Type'] = 'application/javascript'
+            
+            # Add cache control to improve performance
+            response.headers['Cache-Control'] = 'public, max-age=3600'
+            
+            # Add custom header for diagnostics
+            response.headers['X-Bundle-Server'] = 'Flask-DataFormatter-Route'
+            response.headers['X-Bundle-Path'] = bundle_path
+            
+            bundle_logger.info(f"Bundle served successfully: {bundle_path}")
+            return response
+        except Exception as e:
+            bundle_logger.error(f"Error serving bundle: {str(e)}")
+            
+            # Fallback to direct file serving if send_from_directory fails
+            try:
+                bundle_logger.info(f"Trying direct file reading as fallback from {bundle_path}")
+                with open(bundle_path, 'rb') as f:
+                    content = f.read()
+                
+                # Quick validation that content is JavaScript, not HTML error page
+                content_start = content[:100].decode('utf-8', errors='ignore').strip()
+                if content_start.startswith('<!DOCTYPE') or content_start.startswith('<html'):
+                    bundle_logger.error(f"Content appears to be HTML, not JavaScript: {content_start}")
+                    return "Error: Invalid bundle content (HTML detected)", 500
+                
+                # Create response with proper headers
+                response = make_response(content)
+                response.headers['Content-Type'] = 'application/javascript'
+                response.headers['Content-Length'] = str(len(content))
+                response.headers['X-Bundle-Server'] = 'Flask-DataFormatter-Fallback'
+                response.headers['X-Bundle-Path'] = bundle_path
+                response.headers['Cache-Control'] = 'public, max-age=3600'
+                
+                bundle_logger.info(f"Bundle served successfully via fallback method")
+                return response
+            except Exception as fallback_error:
+                bundle_logger.error(f"Fallback serving also failed: {str(fallback_error)}")
+                return f"Critical error serving bundle: {str(fallback_error)}", 500
+                
+    # Enhanced route for data-formatter-bundle.js with hash in filename for cache busting
+    @app.route('/static/data-formatter-bundle.<hash:file_hash>.js')
+    def df_bundle_hashed(file_hash):
+        """Serve data-formatter-bundle.js with hash in filename.
+        This route allows cache-busting by using bundle name with hash."""
+        import os
+        import logging
+        import glob
+        from flask import send_from_directory, make_response, current_app, request
+        
+        # Setup dedicated logger for bundle issues
+        bundle_logger = logging.getLogger('app.data_formatter_bundle')
+        if not bundle_logger.handlers:
+            file_handler = logging.FileHandler('data_formatter_bundle.log')
+            file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+            bundle_logger.addHandler(file_handler)
+            bundle_logger.setLevel(logging.DEBUG)
+            
+        bundle_logger.info(f"Hashed bundle request received with hash: {file_hash}")
+            
+        # Set the correct paths for the bundle (check both locations)
+        static_dir = os.path.join(os.getcwd(), 'static')
+        js_dir = os.path.join(static_dir, 'js')
+        bundle_path_js_dir = os.path.join(js_dir, 'data-formatter-bundle.js')
+        bundle_path_static_dir = os.path.join(static_dir, 'data-formatter-bundle.js')
+        
+        # Check which version of the bundle file exists
+        if os.path.exists(bundle_path_js_dir) and os.path.getsize(bundle_path_js_dir) > 0:
+            bundle_path = bundle_path_js_dir
+            serving_dir = js_dir
+            file_name = 'data-formatter-bundle.js'
+            bundle_logger.info(f"Found bundle in JS directory for hashed route: {bundle_path}")
+        elif os.path.exists(bundle_path_static_dir) and os.path.getsize(bundle_path_static_dir) > 0:
+            bundle_path = bundle_path_static_dir
+            serving_dir = static_dir
+            file_name = 'data-formatter-bundle.js'
+            bundle_logger.info(f"Found bundle in static directory for hashed route: {bundle_path}")
+        else:
+            bundle_logger.error("Bundle file not found in any known location for hashed route")
+            
+            # Try to find any similarly named files to help diagnose issues
+            all_similar_files = []
+            try:
+                # Look in js directory
+                if os.path.exists(js_dir):
+                    js_similar_files = glob.glob(os.path.join(js_dir, 'data-formatter*.js'))
+                    all_similar_files.extend(js_similar_files)
+                    bundle_logger.info(f"Found similar files in js dir: {', '.join(js_similar_files)}")
+                
+                # Look in static directory
+                static_similar_files = glob.glob(os.path.join(static_dir, 'data-formatter*.js'))
+                all_similar_files.extend(static_similar_files)
+                bundle_logger.info(f"Found similar files in static dir: {', '.join(static_similar_files)}")
+                
+                # Look in react-data-formatter directory
+                react_dir = os.path.join(js_dir, 'react-data-formatter', 'dist')
+                if os.path.exists(react_dir):
+                    react_similar_files = glob.glob(os.path.join(react_dir, 'data-formatter*.js'))
+                    all_similar_files.extend(react_similar_files)
+                    bundle_logger.info(f"Found similar files in react dir: {', '.join(react_similar_files)}")
+                
+                # If we found any files, use the newest/largest one
+                if all_similar_files:
+                    # Sort by modification time, newest first
+                    all_similar_files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+                    # Use the newest file
+                    bundle_path = all_similar_files[0]
+                    serving_dir = os.path.dirname(bundle_path)
+                    file_name = os.path.basename(bundle_path)
+                    bundle_logger.info(f"Selected alternative bundle for hashed route: {bundle_path}")
+                else:
+                    bundle_logger.error("No alternative bundle files found for hashed route")
+                    return "Error: No data formatter bundle found in any location", 404
+            except Exception as e:
+                bundle_logger.error(f"Error finding similar files for hashed route: {str(e)}")
+                return f"Error finding data-formatter-bundle.js for hashed route: {str(e)}", 500
+        
+        try:
+            # Use send_from_directory for most reliable file serving
+            bundle_logger.info(f"Serving hashed bundle from {serving_dir}, file: {file_name}")
+            response = send_from_directory(serving_dir, 
+                                      file_name,
+                                      mimetype='application/javascript')
+            
+            # Ensure correct content type
+            response.headers['Content-Type'] = 'application/javascript'
+            
+            # Add stronger cache control for hashed resources
+            response.headers['Cache-Control'] = 'public, max-age=31536000'  # 1 year
+            
+            # Add custom header for diagnostics
+            response.headers['X-Bundle-Server'] = 'Flask-DataFormatter-Hashed'
+            response.headers['X-Bundle-Hash'] = file_hash
+            response.headers['X-Bundle-Path'] = bundle_path
+            
+            bundle_logger.info(f"Hashed bundle served successfully: {bundle_path}")
+            return response
+        except Exception as e:
+            bundle_logger.error(f"Error serving hashed bundle: {str(e)}")
+            
+            # Fallback to direct file serving if send_from_directory fails
+            try:
+                bundle_logger.info(f"Trying direct file reading as fallback from {bundle_path}")
+                with open(bundle_path, 'rb') as f:
+                    content = f.read()
+                
+                # Create response with proper headers
+                response = make_response(content)
+                response.headers['Content-Type'] = 'application/javascript'
+                response.headers['Content-Length'] = str(len(content))
+                response.headers['X-Bundle-Server'] = 'Flask-DataFormatter-Hashed-Fallback'
+                response.headers['X-Bundle-Hash'] = file_hash
+                response.headers['X-Bundle-Path'] = bundle_path
+                response.headers['Cache-Control'] = 'public, max-age=31536000'  # 1 year
+                
+                bundle_logger.info(f"Hashed bundle served successfully via fallback method")
+                return response
+            except Exception as fallback_error:
+                bundle_logger.error(f"Fallback serving for hashed bundle also failed: {str(fallback_error)}")
+                return f"Critical error serving hashed bundle: {str(fallback_error)}", 500
         
     # Direct static file serving for emergencies - Enhanced robust version
     @app.route('/app-static/<path:filename>')
@@ -831,6 +1108,21 @@ def create_app(config_name='default'):
         """Demo page for the MapFieldsManager Utility"""
         return render_template('field-mapping-demo.html')
     
+    @app.route('/field-mapping-demo-secure')
+    def field_mapping_demo_secure():
+        """Demo page for the MapFieldsManager Utility with self-hosted fonts and CSP"""
+        return render_template('field-mapping-demo-selfhosted.html')
+        
+    @app.route('/field-mapping-enhanced')
+    def field_mapping_enhanced():
+        """Enhanced demo page with offline functionality and performance optimizations"""
+        return render_template('field-mapping-enhanced.html')
+        
+    @app.route('/csp-fonts-demo')
+    def csp_fonts_demo():
+        """Demo page for self-hosted fonts with strict CSP"""
+        return send_file('static/demo-csp.html')
+    
     # MapFields Availability Test Page
     @app.route('/test-mapfields')
     def test_mapfields():
@@ -848,6 +1140,153 @@ def create_app(config_name='default'):
     def test_call_density_integration():
         """Test page for Call Density Heatmap integration with DataStandardizer"""
         return send_file('static/test-call-density-integration.html')
+        
+    @app.route('/api/csp-report', methods=['POST'])
+    def csp_report():
+        """
+        Endpoint to receive CSP violation reports.
+        """
+        import json
+        import logging
+        
+        # Setup dedicated logger for CSP reports
+        csp_logger = logging.getLogger('app.csp_reports')
+        if not csp_logger.handlers:
+            file_handler = logging.FileHandler('csp_violations.log')
+            file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+            csp_logger.addHandler(file_handler)
+            csp_logger.setLevel(logging.INFO)
+        
+        try:
+            # Check if request has JSON content
+            report = request.get_json(silent=True)
+            
+            # Handle both standard CSP reports and browser's SecurityPolicyViolation reports
+            if report:
+                if 'csp-report' in report:
+                    # Standard CSP report structure
+                    violation = report['csp-report']
+                    csp_logger.warning(f"CSP Violation: {json.dumps(violation)}")
+                else:
+                    # Direct report format
+                    csp_logger.warning(f"CSP Violation: {json.dumps(report)}")
+            else:
+                # Attempt to read raw data if JSON parsing failed
+                raw_data = request.data.decode('utf-8')
+                csp_logger.warning(f"CSP Violation (raw data): {raw_data}")
+            
+            # Always return 204 No Content
+            return '', 204
+        except Exception as e:
+            csp_logger.error(f"Error processing CSP report: {str(e)}")
+            return '', 500
+            
+    @app.route('/api/store-field-mapping', methods=['POST'])
+    def store_field_mapping():
+        """
+        Endpoint to store field mappings for offline synchronization.
+        """
+        import json
+        import logging
+        import os
+        
+        # Setup dedicated logger for field mappings
+        mapping_logger = logging.getLogger('app.field_mappings')
+        if not mapping_logger.handlers:
+            file_handler = logging.FileHandler('field_mappings.log')
+            file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+            mapping_logger.addHandler(file_handler)
+            mapping_logger.setLevel(logging.INFO)
+        
+        try:
+            # Check if request has JSON content
+            data = request.get_json(silent=True)
+            
+            if not data:
+                return jsonify({'success': False, 'error': 'No data provided'}), 400
+                
+            # Validate required fields
+            if 'id' not in data or 'tool' not in data or 'mappings' not in data:
+                return jsonify({'success': False, 'error': 'Missing required fields'}), 400
+                
+            # Log mapping
+            mapping_logger.info(f"Received field mapping: {data['id']} for tool: {data['tool']}")
+            
+            # Store mapping in database (simplified version just stores to file)
+            mappings_dir = os.path.join(os.getcwd(), 'data', 'mappings')
+            os.makedirs(mappings_dir, exist_ok=True)
+            
+            # Create filename
+            filename = f"{data['tool']}_{data['id']}.json"
+            file_path = os.path.join(mappings_dir, filename)
+            
+            # Write to file
+            with open(file_path, 'w') as f:
+                json.dump(data, f, indent=2)
+                
+            mapping_logger.info(f"Stored mapping to file: {file_path}")
+            
+            # Return success
+            return jsonify({
+                'success': True,
+                'id': data['id'],
+                'message': 'Mapping stored successfully'
+            }), 200
+        except Exception as e:
+            mapping_logger.error(f"Error storing field mapping: {str(e)}")
+            return jsonify({'success': False, 'error': str(e)}), 500
+            
+    @app.route('/api/error-report', methods=['POST'])
+    def error_report():
+        """
+        Endpoint to receive error reports from the client.
+        """
+        import json
+        import logging
+        import os
+        
+        # Setup dedicated logger for error reports
+        error_logger = logging.getLogger('app.error_reports')
+        if not error_logger.handlers:
+            file_handler = logging.FileHandler('error_reports.log')
+            file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+            error_logger.addHandler(file_handler)
+            error_logger.setLevel(logging.INFO)
+        
+        try:
+            # Check if request has JSON content
+            report = request.get_json(silent=True)
+            
+            if not report:
+                return jsonify({'success': False, 'error': 'No report provided'}), 400
+                
+            # Log error report
+            error_logger.error(f"Client error report: {json.dumps(report)}")
+            
+            # Store report in database (simplified version just stores to file)
+            reports_dir = os.path.join(os.getcwd(), 'data', 'error_reports')
+            os.makedirs(reports_dir, exist_ok=True)
+            
+            # Create filename based on timestamp
+            filename = f"error_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{report.get('type', 'unknown')}.json"
+            file_path = os.path.join(reports_dir, filename)
+            
+            # Write to file
+            with open(file_path, 'w') as f:
+                json.dump(report, f, indent=2)
+                
+            # Return success
+            return jsonify({'success': True}), 200
+        except Exception as e:
+            error_logger.error(f"Error processing error report: {str(e)}")
+            return jsonify({'success': False, 'error': str(e)}), 500
+            
+    @app.route('/static/health-check.txt')
+    def health_check_txt():
+        """
+        Simple health check endpoint for service worker.
+        """
+        return 'OK', 200, {'Content-Type': 'text/plain'}
         
     # Call Density Heatmap File Upload Handler
     @app.route('/upload-call-data', methods=['POST'])

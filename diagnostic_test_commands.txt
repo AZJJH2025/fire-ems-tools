@@ -1,0 +1,42 @@
+# Diagnostic Test Commands for Data Formatter Bundle Fix
+
+## Check if the data-formatter-bundle.js file is accessible
+# Basic request - this should return the JS file with proper content type
+curl -i "http://localhost:5005/static/data-formatter-bundle.js"
+
+# Detailed verbose request to see all headers and request/response flow
+curl -v "http://localhost:5005/static/data-formatter-bundle.js"
+
+# Test with query parameters - should still work correctly
+curl -i "http://localhost:5005/static/data-formatter-bundle.js?v=123"
+
+# Test with Accept header to ensure proper content negotiation
+curl -i -H "Accept: application/javascript" "http://localhost:5005/static/data-formatter-bundle.js"
+
+# Test with HEAD request to verify headers without downloading content
+curl -I "http://localhost:5005/static/data-formatter-bundle.js"
+
+## Test the new error handling
+# Check if non-existent files are handled correctly with a 404 error
+curl -i "http://localhost:5005/static/data-formatter-bundle-nonexistent.js"
+
+## Verify headers in the response
+# The response should include:
+# - Content-Type: application/javascript
+# - X-Bundle-Server: Flask-DataFormatter-Route
+# - Cache-Control: public, max-age=3600
+
+## Testing diagnostic endpoint
+# Check if the diagnostic page is accessible and working
+curl -i "http://localhost:5005/diagnostic/static"
+
+# Quick validation that returned content is JavaScript, not HTML
+curl -s "http://localhost:5005/static/data-formatter-bundle.js" | head -5
+
+## Using the enhanced static serving route directly
+# Test app-static route as a fallback
+curl -i "http://localhost:5005/app-static/js/data-formatter-bundle.js"
+
+# Server restart may be required after making changes to app.py
+# Run the server with: 
+# python app.py

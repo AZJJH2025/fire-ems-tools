@@ -8,6 +8,9 @@ expose them to Jinja templates for proper static asset referencing.
 import os
 import json
 import logging
+import hashlib
+import glob
+import re
 from flask import current_app
 from functools import lru_cache
 
@@ -100,13 +103,134 @@ def get_asset_path(name, manifest_name='react-data-formatter'):
         # Default fallback path
         return f'js/{manifest_name}/dist/{name}'
 
+# Global cache of computed hashes to avoid re-computing
+# Format: {file_path: {'hash': hash_value, 'timestamp': last_computed}}
+_asset_hash_cache = {}
+
+def compute_file_hash(file_path, algorithm='sha256', length=8):
+    """
+    Compute a hash of the file content for cache busting.
+    
+    Args:
+        file_path: Path to the file
+        algorithm: Hash algorithm to use (default: sha256)
+        length: Length of hash to return (default: 8 chars)
+        
+    Returns:
+        Short hash of the file content
+    """
+    global _asset_hash_cache
+    
+    # Check if we have a cached hash
+    if file_path in _asset_hash_cache:
+        cache_entry = _asset_hash_cache[file_path]
+        file_mtime = os.path.getmtime(file_path)
+        
+        # If file hasn't been modified since we computed the hash, use cached hash
+        if cache_entry.get('timestamp', 0) >= file_mtime:
+            return cache_entry['hash']
+    
+    # No cache hit or file modified, compute hash
+    if os.path.exists(file_path):
+        try:
+            hasher = hashlib.new(algorithm)
+            with open(file_path, 'rb') as f:
+                for chunk in iter(lambda: f.read(4096), b''):
+                    hasher.update(chunk)
+            
+            file_hash = hasher.hexdigest()[:length]
+            
+            # Cache the result
+            _asset_hash_cache[file_path] = {
+                'hash': file_hash,
+                'timestamp': os.path.getmtime(file_path)
+            }
+            
+            return file_hash
+        except Exception as e:
+            logger.error(f"Error computing hash for {file_path}: {str(e)}")
+            return 'error'
+    else:
+        logger.error(f"File not found when computing hash: {file_path}")
+        return 'missing'
+
+def get_hashed_asset_url(filename):
+    """
+    Generate URL for a static asset with content-based hash.
+    
+    Args:
+        filename: Relative path to asset (e.g., 'js/data-formatter-bundle.js')
+        
+    Returns:
+        URL to the asset with content hash
+    """
+    try:
+        # Check if we're running on Render
+        is_render = os.environ.get('RENDER', 'false').lower() == 'true'
+        
+        # Set correct static folder path based on environment
+        if is_render:
+            # Render deployment path
+            root_path = '/opt/render/project/src'
+        else:
+            # Local development path
+            root_path = os.getcwd()
+            
+        # Find the file path
+        file_path = os.path.join(root_path, 'static', filename)
+        
+        if os.path.exists(file_path):
+            # Compute hash
+            file_hash = compute_file_hash(file_path)
+            
+            # Split filename to insert hash
+            name, ext = os.path.splitext(filename)
+            
+            # Generate URL with hash
+            return f"/static/{name}.{file_hash}{ext}"
+        else:
+            logger.warning(f"Static file not found for hashing: {file_path}")
+            return f"/static/{filename}"
+    except Exception as e:
+        logger.error(f"Error generating hashed asset URL for {filename}: {str(e)}")
+        return f"/static/{filename}"
+
+def get_git_commit_hash(short=True):
+    """
+    Get the current Git commit hash for cache busting.
+    
+    Args:
+        short: Whether to return short hash (default: True)
+        
+    Returns:
+        Current Git commit hash or None if not available
+    """
+    try:
+        import subprocess
+        
+        # Get the git hash
+        cmd = ['git', 'rev-parse', 'HEAD']
+        if short:
+            cmd = ['git', 'rev-parse', '--short', 'HEAD']
+            
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        
+        if result.returncode == 0:
+            return result.stdout.strip()
+        else:
+            logger.warning(f"Git command failed: {result.stderr}")
+            return None
+    except Exception as e:
+        logger.error(f"Error getting Git commit hash: {str(e)}")
+        return None
+
 def init_asset_utils(app):
     """
     Initialize the asset utilities with the Flask app.
     
     This function:
     1. Sets up a Jinja filter for asset URLs
-    2. Adds a utility function to the template context
+    2. Adds utility functions to the template context
     
     Args:
         app: The Flask application instance
@@ -116,12 +240,20 @@ def init_asset_utils(app):
     def asset_url_filter(name, manifest_name='react-data-formatter'):
         return get_asset_path(name, manifest_name)
     
-    # Add a context processor for manifest access
+    # Add a Jinja filter for hashed URLs
+    @app.template_filter('hashed_url')
+    def hashed_url_filter(filename):
+        return get_hashed_asset_url(filename)
+    
+    # Add a context processor for asset access
     @app.context_processor
     def asset_processor():
         return {
             'asset_url': get_asset_path,
-            'manifest_lookup': get_asset_path
+            'manifest_lookup': get_asset_path,
+            'hashed_url': get_hashed_asset_url,
+            'asset_hash': compute_file_hash,
+            'git_hash': get_git_commit_hash
         }
     
     logger.info("Asset utilities initialized successfully")
