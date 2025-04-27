@@ -479,7 +479,14 @@
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- XLSX.js for Excel file processing -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- XLSX library -->
+  {% if config.ENV == 'development' %}
+    <!-- Development: Load from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  {% else %}
+    <!-- Production: Load from local vendor directory -->
+    <script src="{{ url_for('static', filename='vendor/xlsx/xlsx.full.min.js') }}"></script>
+  {% endif %}
   <!-- Favicon -->
   <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
 </head>
@@ -2904,9 +2911,18 @@
   </footer>
 
   <!-- Core dependencies for React and Material UI -->
-  <script src="https://cdn.jsdelivr.net/npm/react@17/umd/react.production.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/react-dom@17/umd/react-dom.production.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/react-beautiful-dnd@13.1.0/dist/react-beautiful-dnd.min.js"></script>
+  <!-- React and related libraries -->
+  {% if config.ENV == 'development' %}
+    <!-- Development: Load from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/react@17/umd/react.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@17/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-beautiful-dnd@13.1.0/dist/react-beautiful-dnd.min.js"></script>
+  {% else %}
+    <!-- Production: Load from local vendor directory -->
+    <script src="{{ url_for('static', filename='vendor/react/react.production.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/react/react-dom.production.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/react-beautiful-dnd/react-beautiful-dnd.min.js') }}"></script>
+  {% endif %}
 
   <!-- Function Exporter - ensures all required functions are available in the global window scope -->
   <script>
@@ -3329,7 +3345,14 @@
       }
     };
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/@material-ui/core@4.12.3/umd/material-ui.production.min.js"></script>
+  <!-- Material UI library -->
+  {% if config.ENV == 'development' %}
+    <!-- Development: Load from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@material-ui/core@4.12.3/umd/material-ui.production.min.js"></script>
+  {% else %}
+    <!-- Production: Load from local vendor directory -->
+    <script src="{{ url_for('static', filename='vendor/material-ui/material-ui.production.min.js') }}"></script>
+  {% endif %}
   
   <!-- Excel encoding fix script -->
   <script src="/static/data-formatter-excel-fix.js"></script>

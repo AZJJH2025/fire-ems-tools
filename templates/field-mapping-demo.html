@@ -195,8 +195,15 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="https://unpkg.com/papaparse@5.3.0/papaparse.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+{% if config.ENV == 'development' %}
+  <!-- Development: Load from CDN -->
+  <script src="https://unpkg.com/papaparse@5.3.0/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+{% else %}
+  <!-- Production: We should download these libraries too -->
+  <script src="{{ url_for('static', filename='vendor/papaparse/papaparse.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='vendor/marked/marked.min.js') }}"></script>
+{% endif %}
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     // DOM elements
