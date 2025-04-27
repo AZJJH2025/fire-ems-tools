@@ -317,6 +317,34 @@
             window.downloadTransformedData(format);
           });
         }
+        
+        // Add event listener for send-to-tool button
+        if (button.id === 'send-to-tool-btn' && !button.getAttribute('data-listener-added')) {
+          button.setAttribute('data-listener-added', 'true');
+          button.addEventListener('click', function(e) {
+            e.preventDefault();
+            Logger.info("Send to tool button clicked");
+            
+            // Get the selected tool from metadata
+            const toolId = window.formatterState?.metadata?.selectedTool || 'response-time';
+            
+            // Map tool IDs to their respective paths
+            const toolPaths = {
+              'response-time': '/fire-ems-dashboard',
+              'call-density': '/call-density-heatmap',
+              'isochrone': '/isochrone-map',
+              'station-overview': '/station-overview',
+              'incident-logger': '/incident-logger',
+              'coverage-gap': '/coverage-gap-finder'
+            };
+            
+            const toolPath = toolPaths[toolId] || '/fire-ems-dashboard';
+            Logger.info(`Navigating to tool: ${toolPath}`);
+            
+            // Navigate to the tool
+            window.location.href = toolPath;
+          });
+        }
       }
     });
     
@@ -1000,7 +1028,36 @@
     initFileInputHandler();
   }
   
-  // Set flag to indicate data formatter is loaded (prevents emergency mode)
+  // Set flags to indicate data formatter is loaded (prevents emergency mode)
   window.dataFormatterLoaded = true;
+  window.emergencyMode = false; // Explicitly disable emergency mode
+  
+  // Make sure any emergency banners/buttons are hidden
+  setTimeout(function() {
+    const emergencyBanners = document.querySelectorAll('.emergency-banner, .emergency-mode-warning');
+    const emergencyButtons = document.querySelectorAll('.emergency-btn, .emergency-action');
+    
+    emergencyBanners.forEach(banner => {
+      if (banner) {
+        Logger.info("Hiding emergency banner");
+        banner.style.display = 'none';
+      }
+    });
+    
+    emergencyButtons.forEach(button => {
+      if (button) {
+        Logger.info("Hiding emergency button");
+        button.style.display = 'none';
+      }
+    });
+    
+    // Check if we need to re-show the output preview
+    const outputPreview = document.getElementById('output-preview');
+    if (outputPreview && window.formatterState?.transformedData?.length > 0) {
+      Logger.info("Re-showing output preview with existing transformed data");
+      updateOutputPreview(window.formatterState.transformedData);
+    }
+  }, 1000);
+  
   Logger.info("Data Formatter Bundle initialization complete");
 })();
