@@ -67,10 +67,11 @@ def create_app(config_name='default'):
     template_folder = os.path.join(os.getcwd(), 'templates')
     static_folder = os.path.join(os.getcwd(), 'static')
     
-    # Use our own static file handling instead of Flask's built-in
+    # Use Flask's built-in static file handling, but we'll also have our own as fallback
     app = Flask(__name__, 
                 template_folder=template_folder,
-                static_folder=None)
+                static_folder=static_folder,
+                static_url_path='/static')
                 
     # Create hash regex converter for dynamic routes
     class HashConverter(BaseConverter):
