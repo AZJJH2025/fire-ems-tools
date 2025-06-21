@@ -1131,44 +1131,7 @@ def create_app(config_name='default'):
                                     file_status=file_status,
                                     url_rules=url_rules)
     
-    # Data Transformer Utility Demo Page
-    @app.route('/data-transformer-demo')
-    def data_transformer_demo():
-        """Demo page for the Data Transformer Utility"""
-        return render_template('data-transformer-demo.html')
-        
-    # Field Mapping Demo Page
-    @app.route('/field-mapping-demo')
-    def field_mapping_demo():
-        """Demo page for the MapFieldsManager Utility"""
-        return render_template('field-mapping-demo.html')
-        
-    # React Data Formatter (Simple Template Version)
-    @app.route('/react-formatter')
-    def react_formatter_template():
-        """Serve the React Data Formatter from a template"""
-        return render_template('react-formatter.html')
-    
-    @app.route('/field-mapping-demo-secure')
-    def field_mapping_demo_secure():
-        """Demo page for the MapFieldsManager Utility with self-hosted fonts and CSP"""
-        return render_template('field-mapping-demo-selfhosted.html')
-        
-    @app.route('/field-mapping-enhanced')
-    def field_mapping_enhanced():
-        """Enhanced demo page with offline functionality and performance optimizations"""
-        return render_template('field-mapping-enhanced.html')
-        
-    @app.route('/csp-fonts-demo')
-    def csp_fonts_demo():
-        """Demo page for self-hosted fonts with strict CSP"""
-        return send_file('static/demo-csp.html')
-    
-    # MapFields Availability Test Page
-    @app.route('/test-mapfields')
-    def test_mapfields():
-        """Test page for MapFieldsManager availability detection"""
-        return render_template('test-mapfields.html')
+    # Legacy routes removed - templates deleted during cleanup
         
     # Data Components Test Page
     @app.route('/test-data-components')
