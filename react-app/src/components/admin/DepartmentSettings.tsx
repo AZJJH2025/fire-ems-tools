@@ -175,210 +175,206 @@ const DepartmentSettings: React.FC<DepartmentSettingsProps> = ({ userRole }) => 
       )}
 
       {/* Department Cards */}
-      <Grid container spacing={3}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {departments.map((department) => (
-          <Grid item xs={12} key={department.id}>
-            <Card>
-              <CardContent>
-                <Box sx={{ mb: 3 }}>
-                  <Box display="flex" alignItems="center" gap={2} sx={{ mb: 2 }}>
-                    <Business color="primary" />
-                    <Typography variant="h6">
-                      {department.name}
-                    </Typography>
-                    <Chip
-                      label={department.department_type.toUpperCase()}
-                      color={getDepartmentTypeColor(department.department_type)}
-                      size="small"
-                    />
-                    <Chip
-                      label={department.is_active ? 'Active' : 'Inactive'}
-                      color={department.is_active ? 'success' : 'default'}
-                      size="small"
-                    />
-                  </Box>
-                  
-                  <Typography variant="body2" color="text.secondary">
-                    Department Code: {department.code} • Created: {formatDate(department.created_at)} • {department.user_count} Users
+          <Card key={department.id}>
+            <CardContent>
+              <Box sx={{ mb: 3 }}>
+                <Box display="flex" alignItems="center" gap={2} sx={{ mb: 2 }}>
+                  <Business color="primary" />
+                  <Typography variant="h6">
+                    {department.name}
                   </Typography>
+                  <Chip
+                    label={department.department_type.toUpperCase()}
+                    color={getDepartmentTypeColor(department.department_type)}
+                    size="small"
+                  />
+                  <Chip
+                    label={department.is_active ? 'Active' : 'Inactive'}
+                    color={department.is_active ? 'success' : 'default'}
+                    size="small"
+                  />
                 </Box>
+                
+                <Typography variant="body2" color="text.secondary">
+                  Department Code: {department.code} • Created: {formatDate(department.created_at)} • {department.user_count} Users
+                </Typography>
+              </Box>
 
-                <Grid container spacing={3}>
-                  {/* Basic Settings */}
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Settings fontSize="small" />
-                      Basic Settings
-                    </Typography>
-                    
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      <TextField
-                        label="Department Name"
-                        fullWidth
-                        value={department.name}
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+                {/* Basic Settings */}
+                <Box>
+                  <Typography variant="subtitle1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Settings fontSize="small" />
+                    Basic Settings
+                  </Typography>
+                  
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <TextField
+                      label="Department Name"
+                      fullWidth
+                      value={department.name}
+                      onChange={(e) => {
+                        const newName = e.target.value;
+                        setDepartments(prev => prev.map(dept => 
+                          dept.id === department.id 
+                            ? { ...dept, name: newName }
+                            : dept
+                        ));
+                      }}
+                      size="small"
+                    />
+
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Department Type</InputLabel>
+                      <Select
+                        value={department.department_type}
                         onChange={(e) => {
-                          const newName = e.target.value;
+                          const newType = e.target.value as string;
                           setDepartments(prev => prev.map(dept => 
                             dept.id === department.id 
-                              ? { ...dept, name: newName }
+                              ? { ...dept, department_type: newType }
                               : dept
                           ));
                         }}
-                        size="small"
-                      />
+                        label="Department Type"
+                      >
+                        <MenuItem value="fire">Fire</MenuItem>
+                        <MenuItem value="ems">EMS</MenuItem>
+                        <MenuItem value="combined">Combined Fire/EMS</MenuItem>
+                      </Select>
+                    </FormControl>
 
-                      <FormControl fullWidth size="small">
-                        <InputLabel>Department Type</InputLabel>
-                        <Select
-                          value={department.department_type}
-                          onChange={(e) => {
-                            const newType = e.target.value as string;
-                            setDepartments(prev => prev.map(dept => 
-                              dept.id === department.id 
-                                ? { ...dept, department_type: newType }
-                                : dept
-                            ));
-                          }}
-                          label="Department Type"
-                        >
-                          <MenuItem value="fire">Fire</MenuItem>
-                          <MenuItem value="ems">EMS</MenuItem>
-                          <MenuItem value="combined">Combined Fire/EMS</MenuItem>
-                        </Select>
-                      </FormControl>
-
-                      {userRole === 'super_admin' && (
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              checked={department.is_active}
-                              onChange={(e) => {
-                                const newActive = e.target.checked;
-                                setDepartments(prev => prev.map(dept => 
-                                  dept.id === department.id 
-                                    ? { ...dept, is_active: newActive }
-                                    : dept
-                                ));
-                              }}
-                            />
-                          }
-                          label="Department Active"
-                        />
-                      )}
-                    </Box>
-                  </Grid>
-
-                  {/* Advanced Settings */}
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Security fontSize="small" />
-                      Advanced Settings
-                    </Typography>
-                    
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {userRole === 'super_admin' && (
                       <FormControlLabel
                         control={
                           <Switch
-                            checked={department.api_enabled}
+                            checked={department.is_active}
                             onChange={(e) => {
-                              const newApiEnabled = e.target.checked;
+                              const newActive = e.target.checked;
                               setDepartments(prev => prev.map(dept => 
                                 dept.id === department.id 
-                                  ? { ...dept, api_enabled: newApiEnabled }
+                                  ? { ...dept, is_active: newActive }
                                   : dept
                               ));
                             }}
                           />
                         }
-                        label="API Access Enabled"
+                        label="Department Active"
                       />
-
-                      <Typography variant="subtitle2" gutterBottom>
-                        Available Features
-                      </Typography>
-                      
-                      <Paper variant="outlined" sx={{ p: 2 }}>
-                        <List dense>
-                          {Object.entries(department.features_enabled || {}).map(([feature, enabled]) => (
-                            <ListItem key={feature} divider>
-                              <ListItemText 
-                                primary={feature.replace('_', ' ').toUpperCase()}
-                                secondary={enabled ? 'Enabled' : 'Disabled'}
-                              />
-                              <ListItemSecondaryAction>
-                                <Switch
-                                  edge="end"
-                                  checked={enabled}
-                                  onChange={(e) => {
-                                    const newFeatures = {
-                                      ...department.features_enabled,
-                                      [feature]: e.target.checked
-                                    };
-                                    setDepartments(prev => prev.map(dept => 
-                                      dept.id === department.id 
-                                        ? { ...dept, features_enabled: newFeatures }
-                                        : dept
-                                    ));
-                                  }}
-                                />
-                              </ListItemSecondaryAction>
-                            </ListItem>
-                          ))}
-                          {Object.keys(department.features_enabled || {}).length === 0 && (
-                            <ListItem>
-                              <ListItemText 
-                                primary="No features configured"
-                                secondary="Contact administrator to enable features"
-                              />
-                            </ListItem>
-                          )}
-                        </List>
-                      </Paper>
-                    </Box>
-                  </Grid>
-                </Grid>
-
-                <Divider sx={{ my: 3 }} />
-
-                {/* Save Button */}
-                <Box display="flex" justifyContent="flex-end">
-                  <Button
-                    variant="contained"
-                    startIcon={<Save />}
-                    onClick={() => handleUpdateDepartment(department.id, {
-                      name: department.name,
-                      department_type: department.department_type,
-                      is_active: department.is_active,
-                      api_enabled: department.api_enabled,
-                      features_enabled: department.features_enabled
-                    })}
-                    disabled={saving}
-                  >
-                    {saving ? 'Saving...' : 'Save Changes'}
-                  </Button>
+                    )}
+                  </Box>
                 </Box>
-              </CardContent>
-            </Card>
-          </Grid>
+
+                {/* Advanced Settings */}
+                <Box>
+                  <Typography variant="subtitle1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Security fontSize="small" />
+                    Advanced Settings
+                  </Typography>
+                  
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={department.api_enabled}
+                          onChange={(e) => {
+                            const newApiEnabled = e.target.checked;
+                            setDepartments(prev => prev.map(dept => 
+                              dept.id === department.id 
+                                ? { ...dept, api_enabled: newApiEnabled }
+                                : dept
+                            ));
+                          }}
+                        />
+                      }
+                      label="API Access Enabled"
+                    />
+
+                    <Typography variant="subtitle2" gutterBottom>
+                      Available Features
+                    </Typography>
+                    
+                    <Paper variant="outlined" sx={{ p: 2 }}>
+                      <List dense>
+                        {Object.entries(department.features_enabled || {}).map(([feature, enabled]) => (
+                          <ListItem key={feature} divider>
+                            <ListItemText 
+                              primary={feature.replace('_', ' ').toUpperCase()}
+                              secondary={enabled ? 'Enabled' : 'Disabled'}
+                            />
+                            <ListItemSecondaryAction>
+                              <Switch
+                                edge="end"
+                                checked={enabled}
+                                onChange={(e) => {
+                                  const newFeatures = {
+                                    ...department.features_enabled,
+                                    [feature]: e.target.checked
+                                  };
+                                  setDepartments(prev => prev.map(dept => 
+                                    dept.id === department.id 
+                                      ? { ...dept, features_enabled: newFeatures }
+                                      : dept
+                                  ));
+                                }}
+                              />
+                            </ListItemSecondaryAction>
+                          </ListItem>
+                        ))}
+                        {Object.keys(department.features_enabled || {}).length === 0 && (
+                          <ListItem>
+                            <ListItemText 
+                              primary="No features configured"
+                              secondary="Contact administrator to enable features"
+                            />
+                          </ListItem>
+                        )}
+                      </List>
+                    </Paper>
+                  </Box>
+                </Box>
+              </Box>
+
+              <Divider sx={{ my: 3 }} />
+
+              {/* Save Button */}
+              <Box display="flex" justifyContent="flex-end">
+                <Button
+                  variant="contained"
+                  startIcon={<Save />}
+                  onClick={() => handleUpdateDepartment(department.id, {
+                    name: department.name,
+                    department_type: department.department_type,
+                    is_active: department.is_active,
+                    api_enabled: department.api_enabled,
+                    features_enabled: department.features_enabled
+                  })}
+                  disabled={saving}
+                >
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
         ))}
 
         {departments.length === 0 && (
-          <Grid item xs={12}>
-            <Paper sx={{ p: 4, textAlign: 'center' }}>
-              <Business sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                No Departments Found
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {userRole === 'super_admin' 
-                  ? 'Create a new department to get started.'
-                  : 'Contact your administrator to set up departments.'
-                }
-              </Typography>
-            </Paper>
-          </Grid>
+          <Paper sx={{ p: 4, textAlign: 'center' }}>
+            <Business sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+            <Typography variant="h6" color="text.secondary" gutterBottom>
+              No Departments Found
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {userRole === 'super_admin' 
+                ? 'Create a new department to get started.'
+                : 'Contact your administrator to set up departments.'
+              }
+            </Typography>
+          </Paper>
         )}
-      </Grid>
+      </Box>
     </Box>
   );
 };

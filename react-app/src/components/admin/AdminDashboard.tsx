@@ -133,28 +133,24 @@ const AdminDashboard: React.FC = () => {
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Grid container alignItems="center" spacing={2}>
-          <Grid item>
-            <AdminPanelSettings sx={{ fontSize: 40, color: 'primary.main' }} />
-          </Grid>
-          <Grid item xs>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <AdminPanelSettings sx={{ fontSize: 40, color: 'primary.main' }} />
+          <Box sx={{ flexGrow: 1 }}>
             <Typography variant="h4" component="h1" gutterBottom>
               Admin Console
             </Typography>
             <Typography variant="subtitle1" color="text.secondary">
               Manage departments, users, and system settings
             </Typography>
-          </Grid>
-          <Grid item>
-            <Button
-              variant="outlined"
-              onClick={() => navigate('/')}
-              sx={{ mr: 2 }}
-            >
-              Back to Tools
-            </Button>
-          </Grid>
-        </Grid>
+          </Box>
+          <Button
+            variant="outlined"
+            onClick={() => navigate('/')}
+            sx={{ mr: 2 }}
+          >
+            Back to Tools
+          </Button>
+        </Box>
       </Box>
 
       {/* Navigation Tabs */}

@@ -106,207 +106,195 @@ const AdminOverview: React.FC<AdminOverviewProps> = ({ userRole }) => {
       </Box>
 
       {/* Key Metrics Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 3, mb: 4 }}>
         {/* Total Users */}
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
-                <Box>
-                  <Typography color="textSecondary" gutterBottom variant="body2">
-                    Total Users
-                  </Typography>
-                  <Typography variant="h4">
-                    {analytics.total_users}
-                  </Typography>
-                </Box>
-                <People sx={{ fontSize: 40, color: 'primary.main', opacity: 0.7 }} />
+        <Card>
+          <CardContent>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box>
+                <Typography color="textSecondary" gutterBottom variant="body2">
+                  Total Users
+                </Typography>
+                <Typography variant="h4">
+                  {analytics.total_users}
+                </Typography>
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+              <People sx={{ fontSize: 40, color: 'primary.main', opacity: 0.7 }} />
+            </Box>
+          </CardContent>
+        </Card>
 
         {/* Active Users */}
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
-                <Box>
-                  <Typography color="textSecondary" gutterBottom variant="body2">
-                    Active Users
-                  </Typography>
-                  <Typography variant="h4" color="success.main">
-                    {analytics.active_users}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {userActiveRate}% active
-                  </Typography>
-                </Box>
-                <CheckCircle sx={{ fontSize: 40, color: 'success.main', opacity: 0.7 }} />
+        <Card>
+          <CardContent>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box>
+                <Typography color="textSecondary" gutterBottom variant="body2">
+                  Active Users
+                </Typography>
+                <Typography variant="h4" color="success.main">
+                  {analytics.active_users}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {userActiveRate}% active
+                </Typography>
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+              <CheckCircle sx={{ fontSize: 40, color: 'success.main', opacity: 0.7 }} />
+            </Box>
+          </CardContent>
+        </Card>
 
         {/* Departments */}
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
-                <Box>
-                  <Typography color="textSecondary" gutterBottom variant="body2">
-                    {userRole === 'super_admin' ? 'Total Departments' : 'Your Department'}
+        <Card>
+          <CardContent>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box>
+                <Typography color="textSecondary" gutterBottom variant="body2">
+                  {userRole === 'super_admin' ? 'Total Departments' : 'Your Department'}
+                </Typography>
+                <Typography variant="h4">
+                  {analytics.total_departments}
+                </Typography>
+                {analytics.active_departments < analytics.total_departments && (
+                  <Typography variant="body2" color="warning.main">
+                    {analytics.total_departments - analytics.active_departments} inactive
                   </Typography>
-                  <Typography variant="h4">
-                    {analytics.total_departments}
-                  </Typography>
-                  {analytics.active_departments < analytics.total_departments && (
-                    <Typography variant="body2" color="warning.main">
-                      {analytics.total_departments - analytics.active_departments} inactive
-                    </Typography>
-                  )}
-                </Box>
-                <Business sx={{ fontSize: 40, color: 'info.main', opacity: 0.7 }} />
+                )}
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+              <Business sx={{ fontSize: 40, color: 'info.main', opacity: 0.7 }} />
+            </Box>
+          </CardContent>
+        </Card>
 
         {/* New Users This Month */}
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
-                <Box>
-                  <Typography color="textSecondary" gutterBottom variant="body2">
-                    New This Month
-                  </Typography>
-                  <Typography variant="h4" color="secondary.main">
-                    {analytics.recent_users_this_month}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    new users
-                  </Typography>
-                </Box>
-                <TrendingUp sx={{ fontSize: 40, color: 'secondary.main', opacity: 0.7 }} />
+        <Card>
+          <CardContent>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box>
+                <Typography color="textSecondary" gutterBottom variant="body2">
+                  New This Month
+                </Typography>
+                <Typography variant="h4" color="secondary.main">
+                  {analytics.recent_users_this_month}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  new users
+                </Typography>
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+              <TrendingUp sx={{ fontSize: 40, color: 'secondary.main', opacity: 0.7 }} />
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
 
       {/* Activity Metrics */}
-      <Grid container spacing={3}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
         {/* User Activity */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                User Activity
-              </Typography>
-              <Box sx={{ mb: 2 }}>
-                <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    Active Users
-                  </Typography>
-                  <Typography variant="body2" fontWeight="bold">
-                    {analytics.active_users} / {analytics.total_users}
-                  </Typography>
-                </Box>
-                <LinearProgress
-                  variant="determinate"
-                  value={userActiveRate}
-                  sx={{ height: 8, borderRadius: 4 }}
-                  color={userActiveRate > 80 ? 'success' : userActiveRate > 60 ? 'warning' : 'error'}
-                />
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                  {userActiveRate}% of users are active
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              User Activity
+            </Typography>
+            <Box sx={{ mb: 2 }}>
+              <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Active Users
+                </Typography>
+                <Typography variant="body2" fontWeight="bold">
+                  {analytics.active_users} / {analytics.total_users}
                 </Typography>
               </Box>
+              <LinearProgress
+                variant="determinate"
+                value={userActiveRate}
+                sx={{ height: 8, borderRadius: 4 }}
+                color={userActiveRate > 80 ? 'success' : userActiveRate > 60 ? 'warning' : 'error'}
+              />
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                {userActiveRate}% of users are active
+              </Typography>
+            </Box>
 
-              <Box display="flex" gap={1} flexWrap="wrap">
+            <Box display="flex" gap={1} flexWrap="wrap">
+              <Chip
+                size="small"
+                label={`${analytics.active_users} Active`}
+                color="success"
+                variant="outlined"
+              />
+              {analytics.total_users - analytics.active_users > 0 && (
                 <Chip
                   size="small"
-                  label={`${analytics.active_users} Active`}
-                  color="success"
+                  label={`${analytics.total_users - analytics.active_users} Inactive`}
+                  color="default"
                   variant="outlined"
                 />
-                {analytics.total_users - analytics.active_users > 0 && (
-                  <Chip
-                    size="small"
-                    label={`${analytics.total_users - analytics.active_users} Inactive`}
-                    color="default"
-                    variant="outlined"
-                  />
-                )}
-                {analytics.recent_users_this_month > 0 && (
-                  <Chip
-                    size="small"
-                    label={`${analytics.recent_users_this_month} New This Month`}
-                    color="primary"
-                    variant="outlined"
-                  />
-                )}
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+              )}
+              {analytics.recent_users_this_month > 0 && (
+                <Chip
+                  size="small"
+                  label={`${analytics.recent_users_this_month} New This Month`}
+                  color="primary"
+                  variant="outlined"
+                />
+              )}
+            </Box>
+          </CardContent>
+        </Card>
 
         {/* Department Status */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Department Status
-              </Typography>
-              <Box sx={{ mb: 2 }}>
-                <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    Active Departments
-                  </Typography>
-                  <Typography variant="body2" fontWeight="bold">
-                    {analytics.active_departments} / {analytics.total_departments}
-                  </Typography>
-                </Box>
-                <LinearProgress
-                  variant="determinate"
-                  value={departmentActiveRate}
-                  sx={{ height: 8, borderRadius: 4 }}
-                  color={departmentActiveRate > 80 ? 'success' : departmentActiveRate > 60 ? 'warning' : 'error'}
-                />
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                  {departmentActiveRate}% of departments are active
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Department Status
+            </Typography>
+            <Box sx={{ mb: 2 }}>
+              <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Active Departments
+                </Typography>
+                <Typography variant="body2" fontWeight="bold">
+                  {analytics.active_departments} / {analytics.total_departments}
                 </Typography>
               </Box>
+              <LinearProgress
+                variant="determinate"
+                value={departmentActiveRate}
+                sx={{ height: 8, borderRadius: 4 }}
+                color={departmentActiveRate > 80 ? 'success' : departmentActiveRate > 60 ? 'warning' : 'error'}
+              />
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                {departmentActiveRate}% of departments are active
+              </Typography>
+            </Box>
 
-              <Box display="flex" gap={1} flexWrap="wrap">
+            <Box display="flex" gap={1} flexWrap="wrap">
+              <Chip
+                size="small"
+                label={`${analytics.active_departments} Active`}
+                color="success"
+                variant="outlined"
+              />
+              {analytics.total_departments - analytics.active_departments > 0 && (
                 <Chip
                   size="small"
-                  label={`${analytics.active_departments} Active`}
-                  color="success"
+                  label={`${analytics.total_departments - analytics.active_departments} Inactive`}
+                  color="warning"
                   variant="outlined"
                 />
-                {analytics.total_departments - analytics.active_departments > 0 && (
-                  <Chip
-                    size="small"
-                    label={`${analytics.total_departments - analytics.active_departments} Inactive`}
-                    color="warning"
-                    variant="outlined"
-                  />
-                )}
-                {userRole === 'super_admin' && (
-                  <Chip
-                    size="small"
-                    label="System Admin"
-                    color="primary"
-                    variant="filled"
-                  />
-                )}
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+              )}
+              {userRole === 'super_admin' && (
+                <Chip
+                  size="small"
+                  label="System Admin"
+                  color="primary"
+                  variant="filled"
+                />
+              )}
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
 
       {/* System Health Status */}
       <Card sx={{ mt: 3 }}>
@@ -314,36 +302,30 @@ const AdminOverview: React.FC<AdminOverviewProps> = ({ userRole }) => {
           <Typography variant="h6" gutterBottom>
             System Health
           </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={4}>
-              <Box display="flex" alignItems="center" gap={1}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2 }}>
+            <Box display="flex" alignItems="center" gap={1}>
+              <CheckCircle color="success" />
+              <Typography variant="body2">
+                User Management: Operational
+              </Typography>
+            </Box>
+            <Box display="flex" alignItems="center" gap={1}>
+              <CheckCircle color="success" />
+              <Typography variant="body2">
+                Department Management: Operational
+              </Typography>
+            </Box>
+            <Box display="flex" alignItems="center" gap={1}>
+              {analytics.recent_users_this_month > 0 ? (
                 <CheckCircle color="success" />
-                <Typography variant="body2">
-                  User Management: Operational
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Box display="flex" alignItems="center" gap={1}>
-                <CheckCircle color="success" />
-                <Typography variant="body2">
-                  Department Management: Operational
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Box display="flex" alignItems="center" gap={1}>
-                {analytics.recent_users_this_month > 0 ? (
-                  <CheckCircle color="success" />
-                ) : (
-                  <Warning color="warning" />
-                )}
-                <Typography variant="body2">
-                  User Registration: {analytics.recent_users_this_month > 0 ? 'Active' : 'Low Activity'}
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
+              ) : (
+                <Warning color="warning" />
+              )}
+              <Typography variant="body2">
+                User Registration: {analytics.recent_users_this_month > 0 ? 'Active' : 'Low Activity'}
+              </Typography>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
     </Box>
