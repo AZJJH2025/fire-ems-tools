@@ -100,3 +100,23 @@ def react_water_supply_coverage():
 def react_tank_zone_coverage():
     """Legacy route to Water Supply Coverage Analysis (redirects to new tool)"""
     return react_app()
+
+# Admin routes
+@bp.route('/app/admin')
+@bp.route('/app/admin/')
+def react_admin():
+    """Direct route to React Admin Console"""
+    return react_app()
+
+# Authentication routes
+@bp.route('/app/login')
+@bp.route('/app/login/')
+def react_login():
+    """Direct route to React Login Page"""
+    return react_app()
+
+@bp.route('/app/signup')
+@bp.route('/app/signup/')
+def react_signup():
+    """Direct route to React Sign Up Page"""
+    return react_app()
