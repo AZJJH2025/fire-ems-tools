@@ -69,16 +69,36 @@ const LoginPage: React.FC = () => {
     return newErrors.length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (validateForm()) {
-      // TODO: Implement actual login logic
-      console.log('Logging in:', formData);
+    if (!validateForm()) return;
+    
+    try {
+      const response = await fetch('/auth/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          remember: false
+        }),
+      });
       
-      // For now, simulate successful login and redirect to dashboard
-      // In real implementation, this would validate credentials with backend
-      navigate('/dashboard');
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log('Login successful:', result.user);
+        // Redirect to homepage after successful login
+        navigate('/');
+      } else {
+        setErrors([result.message || 'Login failed']);
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setErrors(['An error occurred during login. Please try again.']);
     }
   };
 

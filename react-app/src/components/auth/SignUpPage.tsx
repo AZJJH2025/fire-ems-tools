@@ -144,12 +144,37 @@ const SignUpPage: React.FC = () => {
     setStep((prev) => Math.max(1, prev - 1) as 1 | 2 | 3);
   };
 
-  const handleSubmit = () => {
-    if (validateStep(2)) {
-      // TODO: Implement actual signup logic
-      console.log('Creating account:', { departmentInfo, selectedPlan });
-      // For now, redirect to login with success message
-      navigate('/login?signup=success');
+  const handleSubmit = async () => {
+    if (!validateStep(2)) return;
+    
+    try {
+      const response = await fetch('/auth/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: departmentInfo.email,
+          password: departmentInfo.password,
+          name: departmentInfo.chiefName,
+          departmentName: departmentInfo.departmentName,
+          departmentType: departmentInfo.departmentType
+        }),
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log('Registration successful:', result.user);
+        // Redirect to login with success message
+        navigate('/login?signup=success');
+      } else {
+        // Handle registration error
+        alert(result.message || 'Registration failed');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      alert('An error occurred during registration. Please try again.');
     }
   };
 
