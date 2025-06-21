@@ -93,19 +93,29 @@ def create_app(config_name='default'):
     # CRITICAL: Add React assets fallback route BEFORE static middleware registration
     @app.route('/assets/<path:filename>')
     def serve_react_assets_fallback(filename):
-        """Serve React assets from /assets/ by serving from modern React build"""
+        """Serve React assets from /assets/ by serving from deployment React build"""
         import os
         from flask import send_from_directory, abort
         try:
-            # Get the React build directory
+            # Get the React build directory - try deployment location first, then development
             project_root = os.path.dirname(app.static_folder)
-            react_build_dir = os.path.join(project_root, 'react-app', 'dist')
-            assets_dir = os.path.join(react_build_dir, 'assets')
             
-            asset_path = os.path.join(assets_dir, filename)
-            if os.path.exists(asset_path):
+            # Try deployment location first (/app/assets/)
+            deployment_assets_dir = os.path.join(project_root, 'app', 'assets')
+            deployment_asset_path = os.path.join(deployment_assets_dir, filename)
+            
+            if os.path.exists(deployment_asset_path):
+                logger.info(f"ASSETS_FALLBACK: Serving {filename} from deployment build")
+                return send_from_directory(deployment_assets_dir, filename)
+            
+            # Fallback to development location (react-app/dist/assets/)
+            react_build_dir = os.path.join(project_root, 'react-app', 'dist')
+            dev_assets_dir = os.path.join(react_build_dir, 'assets')
+            dev_asset_path = os.path.join(dev_assets_dir, filename)
+            
+            if os.path.exists(dev_asset_path):
                 logger.info(f"ASSETS_FALLBACK: Serving {filename} from React build")
-                return send_from_directory(assets_dir, filename)
+                return send_from_directory(dev_assets_dir, filename)
             else:
                 logger.error(f"ASSETS_FALLBACK: Not found {filename}")
                 abort(404)
