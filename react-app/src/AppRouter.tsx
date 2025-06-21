@@ -16,6 +16,9 @@ const FireEMSHomepage = React.lazy(() => import('./components/homepage/FireEMSHo
 const SignUpPage = React.lazy(() => import('./components/auth/SignUpPage'));
 const LoginPage = React.lazy(() => import('./components/auth/LoginPage'));
 
+// Admin components
+const AdminDashboard = React.lazy(() => import('./components/admin/AdminDashboard'));
+
 // Loading component
 const LoadingSpinner = () => (
   <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
@@ -38,6 +41,9 @@ const AppRouter: React.FC = () => {
             {/* Authentication routes */}
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/login" element={<LoginPage />} />
+            
+            {/* Admin routes */}
+            <Route path="/admin" element={<AdminDashboard />} />
             
             {/* Data Formatter routes */}
             <Route path="/data-formatter" element={
