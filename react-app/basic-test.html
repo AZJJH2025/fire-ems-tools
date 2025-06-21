@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Basic Test</title>
+</head>
+<body>
+  <h1>This is a basic test page</h1>
+  <p>If you can see this, HTML serving is working correctly.</p>
+  <p id="time"></p>
+
+  <script>
+    // Add the current time to prove this is a fresh page
+    document.getElementById('time').textContent = 'Current time: ' + new Date().toISOString();
+  </script>
+</body>
+</html>

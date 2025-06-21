@@ -1,0 +1,162 @@
+# Route definitions for the React applications
+# This file should be imported in the Flask app.py or tools.py file
+
+def register_react_routes(app):
+    """
+    Registers routes for React applications in the Flask app
+    
+    Args:
+        app: The Flask application object
+    """
+    @app.route('/data-formatter')
+    def data_formatter():
+        """Serve the React Data Formatter tool"""
+        from flask import send_file
+        return send_file('static/react-data-formatter/index.html')
+        
+    @app.route('/data-formatter-react')
+    def data_formatter_react():
+        """Alternative route for the Data Formatter tool"""
+        from flask import send_file
+        return send_file('static/react-data-formatter/index.html')
+    
+    @app.route('/response-time-analyzer')
+    def response_time_analyzer():
+        """Serve the Response Time Analyzer tool"""
+        from flask import send_file
+        return send_file('static/alt-response-analyzer/index.html')
+        
+    @app.route('/response-time-analyzer-new')
+    def response_time_analyzer_new():
+        """New route for Response Time Analyzer"""
+        from flask import send_file
+        return send_file('static/alt-response-analyzer/index.html')
+    
+    # Temporarily disabled - using HTML template version instead
+    # @app.route('/fire-map-pro')
+    # def fire_map_pro():
+    #     """Serve the Fire Map Pro React application"""
+    #     from flask import send_file
+    #     return send_file('static/fire-map-pro-react/index.html')
+    
+    # Modern React App Routes - serve all /app/* routes with React app
+    @app.route('/app/')
+    @app.route('/app/<path:subpath>')
+    def react_app(subpath=None):
+        """Serve the modern React application for all /app/* routes"""
+        from flask import send_file
+        return send_file('app/index.html')
+    
+    # Test route to verify route registration
+    @app.route('/test-react-routes')
+    def test_react_routes():
+        return """
+        <html>
+        <head>
+            <title>React Routes Test</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                h1 { color: #2c3e50; }
+                .link { display: block; margin: 10px 0; padding: 10px; background: #f5f5f5; }
+            </style>
+        </head>
+        <body>
+            <h1>React Routes Test Page</h1>
+            <p>If you can see this page, route registration is working correctly.</p>
+            <a class="link" href="/data-formatter-react">Go to Data Formatter</a>
+            <a class="link" href="/response-time-analyzer">Go to Response Time Analyzer</a>
+            <a class="link" href="/static/direct-transfer-test.html">Go to Direct Transfer Test</a>
+        </body>
+        </html>
+        """
+    
+    # Add static file routes with correct MIME types
+    @app.route('/static/<path:filename>')
+    def serve_static(filename):
+        """Serve static files with proper MIME types"""
+        from flask import send_from_directory
+        import mimetypes
+        
+        # Explicitly set MIME types for common file types
+        if filename.endswith('.js'):
+            return send_from_directory('static', filename, mimetype='application/javascript')
+        elif filename.endswith('.css'):
+            return send_from_directory('static', filename, mimetype='text/css')
+        elif filename.endswith('.json'):
+            return send_from_directory('static', filename, mimetype='application/json')
+        elif filename.endswith('.html'):
+            return send_from_directory('static', filename, mimetype='text/html')
+        elif filename.endswith('.png'):
+            return send_from_directory('static', filename, mimetype='image/png')
+        elif filename.endswith('.jpg') or filename.endswith('.jpeg'):
+            return send_from_directory('static', filename, mimetype='image/jpeg')
+        elif filename.endswith('.svg'):
+            return send_from_directory('static', filename, mimetype='image/svg+xml')
+        elif filename.endswith('.woff2'):
+            return send_from_directory('static', filename, mimetype='font/woff2')
+        elif filename.endswith('.woff'):
+            return send_from_directory('static', filename, mimetype='font/woff')
+        
+        # Default handling for other files
+        return send_from_directory('static', filename)
+    
+    # Add routes for the React app build in /app/ directory
+    @app.route('/app/')
+    @app.route('/app/<path:filename>')
+    def serve_react_app(filename='index.html'):
+        """Serve React app files from /app/ directory with proper MIME types"""
+        from flask import send_from_directory
+        import os
+        
+        # Set proper MIME types
+        if filename.endswith('.js'):
+            return send_from_directory('app', filename, mimetype='application/javascript')
+        elif filename.endswith('.css'):
+            return send_from_directory('app', filename, mimetype='text/css')
+        elif filename.endswith('.json'):
+            return send_from_directory('app', filename, mimetype='application/json')
+        elif filename.endswith('.html'):
+            return send_from_directory('app', filename, mimetype='text/html')
+        elif filename.endswith('.png'):
+            return send_from_directory('app', filename, mimetype='image/png')
+        elif filename.endswith('.jpg') or filename.endswith('.jpeg'):
+            return send_from_directory('app', filename, mimetype='image/jpeg')
+        elif filename.endswith('.svg'):
+            return send_from_directory('app', filename, mimetype='image/svg+xml')
+        else:
+            return send_from_directory('app', filename)
+
+    # Add specific routes for assets with MIME type handling
+    @app.route('/assets/<path:filename>')
+    def serve_assets(filename):
+        """Serve asset files with proper MIME types"""
+        from flask import send_from_directory
+        import os
+        
+        # Check if the file exists in app/assets first (React build)
+        app_assets = os.path.join('app', 'assets', filename)
+        if os.path.exists(app_assets):
+            if filename.endswith('.js'):
+                return send_from_directory('app/assets', filename, mimetype='application/javascript')
+            elif filename.endswith('.css'):
+                return send_from_directory('app/assets', filename, mimetype='text/css')
+            else:
+                return send_from_directory('app/assets', filename)
+        
+        # Check if the file exists in fire-map-pro-react/assets
+        fire_map_assets = os.path.join('static', 'fire-map-pro-react', 'assets', filename)
+        if os.path.exists(fire_map_assets):
+            if filename.endswith('.js'):
+                return send_from_directory('static/fire-map-pro-react/assets', filename, mimetype='application/javascript')
+            elif filename.endswith('.css'):
+                return send_from_directory('static/fire-map-pro-react/assets', filename, mimetype='text/css')
+            else:
+                return send_from_directory('static/fire-map-pro-react/assets', filename)
+        
+        # Fallback to general assets directory
+        if filename.endswith('.js'):
+            return send_from_directory('static/assets', filename, mimetype='application/javascript')
+        elif filename.endswith('.css'):
+            return send_from_directory('static/assets', filename, mimetype='text/css')
+        else:
+            return send_from_directory('static/assets', filename)

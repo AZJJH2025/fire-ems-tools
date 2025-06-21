@@ -49,11 +49,48 @@ def coverage_gap_finder():
     
 @bp.route('/fire-map-pro')
 def fire_map_pro():
-    """FireMapPro route"""
+    """FireMapPro route with Layout Designer"""
     return render_template('fire-map-pro.html')
+
+@bp.route('/fire-map-pro-react')
+def fire_map_pro_react():
+    """FireMapPro React route"""
+    from flask import send_from_directory, abort
     
-@bp.route('/data-formatter', methods=['GET', 'POST'])
-def data_formatter():
+    try:
+        # Serve the React build
+        static_dir = current_app.static_folder
+        react_dir = os.path.join(static_dir, 'fire-map-pro-react')
+        
+        if os.path.exists(os.path.join(react_dir, 'index.html')):
+            logger.info(f"Serving Fire Map Pro React from: {react_dir}")
+            return send_from_directory(react_dir, 'index.html')
+        else:
+            logger.error(f"React build not found at: {react_dir}")
+            return render_template('fire-map-pro.html', 
+                                   error="React version not available")
+    except Exception as e:
+        logger.error(f"Error serving Fire Map Pro React: {str(e)}")
+        return render_template('fire-map-pro.html', 
+                               error="Error loading React version")
+
+@bp.route('/fire-map-pro-react/<path:filename>')
+def fire_map_pro_react_assets(filename):
+    """Serve Fire Map Pro React static assets"""
+    from flask import send_from_directory
+    
+    try:
+        static_dir = current_app.static_folder
+        react_dir = os.path.join(static_dir, 'fire-map-pro-react')
+        
+        logger.info(f"Serving React asset: {filename} from {react_dir}")
+        return send_from_directory(react_dir, filename)
+    except Exception as e:
+        logger.error(f"Error serving React asset {filename}: {str(e)}")
+        abort(404)
+    
+@bp.route('/data-formatter-legacy', methods=['GET', 'POST'])
+def data_formatter_legacy():
     """Data Formatter route"""
     try:
         if request.method == 'POST':

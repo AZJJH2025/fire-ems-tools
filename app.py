@@ -5,6 +5,8 @@ This is the main application file that initializes the Flask app,
 registers blueprints, and sets up the database and other extensions.
 """
 from flask import Flask, jsonify, render_template, session, request, send_file
+from flask_routes.react_routes import register_react_routes
+from flask_routes.tool_routes import register_tool_routes
 from flask_cors import CORS
 from flask_wtf.csrf import CSRFProtect
 from flask_login import LoginManager
@@ -83,10 +85,37 @@ def create_app(config_name='default'):
     app.url_map.converters['hash'] = HashConverter
     
     # Initialize rate limiter
-    init_limiter(app)
+    app_limiter = init_limiter(app)
     
     # Initialize asset utilities
     init_asset_utils(app)
+    
+    # CRITICAL: Add React assets fallback route BEFORE static middleware registration
+    @app.route('/assets/<path:filename>')
+    def serve_react_assets_fallback(filename):
+        """Serve React assets from /assets/ by serving from modern React build"""
+        import os
+        from flask import send_from_directory, abort
+        try:
+            # Get the React build directory
+            project_root = os.path.dirname(app.static_folder)
+            react_build_dir = os.path.join(project_root, 'react-app', 'dist')
+            assets_dir = os.path.join(react_build_dir, 'assets')
+            
+            asset_path = os.path.join(assets_dir, filename)
+            if os.path.exists(asset_path):
+                logger.info(f"ASSETS_FALLBACK: Serving {filename} from React build")
+                return send_from_directory(assets_dir, filename)
+            else:
+                logger.error(f"ASSETS_FALLBACK: Not found {filename}")
+                abort(404)
+        except Exception as e:
+            logger.error(f"ASSETS_FALLBACK: Error {filename}: {str(e)}")
+            abort(404)
+    
+    # Exempt assets route from rate limiting
+    if app_limiter:
+        app_limiter.exempt(serve_react_assets_fallback)
     
     # Set up template auto-reloading in development
     app.config['TEMPLATES_AUTO_RELOAD'] = True
@@ -194,6 +223,11 @@ def create_app(config_name='default'):
     # Register custom static file handling
     from static_middleware import register_static_handler
     register_static_handler(app)
+    
+    # Register React application routes
+    register_react_routes(app)
+    # Register tool integration routes
+    register_tool_routes(app)
     
     # Enhanced route for data-formatter-bundle.js with robust error handling and diagnostics
     @app.route('/static/data-formatter-bundle.js')
@@ -780,7 +814,7 @@ def create_app(config_name='default'):
                                 <pre>`;
                             
                             response.headers.forEach((value, name) => {
-                                resultHtml += `${name}: ${value}\\n`;
+                                resultHtml += `${name}: ${value}\n`;
                             });
                             
                             resultHtml += `</pre>`;
@@ -1108,6 +1142,12 @@ def create_app(config_name='default'):
     def field_mapping_demo():
         """Demo page for the MapFieldsManager Utility"""
         return render_template('field-mapping-demo.html')
+        
+    # React Data Formatter (Simple Template Version)
+    @app.route('/react-formatter')
+    def react_formatter_template():
+        """Serve the React Data Formatter from a template"""
+        return render_template('react-formatter.html')
     
     @app.route('/field-mapping-demo-secure')
     def field_mapping_demo_secure():
@@ -1530,6 +1570,9 @@ def create_app(config_name='default'):
         from routes.dashboards import bp as dashboards_bp
         from routes.tools import bp as tools_bp
         from routes.admin import bp as admin_bp
+        from routes.react_app import bp as react_app_bp
+        
+        # Assets fallback route now registered earlier to take priority
         
         # Register blueprints
         app.register_blueprint(main_bp)
@@ -1538,46 +1581,25 @@ def create_app(config_name='default'):
         app.register_blueprint(dashboards_bp)
         app.register_blueprint(tools_bp)
         app.register_blueprint(admin_bp)
+        app.register_blueprint(react_app_bp)
         
         logger.info("Successfully registered all route blueprints")
+        
+        # Try to register React Data Formatter routes separately
+        try:
+            from react_data_formatter_route import register_react_formatter_routes
+            register_react_formatter_routes(app)
+            logger.info("Registered React Data Formatter routes")
+        except ImportError as react_import_error:
+            logger.warning(f"Could not import React Data Formatter routes: {react_import_error}")
+        except Exception as react_error:
+            logger.error(f"Error registering React Data Formatter routes: {react_error}")
+            
     except ImportError as e:
         logger.error(f"Failed to import blueprints: {str(e)}")
-        # Add basic routes as fallback
-        @app.route('/')
-        def index():
-            return render_template('index.html')
-            
-        @app.route('/deployment-status')
-        def deployment_status():
-            """Check deployment status - a quick way to verify fixes are working"""
-            status = {
-                "status": "ok",
-                "fixes_applied": True,
-                "timestamp": datetime.utcnow().isoformat(),
-                "environment": os.getenv('FLASK_ENV', 'development'),
-                "features": {
-                    "user_api": hasattr(User, 'to_dict'),
-                    "webhooks": hasattr(Department, 'webhook_events') and hasattr(Department, 'webhooks_enabled')
-                },
-                "blueprint_error": str(e)
-            }
-            return jsonify(status)
-        
-        # Add basic routes for each tool
-        for route in ['/fire-ems-dashboard', '/isochrone-map', '/call-density-heatmap', 
-                      '/incident-logger', '/coverage-gap-finder', '/fire-map-pro',
-                      '/data-formatter', '/station-overview', '/call-volume-forecaster',
-                      '/quick-stats', '/user-guide']:
-            # Create a route function dynamically
-            def make_route_func(template_name):
-                def route_func():
-                    return render_template(f"{template_name}.html")
-                return route_func
-            
-            # Register the route
-            template_name = route[1:]  # Remove leading slash
-            app.add_url_rule(route, endpoint=template_name.replace('-', '_'), 
-                           view_func=make_route_func(template_name))
+        logger.error("CRITICAL: Blueprint import failed. Application will not function properly.")
+        # This should not happen with the fixed import structure
+        raise e
     
     # Add error handlers
     @app.errorhandler(404)
@@ -1679,5 +1701,12 @@ except Exception as e:
 
 if __name__ == "__main__":
     # Run the application
-    port = int(os.environ.get("PORT", 5005))
-    app.run(host='0.0.0.0', port=port, debug=True, threaded=True, use_reloader=False)
+    port = int(os.environ.get("PORT", 5006))  # Using port 5006 as before
+    print(f"\n\n--------------------------------------")
+    print(f"Server is starting at http://127.0.0.1:{port}")
+    print(f"Access Data Formatter at: http://127.0.0.1:{port}/data-formatter-react")
+    print(f"Access Response Time Analyzer at: http://127.0.0.1:{port}/response-time-analyzer")
+    print(f"Try new analyzer route: http://127.0.0.1:{port}/response-time-analyzer-new")
+    print(f"--------------------------------------\n\n")
+    # Using debug mode to ensure changes are picked up
+    app.run(host='0.0.0.0', port=port, debug=True, threaded=False)

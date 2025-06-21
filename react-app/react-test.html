@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>React Test</title>
+  <!-- Load React from CDN -->
+  <script crossorigin src="https://unpkg.com/react@19.0.0/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@19.0.0/umd/react-dom.development.js"></script>
+  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <h1>React Test Page</h1>
+  <p>This tests if React 19 can load in your browser.</p>
+  
+  <!-- React will render into this div -->
+  <div id="root"></div>
+  
+  <!-- React component -->
+  <script type="text/babel">
+    // Simple React component
+    function TestComponent() {
+      const [count, setCount] = React.useState(0);
+      
+      return (
+        <div style={{ margin: '20px', padding: '20px', border: '1px solid #ccc' }}>
+          <h2>React 19 Component</h2>
+          <p>If you see this, React 19 is working correctly!</p>
+          <p>Count: {count}</p>
+          <button onClick={() => setCount(count + 1)}>
+            Increment
+          </button>
+        </div>
+      );
+    }
+    
+    // Render the component
+    ReactDOM.createRoot(document.getElementById('root')).render(
+      <React.StrictMode>
+        <TestComponent />
+      </React.StrictMode>
+    );
+  </script>
+</body>
+</html>

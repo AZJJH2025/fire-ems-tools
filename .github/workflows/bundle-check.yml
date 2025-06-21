@@ -1,0 +1,50 @@
+name: Bundle Integrity Check
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'static/js/data-formatter-bundle.js'
+      - 'app.py'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'static/js/data-formatter-bundle.js'
+      - 'app.py'
+
+jobs:
+  verify-bundle-integrity:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Start Flask app
+      run: |
+        flask run --port 5000 & 
+        sleep 10  # Wait for server to start fully
+    
+    - name: Check bundle integrity
+      run: |
+        DISK_HASH=$(sha256sum static/js/data-formatter-bundle.js | cut -d' ' -f1)
+        SERVED_HASH=$(curl -s http://localhost:5000/static/data-formatter-bundle.js | sha256sum | cut -d' ' -f1)
+        
+        if [ "$DISK_HASH" != "$SERVED_HASH" ]; then
+          echo "ERROR: Bundle hash mismatch!"
+          echo "Disk hash:    $DISK_HASH"
+          echo "Served hash:  $SERVED_HASH"
+          exit 1
+        else
+          echo "SUCCESS: Bundle integrity verified"
+          echo "Hash: $DISK_HASH"
+        fi

@@ -1,0 +1,11 @@
+Incident ID,Date,Time,Notes,Address,Unit
+HFD2024001,12/5/21,09:39:44,"House fire on Main St with heavy smoke showing. Engine 3 and Ladder 1 responded. Total response time 8 minutes 15 seconds.",123 Main St,E3
+HFD2024002,12/5/21,10:15:22,"Medical emergency at Oak Ave residence. Patient unconscious, CPR in progress. Ambulance responded in 6 min 30 sec.",456 Oak Ave,A1
+HFD2024003,12/5/21,11:02:18,"Motor vehicle accident on Highway 6 with entrapment. Fire truck and rescue unit dispatched. Response time approximately 12 minutes.",Highway 6 Mile 4,E2
+HFD2024004,12/5/21,13:45:33,"Structure fire at apartment complex. Multiple units responded including Engine 1, Engine 2, and Ladder 1. Responded in 7 min.",789 Park Blvd,E1
+HFD2024005,12/5/21,14:23:17,"Medical call for chest pain at downtown location. ALS unit responded with 4 minute response time.",321 First St,A2
+HFD2024006,12/5/21,15:55:08,"Grass fire reported near elementary school. Engine 4 responded. Fire contained in 15 minutes total.",567 School Rd,E4
+HFD2024007,12/5/21,16:42:19,"Alarm activation at commercial building. False alarm confirmed. Response time 5 min 45 sec.",890 Business Dr,E3
+HFD2024008,12/5/21,18:30:55,"Medical emergency - cardiac arrest at nursing home. Advanced life support provided. Responded in 3 minutes 20 seconds.",234 Care Way,A1
+HFD2024009,12/5/21,19:17:41,"Vehicle fire on interstate. Engine 2 and Battalion Chief responded. Total response approximately 9 min 30 sec.",I-45 MM 23,E2
+HFD2024010,12/5/21,20:45:12,"Structure fire with possible entrapment reported. Full assignment dispatched. Response time 6 minutes 15 seconds.",678 Residential Ave,E1

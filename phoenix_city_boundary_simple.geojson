@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Phoenix City Boundary",
+        "description": "Simplified Phoenix city limits focusing on urban core",
+        "population": 1680992,
+        "area_sq_miles": 519.8,
+        "incorporated": "1881-02-25",
+        "county": "Maricopa",
+        "state": "Arizona"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-112.35, 33.35],
+            [-112.35, 33.65],
+            [-112.2, 33.75],
+            [-111.85, 33.75],
+            [-111.6, 33.65],
+            [-111.6, 33.35],
+            [-111.85, 33.25],
+            [-112.2, 33.25],
+            [-112.35, 33.35]
+          ]
+        ]
+      }
+    }
+  ]
+}

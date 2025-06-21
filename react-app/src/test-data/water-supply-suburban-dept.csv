@@ -1,0 +1,13 @@
+Name,Type,Latitude,Longitude,Capacity_Gallons,Flow_Rate_GPM,Static_Pressure_PSI,Access_Rating,Operational_Status,Owner,Notes
+"Main St Hydrant #101",hydrant,39.7392,-104.9903,,1500,75,"excellent","active","Denver Water","Primary residential coverage"
+"Oak Ave Hydrant #102",hydrant,39.7402,-104.9913,,1400,70,"excellent","active","Denver Water","Residential intersection"
+"Park Blvd Hydrant #103",hydrant,39.7382,-104.9893,,1300,65,"good","active","Denver Water","Near community park"
+"School Zone Hydrant #104",hydrant,39.7412,-104.9923,,1600,80,"excellent","active","Denver Water","Elementary school protection"
+"Shopping Center Hydrant #105",hydrant,39.7372,-104.9883,,1800,85,"excellent","active","Denver Water","Commercial district"
+"Backup Tank Station 5",tank,39.7390,-104.9900,75000,,,"excellent","active","Suburban Fire Dept","Station backup supply"
+"Industrial Hydrant #201",hydrant,39.7360,-104.9870,,2000,90,"excellent","active","Denver Water","Industrial zone coverage"
+"Residential Hydrant #106",hydrant,39.7420,-104.9930,,1200,60,"good","active","Denver Water","Subdivision entrance"
+"Highway Access Hydrant #107",hydrant,39.7350,-104.9860,,1100,55,"fair","active","Denver Water","Highway interchange"
+"Emergency Reserve Tank",tank,39.7400,-104.9910,35000,,,"good","active","Suburban Fire Dept","Emergency backup system"
+"Medical Center Hydrant #108",hydrant,39.7430,-104.9940,,1700,75,"excellent","active","Denver Water","Hospital district"
+"Corner Store Hydrant #109",hydrant,39.7365,-104.9875,,1000,50,"good","active","Denver Water","Commercial corner"

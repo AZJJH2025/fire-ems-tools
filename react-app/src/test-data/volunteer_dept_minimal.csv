@@ -1,0 +1,21 @@
+Date,Time,Location,Type,Units,Officer,Notes,Duration
+01/28/2024,14:23,123 Main St,House Fire,E1 T1,Chief Johnson,Kitchen fire - grease on stove. Used foam. Family safe.,2hrs 15min
+01/28/2024,21:45,Highway 67 near Miller Rd,Car Wreck,E1 R1,Capt Smith,2 car accident. Minor injuries. Transported 1 to hospital.,1hr 30min
+01/29/2024,09:15,456 Oak Avenue,Medical,E1,Lt Brown,Chest pain - 65 yr old male. Transported by county EMS.,45min
+01/29/2024,16:30,Rural Route 3,Grass Fire,E1 B1,Chief Johnson,Brush fire about 3 acres. Started by lightning. Contained quickly.,3hrs
+01/30/2024,11:22,789 Elm Street,False Alarm,E1,Firefighter Davis,Smoke detector malfunction. No fire. Reset system.,20min
+01/30/2024,19:45,County Road 45,Medical,E1,Lt Brown,Fall injury - elderly woman. Possible broken hip. County EMS transported.,1hr
+02/01/2024,03:33,234 Pine St,Structure Fire,E1 E2 T1,Chief Johnson,"House fire - bedroom. Electrical cause. Family displaced, Red Cross called.",4hrs 30min
+02/01/2024,12:15,Main St Business District,Alarm,E1,Capt Smith,Fire alarm at hardware store. False - dust from construction.,30min
+02/02/2024,08:45,567 Maple Dr,Medical,E1,Lt Brown,Diabetic emergency. Patient conscious. BLS transport by county.,35min
+02/02/2024,17:20,Farm Road 112,Vehicle Fire,E1,Firefighter Wilson,Pickup truck engine fire. Total loss. No injuries. Towed.,1hr 15min
+02/03/2024,22:10,890 Cedar Lane,Medical Emergency,E1,Chief Johnson,Heart attack - 58 yr old. CPR started. ALS transport successful.,1hr 45min
+02/04/2024,06:30,Church Road,Tree Down,E1,Capt Smith,Storm damage - tree blocking road. Chainsawed and moved.,2hrs
+02/04/2024,13:45,Industrial Park,Hazmat,E1 E2,Chief Johnson,Small chemical spill at factory. Contained by plant staff. No evacuation needed.,1hr 30min
+02/05/2024,15:22,345 Birch Street,Alarm Activation,E1,Lt Brown,Residential fire alarm. Burnt toast. No fire department action needed.,15min
+02/05/2024,20:18,Highway 67 MM 23,MVA,E1 R1,Capt Smith,Single vehicle rollover. Driver trapped. Extricated and flown out by helicopter.,2hrs 45min
+02/06/2024,10:30,678 Willow Ave,Medical,E1,Firefighter Davis,Elderly fall. No serious injuries. Assisted back to bed. No transport.,25min
+02/06/2024,16:45,Rural Route 5,Brush Fire,E1 B1 E2,Chief Johnson,Large grass fire - 10 acres. Mutual aid from county. Controlled by evening.,6hrs
+02/07/2024,07:15,123 Spruce St,Alarm,E1,Lt Brown,Commercial fire alarm. System malfunction during maintenance.,20min
+02/07/2024,18:30,456 Hickory Dr,Medical Call,E1,Capt Smith,Difficulty breathing - COPD patient. O2 therapy. County EMS transport.,40min
+02/08/2024,14:00,County Fair Grounds,Standby,E1 E2,Chief Johnson,Fire standby for county fair. No incidents. Routine coverage.,8hrs
