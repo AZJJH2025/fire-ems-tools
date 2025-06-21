@@ -1564,14 +1564,14 @@ def create_app(config_name='default'):
         # This should not happen with the fixed import structure
         raise e
     
-    # Add error handlers
+    # Add error handlers - simplified without templates
     @app.errorhandler(404)
     def page_not_found(e):
-        return render_template('errors/404.html'), 404
+        return jsonify({'error': 'Page not found'}), 404
         
     @app.errorhandler(500)
     def server_error(e):
-        return render_template('errors/500.html'), 500
+        return jsonify({'error': 'Internal server error'}), 500
     
     return app
 
