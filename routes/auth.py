@@ -1,10 +1,13 @@
 """
 Authentication routes for Fire EMS Tools
-All legacy template routes removed after cleanup - use React app authentication at /app/* instead
+Provides both API endpoints for React app and redirect routes for legacy URLs
 """
 
 import logging
-from flask import Blueprint, redirect, jsonify
+from flask import Blueprint, redirect, jsonify, request, session
+from flask_login import login_user, logout_user, login_required, current_user
+from database import db, User, Department
+from datetime import datetime
 
 # Setup logger
 logger = logging.getLogger(__name__)
@@ -12,6 +15,7 @@ logger = logging.getLogger(__name__)
 # Create blueprint
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
+# Legacy redirect routes (for backward compatibility)
 @bp.route('/login')
 def login():
     """Login route - redirect to React app"""
@@ -27,7 +31,186 @@ def logout():
     """Logout route"""
     return redirect('/app/')
 
-# All other legacy authentication routes removed - templates deleted during cleanup
-# Use the modern React app authentication at:
-# - /app/login
-# - /app/signup
+# API endpoints for React authentication
+@bp.route('/api/login', methods=['POST'])
+def api_login():
+    """API endpoint for user login"""
+    try:
+        data = request.get_json()
+        
+        if not data or not data.get('email') or not data.get('password'):
+            return jsonify({
+                'success': False,
+                'message': 'Email and password are required'
+            }), 400
+        
+        # Find user by email
+        user = User.query.filter_by(email=data['email'].lower().strip()).first()
+        
+        if not user or not user.check_password(data['password']):
+            return jsonify({
+                'success': False,
+                'message': 'Invalid email or password'
+            }), 401
+        
+        if not user.is_active:
+            return jsonify({
+                'success': False,
+                'message': 'Account is inactive. Please contact your administrator.'
+            }), 403
+        
+        # Log the user in
+        login_user(user, remember=data.get('remember', False))
+        user.update_last_login()
+        db.session.commit()
+        
+        logger.info(f"User {user.email} logged in successfully")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Login successful',
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'name': user.name,
+                'role': user.role,
+                'department_id': user.department_id,
+                'department_name': user.department.name if user.department else None
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Login error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': 'An error occurred during login'
+        }), 500
+
+@bp.route('/api/register', methods=['POST'])
+def api_register():
+    """API endpoint for user registration"""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['email', 'password', 'name', 'departmentName']
+        if not data or not all(field in data for field in required_fields):
+            return jsonify({
+                'success': False,
+                'message': 'All fields are required: email, password, name, departmentName'
+            }), 400
+        
+        email = data['email'].lower().strip()
+        password = data['password']
+        name = data['name'].strip()
+        department_name = data['departmentName'].strip()
+        
+        # Validate email format
+        if '@' not in email or '.' not in email:
+            return jsonify({
+                'success': False,
+                'message': 'Please enter a valid email address'
+            }), 400
+        
+        # Validate password strength
+        if len(password) < 8:
+            return jsonify({
+                'success': False,
+                'message': 'Password must be at least 8 characters long'
+            }), 400
+        
+        # Check if user already exists
+        if User.query.filter_by(email=email).first():
+            return jsonify({
+                'success': False,
+                'message': 'An account with this email already exists'
+            }), 400
+        
+        # Create or find department
+        department = Department.query.filter_by(name=department_name).first()
+        if not department:
+            # Create new department
+            department = Department(
+                name=department_name,
+                code=department_name.upper().replace(' ', '_')[:10],
+                department_type=data.get('departmentType', 'fire'),
+                is_active=True
+            )
+            db.session.add(department)
+            db.session.flush()  # Get department ID
+        
+        # Create new user
+        user = User(
+            email=email,
+            name=name,
+            department_id=department.id,
+            role='user',  # Default role
+            is_active=True
+        )
+        user.set_password(password)
+        
+        db.session.add(user)
+        db.session.commit()
+        
+        logger.info(f"New user registered: {email} for department {department_name}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Registration successful! You can now log in.',
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'name': user.name,
+                'department_name': department.name
+            }
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Registration error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': 'An error occurred during registration'
+        }), 500
+
+@bp.route('/api/logout', methods=['POST'])
+@login_required
+def api_logout():
+    """API endpoint for user logout"""
+    try:
+        logger.info(f"User {current_user.email} logged out")
+        logout_user()
+        return jsonify({
+            'success': True,
+            'message': 'Logout successful'
+        })
+    except Exception as e:
+        logger.error(f"Logout error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': 'An error occurred during logout'
+        }), 500
+
+@bp.route('/api/me', methods=['GET'])
+@login_required
+def api_current_user():
+    """API endpoint to get current user info"""
+    try:
+        return jsonify({
+            'success': True,
+            'user': {
+                'id': current_user.id,
+                'email': current_user.email,
+                'name': current_user.name,
+                'role': current_user.role,
+                'department_id': current_user.department_id,
+                'department_name': current_user.department.name if current_user.department else None,
+                'last_login': current_user.last_login.isoformat() if current_user.last_login else None
+            }
+        })
+    except Exception as e:
+        logger.error(f"Current user error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': 'An error occurred getting user info'
+        }), 500
