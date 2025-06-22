@@ -31,6 +31,100 @@ def logout():
     """Logout route"""
     return redirect('/app/')
 
+# Debug endpoint to check admin users (temporary)
+@bp.route('/api/debug/admin-users', methods=['GET'])
+def debug_admin_users():
+    """Debug endpoint to check admin users in database"""
+    try:
+        # Only allow this in development or for debugging
+        import os
+        if os.environ.get('FLASK_ENV') == 'production':
+            return jsonify({'error': 'Debug endpoint disabled in production'}), 403
+            
+        from database import User
+        admin_users = User.query.filter((User.role == 'admin') | (User.role == 'super_admin')).all()
+        
+        result = []
+        for user in admin_users:
+            result.append({
+                'email': user.email,
+                'role': user.role,
+                'is_active': user.is_active,
+                'department_id': user.department_id,
+                'created_at': user.created_at.isoformat() if user.created_at else None
+            })
+            
+        return jsonify({
+            'admin_users': result,
+            'total_users': User.query.count(),
+            'total_admin_users': len(result)
+        })
+    except Exception as e:
+        logger.error(f"Debug admin users error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+# Emergency admin creation endpoint
+@bp.route('/api/emergency/create-admin', methods=['POST'])
+def emergency_create_admin():
+    """Emergency endpoint to create or fix admin user"""
+    try:
+        data = request.get_json()
+        
+        # Require a special emergency key for security
+        if not data or data.get('emergency_key') != 'FireEMS_Emergency_2025':
+            return jsonify({'error': 'Invalid emergency key'}), 403
+            
+        from database import db, User, Department
+        
+        # Find or create a department
+        dept = Department.query.first()
+        if not dept:
+            dept = Department(
+                code='emergency',
+                name='Emergency Department',
+                department_type='combined',
+                is_active=True,
+                setup_complete=True
+            )
+            db.session.add(dept)
+            db.session.commit()
+        
+        # Check if super admin exists
+        admin_email = 'admin@fireems.ai'
+        admin_user = User.query.filter_by(email=admin_email).first()
+        
+        if admin_user:
+            # Update existing user
+            admin_user.role = 'super_admin'
+            admin_user.is_active = True
+            admin_user.set_password('FireEMS2025!')
+            message = 'Updated existing admin user'
+        else:
+            # Create new admin user
+            admin_user = User(
+                department_id=dept.id,
+                email=admin_email,
+                name='System Administrator',
+                role='super_admin',
+                is_active=True
+            )
+            admin_user.set_password('FireEMS2025!')
+            db.session.add(admin_user)
+            message = 'Created new admin user'
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': message,
+            'admin_email': admin_email,
+            'admin_role': admin_user.role
+        })
+        
+    except Exception as e:
+        logger.error(f"Emergency admin creation error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 # API endpoints for React authentication
 @bp.route('/api/login', methods=['POST'])
 def api_login():

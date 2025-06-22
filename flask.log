@@ -198,3 +198,695 @@
 2025-06-21 15:35:23,550 - __main__ - INFO - Super admin user already exists, skipping creation
 2025-06-21 15:35:23,550 - __main__ - INFO - Application created successfully with all fixes applied
 2025-06-21 15:35:37,737 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 15:35:37] "HEAD /app/admin HTTP/1.1" 200 -
+2025-06-21 15:45:07,267 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 15:45:07,267 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 15:45:07,267 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 15:45:07,270 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 15:45:07,271 - app - INFO - Creating application with deployment fixes...
+2025-06-21 15:45:07,271 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 15:45:07,271 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 15:45:07,271 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 15:45:07,272 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 15:45:07,272 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 15:45:07,282 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 15:45:07,283 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 15:45:07,283 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 15:45:07,283 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 15:45:07,283 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 15:45:07,283 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 15:45:07,283 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 15:45:07,283 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 15:45:07,283 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 15:45:07,568 - app - INFO - Successfully registered all route blueprints
+2025-06-21 15:45:07,570 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 15:45:07,570 - app - INFO - Registered React Data Formatter routes
+2025-06-21 15:45:07,571 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 15:45:07,572 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 15:45:07,572 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 15:45:07,572 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 15:45:07,572 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 15:45:07,572 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 15:45:07,572 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 15:45:07,595 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 15:45:07,595 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 15:45:07,598 - app - INFO - Found 1 existing super_admin users
+2025-06-21 15:45:07,598 - app - INFO - Super admin user already exists, skipping creation
+2025-06-21 15:45:07,598 - app - INFO - Application created successfully with all fixes applied
+2025-06-21 15:45:07,598 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 15:45:07,598 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 15:45:07,599 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 15:45:07,599 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 15:45:07,599 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 15:45:07,600 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 15:45:07,600 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 15:45:07,600 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 15:45:07,600 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 15:45:07,600 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 15:45:07,600 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 15:45:07,600 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 15:45:07,600 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 15:45:07,600 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 15:45:07,610 - app - INFO - Successfully registered all route blueprints
+2025-06-21 15:45:07,612 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 15:45:07,612 - app - INFO - Registered React Data Formatter routes
+2025-06-21 15:45:27,855 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 15:45:27,855 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 15:45:27,855 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 15:45:27,858 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 15:45:27,858 - app - INFO - Creating application with deployment fixes...
+2025-06-21 15:45:27,858 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 15:45:27,859 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 15:45:27,859 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 15:45:27,859 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 15:45:27,859 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 15:45:27,869 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 15:45:27,869 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 15:45:27,869 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 15:45:27,869 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 15:45:27,869 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 15:45:27,869 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 15:45:27,869 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 15:45:27,869 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 15:45:27,869 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 15:45:28,136 - app - INFO - Successfully registered all route blueprints
+2025-06-21 15:45:28,138 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 15:45:28,138 - app - INFO - Registered React Data Formatter routes
+2025-06-21 15:45:28,139 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 15:45:28,139 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 15:45:28,139 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 15:45:28,139 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 15:45:28,139 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 15:45:28,139 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 15:45:28,140 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 15:45:28,164 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 15:45:28,164 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 15:45:28,167 - app - INFO - Found 1 existing super_admin users
+2025-06-21 15:45:28,167 - app - INFO - Super admin user already exists, skipping creation
+2025-06-21 15:45:28,167 - app - INFO - Application created successfully with all fixes applied
+2025-06-21 15:45:28,168 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 15:45:28,168 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 15:45:28,168 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 15:45:28,168 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 15:45:28,168 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 15:45:28,169 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 15:45:28,169 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 15:45:28,169 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 15:45:28,169 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 15:45:28,169 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 15:45:28,169 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 15:45:28,169 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 15:45:28,169 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 15:45:28,169 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 15:45:28,179 - app - INFO - Successfully registered all route blueprints
+2025-06-21 15:45:28,181 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 15:45:28,181 - app - INFO - Registered React Data Formatter routes
+2025-06-21 15:45:44,758 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 15:45:44,758 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 15:45:44,758 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 15:45:44,760 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 15:45:44,760 - app - INFO - Creating application with deployment fixes...
+2025-06-21 15:45:44,760 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 15:45:44,760 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 15:45:44,760 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 15:45:44,761 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 15:45:44,761 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 15:45:44,768 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 15:45:44,769 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 15:45:44,769 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 15:45:44,769 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 15:45:44,769 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 15:45:44,769 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 15:45:44,769 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 15:45:44,769 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 15:45:44,769 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 15:45:44,962 - app - INFO - Successfully registered all route blueprints
+2025-06-21 15:45:44,964 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 15:45:44,964 - app - INFO - Registered React Data Formatter routes
+2025-06-21 15:45:44,965 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 15:45:44,966 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 15:45:44,966 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 15:45:44,966 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 15:45:44,966 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 15:45:44,966 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 15:45:44,966 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 15:45:44,990 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 15:45:44,990 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 15:45:44,992 - app - INFO - Found 1 existing super_admin users
+2025-06-21 15:45:44,992 - app - INFO - Super admin user already exists, skipping creation
+2025-06-21 15:45:44,992 - app - INFO - Application created successfully with all fixes applied
+2025-06-21 15:45:44,993 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 15:45:44,993 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 15:45:44,993 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 15:45:44,993 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 15:45:44,994 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 15:45:44,995 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 15:45:44,995 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 15:45:44,995 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 15:45:44,995 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 15:45:44,995 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 15:45:44,995 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 15:45:44,995 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 15:45:44,995 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 15:45:44,995 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 15:45:45,005 - app - INFO - Successfully registered all route blueprints
+2025-06-21 15:45:45,006 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 15:45:45,006 - app - INFO - Registered React Data Formatter routes
+2025-06-21 16:32:15,635 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/routes/react_app.py', reloading
+2025-06-21 16:32:15,738 - werkzeug - INFO -  * Restarting with stat
+2025-06-21 16:32:15,949 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 16:32:16,077 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 16:32:16,077 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 16:32:16,080 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 16:32:16,080 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-21 16:32:16,081 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 16:32:16,081 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 16:32:16,081 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 16:32:16,082 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 16:32:16,082 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 16:32:16,093 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 16:32:16,093 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 16:32:16,093 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 16:32:16,093 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 16:32:16,093 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 16:32:16,093 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 16:32:16,093 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 16:32:16,093 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 16:32:16,093 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 16:32:16,393 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-21 16:32:16,395 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 16:32:16,395 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-21 16:32:16,396 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 16:32:16,396 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 16:32:16,397 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 16:32:16,397 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 16:32:16,397 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 16:32:16,397 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 16:32:16,397 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 16:32:16,404 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 16:32:16,404 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 16:32:16,406 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-21 16:32:16,406 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-21 16:32:16,406 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-21 16:32:16,445 - werkzeug - WARNING -  * Debugger is active!
+2025-06-21 16:32:16,453 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-21 17:02:02,549 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 17:02:02] "[32mGET / HTTP/1.1[0m" 302 -
+2025-06-21 17:30:17,497 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/routes/react_app.py', reloading
+2025-06-21 17:30:17,589 - werkzeug - INFO -  * Restarting with stat
+2025-06-21 17:30:17,795 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 17:30:17,920 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 17:30:17,920 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 17:30:17,923 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 17:30:17,923 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-21 17:30:17,924 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 17:30:17,924 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 17:30:17,924 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 17:30:17,925 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 17:30:17,925 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 17:30:17,935 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 17:30:17,935 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 17:30:17,935 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 17:30:17,935 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 17:30:17,936 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 17:30:17,936 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 17:30:17,936 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 17:30:17,936 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 17:30:17,936 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 17:30:18,209 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-21 17:30:18,211 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 17:30:18,211 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-21 17:30:18,212 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 17:30:18,212 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 17:30:18,212 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 17:30:18,212 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 17:30:18,212 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 17:30:18,212 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 17:30:18,212 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 17:30:18,219 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 17:30:18,219 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 17:30:18,221 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-21 17:30:18,221 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-21 17:30:18,221 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-21 17:30:18,259 - werkzeug - WARNING -  * Debugger is active!
+2025-06-21 17:30:18,266 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-21 17:34:50,299 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/routes/react_app.py', reloading
+2025-06-21 17:34:50,394 - werkzeug - INFO -  * Restarting with stat
+2025-06-21 17:34:50,605 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 17:34:50,731 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 17:34:50,731 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 17:34:50,734 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 17:34:50,734 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-21 17:34:50,735 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 17:34:50,735 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 17:34:50,735 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 17:34:50,736 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 17:34:50,736 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 17:34:50,746 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 17:34:50,746 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 17:34:50,746 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 17:34:50,746 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 17:34:50,746 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 17:34:50,746 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 17:34:50,746 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 17:34:50,746 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 17:34:50,746 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 17:34:51,014 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-21 17:34:51,016 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 17:34:51,016 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-21 17:34:51,017 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 17:34:51,017 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 17:34:51,017 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 17:34:51,017 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 17:34:51,017 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 17:34:51,017 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 17:34:51,017 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 17:34:51,024 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 17:34:51,024 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 17:34:51,026 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-21 17:34:51,026 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-21 17:34:51,026 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-21 17:34:51,063 - werkzeug - WARNING -  * Debugger is active!
+2025-06-21 17:34:51,073 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-21 17:52:54,716 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/routes/main.py', reloading
+2025-06-21 17:52:54,806 - werkzeug - INFO -  * Restarting with stat
+2025-06-21 17:52:55,010 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 17:52:55,144 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 17:52:55,144 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 17:52:55,147 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 17:52:55,147 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-21 17:52:55,148 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 17:52:55,148 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 17:52:55,148 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 17:52:55,149 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 17:52:55,149 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 17:52:55,159 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 17:52:55,159 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 17:52:55,159 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 17:52:55,159 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 17:52:55,159 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 17:52:55,159 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 17:52:55,159 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 17:52:55,159 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 17:52:55,159 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 17:52:55,443 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-21 17:52:55,445 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 17:52:55,445 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-21 17:52:55,446 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 17:52:55,446 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 17:52:55,446 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 17:52:55,446 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 17:52:55,447 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 17:52:55,447 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 17:52:55,447 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 17:52:55,453 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 17:52:55,453 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 17:52:55,456 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-21 17:52:55,456 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-21 17:52:55,456 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-21 17:52:55,496 - werkzeug - WARNING -  * Debugger is active!
+2025-06-21 17:52:55,504 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-21 18:45:24,610 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/routes/main.py', reloading
+2025-06-21 18:45:24,722 - werkzeug - INFO -  * Restarting with stat
+2025-06-21 18:45:24,925 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 18:45:25,049 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 18:45:25,049 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 18:45:25,052 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 18:45:25,052 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-21 18:45:25,053 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 18:45:25,053 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 18:45:25,053 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 18:45:25,054 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 18:45:25,054 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 18:45:25,064 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 18:45:25,064 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 18:45:25,064 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 18:45:25,064 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 18:45:25,064 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 18:45:25,064 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 18:45:25,064 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 18:45:25,064 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 18:45:25,065 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 18:45:25,343 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-21 18:45:25,344 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 18:45:25,344 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-21 18:45:25,345 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 18:45:25,345 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 18:45:25,345 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 18:45:25,346 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 18:45:25,346 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 18:45:25,346 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 18:45:25,346 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 18:45:25,352 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 18:45:25,352 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 18:45:25,354 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-21 18:45:25,354 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-21 18:45:25,355 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-21 18:45:25,391 - werkzeug - WARNING -  * Debugger is active!
+2025-06-21 18:45:25,399 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-21 18:45:51,974 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 18:45:51] "HEAD / HTTP/1.1" 200 -
+2025-06-21 19:36:23,961 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 19:36:24,090 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 19:36:24,090 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 19:36:24,093 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 19:36:24,093 - app - INFO - Creating application with deployment fixes...
+2025-06-21 19:36:24,094 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 19:36:24,094 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 19:36:24,094 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 19:36:24,095 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 19:36:24,095 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 19:36:24,105 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 19:36:24,105 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 19:36:24,105 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 19:36:24,105 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 19:36:24,105 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 19:36:24,106 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 19:36:24,106 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 19:36:24,106 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 19:36:24,106 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 19:36:24,378 - app - INFO - Successfully registered all route blueprints
+2025-06-21 19:36:24,380 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 19:36:24,380 - app - INFO - Registered React Data Formatter routes
+2025-06-21 19:36:24,381 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 19:36:24,381 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 19:36:24,381 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 19:36:24,381 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 19:36:24,381 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 19:36:24,381 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 19:36:24,381 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 19:36:24,388 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 19:36:24,388 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 19:36:24,391 - app - INFO - Found 1 existing super_admin users
+2025-06-21 19:36:24,391 - app - INFO - Super admin user already exists, skipping creation
+2025-06-21 19:36:24,391 - app - INFO - Application created successfully with all fixes applied
+2025-06-21 19:36:53,771 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 19:36:53,873 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 19:36:53,873 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 19:36:53,875 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 19:36:53,875 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-21 19:36:53,876 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 19:36:53,876 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 19:36:53,876 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 19:36:53,877 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 19:36:53,877 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 19:36:53,884 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 19:36:53,884 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 19:36:53,884 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 19:36:53,884 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 19:36:53,884 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 19:36:53,884 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 19:36:53,884 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 19:36:53,884 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 19:36:53,885 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 19:36:54,072 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-21 19:36:54,074 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 19:36:54,074 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-21 19:36:54,075 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 19:36:54,075 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 19:36:54,075 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 19:36:54,075 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 19:36:54,075 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 19:36:54,075 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 19:36:54,075 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 19:36:54,082 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 19:36:54,082 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 19:36:54,084 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-21 19:36:54,084 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-21 19:36:54,084 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-21 19:37:58,846 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 19:37:58,946 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 19:37:58,946 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 19:37:58,948 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 19:37:58,948 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-21 19:37:58,948 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 19:37:58,948 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 19:37:58,949 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 19:37:58,949 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 19:37:58,949 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 19:37:58,956 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 19:37:58,957 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 19:37:58,957 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 19:37:58,957 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 19:37:58,957 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 19:37:58,957 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 19:37:58,957 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 19:37:58,957 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 19:37:58,957 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 19:37:59,147 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-21 19:37:59,148 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 19:37:59,148 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-21 19:37:59,149 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 19:37:59,149 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 19:37:59,149 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 19:37:59,150 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 19:37:59,150 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 19:37:59,150 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 19:37:59,150 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 19:37:59,156 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 19:37:59,156 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 19:37:59,158 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-21 19:37:59,158 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-21 19:37:59,158 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-21 19:39:23,789 - routes.react_app - INFO - Serving React app from: /Users/josephhester/fire-ems-tools/react-app/dist
+2025-06-21 19:39:23,790 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/admin HTTP/1.1" 200 -
+2025-06-21 19:39:23,803 - routes.react_app - INFO - Serving React asset: index-DwHm_xfn.js
+2025-06-21 19:39:23,806 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/assets/index-DwHm_xfn.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,841 - __main__ - INFO - ASSETS_FALLBACK: Serving AdminDashboard-C5Qoof18.js from deployment build
+2025-06-21 19:39:23,842 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /assets/AdminDashboard-C5Qoof18.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,844 - __main__ - INFO - ASSETS_FALLBACK: Serving TextField-CFS6yht_.js from deployment build
+2025-06-21 19:39:23,845 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /assets/TextField-CFS6yht_.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,848 - __main__ - INFO - ASSETS_FALLBACK: Serving Typography-3O39rTWb.js from deployment build
+2025-06-21 19:39:23,849 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /assets/Typography-3O39rTWb.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,851 - __main__ - INFO - ASSETS_FALLBACK: Serving Button-DwLQaF7Z.js from deployment build
+2025-06-21 19:39:23,852 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /assets/Button-DwLQaF7Z.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,854 - __main__ - INFO - ASSETS_FALLBACK: Serving CardContent-T6ZqzC_F.js from deployment build
+2025-06-21 19:39:23,855 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /assets/CardContent-T6ZqzC_F.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,857 - __main__ - INFO - ASSETS_FALLBACK: Serving CheckCircle-CgEdPYFv.js from deployment build
+2025-06-21 19:39:23,858 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /assets/CheckCircle-CgEdPYFv.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,860 - __main__ - INFO - ASSETS_FALLBACK: Serving Business-B5w9ux49.js from deployment build
+2025-06-21 19:39:23,861 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /assets/Business-B5w9ux49.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,863 - __main__ - INFO - ASSETS_FALLBACK: Serving TrendingUp-B33mDqde.js from deployment build
+2025-06-21 19:39:23,864 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /assets/TrendingUp-B33mDqde.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,866 - __main__ - INFO - ASSETS_FALLBACK: Serving LinearProgress-Bt9_20sU.js from deployment build
+2025-06-21 19:39:23,866 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /assets/LinearProgress-Bt9_20sU.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,868 - __main__ - INFO - ASSETS_FALLBACK: Serving listItemTextClasses-D3JvyVNP.js from deployment build
+2025-06-21 19:39:23,869 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /assets/listItemTextClasses-D3JvyVNP.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,871 - __main__ - INFO - ASSETS_FALLBACK: Serving Warning-BQbennwL.js from deployment build
+2025-06-21 19:39:23,872 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /assets/Warning-BQbennwL.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,874 - __main__ - INFO - ASSETS_FALLBACK: Serving TableRow-CpFPOIXi.js from deployment build
+2025-06-21 19:39:23,875 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /assets/TableRow-CpFPOIXi.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,877 - __main__ - INFO - ASSETS_FALLBACK: Serving MoreVert-DzGVHVhb.js from deployment build
+2025-06-21 19:39:23,878 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /assets/MoreVert-DzGVHVhb.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,881 - __main__ - INFO - ASSETS_FALLBACK: Serving MenuItem-DeVymi7x.js from deployment build
+2025-06-21 19:39:23,882 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /assets/MenuItem-DeVymi7x.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,884 - __main__ - INFO - ASSETS_FALLBACK: Serving ListItemText-CIqAQvaJ.js from deployment build
+2025-06-21 19:39:23,885 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /assets/ListItemText-CIqAQvaJ.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,887 - __main__ - INFO - ASSETS_FALLBACK: Serving Edit-CRKKVfF2.js from deployment build
+2025-06-21 19:39:23,888 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /assets/Edit-CRKKVfF2.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,889 - __main__ - INFO - ASSETS_FALLBACK: Serving Delete-BtN1vZx7.js from deployment build
+2025-06-21 19:39:23,889 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /assets/Delete-BtN1vZx7.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,890 - __main__ - INFO - ASSETS_FALLBACK: Serving Save-CDtLDdtC.js from deployment build
+2025-06-21 19:39:23,891 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /assets/Save-CDtLDdtC.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,892 - __main__ - INFO - ASSETS_FALLBACK: Serving Settings-p14i-YRg.js from deployment build
+2025-06-21 19:39:23,892 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /assets/Settings-p14i-YRg.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,893 - __main__ - INFO - ASSETS_FALLBACK: Serving Security-DhOBYZoa.js from deployment build
+2025-06-21 19:39:23,893 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /assets/Security-DhOBYZoa.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,894 - __main__ - INFO - ASSETS_FALLBACK: Serving Divider-CBmqyGsn.js from deployment build
+2025-06-21 19:39:23,894 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /assets/Divider-CBmqyGsn.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,895 - __main__ - INFO - ASSETS_FALLBACK: Serving Tabs-7ynZqZzg.js from deployment build
+2025-06-21 19:39:23,896 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /assets/Tabs-7ynZqZzg.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,897 - routes.react_app - INFO - Serving React asset: AdminDashboard-C5Qoof18.js
+2025-06-21 19:39:23,897 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/assets/AdminDashboard-C5Qoof18.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,903 - routes.react_app - INFO - Serving React asset: TextField-CFS6yht_.js
+2025-06-21 19:39:23,903 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/assets/TextField-CFS6yht_.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,905 - routes.react_app - INFO - Serving React asset: Typography-3O39rTWb.js
+2025-06-21 19:39:23,906 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/assets/Typography-3O39rTWb.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,907 - routes.react_app - INFO - Serving React asset: CardContent-T6ZqzC_F.js
+2025-06-21 19:39:23,909 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/assets/CardContent-T6ZqzC_F.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,910 - routes.react_app - INFO - Serving React asset: CheckCircle-CgEdPYFv.js
+2025-06-21 19:39:23,911 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/assets/CheckCircle-CgEdPYFv.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,912 - routes.react_app - INFO - Serving React asset: Business-B5w9ux49.js
+2025-06-21 19:39:23,912 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/assets/Business-B5w9ux49.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,913 - routes.react_app - INFO - Serving React asset: TrendingUp-B33mDqde.js
+2025-06-21 19:39:23,914 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/assets/TrendingUp-B33mDqde.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,915 - routes.react_app - INFO - Serving React asset: LinearProgress-Bt9_20sU.js
+2025-06-21 19:39:23,916 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/assets/LinearProgress-Bt9_20sU.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,918 - routes.react_app - INFO - Serving React asset: listItemTextClasses-D3JvyVNP.js
+2025-06-21 19:39:23,919 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/assets/listItemTextClasses-D3JvyVNP.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,921 - routes.react_app - INFO - Serving React asset: Warning-BQbennwL.js
+2025-06-21 19:39:23,923 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/assets/Warning-BQbennwL.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,924 - routes.react_app - INFO - Serving React asset: Button-DwLQaF7Z.js
+2025-06-21 19:39:23,924 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/assets/Button-DwLQaF7Z.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,926 - routes.react_app - INFO - Serving React asset: TableRow-CpFPOIXi.js
+2025-06-21 19:39:23,926 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/assets/TableRow-CpFPOIXi.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,928 - routes.react_app - INFO - Serving React asset: MoreVert-DzGVHVhb.js
+2025-06-21 19:39:23,928 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/assets/MoreVert-DzGVHVhb.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,929 - routes.react_app - INFO - Serving React asset: MenuItem-DeVymi7x.js
+2025-06-21 19:39:23,930 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/assets/MenuItem-DeVymi7x.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,931 - routes.react_app - INFO - Serving React asset: ListItemText-CIqAQvaJ.js
+2025-06-21 19:39:23,931 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/assets/ListItemText-CIqAQvaJ.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,932 - routes.react_app - INFO - Serving React asset: Edit-CRKKVfF2.js
+2025-06-21 19:39:23,933 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/assets/Edit-CRKKVfF2.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,934 - routes.react_app - INFO - Serving React asset: Delete-BtN1vZx7.js
+2025-06-21 19:39:23,934 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/assets/Delete-BtN1vZx7.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,935 - routes.react_app - INFO - Serving React asset: Save-CDtLDdtC.js
+2025-06-21 19:39:23,936 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/assets/Save-CDtLDdtC.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,937 - routes.react_app - INFO - Serving React asset: Settings-p14i-YRg.js
+2025-06-21 19:39:23,937 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/assets/Settings-p14i-YRg.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,938 - routes.react_app - INFO - Serving React asset: Security-DhOBYZoa.js
+2025-06-21 19:39:23,938 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/assets/Security-DhOBYZoa.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,939 - routes.react_app - INFO - Serving React asset: Divider-CBmqyGsn.js
+2025-06-21 19:39:23,940 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/assets/Divider-CBmqyGsn.js HTTP/1.1" 200 -
+2025-06-21 19:39:23,940 - routes.react_app - INFO - Serving React asset: Tabs-7ynZqZzg.js
+2025-06-21 19:39:23,941 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:23] "GET /app/assets/Tabs-7ynZqZzg.js HTTP/1.1" 200 -
+2025-06-21 19:39:24,152 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:24] "[32mGET /auth/api/me HTTP/1.1[0m" 302 -
+2025-06-21 19:39:24,160 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:24] "[32mGET /auth/login?next=/auth/api/me HTTP/1.1[0m" 302 -
+2025-06-21 19:39:24,166 - routes.react_app - INFO - Serving React app from: /Users/josephhester/fire-ems-tools/react-app/dist
+2025-06-21 19:39:24,167 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:24] "GET /app/login HTTP/1.1" 200 -
+2025-06-21 19:39:24,203 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:24] "[33mGET /favicon.svg HTTP/1.1[0m" 404 -
+2025-06-21 19:39:26,179 - __main__ - INFO - ASSETS_FALLBACK: Serving LoginPage-BV1wc32D.js from deployment build
+2025-06-21 19:39:26,180 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:26] "GET /assets/LoginPage-BV1wc32D.js HTTP/1.1" 200 -
+2025-06-21 19:39:26,183 - __main__ - INFO - ASSETS_FALLBACK: Serving LocalFireDepartment-BMVFdPDF.js from deployment build
+2025-06-21 19:39:26,184 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:26] "GET /assets/LocalFireDepartment-BMVFdPDF.js HTTP/1.1" 200 -
+2025-06-21 19:39:26,186 - __main__ - INFO - ASSETS_FALLBACK: Serving InputAdornment-D1Vn2YB8.js from deployment build
+2025-06-21 19:39:26,186 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:26] "GET /assets/InputAdornment-D1Vn2YB8.js HTTP/1.1" 200 -
+2025-06-21 19:39:26,188 - __main__ - INFO - ASSETS_FALLBACK: Serving VisibilityOff-CDHLEeT_.js from deployment build
+2025-06-21 19:39:26,189 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:26] "GET /assets/VisibilityOff-CDHLEeT_.js HTTP/1.1" 200 -
+2025-06-21 19:39:26,191 - routes.react_app - INFO - Serving React asset: LoginPage-BV1wc32D.js
+2025-06-21 19:39:26,191 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:26] "GET /app/assets/LoginPage-BV1wc32D.js HTTP/1.1" 200 -
+2025-06-21 19:39:26,195 - routes.react_app - INFO - Serving React asset: LocalFireDepartment-BMVFdPDF.js
+2025-06-21 19:39:26,195 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:26] "GET /app/assets/LocalFireDepartment-BMVFdPDF.js HTTP/1.1" 200 -
+2025-06-21 19:39:26,197 - routes.react_app - INFO - Serving React asset: InputAdornment-D1Vn2YB8.js
+2025-06-21 19:39:26,197 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:26] "GET /app/assets/InputAdornment-D1Vn2YB8.js HTTP/1.1" 200 -
+2025-06-21 19:39:26,199 - routes.react_app - INFO - Serving React asset: VisibilityOff-CDHLEeT_.js
+2025-06-21 19:39:26,199 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:26] "GET /app/assets/VisibilityOff-CDHLEeT_.js HTTP/1.1" 200 -
+2025-06-21 19:39:51,597 - routes.auth - INFO - User admin@fireems.ai logged in successfully
+2025-06-21 19:39:51,599 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:51] "POST /auth/api/login HTTP/1.1" 200 -
+2025-06-21 19:39:51,603 - __main__ - INFO - ASSETS_FALLBACK: Serving FireEMSHomepage-YEIfozW7.js from deployment build
+2025-06-21 19:39:51,604 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:51] "GET /assets/FireEMSHomepage-YEIfozW7.js HTTP/1.1" 200 -
+2025-06-21 19:39:51,606 - __main__ - INFO - ASSETS_FALLBACK: Serving TableChart-UmdWkBiO.js from deployment build
+2025-06-21 19:39:51,606 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:51] "GET /assets/TableChart-UmdWkBiO.js HTTP/1.1" 200 -
+2025-06-21 19:39:51,607 - __main__ - INFO - ASSETS_FALLBACK: Serving Assessment-BfYvwlet.js from deployment build
+2025-06-21 19:39:51,608 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:51] "GET /assets/Assessment-BfYvwlet.js HTTP/1.1" 200 -
+2025-06-21 19:39:51,609 - __main__ - INFO - ASSETS_FALLBACK: Serving Map-CewQZwWc.js from deployment build
+2025-06-21 19:39:51,609 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:51] "GET /assets/Map-CewQZwWc.js HTTP/1.1" 200 -
+2025-06-21 19:39:51,610 - __main__ - INFO - ASSETS_FALLBACK: Serving Timeline-ChuH-PVk.js from deployment build
+2025-06-21 19:39:51,611 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:51] "GET /assets/Timeline-ChuH-PVk.js HTTP/1.1" 200 -
+2025-06-21 19:39:51,612 - routes.react_app - INFO - Serving React asset: FireEMSHomepage-YEIfozW7.js
+2025-06-21 19:39:51,613 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:51] "GET /app/assets/FireEMSHomepage-YEIfozW7.js HTTP/1.1" 200 -
+2025-06-21 19:39:51,616 - routes.react_app - INFO - Serving React asset: TableChart-UmdWkBiO.js
+2025-06-21 19:39:51,616 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:51] "GET /app/assets/TableChart-UmdWkBiO.js HTTP/1.1" 200 -
+2025-06-21 19:39:51,617 - routes.react_app - INFO - Serving React asset: Assessment-BfYvwlet.js
+2025-06-21 19:39:51,618 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:51] "GET /app/assets/Assessment-BfYvwlet.js HTTP/1.1" 200 -
+2025-06-21 19:39:51,619 - routes.react_app - INFO - Serving React asset: Map-CewQZwWc.js
+2025-06-21 19:39:51,620 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:51] "GET /app/assets/Map-CewQZwWc.js HTTP/1.1" 200 -
+2025-06-21 19:39:51,621 - routes.react_app - INFO - Serving React asset: Timeline-ChuH-PVk.js
+2025-06-21 19:39:51,621 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 19:39:51] "GET /app/assets/Timeline-ChuH-PVk.js HTTP/1.1" 200 -
+2025-06-21 19:57:42,386 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 19:57:42,515 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 19:57:42,516 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 19:57:42,519 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 19:57:42,519 - app - INFO - Creating application with deployment fixes...
+2025-06-21 19:57:42,519 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 19:57:42,520 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 19:57:42,520 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 19:57:42,520 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 19:57:42,521 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 19:57:42,530 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 19:57:42,530 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 19:57:42,530 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 19:57:42,530 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 19:57:42,530 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 19:57:42,530 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 19:57:42,530 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 19:57:42,530 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 19:57:42,531 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 19:57:42,805 - app - INFO - Successfully registered all route blueprints
+2025-06-21 19:57:42,807 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 19:57:42,807 - app - INFO - Registered React Data Formatter routes
+2025-06-21 19:57:42,808 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 19:57:42,808 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 19:57:42,808 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 19:57:42,808 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 19:57:42,808 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 19:57:42,808 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 19:57:42,808 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 19:57:42,815 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 19:57:42,815 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 19:57:42,817 - app - INFO - Found 1 existing super_admin users
+2025-06-21 19:57:42,817 - app - INFO - Super admin user already exists, skipping creation
+2025-06-21 19:57:42,817 - app - INFO - Application created successfully with all fixes applied
+2025-06-21 20:12:31,918 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/routes/auth.py', reloading
+2025-06-21 20:12:32,011 - werkzeug - INFO -  * Restarting with stat
+2025-06-21 20:12:32,213 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 20:12:32,339 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 20:12:32,339 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 20:12:32,342 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 20:12:32,342 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-21 20:12:32,343 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 20:12:32,343 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 20:12:32,343 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 20:12:32,344 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 20:12:32,344 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 20:12:32,354 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 20:12:32,354 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 20:12:32,354 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 20:12:32,354 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 20:12:32,354 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 20:12:32,354 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 20:12:32,354 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 20:12:32,354 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 20:12:32,354 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 20:12:32,621 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-21 20:12:32,623 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 20:12:32,623 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-21 20:12:32,624 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 20:12:32,624 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 20:12:32,624 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 20:12:32,624 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 20:12:32,624 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 20:12:32,624 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 20:12:32,624 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 20:12:32,630 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 20:12:32,631 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 20:12:32,632 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-21 20:12:32,633 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-21 20:12:32,633 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-21 20:12:32,670 - werkzeug - WARNING -  * Debugger is active!
+2025-06-21 20:12:32,677 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-21 20:13:03,399 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/routes/auth.py', reloading
+2025-06-21 20:13:03,494 - werkzeug - INFO -  * Restarting with stat
+2025-06-21 20:13:03,689 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 20:13:03,811 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 20:13:03,811 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 20:13:03,814 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 20:13:03,815 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-21 20:13:03,815 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 20:13:03,815 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 20:13:03,815 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 20:13:03,816 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 20:13:03,816 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 20:13:03,826 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 20:13:03,827 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 20:13:03,827 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 20:13:03,827 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 20:13:03,827 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 20:13:03,827 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 20:13:03,827 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 20:13:03,827 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 20:13:03,827 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 20:13:04,096 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-21 20:13:04,098 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 20:13:04,098 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-21 20:13:04,099 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 20:13:04,099 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 20:13:04,099 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 20:13:04,099 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 20:13:04,099 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 20:13:04,099 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 20:13:04,099 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 20:13:04,105 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 20:13:04,105 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 20:13:04,107 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-21 20:13:04,107 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-21 20:13:04,108 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-21 20:13:04,144 - werkzeug - WARNING -  * Debugger is active!
+2025-06-21 20:13:04,152 - werkzeug - INFO -  * Debugger PIN: 110-174-263
