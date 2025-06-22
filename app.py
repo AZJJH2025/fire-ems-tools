@@ -1547,6 +1547,7 @@ def create_app(config_name='default'):
         from routes.public_registration import bp as public_registration_bp
         from routes.approval_management import bp as approval_management_bp
         from routes.notifications import bp as notifications_bp
+        from routes.documentation import bp as documentation_bp
         
         # Assets fallback route now registered earlier to take priority
         
@@ -1561,6 +1562,7 @@ def create_app(config_name='default'):
         app.register_blueprint(public_registration_bp)
         app.register_blueprint(approval_management_bp)
         app.register_blueprint(notifications_bp)
+        app.register_blueprint(documentation_bp)
         
         logger.info("Successfully registered all route blueprints")
         

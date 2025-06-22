@@ -11,7 +11,11 @@ import {
   Chip,
   Avatar,
   Paper,
-  Divider
+  Divider,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText
 } from '@mui/material';
 import { 
   Assessment, 
@@ -22,7 +26,20 @@ import {
   Security,
   Timeline,
   CheckCircle,
-  Schedule
+  Schedule,
+  MenuBook,
+  PlayArrow,
+  School,
+  AdminPanelSettings,
+  Download,
+  VideoLibrary,
+  HelpOutline,
+  QuickHelp,
+  Description,
+  AccessTime,
+  Group,
+  Star,
+  Launch
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -447,13 +464,485 @@ const FireEMSHomepage: React.FC = () => {
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
             gap: 4,
-            mb: 4
+            mb: 8
           }}
         >
           {tools.map((tool, index) => (
             <ToolCard key={index} {...tool} />
           ))}
         </Box>
+
+        {/* Documentation & Getting Started Section */}
+        <Paper 
+          elevation={0} 
+          sx={{ 
+            bgcolor: '#f8f9fa', 
+            borderRadius: 3, 
+            p: 6, 
+            mb: 8,
+            border: '1px solid #e0e0e0'
+          }}
+        >
+          <Box sx={{ textAlign: 'center', mb: 6 }}>
+            <Typography 
+              variant="h3" 
+              component="h2" 
+              gutterBottom 
+              sx={{ 
+                fontWeight: 'bold',
+                color: '#1565c0',
+                mb: 2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 2
+              }}
+            >
+              <MenuBook sx={{ fontSize: 40 }} />
+              Complete User Documentation
+            </Typography>
+            <Typography 
+              variant="body1" 
+              color="text.secondary" 
+              sx={{ 
+                maxWidth: '800px', 
+                mx: 'auto', 
+                fontSize: '1.1rem',
+                lineHeight: 1.6,
+                mb: 4
+              }}
+            >
+              Professional guides and training materials designed specifically for fire departments. 
+              Get up and running quickly with step-by-step instructions, video tutorials, and comprehensive documentation.
+            </Typography>
+          </Box>
+
+          {/* Quick Start Section */}
+          <Box sx={{ mb: 6 }}>
+            <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#1976d2', mb: 3 }}>
+              🚀 Getting Started (15 Minutes)
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid xs={12} md={6}>
+                <Card elevation={2} sx={{ height: '100%' }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                      <Avatar sx={{ bgcolor: '#4caf50' }}>
+                        <PlayArrow />
+                      </Avatar>
+                      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                        15-Minute Quick Start Guide
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                      Upload CAD data → Generate NFPA compliance reports → Present to city council. 
+                      Complete workflow in under 15 minutes.
+                    </Typography>
+                    <List dense>
+                      <ListItem>
+                        <ListItemIcon><CheckCircle color="success" fontSize="small" /></ListItemIcon>
+                        <ListItemText primary="Upload and validate CAD export data" />
+                      </ListItem>
+                      <ListItem>
+                        <ListItemIcon><CheckCircle color="success" fontSize="small" /></ListItemIcon>
+                        <ListItemText primary="Auto-map fields with professional templates" />
+                      </ListItem>
+                      <ListItem>
+                        <ListItemIcon><CheckCircle color="success" fontSize="small" /></ListItemIcon>
+                        <ListItemText primary="Generate executive-ready NFPA reports" />
+                      </ListItem>
+                    </List>
+                    <Button 
+                      variant="contained" 
+                      startIcon={<Description />} 
+                      sx={{ mt: 2 }}
+                      onClick={() => window.open('/docs/users/QUICK_START', '_blank')}
+                    >
+                      Read Guide
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              <Grid xs={12} md={6}>
+                <Card elevation={2} sx={{ height: '100%', position: 'relative' }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                      <Avatar sx={{ bgcolor: '#ff5722' }}>
+                        <VideoLibrary />
+                      </Avatar>
+                      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                        Video Tutorial: Complete Workflow
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                      <strong>Video Content Plan:</strong> Screen recording showing complete fire department workflow 
+                      from CAD export to final compliance report presentation.
+                    </Typography>
+                    <Box sx={{ bgcolor: '#fff3e0', p: 2, borderRadius: 1, mb: 2 }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                        <strong>Suggested Video Script (8-12 minutes):</strong><br/>
+                        • Opening: "Welcome Fire Chiefs - this is your complete 15-minute workflow"<br/>
+                        • Demo uploading real CAD export file<br/>
+                        • Show auto-field mapping with Console One/Tyler examples<br/>
+                        • Generate NFPA 1710 compliance report<br/>
+                        • Show professional PDF suitable for city council<br/>
+                        • End with "You're now ready for monthly compliance reporting"
+                      </Typography>
+                    </Box>
+                    <Button 
+                      variant="outlined" 
+                      startIcon={<VideoLibrary />} 
+                      disabled
+                      sx={{ mt: 1 }}
+                    >
+                      Video Coming Soon
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          </Box>
+
+          {/* Tool Documentation Section */}
+          <Box sx={{ mb: 6 }}>
+            <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#1976d2', mb: 3 }}>
+              📚 Tool Documentation
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid xs={12} md={4}>
+                <Card elevation={2}>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <TableChart color="primary" />
+                      Data Formatter Guide
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      Complete guide to field mapping, template management, and CAD vendor integration. 
+                      Covers Console One, Tyler, Hexagon, and TriTech systems.
+                    </Typography>
+                    <Chip size="small" label="400+ pages" color="primary" variant="outlined" sx={{ mr: 1, mb: 2 }} />
+                    <Chip size="small" label="Beginner-Advanced" color="secondary" variant="outlined" sx={{ mb: 2 }} />
+                    <Box>
+                      <Button 
+                        variant="contained" 
+                        size="small" 
+                        startIcon={<Launch />} 
+                        sx={{ mr: 1 }}
+                        onClick={() => window.open('/docs/users/DATA_FORMATTER', '_blank')}
+                      >
+                        Read Guide
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              <Grid xs={12} md={4}>
+                <Card elevation={2}>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Assessment color="primary" />
+                      Response Time Analyzer
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      NFPA 1710 compliance analysis, professional report generation, and executive 
+                      summary creation for city council presentations.
+                    </Typography>
+                    <Chip size="small" label="Complete Guide" color="primary" variant="outlined" sx={{ mr: 1, mb: 2 }} />
+                    <Chip size="small" label="Fire Chiefs" color="secondary" variant="outlined" sx={{ mb: 2 }} />
+                    <Box>
+                      <Button 
+                        variant="contained" 
+                        size="small" 
+                        startIcon={<Launch />} 
+                        sx={{ mr: 1 }}
+                        onClick={() => window.open('/docs/users/RESPONSE_TIME_ANALYZER', '_blank')}
+                      >
+                        Read Guide
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              <Grid xs={12} md={4}>
+                <Card elevation={2}>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Map color="primary" />
+                      Fire Map Pro Guide
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      Advanced mapping, spatial analysis, and professional map exports for 
+                      operational planning and coverage assessment.
+                    </Typography>
+                    <Chip size="small" label="Complete Guide" color="primary" variant="outlined" sx={{ mr: 1, mb: 2 }} />
+                    <Chip size="small" label="Operations" color="secondary" variant="outlined" sx={{ mb: 2 }} />
+                    <Box>
+                      <Button 
+                        variant="contained" 
+                        size="small" 
+                        startIcon={<Launch />} 
+                        sx={{ mr: 1 }}
+                        onClick={() => window.open('/docs/users/FIRE_MAP_PRO', '_blank')}
+                      >
+                        Read Guide
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          </Box>
+
+          {/* Video Training Library */}
+          <Box sx={{ mb: 6 }}>
+            <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#1976d2', mb: 3 }}>
+              🎥 Video Training Library (Coming Soon)
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid xs={12} md={6}>
+                <Card elevation={2} sx={{ bgcolor: '#f5f5f5' }}>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+                      Data Formatter Deep Dive (Planned)
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      <strong>Suggested Video Content (15-20 minutes):</strong>
+                    </Typography>
+                    <List dense>
+                      <ListItem>
+                        <ListItemIcon><VideoLibrary color="primary" fontSize="small" /></ListItemIcon>
+                        <ListItemText 
+                          primary="CAD Vendor Specifics" 
+                          secondary="Show actual exports from Console One, Tyler, Hexagon with real field mapping"
+                        />
+                      </ListItem>
+                      <ListItem>
+                        <ListItemIcon><VideoLibrary color="primary" fontSize="small" /></ListItemIcon>
+                        <ListItemText 
+                          primary="Template Management" 
+                          secondary="Create, save, and share department templates for monthly workflows"
+                        />
+                      </ListItem>
+                      <ListItem>
+                        <ListItemIcon><VideoLibrary color="primary" fontSize="small" /></ListItemIcon>
+                        <ListItemText 
+                          primary="Advanced Features" 
+                          secondary="Smart address parsing, data quality validation, error resolution"
+                        />
+                      </ListItem>
+                    </List>
+                    <Button variant="outlined" disabled startIcon={<VideoLibrary />} sx={{ mt: 2 }}>
+                      Video Coming Soon
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              <Grid xs={12} md={6}>
+                <Card elevation={2} sx={{ bgcolor: '#f5f5f5' }}>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+                      Professional Report Generation (Planned)
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      <strong>Suggested Video Content (10-12 minutes):</strong>
+                    </Typography>
+                    <List dense>
+                      <ListItem>
+                        <ListItemIcon><VideoLibrary color="primary" fontSize="small" /></ListItemIcon>
+                        <ListItemText 
+                          primary="Executive Reports" 
+                          secondary="Generate city council presentations, grant applications, compliance docs"
+                        />
+                      </ListItem>
+                      <ListItem>
+                        <ListItemIcon><VideoLibrary color="primary" fontSize="small" /></ListItemIcon>
+                        <ListItemText 
+                          primary="NFPA 1710 Analysis" 
+                          secondary="Understand compliance metrics, performance thresholds, improvement areas"
+                        />
+                      </ListItem>
+                      <ListItem>
+                        <ListItemIcon><VideoLibrary color="primary" fontSize="small" /></ListItemIcon>
+                        <ListItemText 
+                          primary="Department Branding" 
+                          secondary="Add logos, customize headers, create professional branded reports"
+                        />
+                      </ListItem>
+                    </List>
+                    <Button variant="outlined" disabled startIcon={<VideoLibrary />} sx={{ mt: 2 }}>
+                      Video Coming Soon
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          </Box>
+
+          {/* Admin Documentation */}
+          <Box sx={{ mb: 6 }}>
+            <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#1976d2', mb: 3 }}>
+              ⚙️ Administration & Setup
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid xs={12} md={4}>
+                <Card elevation={2}>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <AdminPanelSettings color="primary" />
+                      Admin Console Guide
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      Complete admin console user guide covering user management, department settings, 
+                      and approval workflows for three-tier admin hierarchy.
+                    </Typography>
+                    <Chip size="small" label="Comprehensive" color="primary" variant="outlined" sx={{ mr: 1, mb: 2 }} />
+                    <Chip size="small" label="Department Admins" color="secondary" variant="outlined" sx={{ mb: 2 }} />
+                    <Button 
+                      variant="contained" 
+                      size="small" 
+                      startIcon={<Launch />}
+                      onClick={() => window.open('/docs/admin-console/ADMIN_CONSOLE', '_blank')}
+                    >
+                      Admin Guide
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              <Grid xs={12} md={4}>
+                <Card elevation={2}>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Security color="primary" />
+                      System Administrator
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      Installation, deployment, database management, security configuration, 
+                      and maintenance procedures for IT administrators.
+                    </Typography>
+                    <Chip size="small" label="Technical" color="primary" variant="outlined" sx={{ mr: 1, mb: 2 }} />
+                    <Chip size="small" label="IT Staff" color="secondary" variant="outlined" sx={{ mb: 2 }} />
+                    <Button 
+                      variant="contained" 
+                      size="small" 
+                      startIcon={<Launch />}
+                      onClick={() => window.open('/docs/admin/SYSTEM_ADMIN_GUIDE', '_blank')}
+                    >
+                      System Guide
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              <Grid xs={12} md={4}>
+                <Card elevation={2} sx={{ bgcolor: '#f5f5f5' }}>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <VideoLibrary color="primary" />
+                      Admin Training Videos (Planned)
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      <strong>Suggested Video Content (20-25 minutes):</strong><br/>
+                      • Department setup and configuration<br/>
+                      • User management and role assignments<br/>
+                      • Approval workflow demonstration<br/>
+                      • Template sharing between departments
+                    </Typography>
+                    <Button variant="outlined" disabled startIcon={<VideoLibrary />}>
+                      Video Coming Soon
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          </Box>
+
+          {/* Support & Resources */}
+          <Box>
+            <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#1976d2', mb: 3 }}>
+              🆘 Support & Resources
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid xs={12} md={6}>
+                <Card elevation={2}>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <HelpOutline color="primary" />
+                      Troubleshooting Guide
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                      Common issues, error codes, and step-by-step solutions for fire department users.
+                    </Typography>
+                    <List dense>
+                      <ListItem>
+                        <ListItemIcon><CheckCircle color="success" fontSize="small" /></ListItemIcon>
+                        <ListItemText primary="CAD data upload issues" />
+                      </ListItem>
+                      <ListItem>
+                        <ListItemIcon><CheckCircle color="success" fontSize="small" /></ListItemIcon>
+                        <ListItemText primary="Field mapping problems" />
+                      </ListItem>
+                      <ListItem>
+                        <ListItemIcon><CheckCircle color="success" fontSize="small" /></ListItemIcon>
+                        <ListItemText primary="Report generation errors" />
+                      </ListItem>
+                    </List>
+                    <Button 
+                      variant="contained" 
+                      size="small" 
+                      startIcon={<Launch />} 
+                      sx={{ mt: 2 }}
+                      onClick={() => window.open('/docs/admin/TROUBLESHOOTING', '_blank')}
+                    >
+                      Get Help
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              <Grid xs={12} md={6}>
+                <Card elevation={2}>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Download color="primary" />
+                      Sample Data & Templates
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                      Download sample CAD exports and professional templates for training and testing.
+                    </Typography>
+                    <List dense>
+                      <ListItem>
+                        <ListItemIcon><Download color="primary" fontSize="small" /></ListItemIcon>
+                        <ListItemText primary="Console One sample data" />
+                      </ListItem>
+                      <ListItem>
+                        <ListItemIcon><Download color="primary" fontSize="small" /></ListItemIcon>
+                        <ListItemText primary="Tyler CAD sample exports" />
+                      </ListItem>
+                      <ListItem>
+                        <ListItemIcon><Download color="primary" fontSize="small" /></ListItemIcon>
+                        <ListItemText primary="Professional report templates" />
+                      </ListItem>
+                    </List>
+                    <Button 
+                      variant="outlined" 
+                      size="small" 
+                      startIcon={<Download />} 
+                      sx={{ mt: 2 }}
+                      onClick={() => window.open('/docs/examples/SAMPLE_DATA', '_blank')}
+                    >
+                      Download Samples
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          </Box>
+        </Paper>
 
         {/* Footer */}
         <Box sx={{ mt: 8, pt: 4, textAlign: 'center' }}>
