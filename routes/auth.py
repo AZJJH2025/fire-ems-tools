@@ -63,6 +63,40 @@ def debug_admin_users():
         logger.error(f"Debug admin users error: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
+# Simple password reset for admin (GET request for browser access)
+@bp.route('/reset-admin-password')
+def reset_admin_password():
+    """Simple GET endpoint to reset admin password - for emergency access"""
+    try:
+        from database import db, User
+        
+        # Find the admin user
+        admin_user = User.query.filter_by(email='admin@fireems.ai').first()
+        
+        if admin_user:
+            # Reset password to a known value
+            admin_user.set_password('FireEMS2025!')
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Admin password reset successfully',
+                'email': 'admin@fireems.ai',
+                'new_password': 'FireEMS2025!',
+                'note': 'You can now login with these credentials'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'Admin user not found'
+            }), 404
+            
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 # Emergency admin creation endpoint
 @bp.route('/api/emergency/create-admin', methods=['POST'])
 def emergency_create_admin():
