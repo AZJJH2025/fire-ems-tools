@@ -18,12 +18,19 @@ def get_react_build_dir():
     """Get the React build directory path"""
     # Check if we're in a Render environment or local development
     if os.environ.get('RENDER'):
-        # On Render, use the app directory in project root
+        # On Render, use the app directory in project root (where we copy our React build)
         react_build_dir = '/opt/render/project/src/app'
     else:
-        # Local development - use react-app/dist
+        # Local development - check app directory first (our deploy location), then react-app/dist
         project_root = os.path.dirname(current_app.static_folder)
-        react_build_dir = os.path.join(project_root, 'react-app', 'dist')
+        app_build_dir = os.path.join(project_root, 'app')
+        
+        # Check if app/index.html exists (our deployed build)
+        if os.path.exists(os.path.join(app_build_dir, 'index.html')):
+            react_build_dir = app_build_dir
+        else:
+            # Fallback to react-app/dist for development
+            react_build_dir = os.path.join(project_root, 'react-app', 'dist')
     return react_build_dir
 
 @bp.route('/app')
