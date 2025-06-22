@@ -20,7 +20,11 @@ import {
   ListItem,
   ListItemText,
   ListItemSecondaryAction,
-  Paper
+  Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
 import {
   Save,
@@ -28,7 +32,8 @@ import {
   Settings,
   Security,
   Api,
-  Refresh
+  Refresh,
+  Add
 } from '@mui/icons-material';
 
 interface Department {
@@ -47,12 +52,74 @@ interface DepartmentSettingsProps {
   userRole: string | null;
 }
 
+// Tool display information mapping
+const getToolDisplayInfo = (featureName: string) => {
+  const toolMap: Record<string, { name: string; route?: string; description?: string }> = {
+    'data-formatter': {
+      name: 'Data Formatter',
+      route: '/app/data-formatter',
+      description: 'Transform CAD exports into standardized formats'
+    },
+    'response-time-analyzer': {
+      name: 'Response Time Analyzer', 
+      route: '/app/response-time-analyzer',
+      description: 'NFPA 1710 compliance analysis and reporting'
+    },
+    'fire-map-pro': {
+      name: 'Fire Map Pro',
+      route: '/app/fire-map-pro', 
+      description: 'Advanced incident mapping and geographic analysis'
+    },
+    'water-supply-coverage': {
+      name: 'Water Supply Coverage',
+      route: '/water-supply-coverage',
+      description: 'Rural water supply coverage analysis'
+    },
+    'iso-credit-calculator': {
+      name: 'ISO Credit Calculator',
+      route: '/iso-credit-calculator',
+      description: 'Fire Suppression Rating Schedule assessment'
+    },
+    'station-coverage-optimizer': {
+      name: 'Station Coverage Optimizer',
+      route: '/station-coverage-optimizer',
+      description: 'Optimize station locations and response coverage'
+    },
+    'admin-console': {
+      name: 'Admin Console',
+      route: '/app/admin',
+      description: 'Department and user management'
+    },
+    'call-density-heatmap': {
+      name: 'Call Density Heatmap',
+      description: 'Legacy tool - Geographic incident density analysis'
+    },
+    'coverage-gap-finder': {
+      name: 'Coverage Gap Finder',
+      description: 'Legacy tool - Identify response coverage gaps'
+    }
+  };
+
+  return toolMap[featureName] || {
+    name: featureName.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+    description: 'Unknown feature'
+  };
+};
+
 const DepartmentSettings: React.FC<DepartmentSettingsProps> = ({ userRole }) => {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  
+  // Create department dialog state
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [newDepartment, setNewDepartment] = useState({
+    name: '',
+    code: '',
+    department_type: 'combined'
+  });
 
   useEffect(() => {
     fetchDepartments();
@@ -120,6 +187,44 @@ const DepartmentSettings: React.FC<DepartmentSettingsProps> = ({ userRole }) => 
     }
   };
 
+  const handleCreateDepartment = async () => {
+    try {
+      setSaving(true);
+      const response = await fetch('/admin/api/departments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(newDepartment),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        // Add new department to list
+        setDepartments(prev => [...prev, result.department]);
+        setSuccessMessage('Department created successfully');
+        setError(null);
+        
+        // Reset form and close dialog
+        setNewDepartment({ name: '', code: '', department_type: 'combined' });
+        setCreateDialogOpen(false);
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+          setSuccessMessage(null);
+        }, 3000);
+      } else {
+        throw new Error(result.error || 'Failed to create department');
+      }
+    } catch (error) {
+      console.error('Error creating department:', error);
+      setError(error instanceof Error ? error.message : 'Failed to create department');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const getDepartmentTypeColor = (type: string) => {
     switch (type) {
       case 'fire':
@@ -152,13 +257,24 @@ const DepartmentSettings: React.FC<DepartmentSettingsProps> = ({ userRole }) => 
         <Typography variant="h5">
           Department Settings
         </Typography>
-        <Button
-          variant="outlined"
-          startIcon={<Refresh />}
-          onClick={fetchDepartments}
-        >
-          Refresh
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          {userRole === 'super_admin' && (
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={() => setCreateDialogOpen(true)}
+            >
+              Add Department
+            </Button>
+          )}
+          <Button
+            variant="outlined"
+            startIcon={<Refresh />}
+            onClick={fetchDepartments}
+          >
+            Refresh
+          </Button>
+        </Box>
       </Box>
 
       {error && (
@@ -297,31 +413,48 @@ const DepartmentSettings: React.FC<DepartmentSettingsProps> = ({ userRole }) => 
                     
                     <Paper variant="outlined" sx={{ p: 2 }}>
                       <List dense>
-                        {Object.entries(department.features_enabled || {}).map(([feature, enabled]) => (
-                          <ListItem key={feature} divider>
-                            <ListItemText 
-                              primary={feature.replace('_', ' ').toUpperCase()}
-                              secondary={enabled ? 'Enabled' : 'Disabled'}
-                            />
-                            <ListItemSecondaryAction>
-                              <Switch
-                                edge="end"
-                                checked={enabled}
-                                onChange={(e) => {
-                                  const newFeatures = {
-                                    ...department.features_enabled,
-                                    [feature]: e.target.checked
-                                  };
-                                  setDepartments(prev => prev.map(dept => 
-                                    dept.id === department.id 
-                                      ? { ...dept, features_enabled: newFeatures }
-                                      : dept
-                                  ));
-                                }}
+                        {Object.entries(department.features_enabled || {}).map(([feature, enabled]) => {
+                          const toolInfo = getToolDisplayInfo(feature);
+                          return (
+                            <ListItem key={feature} divider>
+                              <ListItemText 
+                                primary={toolInfo.name}
+                                secondary={
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <Chip 
+                                      size="small" 
+                                      label={enabled ? 'Enabled' : 'Disabled'}
+                                      color={enabled ? 'success' : 'default'}
+                                      variant={enabled ? 'filled' : 'outlined'}
+                                    />
+                                    {toolInfo.route && (
+                                      <Typography variant="caption" color="text.secondary">
+                                        {toolInfo.route}
+                                      </Typography>
+                                    )}
+                                  </Box>
+                                }
                               />
-                            </ListItemSecondaryAction>
-                          </ListItem>
-                        ))}
+                              <ListItemSecondaryAction>
+                                <Switch
+                                  edge="end"
+                                  checked={enabled}
+                                  onChange={(e) => {
+                                    const newFeatures = {
+                                      ...department.features_enabled,
+                                      [feature]: e.target.checked
+                                    };
+                                    setDepartments(prev => prev.map(dept => 
+                                      dept.id === department.id 
+                                        ? { ...dept, features_enabled: newFeatures }
+                                        : dept
+                                    ));
+                                  }}
+                                />
+                              </ListItemSecondaryAction>
+                            </ListItem>
+                          );
+                        })}
                         {Object.keys(department.features_enabled || {}).length === 0 && (
                           <ListItem>
                             <ListItemText 
@@ -374,6 +507,72 @@ const DepartmentSettings: React.FC<DepartmentSettingsProps> = ({ userRole }) => 
           </Paper>
         )}
       </Box>
+
+      {/* Create Department Dialog */}
+      <Dialog
+        open={createDialogOpen}
+        onClose={() => setCreateDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Business color="primary" />
+            Create New Department
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
+            <TextField
+              label="Department Name"
+              fullWidth
+              value={newDepartment.name}
+              onChange={(e) => setNewDepartment(prev => ({ ...prev, name: e.target.value }))}
+              placeholder="e.g., Springfield Fire Department"
+              required
+            />
+            
+            <TextField
+              label="Department Code"
+              fullWidth
+              value={newDepartment.code}
+              onChange={(e) => setNewDepartment(prev => ({ ...prev, code: e.target.value }))}
+              placeholder="e.g., SFD"
+              required
+              helperText="Short unique identifier for the department"
+            />
+
+            <FormControl fullWidth>
+              <InputLabel>Department Type</InputLabel>
+              <Select
+                value={newDepartment.department_type}
+                onChange={(e) => setNewDepartment(prev => ({ ...prev, department_type: e.target.value as string }))}
+                label="Department Type"
+              >
+                <MenuItem value="fire">Fire Department</MenuItem>
+                <MenuItem value="ems">EMS Service</MenuItem>
+                <MenuItem value="combined">Combined Fire/EMS</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={() => setCreateDialogOpen(false)}
+            disabled={saving}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleCreateDepartment}
+            disabled={saving || !newDepartment.name.trim() || !newDepartment.code.trim()}
+            startIcon={<Save />}
+          >
+            {saving ? 'Creating...' : 'Create Department'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

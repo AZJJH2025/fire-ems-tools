@@ -67,6 +67,86 @@ def get_users():
         logger.error(f"Error fetching users: {str(e)}")
         return jsonify({'error': 'Failed to fetch users'}), 500
 
+@bp.route('/api/users', methods=['POST'])
+@login_required
+@require_admin
+def create_user():
+    """Create a new user (super admin only)"""
+    try:
+        # Only super admins can create users
+        if not current_user.is_super_admin():
+            return jsonify({'error': 'Super admin access required'}), 403
+        
+        data = request.get_json()
+        
+        # Validate required fields
+        if not data or not data.get('email') or not data.get('name'):
+            return jsonify({'error': 'Email and name are required'}), 400
+        
+        # Check if user email already exists
+        existing_user = User.query.filter_by(email=data['email'].lower().strip()).first()
+        if existing_user:
+            return jsonify({'error': 'User with this email already exists'}), 400
+        
+        # Validate role
+        role = data.get('role', 'user')
+        if role not in ['user', 'admin', 'manager', 'super_admin']:
+            return jsonify({'error': 'Invalid role specified'}), 400
+        
+        # Only super admin can create other super admins
+        if role == 'super_admin' and not current_user.is_super_admin():
+            return jsonify({'error': 'Cannot assign super_admin role'}), 403
+        
+        # Validate department if provided
+        department_id = data.get('department_id')
+        if department_id:
+            department = Department.query.get(department_id)
+            if not department:
+                return jsonify({'error': 'Department not found'}), 400
+        
+        # Create new user
+        user = User(
+            email=data['email'].lower().strip(),
+            name=data['name'].strip(),
+            role=role,
+            department_id=department_id,
+            is_active=True,
+            created_at=datetime.utcnow()
+        )
+        
+        # Set a temporary password (user will need to reset)
+        # In production, this should generate a secure random password
+        # and send an email invitation
+        user.password_hash = user.set_password('TempPassword123!')
+        
+        db.session.add(user)
+        db.session.commit()
+        
+        logger.info(f"User {user.email} created by super admin {current_user.email}")
+        
+        # Return the created user data
+        user_data = {
+            'id': user.id,
+            'email': user.email,
+            'name': user.name,
+            'role': user.role,
+            'is_active': user.is_active,
+            'created_at': user.created_at.isoformat(),
+            'last_login': None,
+            'department_id': user.department_id,
+            'department_name': user.department.name if user.department else None
+        }
+        
+        return jsonify({
+            'success': True,
+            'message': 'User created successfully',
+            'user': user_data
+        })
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error creating user: {str(e)}")
+        return jsonify({'error': 'Failed to create user'}), 500
+
 @bp.route('/api/users/<int:user_id>', methods=['PUT'])
 @login_required
 @require_admin
@@ -182,6 +262,78 @@ def get_departments():
     except Exception as e:
         logger.error(f"Error fetching departments: {str(e)}")
         return jsonify({'error': 'Failed to fetch departments'}), 500
+
+@bp.route('/api/departments', methods=['POST'])
+@login_required
+@require_admin
+def create_department():
+    """Create a new department (super admin only)"""
+    try:
+        # Only super admins can create departments
+        if not current_user.is_super_admin():
+            return jsonify({'error': 'Super admin access required'}), 403
+        
+        data = request.get_json()
+        
+        # Validate required fields
+        if not data or not data.get('name') or not data.get('code'):
+            return jsonify({'error': 'Department name and code are required'}), 400
+        
+        # Check if department code already exists
+        existing_dept = Department.query.filter_by(code=data['code'].strip().lower()).first()
+        if existing_dept:
+            return jsonify({'error': 'Department code already exists'}), 400
+        
+        # Create new department with default features
+        default_features = {
+            'data-formatter': True,
+            'response-time-analyzer': True,
+            'fire-map-pro': True,
+            'water-supply-coverage': True,
+            'iso-credit-calculator': False,
+            'station-coverage-optimizer': False,
+            'admin-console': True,
+            'call-density-heatmap': False,
+            'coverage-gap-finder': False
+        }
+        
+        department = Department(
+            name=data['name'].strip(),
+            code=data['code'].strip().lower(),
+            department_type=data.get('department_type', 'combined'),
+            is_active=True,
+            api_enabled=False,
+            features_enabled=default_features,
+            created_at=datetime.utcnow()
+        )
+        
+        db.session.add(department)
+        db.session.commit()
+        
+        logger.info(f"Department {department.name} created by super admin {current_user.email}")
+        
+        # Return the created department data
+        dept_data = {
+            'id': department.id,
+            'name': department.name,
+            'code': department.code,
+            'department_type': department.department_type,
+            'is_active': department.is_active,
+            'created_at': department.created_at.isoformat(),
+            'user_count': 0,
+            'api_enabled': department.api_enabled,
+            'features_enabled': department.features_enabled
+        }
+        
+        return jsonify({
+            'success': True,
+            'message': 'Department created successfully',
+            'department': dept_data
+        })
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error creating department: {str(e)}")
+        return jsonify({'error': 'Failed to create department'}), 500
 
 @bp.route('/api/departments/<int:dept_id>', methods=['PUT'])
 @login_required

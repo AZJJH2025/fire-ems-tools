@@ -1544,6 +1544,8 @@ def create_app(config_name='default'):
         from routes.tools import bp as tools_bp
         from routes.admin import bp as admin_bp
         from routes.react_app import bp as react_app_bp
+        from routes.public_registration import bp as public_registration_bp
+        from routes.approval_management import bp as approval_management_bp
         
         # Assets fallback route now registered earlier to take priority
         
@@ -1555,6 +1557,8 @@ def create_app(config_name='default'):
         app.register_blueprint(tools_bp)
         app.register_blueprint(admin_bp)
         app.register_blueprint(react_app_bp)
+        app.register_blueprint(public_registration_bp)
+        app.register_blueprint(approval_management_bp)
         
         logger.info("Successfully registered all route blueprints")
         

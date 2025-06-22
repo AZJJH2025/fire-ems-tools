@@ -171,16 +171,28 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
 const UserManagement: React.FC<UserManagementProps> = ({ userRole }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [editDialog, setEditDialog] = useState<{ open: boolean; user: User | null }>({
     open: false,
     user: null
   });
+  const [createDialog, setCreateDialog] = useState(false);
+  const [newUser, setNewUser] = useState({
+    name: '',
+    email: '',
+    role: 'user',
+    department_id: '',
+    send_invite: true
+  });
+  const [departments, setDepartments] = useState<Array<{id: number, name: string}>>([]);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   useEffect(() => {
     fetchUsers();
+    fetchDepartments();
   }, []);
 
   const fetchUsers = async () => {
@@ -205,6 +217,76 @@ const UserManagement: React.FC<UserManagementProps> = ({ userRole }) => {
       setError(error instanceof Error ? error.message : 'Failed to load users');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDepartments = async () => {
+    try {
+      const response = await fetch('/admin/api/departments', {
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch departments');
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        setDepartments(result.departments.map((dept: any) => ({
+          id: dept.id,
+          name: dept.name
+        })));
+      }
+    } catch (error) {
+      console.error('Error fetching departments:', error);
+      // Don't set error state for departments, it's not critical
+    }
+  };
+
+  const handleCreateUser = async () => {
+    try {
+      setSaving(true);
+      const response = await fetch('/admin/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          ...newUser,
+          department_id: parseInt(newUser.department_id) || null
+        }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        // Add new user to list
+        setUsers(prev => [...prev, result.user]);
+        setSuccessMessage('User created successfully');
+        setError(null);
+        
+        // Reset form and close dialog
+        setNewUser({
+          name: '',
+          email: '',
+          role: 'user',
+          department_id: '',
+          send_invite: true
+        });
+        setCreateDialog(false);
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+          setSuccessMessage(null);
+        }, 3000);
+      } else {
+        throw new Error(result.error || 'Failed to create user');
+      }
+    } catch (error) {
+      console.error('Error creating user:', error);
+      setError(error instanceof Error ? error.message : 'Failed to create user');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -316,7 +398,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ userRole }) => {
             <Button
               variant="contained"
               startIcon={<PersonAdd />}
-              onClick={() => {/* TODO: Implement add user */}}
+              onClick={() => setCreateDialog(true)}
             >
               Add User
             </Button>
@@ -327,6 +409,12 @@ const UserManagement: React.FC<UserManagementProps> = ({ userRole }) => {
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
           {error}
+        </Alert>
+      )}
+
+      {successMessage && (
+        <Alert severity="success" sx={{ mb: 3 }}>
+          {successMessage}
         </Alert>
       )}
 
@@ -445,6 +533,102 @@ const UserManagement: React.FC<UserManagementProps> = ({ userRole }) => {
         onSave={handleEditUser}
         userRole={userRole}
       />
+
+      {/* Create User Dialog */}
+      <Dialog
+        open={createDialog}
+        onClose={() => setCreateDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <PersonAdd color="primary" />
+            Create New User
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
+            <TextField
+              label="Full Name"
+              fullWidth
+              value={newUser.name}
+              onChange={(e) => setNewUser(prev => ({ ...prev, name: e.target.value }))}
+              placeholder="e.g., John Smith"
+              required
+            />
+            
+            <TextField
+              label="Email Address"
+              fullWidth
+              type="email"
+              value={newUser.email}
+              onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))}
+              placeholder="e.g., john.smith@department.gov"
+              required
+              helperText="User will receive login instructions at this email"
+            />
+
+            <FormControl fullWidth>
+              <InputLabel>Department</InputLabel>
+              <Select
+                value={newUser.department_id}
+                onChange={(e) => setNewUser(prev => ({ ...prev, department_id: e.target.value as string }))}
+                label="Department"
+              >
+                <MenuItem value="">No Department</MenuItem>
+                {departments.map((dept) => (
+                  <MenuItem key={dept.id} value={dept.id.toString()}>
+                    {dept.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth>
+              <InputLabel>Role</InputLabel>
+              <Select
+                value={newUser.role}
+                onChange={(e) => setNewUser(prev => ({ ...prev, role: e.target.value as string }))}
+                label="Role"
+              >
+                <MenuItem value="user">User</MenuItem>
+                <MenuItem value="admin">Admin</MenuItem>
+                <MenuItem value="manager">Manager</MenuItem>
+                {userRole === 'super_admin' && (
+                  <MenuItem value="super_admin">Super Admin</MenuItem>
+                )}
+              </Select>
+            </FormControl>
+
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={newUser.send_invite}
+                  onChange={(e) => setNewUser(prev => ({ ...prev, send_invite: e.target.checked }))}
+                />
+              }
+              label="Send invitation email to user"
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={() => setCreateDialog(false)}
+            disabled={saving}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleCreateUser}
+            disabled={saving || !newUser.name.trim() || !newUser.email.trim()}
+            startIcon={<PersonAdd />}
+          >
+            {saving ? 'Creating...' : 'Create User'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

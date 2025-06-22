@@ -3,8 +3,6 @@ import {
   Container,
   Box,
   Typography,
-  Card,
-  CardContent,
   Tabs,
   Tab,
   Alert,
@@ -16,8 +14,8 @@ import {
   Dashboard,
   People,
   Business,
-  Settings,
-  AdminPanelSettings
+  AdminPanelSettings,
+  HowToReg
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -25,6 +23,7 @@ import { useNavigate } from 'react-router-dom';
 import AdminOverview from './AdminOverview';
 import UserManagement from './UserManagement';
 import DepartmentSettings from './DepartmentSettings';
+import PendingApprovals from './PendingApprovals';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -80,31 +79,49 @@ const AdminDashboard: React.FC = () => {
         credentials: 'include'
       });
       
+      console.log('🔐 Admin access check - Response status:', response.status);
+      
       if (!response.ok) {
         throw new Error('Authentication required');
       }
       
-      const user = await response.json();
+      const data = await response.json();
+      console.log('🔐 Admin access check - Response data:', data);
       
-      if (!user.is_admin && !user.is_super_admin) {
+      // Extract user from the response (Flask returns {success: true, user: {...}})
+      const user = data.user || data;
+      console.log('🔐 Admin access check - Extracted user:', user);
+      
+      if (!user || (user.role !== 'admin' && user.role !== 'super_admin')) {
+        console.error('🔐 Admin access denied - User role:', user?.role);
         throw new Error('Admin access required');
       }
       
-      setUserRole(user.is_super_admin ? 'super_admin' : 'admin');
+      console.log('🔐 Admin access granted - User role:', user.role);
+      setUserRole(user.role === 'super_admin' ? 'super_admin' : 'admin');
       
     } catch (error) {
-      console.error('Admin access check failed:', error);
-      setError(error instanceof Error ? error.message : 'Access denied');
-      // Redirect to login after a short delay
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
+      console.error('🔐 Admin access check failed:', error);
+      
+      // Check if it's an authentication issue vs authorization issue
+      if (error instanceof Error) {
+        if (error.message === 'Authentication required') {
+          setError('Please log in to access the admin console.');
+          console.log('🔐 Redirecting to login due to authentication failure');
+          setTimeout(() => navigate('/login'), 2000);
+        } else {
+          setError(error.message);
+          console.log('🔐 Authorization error - user may be logged in but lacks admin privileges');
+        }
+      } else {
+        setError('Access denied');
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue);
   };
 
@@ -121,9 +138,66 @@ const AdminDashboard: React.FC = () => {
   if (error) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Alert severity="error">
+        <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
+        
+        {/* Add quick login form for admin console */}
+        {error.includes('log in') && (
+          <Paper sx={{ p: 3, mt: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Quick Admin Login
+            </Typography>
+            <Box
+              component="form"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target as HTMLFormElement);
+                const email = formData.get('email') as string;
+                const password = formData.get('password') as string;
+                
+                try {
+                  const response = await fetch('/auth/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ email, password })
+                  });
+                  
+                  if (response.ok) {
+                    // Retry admin access check
+                    setError(null);
+                    checkAdminAccess();
+                  } else {
+                    const data = await response.json();
+                    setError(data.message || 'Login failed');
+                  }
+                } catch (err) {
+                  setError('Login request failed');
+                }
+              }}
+              sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+            >
+              <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                defaultValue="admin@fireems.ai"
+                style={{ padding: '12px', border: '1px solid #ccc', borderRadius: '4px' }}
+              />
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                defaultValue="admin123"
+                style={{ padding: '12px', border: '1px solid #ccc', borderRadius: '4px' }}
+              />
+              <Button type="submit" variant="contained" color="primary">
+                Login to Admin Console
+              </Button>
+            </Box>
+          </Paper>
+        )}
       </Container>
     );
   }
@@ -175,6 +249,13 @@ const AdminDashboard: React.FC = () => {
             label="Department Settings" 
             {...a11yProps(2)} 
           />
+          {userRole === 'super_admin' && (
+            <Tab 
+              icon={<HowToReg />} 
+              label="Pending Approvals" 
+              {...a11yProps(3)} 
+            />
+          )}
         </Tabs>
       </Paper>
 
@@ -190,6 +271,12 @@ const AdminDashboard: React.FC = () => {
       <TabPanel value={currentTab} index={2}>
         <DepartmentSettings userRole={userRole} />
       </TabPanel>
+      
+      {userRole === 'super_admin' && (
+        <TabPanel value={currentTab} index={3}>
+          <PendingApprovals />
+        </TabPanel>
+      )}
     </Container>
   );
 };
