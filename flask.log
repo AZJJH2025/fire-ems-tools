@@ -890,3 +890,1640 @@
 2025-06-21 20:13:04,108 - __main__ - INFO - Application created successfully with all fixes applied
 2025-06-21 20:13:04,144 - werkzeug - WARNING -  * Debugger is active!
 2025-06-21 20:13:04,152 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-21 21:01:32,828 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 21:01:32,829 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 21:01:32,829 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 21:01:32,831 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 21:01:32,832 - app - INFO - Creating application with deployment fixes...
+2025-06-21 21:01:32,832 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 21:01:32,832 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 21:01:32,832 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 21:01:32,833 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 21:01:32,833 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 21:01:32,844 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 21:01:32,844 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 21:01:32,844 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 21:01:32,844 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 21:01:32,844 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 21:01:32,844 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 21:01:32,844 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 21:01:32,844 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 21:01:32,844 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 21:01:33,115 - app - INFO - Successfully registered all route blueprints
+2025-06-21 21:01:33,117 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 21:01:33,117 - app - INFO - Registered React Data Formatter routes
+2025-06-21 21:01:33,118 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 21:01:33,118 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 21:01:33,118 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 21:01:33,118 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 21:01:33,118 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 21:01:33,118 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 21:01:33,119 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 21:01:33,141 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 21:01:33,141 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 21:01:33,143 - app - INFO - Found 1 existing super_admin users
+2025-06-21 21:01:33,144 - app - INFO - Super admin user already exists, skipping creation
+2025-06-21 21:01:33,144 - app - INFO - Application created successfully with all fixes applied
+2025-06-21 21:03:25,268 - routes.auth - INFO - User admin@fireems.ai logged in successfully
+2025-06-21 21:03:25,270 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:03:25] "POST /auth/api/login HTTP/1.1" 200 -
+2025-06-21 21:04:30,637 - routes.auth - ERROR - Login error: 400 Bad Request: Failed to decode JSON object: Invalid \escape: line 1 column 55 (char 54)
+2025-06-21 21:04:30,638 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:04:30] "[35m[1mPOST /auth/api/login HTTP/1.1[0m" 500 -
+2025-06-21 21:04:47,043 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:04:47] "GET /auth/api/debug/admin-users HTTP/1.1" 200 -
+2025-06-21 21:05:25,225 - routes.react_app - INFO - Serving React app from: /Users/josephhester/fire-ems-tools/react-app/dist
+2025-06-21 21:05:25,227 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:05:25] "GET /app/admin HTTP/1.1" 200 -
+2025-06-21 21:06:44,133 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 21:06:44,133 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 21:06:44,133 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 21:06:44,136 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 21:06:44,136 - app - INFO - Creating application with deployment fixes...
+2025-06-21 21:06:44,137 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 21:06:44,137 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 21:06:44,137 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 21:06:44,137 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 21:06:44,137 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 21:06:44,147 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 21:06:44,148 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 21:06:44,148 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 21:06:44,148 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 21:06:44,148 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 21:06:44,148 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 21:06:44,148 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 21:06:44,148 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 21:06:44,148 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 21:06:44,412 - app - INFO - Successfully registered all route blueprints
+2025-06-21 21:06:44,414 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 21:06:44,414 - app - INFO - Registered React Data Formatter routes
+2025-06-21 21:06:44,415 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 21:06:44,415 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 21:06:44,416 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 21:06:44,416 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 21:06:44,416 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 21:06:44,416 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 21:06:44,416 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 21:06:44,438 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 21:06:44,438 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 21:06:44,440 - app - INFO - Found 1 existing super_admin users
+2025-06-21 21:06:44,440 - app - INFO - Super admin user already exists, skipping creation
+2025-06-21 21:06:44,440 - app - INFO - Application created successfully with all fixes applied
+2025-06-21 21:12:25,011 - routes.auth - INFO - User admin@fireems.ai logged in successfully
+2025-06-21 21:12:25,012 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:12:25] "POST /auth/api/login HTTP/1.1" 200 -
+2025-06-21 21:12:30,233 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:12:30] "GET /auth/api/me HTTP/1.1" 200 -
+2025-06-21 21:16:50,843 - routes.auth - INFO - User admin@fireems.ai logged in successfully
+2025-06-21 21:16:50,844 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:16:50] "POST /auth/api/login HTTP/1.1" 200 -
+2025-06-21 21:16:55,437 - routes.react_app - INFO - Serving React app from: /Users/josephhester/fire-ems-tools/react-app/dist
+2025-06-21 21:16:55,437 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:16:55] "GET /app/admin HTTP/1.1" 200 -
+2025-06-21 21:21:47,582 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 21:21:47,709 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 21:21:47,710 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 21:21:47,713 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 21:21:47,713 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-21 21:21:47,713 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 21:21:47,713 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 21:21:47,714 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 21:21:47,714 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 21:21:47,714 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 21:21:47,724 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 21:21:47,724 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 21:21:47,724 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 21:21:47,724 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 21:21:47,724 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 21:21:47,724 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 21:21:47,725 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 21:21:47,725 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 21:21:47,725 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 21:21:47,994 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-21 21:21:47,996 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 21:21:47,996 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-21 21:21:47,997 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 21:21:47,997 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 21:21:47,997 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 21:21:47,997 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 21:21:47,997 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 21:21:47,998 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 21:21:47,998 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 21:21:48,004 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 21:21:48,004 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 21:21:48,006 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-21 21:21:48,006 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-21 21:21:48,006 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-21 21:22:26,451 - routes.react_app - INFO - Serving React app from: /Users/josephhester/fire-ems-tools/react-app/dist
+2025-06-21 21:22:26,452 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/admin HTTP/1.1" 200 -
+2025-06-21 21:22:26,475 - __main__ - INFO - ASSETS_FALLBACK: Serving TextField-CFS6yht_.js from deployment build
+2025-06-21 21:22:26,477 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/TextField-CFS6yht_.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,481 - __main__ - INFO - ASSETS_FALLBACK: Serving AdminDashboard-C5Qoof18.js from deployment build
+2025-06-21 21:22:26,485 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/AdminDashboard-C5Qoof18.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,489 - __main__ - INFO - ASSETS_FALLBACK: Serving Typography-3O39rTWb.js from deployment build
+2025-06-21 21:22:26,491 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/Typography-3O39rTWb.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,495 - routes.react_app - ERROR - React asset not found: index-DwHm_xfn.js
+2025-06-21 21:22:26,495 - routes.react_app - ERROR - Error serving React asset index-DwHm_xfn.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,496 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/index-DwHm_xfn.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,503 - __main__ - INFO - ASSETS_FALLBACK: Serving Button-DwLQaF7Z.js from deployment build
+2025-06-21 21:22:26,504 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/Button-DwLQaF7Z.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,519 - __main__ - INFO - ASSETS_FALLBACK: Serving CardContent-T6ZqzC_F.js from deployment build
+2025-06-21 21:22:26,520 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/CardContent-T6ZqzC_F.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,521 - __main__ - INFO - ASSETS_FALLBACK: Serving CheckCircle-CgEdPYFv.js from deployment build
+2025-06-21 21:22:26,522 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/CheckCircle-CgEdPYFv.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,523 - __main__ - INFO - ASSETS_FALLBACK: Serving Business-B5w9ux49.js from deployment build
+2025-06-21 21:22:26,523 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/Business-B5w9ux49.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,525 - __main__ - INFO - ASSETS_FALLBACK: Serving TrendingUp-B33mDqde.js from deployment build
+2025-06-21 21:22:26,525 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/TrendingUp-B33mDqde.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,527 - __main__ - INFO - ASSETS_FALLBACK: Serving Warning-BQbennwL.js from deployment build
+2025-06-21 21:22:26,527 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/Warning-BQbennwL.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,528 - __main__ - INFO - ASSETS_FALLBACK: Serving listItemTextClasses-D3JvyVNP.js from deployment build
+2025-06-21 21:22:26,529 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/listItemTextClasses-D3JvyVNP.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,530 - __main__ - INFO - ASSETS_FALLBACK: Serving TableRow-CpFPOIXi.js from deployment build
+2025-06-21 21:22:26,530 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/TableRow-CpFPOIXi.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,531 - __main__ - INFO - ASSETS_FALLBACK: Serving MoreVert-DzGVHVhb.js from deployment build
+2025-06-21 21:22:26,532 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/MoreVert-DzGVHVhb.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,533 - __main__ - INFO - ASSETS_FALLBACK: Serving LinearProgress-Bt9_20sU.js from deployment build
+2025-06-21 21:22:26,533 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/LinearProgress-Bt9_20sU.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,534 - __main__ - INFO - ASSETS_FALLBACK: Serving MenuItem-DeVymi7x.js from deployment build
+2025-06-21 21:22:26,535 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/MenuItem-DeVymi7x.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,537 - __main__ - INFO - ASSETS_FALLBACK: Serving Edit-CRKKVfF2.js from deployment build
+2025-06-21 21:22:26,538 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/Edit-CRKKVfF2.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,540 - __main__ - INFO - ASSETS_FALLBACK: Serving ListItemText-CIqAQvaJ.js from deployment build
+2025-06-21 21:22:26,540 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/ListItemText-CIqAQvaJ.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,543 - __main__ - INFO - ASSETS_FALLBACK: Serving Settings-p14i-YRg.js from deployment build
+2025-06-21 21:22:26,544 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/Settings-p14i-YRg.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,545 - __main__ - INFO - ASSETS_FALLBACK: Serving Delete-BtN1vZx7.js from deployment build
+2025-06-21 21:22:26,546 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/Delete-BtN1vZx7.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,549 - __main__ - INFO - ASSETS_FALLBACK: Serving Security-DhOBYZoa.js from deployment build
+2025-06-21 21:22:26,552 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/Security-DhOBYZoa.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,554 - __main__ - INFO - ASSETS_FALLBACK: Serving Save-CDtLDdtC.js from deployment build
+2025-06-21 21:22:26,555 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/Save-CDtLDdtC.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,557 - __main__ - INFO - ASSETS_FALLBACK: Serving Divider-CBmqyGsn.js from deployment build
+2025-06-21 21:22:26,558 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/Divider-CBmqyGsn.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,560 - __main__ - INFO - ASSETS_FALLBACK: Serving Tabs-7ynZqZzg.js from deployment build
+2025-06-21 21:22:26,561 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/Tabs-7ynZqZzg.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,563 - routes.react_app - ERROR - React asset not found: AdminDashboard-C5Qoof18.js
+2025-06-21 21:22:26,564 - routes.react_app - ERROR - Error serving React asset AdminDashboard-C5Qoof18.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,564 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/AdminDashboard-C5Qoof18.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,566 - routes.react_app - ERROR - React asset not found: TextField-CFS6yht_.js
+2025-06-21 21:22:26,567 - routes.react_app - ERROR - Error serving React asset TextField-CFS6yht_.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,567 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/TextField-CFS6yht_.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,570 - routes.react_app - ERROR - React asset not found: CardContent-T6ZqzC_F.js
+2025-06-21 21:22:26,570 - routes.react_app - ERROR - Error serving React asset CardContent-T6ZqzC_F.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,571 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/CardContent-T6ZqzC_F.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,573 - routes.react_app - ERROR - React asset not found: Typography-3O39rTWb.js
+2025-06-21 21:22:26,573 - routes.react_app - ERROR - Error serving React asset Typography-3O39rTWb.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,574 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/Typography-3O39rTWb.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,577 - routes.react_app - ERROR - React asset not found: CheckCircle-CgEdPYFv.js
+2025-06-21 21:22:26,577 - routes.react_app - ERROR - Error serving React asset CheckCircle-CgEdPYFv.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,578 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/CheckCircle-CgEdPYFv.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,580 - routes.react_app - ERROR - React asset not found: TrendingUp-B33mDqde.js
+2025-06-21 21:22:26,581 - routes.react_app - ERROR - Error serving React asset TrendingUp-B33mDqde.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,581 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/TrendingUp-B33mDqde.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,584 - routes.react_app - ERROR - React asset not found: Business-B5w9ux49.js
+2025-06-21 21:22:26,585 - routes.react_app - ERROR - Error serving React asset Business-B5w9ux49.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,585 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/Business-B5w9ux49.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,587 - routes.react_app - ERROR - React asset not found: LinearProgress-Bt9_20sU.js
+2025-06-21 21:22:26,587 - routes.react_app - ERROR - Error serving React asset LinearProgress-Bt9_20sU.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,588 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/LinearProgress-Bt9_20sU.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,590 - routes.react_app - ERROR - React asset not found: Warning-BQbennwL.js
+2025-06-21 21:22:26,591 - routes.react_app - ERROR - Error serving React asset Warning-BQbennwL.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,591 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/Warning-BQbennwL.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,594 - routes.react_app - ERROR - React asset not found: listItemTextClasses-D3JvyVNP.js
+2025-06-21 21:22:26,594 - routes.react_app - ERROR - Error serving React asset listItemTextClasses-D3JvyVNP.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,594 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/listItemTextClasses-D3JvyVNP.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,596 - routes.react_app - ERROR - React asset not found: Button-DwLQaF7Z.js
+2025-06-21 21:22:26,596 - routes.react_app - ERROR - Error serving React asset Button-DwLQaF7Z.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,597 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/Button-DwLQaF7Z.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,599 - routes.react_app - ERROR - React asset not found: TableRow-CpFPOIXi.js
+2025-06-21 21:22:26,599 - routes.react_app - ERROR - Error serving React asset TableRow-CpFPOIXi.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,600 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/TableRow-CpFPOIXi.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,602 - routes.react_app - ERROR - React asset not found: MoreVert-DzGVHVhb.js
+2025-06-21 21:22:26,602 - routes.react_app - ERROR - Error serving React asset MoreVert-DzGVHVhb.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,602 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/MoreVert-DzGVHVhb.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,604 - routes.react_app - ERROR - React asset not found: MenuItem-DeVymi7x.js
+2025-06-21 21:22:26,604 - routes.react_app - ERROR - Error serving React asset MenuItem-DeVymi7x.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,605 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/MenuItem-DeVymi7x.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,607 - routes.react_app - ERROR - React asset not found: ListItemText-CIqAQvaJ.js
+2025-06-21 21:22:26,607 - routes.react_app - ERROR - Error serving React asset ListItemText-CIqAQvaJ.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,608 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/ListItemText-CIqAQvaJ.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,610 - routes.react_app - ERROR - React asset not found: Edit-CRKKVfF2.js
+2025-06-21 21:22:26,610 - routes.react_app - ERROR - Error serving React asset Edit-CRKKVfF2.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,610 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/Edit-CRKKVfF2.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,612 - routes.react_app - ERROR - React asset not found: Delete-BtN1vZx7.js
+2025-06-21 21:22:26,612 - routes.react_app - ERROR - Error serving React asset Delete-BtN1vZx7.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,613 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/Delete-BtN1vZx7.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,615 - routes.react_app - ERROR - React asset not found: Settings-p14i-YRg.js
+2025-06-21 21:22:26,615 - routes.react_app - ERROR - Error serving React asset Settings-p14i-YRg.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,615 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/Settings-p14i-YRg.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,618 - routes.react_app - ERROR - React asset not found: Save-CDtLDdtC.js
+2025-06-21 21:22:26,618 - routes.react_app - ERROR - Error serving React asset Save-CDtLDdtC.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,619 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/Save-CDtLDdtC.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,621 - routes.react_app - ERROR - React asset not found: Security-DhOBYZoa.js
+2025-06-21 21:22:26,621 - routes.react_app - ERROR - Error serving React asset Security-DhOBYZoa.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,621 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/Security-DhOBYZoa.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,623 - routes.react_app - ERROR - React asset not found: Divider-CBmqyGsn.js
+2025-06-21 21:22:26,624 - routes.react_app - ERROR - Error serving React asset Divider-CBmqyGsn.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,625 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/Divider-CBmqyGsn.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,627 - __main__ - INFO - ASSETS_FALLBACK: Serving LoginPage-BV1wc32D.js from deployment build
+2025-06-21 21:22:26,628 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/LoginPage-BV1wc32D.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,630 - routes.react_app - ERROR - React asset not found: Tabs-7ynZqZzg.js
+2025-06-21 21:22:26,630 - routes.react_app - ERROR - Error serving React asset Tabs-7ynZqZzg.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,631 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/Tabs-7ynZqZzg.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,633 - __main__ - INFO - ASSETS_FALLBACK: Serving LocalFireDepartment-BMVFdPDF.js from deployment build
+2025-06-21 21:22:26,634 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/LocalFireDepartment-BMVFdPDF.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,636 - __main__ - INFO - ASSETS_FALLBACK: Serving InputAdornment-D1Vn2YB8.js from deployment build
+2025-06-21 21:22:26,636 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/InputAdornment-D1Vn2YB8.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,638 - __main__ - INFO - ASSETS_FALLBACK: Serving VisibilityOff-CDHLEeT_.js from deployment build
+2025-06-21 21:22:26,639 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[36mGET /assets/VisibilityOff-CDHLEeT_.js HTTP/1.1[0m" 304 -
+2025-06-21 21:22:26,642 - routes.react_app - ERROR - React asset not found: LoginPage-BV1wc32D.js
+2025-06-21 21:22:26,642 - routes.react_app - ERROR - Error serving React asset LoginPage-BV1wc32D.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,642 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/LoginPage-BV1wc32D.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,644 - routes.react_app - ERROR - React asset not found: LocalFireDepartment-BMVFdPDF.js
+2025-06-21 21:22:26,644 - routes.react_app - ERROR - Error serving React asset LocalFireDepartment-BMVFdPDF.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,645 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/LocalFireDepartment-BMVFdPDF.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,648 - routes.react_app - ERROR - React asset not found: InputAdornment-D1Vn2YB8.js
+2025-06-21 21:22:26,649 - routes.react_app - ERROR - Error serving React asset InputAdornment-D1Vn2YB8.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,650 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/InputAdornment-D1Vn2YB8.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,653 - routes.react_app - ERROR - React asset not found: VisibilityOff-CDHLEeT_.js
+2025-06-21 21:22:26,653 - routes.react_app - ERROR - Error serving React asset VisibilityOff-CDHLEeT_.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 21:22:26,654 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "[33mGET /app/assets/VisibilityOff-CDHLEeT_.js HTTP/1.1[0m" 404 -
+2025-06-21 21:22:26,656 - routes.react_app - INFO - Serving React asset: index-qdeZMglQ.js
+2025-06-21 21:22:26,658 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/assets/index-qdeZMglQ.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,695 - __main__ - INFO - ASSETS_FALLBACK: Serving AdminDashboard-Dxc8p1eV.js from React build
+2025-06-21 21:22:26,696 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /assets/AdminDashboard-Dxc8p1eV.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,700 - __main__ - INFO - ASSETS_FALLBACK: Serving TextField-Dk-YZpGb.js from React build
+2025-06-21 21:22:26,702 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /assets/TextField-Dk-YZpGb.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,705 - __main__ - INFO - ASSETS_FALLBACK: Serving Typography-Bd8z28zj.js from React build
+2025-06-21 21:22:26,707 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /assets/Typography-Bd8z28zj.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,711 - __main__ - INFO - ASSETS_FALLBACK: Serving Button-DPx0DK0D.js from React build
+2025-06-21 21:22:26,712 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /assets/Button-DPx0DK0D.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,714 - __main__ - INFO - ASSETS_FALLBACK: Serving CardContent-BOc-w_u9.js from React build
+2025-06-21 21:22:26,715 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /assets/CardContent-BOc-w_u9.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,719 - __main__ - INFO - ASSETS_FALLBACK: Serving CheckCircle-BarBfCD1.js from React build
+2025-06-21 21:22:26,720 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /assets/CheckCircle-BarBfCD1.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,723 - __main__ - INFO - ASSETS_FALLBACK: Serving Business-WV7u9PAz.js from React build
+2025-06-21 21:22:26,725 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /assets/Business-WV7u9PAz.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,727 - __main__ - INFO - ASSETS_FALLBACK: Serving TrendingUp-BaYYnTNz.js from React build
+2025-06-21 21:22:26,728 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /assets/TrendingUp-BaYYnTNz.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,731 - __main__ - INFO - ASSETS_FALLBACK: Serving LinearProgress-BDTuNju6.js from React build
+2025-06-21 21:22:26,732 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /assets/LinearProgress-BDTuNju6.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,735 - __main__ - INFO - ASSETS_FALLBACK: Serving listItemTextClasses-sMAKw6Cw.js from React build
+2025-06-21 21:22:26,737 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /assets/listItemTextClasses-sMAKw6Cw.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,739 - __main__ - INFO - ASSETS_FALLBACK: Serving Warning-DjUVSTFM.js from React build
+2025-06-21 21:22:26,740 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /assets/Warning-DjUVSTFM.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,742 - __main__ - INFO - ASSETS_FALLBACK: Serving TableRow-CMUiXwvQ.js from React build
+2025-06-21 21:22:26,743 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /assets/TableRow-CMUiXwvQ.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,745 - __main__ - INFO - ASSETS_FALLBACK: Serving MoreVert-DwYUVrLe.js from React build
+2025-06-21 21:22:26,746 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /assets/MoreVert-DwYUVrLe.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,748 - __main__ - INFO - ASSETS_FALLBACK: Serving MenuItem-CncpxVJb.js from React build
+2025-06-21 21:22:26,750 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /assets/MenuItem-CncpxVJb.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,752 - __main__ - INFO - ASSETS_FALLBACK: Serving ListItemText-BA0XTSUo.js from React build
+2025-06-21 21:22:26,753 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /assets/ListItemText-BA0XTSUo.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,755 - __main__ - INFO - ASSETS_FALLBACK: Serving Edit-_DwgwbOh.js from React build
+2025-06-21 21:22:26,759 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /assets/Edit-_DwgwbOh.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,761 - __main__ - INFO - ASSETS_FALLBACK: Serving Delete-CU3a3v7X.js from React build
+2025-06-21 21:22:26,762 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /assets/Delete-CU3a3v7X.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,764 - __main__ - INFO - ASSETS_FALLBACK: Serving Save-C5fh5Azk.js from React build
+2025-06-21 21:22:26,765 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /assets/Save-C5fh5Azk.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,768 - __main__ - INFO - ASSETS_FALLBACK: Serving Settings-rwypMvhS.js from React build
+2025-06-21 21:22:26,769 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /assets/Settings-rwypMvhS.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,774 - __main__ - INFO - ASSETS_FALLBACK: Serving Security-LqChCg1N.js from React build
+2025-06-21 21:22:26,775 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /assets/Security-LqChCg1N.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,776 - __main__ - INFO - ASSETS_FALLBACK: Serving Divider-D4jjo_J2.js from React build
+2025-06-21 21:22:26,778 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /assets/Divider-D4jjo_J2.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,779 - __main__ - INFO - ASSETS_FALLBACK: Serving Tabs-8499olog.js from React build
+2025-06-21 21:22:26,779 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /assets/Tabs-8499olog.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,780 - routes.react_app - INFO - Serving React asset: AdminDashboard-Dxc8p1eV.js
+2025-06-21 21:22:26,780 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/assets/AdminDashboard-Dxc8p1eV.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,787 - routes.react_app - INFO - Serving React asset: TextField-Dk-YZpGb.js
+2025-06-21 21:22:26,788 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/assets/TextField-Dk-YZpGb.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,791 - routes.react_app - INFO - Serving React asset: Typography-Bd8z28zj.js
+2025-06-21 21:22:26,791 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/assets/Typography-Bd8z28zj.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,793 - routes.react_app - INFO - Serving React asset: CardContent-BOc-w_u9.js
+2025-06-21 21:22:26,793 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/assets/CardContent-BOc-w_u9.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,794 - routes.react_app - INFO - Serving React asset: CheckCircle-BarBfCD1.js
+2025-06-21 21:22:26,795 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/assets/CheckCircle-BarBfCD1.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,796 - routes.react_app - INFO - Serving React asset: Business-WV7u9PAz.js
+2025-06-21 21:22:26,797 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/assets/Business-WV7u9PAz.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,798 - routes.react_app - INFO - Serving React asset: TrendingUp-BaYYnTNz.js
+2025-06-21 21:22:26,798 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/assets/TrendingUp-BaYYnTNz.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,800 - routes.react_app - INFO - Serving React asset: LinearProgress-BDTuNju6.js
+2025-06-21 21:22:26,800 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/assets/LinearProgress-BDTuNju6.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,802 - routes.react_app - INFO - Serving React asset: listItemTextClasses-sMAKw6Cw.js
+2025-06-21 21:22:26,802 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/assets/listItemTextClasses-sMAKw6Cw.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,803 - routes.react_app - INFO - Serving React asset: Warning-DjUVSTFM.js
+2025-06-21 21:22:26,804 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/assets/Warning-DjUVSTFM.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,805 - routes.react_app - INFO - Serving React asset: Button-DPx0DK0D.js
+2025-06-21 21:22:26,805 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/assets/Button-DPx0DK0D.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,807 - routes.react_app - INFO - Serving React asset: TableRow-CMUiXwvQ.js
+2025-06-21 21:22:26,807 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/assets/TableRow-CMUiXwvQ.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,809 - routes.react_app - INFO - Serving React asset: MoreVert-DwYUVrLe.js
+2025-06-21 21:22:26,809 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/assets/MoreVert-DwYUVrLe.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,810 - routes.react_app - INFO - Serving React asset: MenuItem-CncpxVJb.js
+2025-06-21 21:22:26,811 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/assets/MenuItem-CncpxVJb.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,812 - routes.react_app - INFO - Serving React asset: ListItemText-BA0XTSUo.js
+2025-06-21 21:22:26,812 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/assets/ListItemText-BA0XTSUo.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,814 - routes.react_app - INFO - Serving React asset: Edit-_DwgwbOh.js
+2025-06-21 21:22:26,814 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/assets/Edit-_DwgwbOh.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,815 - routes.react_app - INFO - Serving React asset: Delete-CU3a3v7X.js
+2025-06-21 21:22:26,815 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/assets/Delete-CU3a3v7X.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,818 - routes.react_app - INFO - Serving React asset: Save-C5fh5Azk.js
+2025-06-21 21:22:26,819 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/assets/Save-C5fh5Azk.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,820 - routes.react_app - INFO - Serving React asset: Settings-rwypMvhS.js
+2025-06-21 21:22:26,820 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/assets/Settings-rwypMvhS.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,821 - routes.react_app - INFO - Serving React asset: Security-LqChCg1N.js
+2025-06-21 21:22:26,821 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/assets/Security-LqChCg1N.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,822 - routes.react_app - INFO - Serving React asset: Divider-D4jjo_J2.js
+2025-06-21 21:22:26,822 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/assets/Divider-D4jjo_J2.js HTTP/1.1" 200 -
+2025-06-21 21:22:26,823 - routes.react_app - INFO - Serving React asset: Tabs-8499olog.js
+2025-06-21 21:22:26,824 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:26] "GET /app/assets/Tabs-8499olog.js HTTP/1.1" 200 -
+2025-06-21 21:22:27,002 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:27] "GET /auth/api/me HTTP/1.1" 200 -
+2025-06-21 21:22:27,053 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:27] "GET /admin/api/analytics/overview HTTP/1.1" 200 -
+2025-06-21 21:22:39,164 - routes.react_app - INFO - Serving React app from: /Users/josephhester/fire-ems-tools/react-app/dist
+2025-06-21 21:22:39,165 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:39] "GET /app/admin HTTP/1.1" 200 -
+2025-06-21 21:22:39,171 - flask-limiter - INFO - ratelimit 50 per 1 minute (127.0.0.1) exceeded at endpoint: react_app.react_app_assets
+2025-06-21 21:22:39,172 - app - INFO - Corrected mimetype for /app/assets/index-qdeZMglQ.js to application/javascript
+2025-06-21 21:22:39,172 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:39] "[31m[1mGET /app/assets/index-qdeZMglQ.js HTTP/1.1[0m" 429 -
+2025-06-21 21:22:42,744 - routes.react_app - INFO - Serving React app from: /Users/josephhester/fire-ems-tools/react-app/dist
+2025-06-21 21:22:42,744 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:42] "GET /app/admin HTTP/1.1" 200 -
+2025-06-21 21:22:42,750 - flask-limiter - INFO - ratelimit 50 per 1 minute (127.0.0.1) exceeded at endpoint: react_app.react_app_assets
+2025-06-21 21:22:42,751 - app - INFO - Corrected mimetype for /app/assets/index-qdeZMglQ.js to application/javascript
+2025-06-21 21:22:42,752 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:22:42] "[31m[1mGET /app/assets/index-qdeZMglQ.js HTTP/1.1[0m" 429 -
+2025-06-21 21:23:05,043 - routes.auth - INFO - User admin@fireems.ai logged in successfully
+2025-06-21 21:23:05,043 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:23:05] "POST /auth/api/login HTTP/1.1" 200 -
+2025-06-21 21:23:20,738 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:23:20] "GET /auth/api/me HTTP/1.1" 200 -
+2025-06-21 21:24:14,768 - routes.react_app - INFO - Serving React app from: /Users/josephhester/fire-ems-tools/react-app/dist
+2025-06-21 21:24:14,769 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "GET /app/admin HTTP/1.1" 200 -
+2025-06-21 21:24:14,777 - routes.react_app - INFO - Serving React asset: index-qdeZMglQ.js
+2025-06-21 21:24:14,778 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "GET /app/assets/index-qdeZMglQ.js HTTP/1.1" 200 -
+2025-06-21 21:24:14,817 - __main__ - INFO - ASSETS_FALLBACK: Serving AdminDashboard-Dxc8p1eV.js from React build
+2025-06-21 21:24:14,818 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /assets/AdminDashboard-Dxc8p1eV.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,821 - __main__ - INFO - ASSETS_FALLBACK: Serving Typography-Bd8z28zj.js from React build
+2025-06-21 21:24:14,821 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /assets/Typography-Bd8z28zj.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,823 - __main__ - INFO - ASSETS_FALLBACK: Serving TextField-Dk-YZpGb.js from React build
+2025-06-21 21:24:14,824 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /assets/TextField-Dk-YZpGb.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,826 - __main__ - INFO - ASSETS_FALLBACK: Serving Button-DPx0DK0D.js from React build
+2025-06-21 21:24:14,827 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /assets/Button-DPx0DK0D.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,829 - __main__ - INFO - ASSETS_FALLBACK: Serving CheckCircle-BarBfCD1.js from React build
+2025-06-21 21:24:14,830 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /assets/CheckCircle-BarBfCD1.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,831 - __main__ - INFO - ASSETS_FALLBACK: Serving CardContent-BOc-w_u9.js from React build
+2025-06-21 21:24:14,832 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /assets/CardContent-BOc-w_u9.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,834 - __main__ - INFO - ASSETS_FALLBACK: Serving Business-WV7u9PAz.js from React build
+2025-06-21 21:24:14,834 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /assets/Business-WV7u9PAz.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,836 - __main__ - INFO - ASSETS_FALLBACK: Serving TrendingUp-BaYYnTNz.js from React build
+2025-06-21 21:24:14,837 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /assets/TrendingUp-BaYYnTNz.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,838 - __main__ - INFO - ASSETS_FALLBACK: Serving listItemTextClasses-sMAKw6Cw.js from React build
+2025-06-21 21:24:14,839 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /assets/listItemTextClasses-sMAKw6Cw.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,841 - __main__ - INFO - ASSETS_FALLBACK: Serving Warning-DjUVSTFM.js from React build
+2025-06-21 21:24:14,842 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /assets/Warning-DjUVSTFM.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,843 - __main__ - INFO - ASSETS_FALLBACK: Serving TableRow-CMUiXwvQ.js from React build
+2025-06-21 21:24:14,844 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /assets/TableRow-CMUiXwvQ.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,846 - __main__ - INFO - ASSETS_FALLBACK: Serving MoreVert-DwYUVrLe.js from React build
+2025-06-21 21:24:14,847 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /assets/MoreVert-DwYUVrLe.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,848 - __main__ - INFO - ASSETS_FALLBACK: Serving LinearProgress-BDTuNju6.js from React build
+2025-06-21 21:24:14,849 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /assets/LinearProgress-BDTuNju6.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,850 - __main__ - INFO - ASSETS_FALLBACK: Serving MenuItem-CncpxVJb.js from React build
+2025-06-21 21:24:14,851 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /assets/MenuItem-CncpxVJb.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,853 - __main__ - INFO - ASSETS_FALLBACK: Serving Edit-_DwgwbOh.js from React build
+2025-06-21 21:24:14,854 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /assets/Edit-_DwgwbOh.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,856 - __main__ - INFO - ASSETS_FALLBACK: Serving Delete-CU3a3v7X.js from React build
+2025-06-21 21:24:14,856 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /assets/Delete-CU3a3v7X.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,858 - __main__ - INFO - ASSETS_FALLBACK: Serving Save-C5fh5Azk.js from React build
+2025-06-21 21:24:14,859 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /assets/Save-C5fh5Azk.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,860 - __main__ - INFO - ASSETS_FALLBACK: Serving Settings-rwypMvhS.js from React build
+2025-06-21 21:24:14,861 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /assets/Settings-rwypMvhS.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,862 - __main__ - INFO - ASSETS_FALLBACK: Serving ListItemText-BA0XTSUo.js from React build
+2025-06-21 21:24:14,863 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /assets/ListItemText-BA0XTSUo.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,864 - __main__ - INFO - ASSETS_FALLBACK: Serving Security-LqChCg1N.js from React build
+2025-06-21 21:24:14,865 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /assets/Security-LqChCg1N.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,866 - __main__ - INFO - ASSETS_FALLBACK: Serving Divider-D4jjo_J2.js from React build
+2025-06-21 21:24:14,867 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /assets/Divider-D4jjo_J2.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,868 - __main__ - INFO - ASSETS_FALLBACK: Serving Tabs-8499olog.js from React build
+2025-06-21 21:24:14,869 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /assets/Tabs-8499olog.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,871 - routes.react_app - INFO - Serving React asset: AdminDashboard-Dxc8p1eV.js
+2025-06-21 21:24:14,872 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /app/assets/AdminDashboard-Dxc8p1eV.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,879 - routes.react_app - INFO - Serving React asset: CardContent-BOc-w_u9.js
+2025-06-21 21:24:14,880 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /app/assets/CardContent-BOc-w_u9.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,882 - routes.react_app - INFO - Serving React asset: TextField-Dk-YZpGb.js
+2025-06-21 21:24:14,883 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /app/assets/TextField-Dk-YZpGb.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,885 - routes.react_app - INFO - Serving React asset: Typography-Bd8z28zj.js
+2025-06-21 21:24:14,886 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /app/assets/Typography-Bd8z28zj.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,887 - routes.react_app - INFO - Serving React asset: CheckCircle-BarBfCD1.js
+2025-06-21 21:24:14,888 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /app/assets/CheckCircle-BarBfCD1.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,890 - routes.react_app - INFO - Serving React asset: Business-WV7u9PAz.js
+2025-06-21 21:24:14,891 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /app/assets/Business-WV7u9PAz.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,892 - routes.react_app - INFO - Serving React asset: TrendingUp-BaYYnTNz.js
+2025-06-21 21:24:14,893 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /app/assets/TrendingUp-BaYYnTNz.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,896 - routes.react_app - INFO - Serving React asset: LinearProgress-BDTuNju6.js
+2025-06-21 21:24:14,897 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /app/assets/LinearProgress-BDTuNju6.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,899 - routes.react_app - INFO - Serving React asset: listItemTextClasses-sMAKw6Cw.js
+2025-06-21 21:24:14,900 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /app/assets/listItemTextClasses-sMAKw6Cw.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,902 - routes.react_app - INFO - Serving React asset: Warning-DjUVSTFM.js
+2025-06-21 21:24:14,903 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /app/assets/Warning-DjUVSTFM.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,906 - routes.react_app - INFO - Serving React asset: TableRow-CMUiXwvQ.js
+2025-06-21 21:24:14,907 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /app/assets/TableRow-CMUiXwvQ.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,910 - routes.react_app - INFO - Serving React asset: Button-DPx0DK0D.js
+2025-06-21 21:24:14,911 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /app/assets/Button-DPx0DK0D.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,914 - routes.react_app - INFO - Serving React asset: MoreVert-DwYUVrLe.js
+2025-06-21 21:24:14,914 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /app/assets/MoreVert-DwYUVrLe.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,916 - routes.react_app - INFO - Serving React asset: MenuItem-CncpxVJb.js
+2025-06-21 21:24:14,917 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /app/assets/MenuItem-CncpxVJb.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,919 - routes.react_app - INFO - Serving React asset: ListItemText-BA0XTSUo.js
+2025-06-21 21:24:14,920 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /app/assets/ListItemText-BA0XTSUo.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,922 - routes.react_app - INFO - Serving React asset: Edit-_DwgwbOh.js
+2025-06-21 21:24:14,923 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /app/assets/Edit-_DwgwbOh.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,925 - routes.react_app - INFO - Serving React asset: Delete-CU3a3v7X.js
+2025-06-21 21:24:14,925 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /app/assets/Delete-CU3a3v7X.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,927 - routes.react_app - INFO - Serving React asset: Save-C5fh5Azk.js
+2025-06-21 21:24:14,928 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /app/assets/Save-C5fh5Azk.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,930 - routes.react_app - INFO - Serving React asset: Settings-rwypMvhS.js
+2025-06-21 21:24:14,931 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /app/assets/Settings-rwypMvhS.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,934 - routes.react_app - INFO - Serving React asset: Security-LqChCg1N.js
+2025-06-21 21:24:14,935 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /app/assets/Security-LqChCg1N.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,938 - routes.react_app - INFO - Serving React asset: Divider-D4jjo_J2.js
+2025-06-21 21:24:14,939 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /app/assets/Divider-D4jjo_J2.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:14,941 - routes.react_app - INFO - Serving React asset: Tabs-8499olog.js
+2025-06-21 21:24:14,943 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:14] "[36mGET /app/assets/Tabs-8499olog.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,123 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "GET /auth/api/me HTTP/1.1" 200 -
+2025-06-21 21:24:15,148 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "GET /admin/api/analytics/overview HTTP/1.1" 200 -
+2025-06-21 21:24:15,194 - routes.react_app - INFO - Serving React app from: /Users/josephhester/fire-ems-tools/react-app/dist
+2025-06-21 21:24:15,195 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "GET /app/admin HTTP/1.1" 200 -
+2025-06-21 21:24:15,197 - routes.react_app - INFO - Serving React asset: index-qdeZMglQ.js
+2025-06-21 21:24:15,197 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/index-qdeZMglQ.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,200 - routes.react_app - INFO - Serving React asset: index-qdeZMglQ.js
+2025-06-21 21:24:15,200 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/index-qdeZMglQ.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,222 - routes.react_app - INFO - Serving React asset: AdminDashboard-Dxc8p1eV.js
+2025-06-21 21:24:15,223 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/AdminDashboard-Dxc8p1eV.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,230 - routes.react_app - INFO - Serving React asset: TextField-Dk-YZpGb.js
+2025-06-21 21:24:15,231 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/TextField-Dk-YZpGb.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,233 - routes.react_app - INFO - Serving React asset: Typography-Bd8z28zj.js
+2025-06-21 21:24:15,234 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/Typography-Bd8z28zj.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,236 - routes.react_app - INFO - Serving React asset: CardContent-BOc-w_u9.js
+2025-06-21 21:24:15,237 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/CardContent-BOc-w_u9.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,239 - routes.react_app - INFO - Serving React asset: CheckCircle-BarBfCD1.js
+2025-06-21 21:24:15,240 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/CheckCircle-BarBfCD1.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,242 - routes.react_app - INFO - Serving React asset: Business-WV7u9PAz.js
+2025-06-21 21:24:15,243 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/Business-WV7u9PAz.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,245 - routes.react_app - INFO - Serving React asset: TrendingUp-BaYYnTNz.js
+2025-06-21 21:24:15,246 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/TrendingUp-BaYYnTNz.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,248 - routes.react_app - INFO - Serving React asset: LinearProgress-BDTuNju6.js
+2025-06-21 21:24:15,249 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/LinearProgress-BDTuNju6.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,252 - routes.react_app - INFO - Serving React asset: listItemTextClasses-sMAKw6Cw.js
+2025-06-21 21:24:15,254 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/listItemTextClasses-sMAKw6Cw.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,256 - routes.react_app - INFO - Serving React asset: Warning-DjUVSTFM.js
+2025-06-21 21:24:15,257 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/Warning-DjUVSTFM.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,259 - routes.react_app - INFO - Serving React asset: Button-DPx0DK0D.js
+2025-06-21 21:24:15,260 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/Button-DPx0DK0D.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,261 - routes.react_app - INFO - Serving React asset: TableRow-CMUiXwvQ.js
+2025-06-21 21:24:15,262 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/TableRow-CMUiXwvQ.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,264 - routes.react_app - INFO - Serving React asset: MoreVert-DwYUVrLe.js
+2025-06-21 21:24:15,265 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/MoreVert-DwYUVrLe.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,267 - routes.react_app - INFO - Serving React asset: MenuItem-CncpxVJb.js
+2025-06-21 21:24:15,268 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/MenuItem-CncpxVJb.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,280 - routes.react_app - INFO - Serving React asset: ListItemText-BA0XTSUo.js
+2025-06-21 21:24:15,284 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/ListItemText-BA0XTSUo.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,287 - routes.react_app - INFO - Serving React asset: Edit-_DwgwbOh.js
+2025-06-21 21:24:15,288 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/Edit-_DwgwbOh.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,289 - routes.react_app - INFO - Serving React asset: Delete-CU3a3v7X.js
+2025-06-21 21:24:15,289 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/Delete-CU3a3v7X.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,290 - routes.react_app - INFO - Serving React asset: Save-C5fh5Azk.js
+2025-06-21 21:24:15,291 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/Save-C5fh5Azk.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,293 - routes.react_app - INFO - Serving React asset: Settings-rwypMvhS.js
+2025-06-21 21:24:15,294 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/Settings-rwypMvhS.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,296 - routes.react_app - INFO - Serving React asset: Security-LqChCg1N.js
+2025-06-21 21:24:15,297 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/Security-LqChCg1N.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,299 - routes.react_app - INFO - Serving React asset: Divider-D4jjo_J2.js
+2025-06-21 21:24:15,300 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/Divider-D4jjo_J2.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,302 - routes.react_app - INFO - Serving React asset: Tabs-8499olog.js
+2025-06-21 21:24:15,303 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "[36mGET /app/assets/Tabs-8499olog.js HTTP/1.1[0m" 304 -
+2025-06-21 21:24:15,532 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "GET /auth/api/me HTTP/1.1" 200 -
+2025-06-21 21:24:15,554 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:15] "GET /admin/api/analytics/overview HTTP/1.1" 200 -
+2025-06-21 21:24:22,322 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:22] "GET /admin/api/users HTTP/1.1" 200 -
+2025-06-21 21:24:33,298 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:33] "GET /admin/api/departments HTTP/1.1" 200 -
+2025-06-21 21:24:47,087 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:47] "GET /admin/api/analytics/overview HTTP/1.1" 200 -
+2025-06-21 21:24:58,974 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:24:58] "GET /admin/api/departments HTTP/1.1" 200 -
+2025-06-21 21:26:44,134 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:26:44] "GET /admin/api/analytics/overview HTTP/1.1" 200 -
+2025-06-21 21:26:46,383 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:26:46] "GET /admin/api/users HTTP/1.1" 200 -
+2025-06-21 21:26:47,463 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:26:47] "GET /admin/api/departments HTTP/1.1" 200 -
+2025-06-21 21:28:45,769 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:28:45] "GET /admin/api/analytics/overview HTTP/1.1" 200 -
+2025-06-21 21:28:53,419 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:28:53] "GET /admin/api/users HTTP/1.1" 200 -
+2025-06-21 21:29:00,735 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:29:00] "GET /admin/api/departments HTTP/1.1" 200 -
+2025-06-21 21:29:05,184 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:29:05] "GET /admin/api/departments HTTP/1.1" 200 -
+2025-06-21 21:31:31,207 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:31:31] "GET /admin/api/departments HTTP/1.1" 200 -
+2025-06-21 21:45:24,699 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 21:45:24,699 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 21:45:24,699 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 21:45:24,702 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 21:45:24,702 - app - INFO - Creating application with deployment fixes...
+2025-06-21 21:45:24,703 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 21:45:24,703 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 21:45:24,703 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 21:45:24,703 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 21:45:24,703 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 21:45:24,714 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 21:45:24,714 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 21:45:24,714 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 21:45:24,715 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 21:45:24,715 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 21:45:24,715 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 21:45:24,715 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 21:45:24,715 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 21:45:24,715 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 21:45:24,987 - app - INFO - Successfully registered all route blueprints
+2025-06-21 21:45:24,989 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 21:45:24,989 - app - INFO - Registered React Data Formatter routes
+2025-06-21 21:45:24,990 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 21:45:24,990 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 21:45:24,990 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 21:45:24,990 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 21:45:24,990 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 21:45:24,990 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 21:45:24,990 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 21:45:25,013 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 21:45:25,013 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 21:45:25,015 - app - INFO - Found 1 existing super_admin users
+2025-06-21 21:45:25,015 - app - INFO - Super admin user already exists, skipping creation
+2025-06-21 21:45:25,015 - app - INFO - Application created successfully with all fixes applied
+2025-06-21 21:45:25,016 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 21:45:25,016 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 21:45:25,016 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 21:45:25,016 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 21:45:25,016 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 21:45:25,017 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 21:45:25,017 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 21:45:25,017 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 21:45:25,017 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 21:45:25,017 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 21:45:25,017 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 21:45:25,017 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 21:45:25,017 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 21:45:25,018 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 21:45:25,028 - app - INFO - Successfully registered all route blueprints
+2025-06-21 21:45:25,029 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 21:45:25,029 - app - INFO - Registered React Data Formatter routes
+2025-06-21 21:46:31,536 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:31] "GET /admin/api/departments HTTP/1.1" 200 -
+2025-06-21 21:46:40,198 - routes.react_app - INFO - Serving React app from: /Users/josephhester/fire-ems-tools/react-app/dist
+2025-06-21 21:46:40,198 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/admin HTTP/1.1" 200 -
+2025-06-21 21:46:40,206 - routes.react_app - INFO - Serving React asset: index-D7zr1zCc.js
+2025-06-21 21:46:40,207 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/assets/index-D7zr1zCc.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,245 - __main__ - INFO - ASSETS_FALLBACK: Serving AdminDashboard-MOd7Q8hI.js from React build
+2025-06-21 21:46:40,246 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /assets/AdminDashboard-MOd7Q8hI.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,249 - __main__ - INFO - ASSETS_FALLBACK: Serving TextField-CeXGneDd.js from React build
+2025-06-21 21:46:40,250 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /assets/TextField-CeXGneDd.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,253 - __main__ - INFO - ASSETS_FALLBACK: Serving Typography-AoprHQBG.js from React build
+2025-06-21 21:46:40,254 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /assets/Typography-AoprHQBG.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,256 - __main__ - INFO - ASSETS_FALLBACK: Serving Button-DpK4BMI9.js from React build
+2025-06-21 21:46:40,257 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /assets/Button-DpK4BMI9.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,259 - __main__ - INFO - ASSETS_FALLBACK: Serving CardContent-iO1XpoUD.js from React build
+2025-06-21 21:46:40,260 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /assets/CardContent-iO1XpoUD.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,262 - __main__ - INFO - ASSETS_FALLBACK: Serving CheckCircle-BRa-gByz.js from React build
+2025-06-21 21:46:40,263 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /assets/CheckCircle-BRa-gByz.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,265 - __main__ - INFO - ASSETS_FALLBACK: Serving Business-Cq4QIlTx.js from React build
+2025-06-21 21:46:40,266 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /assets/Business-Cq4QIlTx.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,268 - __main__ - INFO - ASSETS_FALLBACK: Serving TrendingUp-Xr0kkqKy.js from React build
+2025-06-21 21:46:40,268 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /assets/TrendingUp-Xr0kkqKy.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,270 - __main__ - INFO - ASSETS_FALLBACK: Serving LinearProgress-YVvlBpRd.js from React build
+2025-06-21 21:46:40,271 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /assets/LinearProgress-YVvlBpRd.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,274 - __main__ - INFO - ASSETS_FALLBACK: Serving listItemTextClasses-DQdRCUrc.js from React build
+2025-06-21 21:46:40,275 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /assets/listItemTextClasses-DQdRCUrc.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,276 - __main__ - INFO - ASSETS_FALLBACK: Serving Warning-D9SQmkJx.js from React build
+2025-06-21 21:46:40,277 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /assets/Warning-D9SQmkJx.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,279 - __main__ - INFO - ASSETS_FALLBACK: Serving TableRow-CNVaLizP.js from React build
+2025-06-21 21:46:40,279 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /assets/TableRow-CNVaLizP.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,282 - __main__ - INFO - ASSETS_FALLBACK: Serving MoreVert-qad8c3oR.js from React build
+2025-06-21 21:46:40,283 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /assets/MoreVert-qad8c3oR.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,285 - __main__ - INFO - ASSETS_FALLBACK: Serving MenuItem-COzPopDw.js from React build
+2025-06-21 21:46:40,285 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /assets/MenuItem-COzPopDw.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,287 - __main__ - INFO - ASSETS_FALLBACK: Serving ListItemText-D8XehFlS.js from React build
+2025-06-21 21:46:40,288 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /assets/ListItemText-D8XehFlS.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,291 - __main__ - INFO - ASSETS_FALLBACK: Serving Edit-DO3iy1C8.js from React build
+2025-06-21 21:46:40,292 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /assets/Edit-DO3iy1C8.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,293 - __main__ - INFO - ASSETS_FALLBACK: Serving Delete-Cc6X-T0R.js from React build
+2025-06-21 21:46:40,294 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /assets/Delete-Cc6X-T0R.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,296 - __main__ - INFO - ASSETS_FALLBACK: Serving Save-DBASESN4.js from React build
+2025-06-21 21:46:40,298 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /assets/Save-DBASESN4.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,300 - __main__ - INFO - ASSETS_FALLBACK: Serving Settings-D_kHaCt9.js from React build
+2025-06-21 21:46:40,301 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /assets/Settings-D_kHaCt9.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,303 - __main__ - INFO - ASSETS_FALLBACK: Serving Security-Dm7gpTvZ.js from React build
+2025-06-21 21:46:40,303 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /assets/Security-Dm7gpTvZ.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,305 - __main__ - INFO - ASSETS_FALLBACK: Serving Divider-CjLPfZuU.js from React build
+2025-06-21 21:46:40,306 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /assets/Divider-CjLPfZuU.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,308 - __main__ - INFO - ASSETS_FALLBACK: Serving Tabs-DwHcZhG8.js from React build
+2025-06-21 21:46:40,309 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /assets/Tabs-DwHcZhG8.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,311 - routes.react_app - INFO - Serving React asset: AdminDashboard-MOd7Q8hI.js
+2025-06-21 21:46:40,311 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/assets/AdminDashboard-MOd7Q8hI.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,319 - routes.react_app - INFO - Serving React asset: TextField-CeXGneDd.js
+2025-06-21 21:46:40,320 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/assets/TextField-CeXGneDd.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,322 - routes.react_app - INFO - Serving React asset: Typography-AoprHQBG.js
+2025-06-21 21:46:40,324 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/assets/Typography-AoprHQBG.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,326 - routes.react_app - INFO - Serving React asset: CardContent-iO1XpoUD.js
+2025-06-21 21:46:40,327 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/assets/CardContent-iO1XpoUD.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,329 - routes.react_app - INFO - Serving React asset: CheckCircle-BRa-gByz.js
+2025-06-21 21:46:40,330 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/assets/CheckCircle-BRa-gByz.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,333 - routes.react_app - INFO - Serving React asset: Business-Cq4QIlTx.js
+2025-06-21 21:46:40,333 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/assets/Business-Cq4QIlTx.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,335 - routes.react_app - INFO - Serving React asset: TrendingUp-Xr0kkqKy.js
+2025-06-21 21:46:40,336 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/assets/TrendingUp-Xr0kkqKy.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,338 - routes.react_app - INFO - Serving React asset: LinearProgress-YVvlBpRd.js
+2025-06-21 21:46:40,339 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/assets/LinearProgress-YVvlBpRd.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,342 - routes.react_app - INFO - Serving React asset: listItemTextClasses-DQdRCUrc.js
+2025-06-21 21:46:40,342 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/assets/listItemTextClasses-DQdRCUrc.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,344 - routes.react_app - INFO - Serving React asset: Warning-D9SQmkJx.js
+2025-06-21 21:46:40,345 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/assets/Warning-D9SQmkJx.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,347 - routes.react_app - INFO - Serving React asset: Button-DpK4BMI9.js
+2025-06-21 21:46:40,349 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/assets/Button-DpK4BMI9.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,351 - routes.react_app - INFO - Serving React asset: TableRow-CNVaLizP.js
+2025-06-21 21:46:40,352 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/assets/TableRow-CNVaLizP.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,354 - routes.react_app - INFO - Serving React asset: MoreVert-qad8c3oR.js
+2025-06-21 21:46:40,355 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/assets/MoreVert-qad8c3oR.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,357 - routes.react_app - INFO - Serving React asset: MenuItem-COzPopDw.js
+2025-06-21 21:46:40,358 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/assets/MenuItem-COzPopDw.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,360 - routes.react_app - INFO - Serving React asset: ListItemText-D8XehFlS.js
+2025-06-21 21:46:40,361 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/assets/ListItemText-D8XehFlS.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,363 - routes.react_app - INFO - Serving React asset: Edit-DO3iy1C8.js
+2025-06-21 21:46:40,363 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/assets/Edit-DO3iy1C8.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,366 - routes.react_app - INFO - Serving React asset: Delete-Cc6X-T0R.js
+2025-06-21 21:46:40,367 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/assets/Delete-Cc6X-T0R.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,369 - routes.react_app - INFO - Serving React asset: Save-DBASESN4.js
+2025-06-21 21:46:40,370 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/assets/Save-DBASESN4.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,372 - routes.react_app - INFO - Serving React asset: Settings-D_kHaCt9.js
+2025-06-21 21:46:40,373 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/assets/Settings-D_kHaCt9.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,375 - routes.react_app - INFO - Serving React asset: Security-Dm7gpTvZ.js
+2025-06-21 21:46:40,376 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/assets/Security-Dm7gpTvZ.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,378 - routes.react_app - INFO - Serving React asset: Divider-CjLPfZuU.js
+2025-06-21 21:46:40,378 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/assets/Divider-CjLPfZuU.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,380 - routes.react_app - INFO - Serving React asset: Tabs-DwHcZhG8.js
+2025-06-21 21:46:40,381 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /app/assets/Tabs-DwHcZhG8.js HTTP/1.1" 200 -
+2025-06-21 21:46:40,553 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /auth/api/me HTTP/1.1" 200 -
+2025-06-21 21:46:40,579 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:40] "GET /admin/api/analytics/overview HTTP/1.1" 200 -
+2025-06-21 21:46:48,120 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:48] "GET /admin/api/users HTTP/1.1" 200 -
+2025-06-21 21:46:52,187 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:46:52] "GET /admin/api/departments HTTP/1.1" 200 -
+2025-06-21 21:47:26,847 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:47:26] "GET /admin/api/analytics/overview HTTP/1.1" 200 -
+2025-06-21 21:47:40,135 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:47:40] "GET /admin/api/users HTTP/1.1" 200 -
+2025-06-21 21:49:19,664 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/routes/admin.py', reloading
+2025-06-21 21:50:05,066 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 21:50:05,193 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 21:50:05,193 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 21:50:05,196 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 21:50:05,196 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-21 21:50:05,197 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 21:50:05,197 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 21:50:05,197 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 21:50:05,198 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 21:50:05,198 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 21:50:05,209 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 21:50:05,209 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 21:50:05,209 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 21:50:05,209 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 21:50:05,210 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 21:50:05,210 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 21:50:05,210 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 21:50:05,210 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 21:50:05,210 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 21:50:05,517 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-21 21:50:05,519 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 21:50:05,519 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-21 21:50:05,521 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 21:50:05,522 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 21:50:05,522 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 21:50:05,522 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 21:50:05,522 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 21:50:05,522 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 21:50:05,522 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 21:50:05,528 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 21:50:05,528 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 21:50:05,531 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-21 21:50:05,531 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-21 21:50:05,531 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-21 21:50:05,584 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5006
+ * Running on http://192.168.1.76:5006
+2025-06-21 21:50:05,584 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-06-21 21:50:05,585 - werkzeug - INFO -  * Restarting with stat
+2025-06-21 21:50:05,716 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 21:50:05,820 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 21:50:05,820 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 21:50:05,822 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 21:50:05,822 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-21 21:50:05,823 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 21:50:05,823 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 21:50:05,823 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 21:50:05,823 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 21:50:05,823 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 21:50:05,830 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 21:50:05,830 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 21:50:05,830 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 21:50:05,831 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 21:50:05,831 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 21:50:05,831 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 21:50:05,831 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 21:50:05,831 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 21:50:05,831 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 21:50:06,021 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-21 21:50:06,022 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 21:50:06,022 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-21 21:50:06,023 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 21:50:06,023 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 21:50:06,023 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 21:50:06,023 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 21:50:06,023 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 21:50:06,024 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 21:50:06,024 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 21:50:06,030 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 21:50:06,030 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 21:50:06,032 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-21 21:50:06,032 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-21 21:50:06,032 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-21 21:50:06,066 - werkzeug - WARNING -  * Debugger is active!
+2025-06-21 21:50:06,073 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-21 21:51:07,016 - routes.admin - INFO - Department Test New Department created by super admin admin@fireems.ai
+2025-06-21 21:51:07,017 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:07] "POST /admin/api/departments HTTP/1.1" 200 -
+2025-06-21 21:51:17,967 - routes.react_app - INFO - Serving React app from: /Users/josephhester/fire-ems-tools/react-app/dist
+2025-06-21 21:51:17,968 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:17] "GET /app/admin HTTP/1.1" 200 -
+2025-06-21 21:51:17,976 - routes.react_app - INFO - Serving React asset: index-BEk1R7Ya.js
+2025-06-21 21:51:17,976 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:17] "GET /app/assets/index-BEk1R7Ya.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,010 - __main__ - INFO - ASSETS_FALLBACK: Serving AdminDashboard-DT9IwTNR.js from React build
+2025-06-21 21:51:18,011 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /assets/AdminDashboard-DT9IwTNR.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,015 - __main__ - INFO - ASSETS_FALLBACK: Serving TextField-DMOM6MkY.js from React build
+2025-06-21 21:51:18,015 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /assets/TextField-DMOM6MkY.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,017 - __main__ - INFO - ASSETS_FALLBACK: Serving Typography-DPFyeHn8.js from React build
+2025-06-21 21:51:18,018 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /assets/Typography-DPFyeHn8.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,019 - __main__ - INFO - ASSETS_FALLBACK: Serving Button-DroB2dDX.js from React build
+2025-06-21 21:51:18,020 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /assets/Button-DroB2dDX.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,021 - __main__ - INFO - ASSETS_FALLBACK: Serving CardContent-7ZfztkYX.js from React build
+2025-06-21 21:51:18,021 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /assets/CardContent-7ZfztkYX.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,023 - __main__ - INFO - ASSETS_FALLBACK: Serving CheckCircle-C2G9iwbt.js from React build
+2025-06-21 21:51:18,023 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /assets/CheckCircle-C2G9iwbt.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,025 - __main__ - INFO - ASSETS_FALLBACK: Serving Business-B4qscj9h.js from React build
+2025-06-21 21:51:18,025 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /assets/Business-B4qscj9h.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,027 - __main__ - INFO - ASSETS_FALLBACK: Serving TrendingUp-XIKyXbmW.js from React build
+2025-06-21 21:51:18,027 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /assets/TrendingUp-XIKyXbmW.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,029 - __main__ - INFO - ASSETS_FALLBACK: Serving listItemTextClasses-D4W2AoQB.js from React build
+2025-06-21 21:51:18,029 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /assets/listItemTextClasses-D4W2AoQB.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,030 - __main__ - INFO - ASSETS_FALLBACK: Serving Warning-Cv7KmmE-.js from React build
+2025-06-21 21:51:18,030 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /assets/Warning-Cv7KmmE-.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,031 - __main__ - INFO - ASSETS_FALLBACK: Serving TableRow-CCiIGa2F.js from React build
+2025-06-21 21:51:18,032 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /assets/TableRow-CCiIGa2F.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,033 - __main__ - INFO - ASSETS_FALLBACK: Serving MoreVert-BR1Ugf9o.js from React build
+2025-06-21 21:51:18,033 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /assets/MoreVert-BR1Ugf9o.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,034 - __main__ - INFO - ASSETS_FALLBACK: Serving MenuItem-DhSKuBYf.js from React build
+2025-06-21 21:51:18,035 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /assets/MenuItem-DhSKuBYf.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,036 - __main__ - INFO - ASSETS_FALLBACK: Serving ListItemText-DDcEUQJF.js from React build
+2025-06-21 21:51:18,036 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /assets/ListItemText-DDcEUQJF.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,037 - __main__ - INFO - ASSETS_FALLBACK: Serving Edit-GpD1R30H.js from React build
+2025-06-21 21:51:18,037 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /assets/Edit-GpD1R30H.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,038 - __main__ - INFO - ASSETS_FALLBACK: Serving Delete-CaeZfbfV.js from React build
+2025-06-21 21:51:18,038 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /assets/Delete-CaeZfbfV.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,039 - __main__ - INFO - ASSETS_FALLBACK: Serving Save-CAU9UBrf.js from React build
+2025-06-21 21:51:18,040 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /assets/Save-CAU9UBrf.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,041 - __main__ - INFO - ASSETS_FALLBACK: Serving Settings-Ctau02Bo.js from React build
+2025-06-21 21:51:18,041 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /assets/Settings-Ctau02Bo.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,042 - __main__ - INFO - ASSETS_FALLBACK: Serving Security-CM_RdTKx.js from React build
+2025-06-21 21:51:18,042 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /assets/Security-CM_RdTKx.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,043 - __main__ - INFO - ASSETS_FALLBACK: Serving Divider-CUYzFhA-.js from React build
+2025-06-21 21:51:18,043 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /assets/Divider-CUYzFhA-.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,044 - __main__ - INFO - ASSETS_FALLBACK: Serving Tabs-DV-7q0ry.js from React build
+2025-06-21 21:51:18,044 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /assets/Tabs-DV-7q0ry.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,045 - __main__ - INFO - ASSETS_FALLBACK: Serving LinearProgress-BIn72Mrq.js from React build
+2025-06-21 21:51:18,046 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /assets/LinearProgress-BIn72Mrq.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,047 - routes.react_app - INFO - Serving React asset: AdminDashboard-DT9IwTNR.js
+2025-06-21 21:51:18,047 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /app/assets/AdminDashboard-DT9IwTNR.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,052 - routes.react_app - INFO - Serving React asset: TextField-DMOM6MkY.js
+2025-06-21 21:51:18,052 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /app/assets/TextField-DMOM6MkY.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,054 - routes.react_app - INFO - Serving React asset: Typography-DPFyeHn8.js
+2025-06-21 21:51:18,055 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /app/assets/Typography-DPFyeHn8.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,056 - routes.react_app - INFO - Serving React asset: CardContent-7ZfztkYX.js
+2025-06-21 21:51:18,056 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /app/assets/CardContent-7ZfztkYX.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,058 - routes.react_app - INFO - Serving React asset: CheckCircle-C2G9iwbt.js
+2025-06-21 21:51:18,058 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /app/assets/CheckCircle-C2G9iwbt.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,059 - routes.react_app - INFO - Serving React asset: Business-B4qscj9h.js
+2025-06-21 21:51:18,060 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /app/assets/Business-B4qscj9h.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,062 - routes.react_app - INFO - Serving React asset: TrendingUp-XIKyXbmW.js
+2025-06-21 21:51:18,062 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /app/assets/TrendingUp-XIKyXbmW.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,064 - routes.react_app - INFO - Serving React asset: LinearProgress-BIn72Mrq.js
+2025-06-21 21:51:18,064 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /app/assets/LinearProgress-BIn72Mrq.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,067 - routes.react_app - INFO - Serving React asset: listItemTextClasses-D4W2AoQB.js
+2025-06-21 21:51:18,068 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /app/assets/listItemTextClasses-D4W2AoQB.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,069 - routes.react_app - INFO - Serving React asset: Warning-Cv7KmmE-.js
+2025-06-21 21:51:18,069 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /app/assets/Warning-Cv7KmmE-.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,070 - routes.react_app - INFO - Serving React asset: Button-DroB2dDX.js
+2025-06-21 21:51:18,071 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /app/assets/Button-DroB2dDX.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,072 - routes.react_app - INFO - Serving React asset: TableRow-CCiIGa2F.js
+2025-06-21 21:51:18,072 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /app/assets/TableRow-CCiIGa2F.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,073 - routes.react_app - INFO - Serving React asset: MoreVert-BR1Ugf9o.js
+2025-06-21 21:51:18,073 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /app/assets/MoreVert-BR1Ugf9o.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,075 - routes.react_app - INFO - Serving React asset: MenuItem-DhSKuBYf.js
+2025-06-21 21:51:18,075 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /app/assets/MenuItem-DhSKuBYf.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,076 - routes.react_app - INFO - Serving React asset: ListItemText-DDcEUQJF.js
+2025-06-21 21:51:18,076 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /app/assets/ListItemText-DDcEUQJF.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,078 - routes.react_app - INFO - Serving React asset: Edit-GpD1R30H.js
+2025-06-21 21:51:18,078 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /app/assets/Edit-GpD1R30H.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,079 - routes.react_app - INFO - Serving React asset: Delete-CaeZfbfV.js
+2025-06-21 21:51:18,080 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /app/assets/Delete-CaeZfbfV.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,081 - routes.react_app - INFO - Serving React asset: Save-CAU9UBrf.js
+2025-06-21 21:51:18,081 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /app/assets/Save-CAU9UBrf.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,082 - routes.react_app - INFO - Serving React asset: Settings-Ctau02Bo.js
+2025-06-21 21:51:18,082 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /app/assets/Settings-Ctau02Bo.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,083 - routes.react_app - INFO - Serving React asset: Security-CM_RdTKx.js
+2025-06-21 21:51:18,083 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /app/assets/Security-CM_RdTKx.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,084 - routes.react_app - INFO - Serving React asset: Divider-CUYzFhA-.js
+2025-06-21 21:51:18,084 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /app/assets/Divider-CUYzFhA-.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,085 - routes.react_app - INFO - Serving React asset: Tabs-DV-7q0ry.js
+2025-06-21 21:51:18,086 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /app/assets/Tabs-DV-7q0ry.js HTTP/1.1" 200 -
+2025-06-21 21:51:18,339 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /auth/api/me HTTP/1.1" 200 -
+2025-06-21 21:51:18,373 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:51:18] "GET /admin/api/analytics/overview HTTP/1.1" 200 -
+2025-06-21 21:55:53,644 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/routes/admin.py', reloading
+2025-06-21 21:55:53,745 - werkzeug - INFO -  * Restarting with stat
+2025-06-21 21:55:53,931 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 21:55:54,053 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 21:55:54,053 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 21:55:54,056 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 21:55:54,056 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-21 21:55:54,056 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 21:55:54,056 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 21:55:54,057 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 21:55:54,057 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 21:55:54,057 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 21:55:54,067 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 21:55:54,067 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 21:55:54,067 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 21:55:54,067 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 21:55:54,067 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 21:55:54,067 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 21:55:54,067 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 21:55:54,067 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 21:55:54,067 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 21:55:54,323 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-21 21:55:54,325 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 21:55:54,325 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-21 21:55:54,326 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 21:55:54,327 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 21:55:54,327 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 21:55:54,327 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 21:55:54,327 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 21:55:54,327 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 21:55:54,327 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 21:55:54,333 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 21:55:54,333 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 21:55:54,335 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-21 21:55:54,335 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-21 21:55:54,335 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-21 21:55:54,371 - werkzeug - WARNING -  * Debugger is active!
+2025-06-21 21:55:54,377 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-21 21:56:56,108 - routes.admin - INFO - User test.user@fireems.ai created by super admin admin@fireems.ai
+2025-06-21 21:56:56,110 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:56:56] "POST /admin/api/users HTTP/1.1" 200 -
+2025-06-21 21:57:05,205 - routes.admin - INFO - User test.user@fireems.ai deleted by admin admin@fireems.ai
+2025-06-21 21:57:05,205 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:05] "DELETE /admin/api/users/24 HTTP/1.1" 200 -
+2025-06-21 21:57:12,195 - routes.react_app - INFO - Serving React app from: /Users/josephhester/fire-ems-tools/react-app/dist
+2025-06-21 21:57:12,196 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/admin HTTP/1.1" 200 -
+2025-06-21 21:57:12,202 - routes.react_app - INFO - Serving React asset: index-Ur6SsuKB.js
+2025-06-21 21:57:12,203 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/assets/index-Ur6SsuKB.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,240 - __main__ - INFO - ASSETS_FALLBACK: Serving AdminDashboard-CuhmzbQ8.js from React build
+2025-06-21 21:57:12,241 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /assets/AdminDashboard-CuhmzbQ8.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,244 - __main__ - INFO - ASSETS_FALLBACK: Serving TextField-BVSzwmdB.js from React build
+2025-06-21 21:57:12,245 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /assets/TextField-BVSzwmdB.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,247 - __main__ - INFO - ASSETS_FALLBACK: Serving Typography-D7YBnnaH.js from React build
+2025-06-21 21:57:12,247 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /assets/Typography-D7YBnnaH.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,249 - __main__ - INFO - ASSETS_FALLBACK: Serving Button-BpBQy51W.js from React build
+2025-06-21 21:57:12,250 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /assets/Button-BpBQy51W.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,251 - __main__ - INFO - ASSETS_FALLBACK: Serving CardContent-DTaqgZIH.js from React build
+2025-06-21 21:57:12,252 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /assets/CardContent-DTaqgZIH.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,254 - __main__ - INFO - ASSETS_FALLBACK: Serving CheckCircle-Bf7nlnFE.js from React build
+2025-06-21 21:57:12,254 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /assets/CheckCircle-Bf7nlnFE.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,256 - __main__ - INFO - ASSETS_FALLBACK: Serving Business-BKwCzRxx.js from React build
+2025-06-21 21:57:12,256 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /assets/Business-BKwCzRxx.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,257 - __main__ - INFO - ASSETS_FALLBACK: Serving TrendingUp-Ca9jb24D.js from React build
+2025-06-21 21:57:12,258 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /assets/TrendingUp-Ca9jb24D.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,259 - __main__ - INFO - ASSETS_FALLBACK: Serving LinearProgress-Vg1NpGpT.js from React build
+2025-06-21 21:57:12,259 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /assets/LinearProgress-Vg1NpGpT.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,260 - __main__ - INFO - ASSETS_FALLBACK: Serving listItemTextClasses-BzT29M7G.js from React build
+2025-06-21 21:57:12,261 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /assets/listItemTextClasses-BzT29M7G.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,262 - __main__ - INFO - ASSETS_FALLBACK: Serving Warning-BZpcBzFY.js from React build
+2025-06-21 21:57:12,262 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /assets/Warning-BZpcBzFY.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,264 - __main__ - INFO - ASSETS_FALLBACK: Serving TableRow-Bm-lxJof.js from React build
+2025-06-21 21:57:12,264 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /assets/TableRow-Bm-lxJof.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,265 - __main__ - INFO - ASSETS_FALLBACK: Serving MoreVert-Bh44-pTM.js from React build
+2025-06-21 21:57:12,266 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /assets/MoreVert-Bh44-pTM.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,267 - __main__ - INFO - ASSETS_FALLBACK: Serving MenuItem-CVN9Z3E1.js from React build
+2025-06-21 21:57:12,267 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /assets/MenuItem-CVN9Z3E1.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,268 - __main__ - INFO - ASSETS_FALLBACK: Serving ListItemText-OCsCbz1Y.js from React build
+2025-06-21 21:57:12,268 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /assets/ListItemText-OCsCbz1Y.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,270 - __main__ - INFO - ASSETS_FALLBACK: Serving Edit-BT6xbhUy.js from React build
+2025-06-21 21:57:12,270 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /assets/Edit-BT6xbhUy.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,272 - __main__ - INFO - ASSETS_FALLBACK: Serving Delete-Djnxr2UY.js from React build
+2025-06-21 21:57:12,272 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /assets/Delete-Djnxr2UY.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,274 - __main__ - INFO - ASSETS_FALLBACK: Serving Save-DxBpwNrg.js from React build
+2025-06-21 21:57:12,275 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /assets/Save-DxBpwNrg.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,276 - __main__ - INFO - ASSETS_FALLBACK: Serving Settings-DKShINhp.js from React build
+2025-06-21 21:57:12,276 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /assets/Settings-DKShINhp.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,277 - __main__ - INFO - ASSETS_FALLBACK: Serving Security-CZu2M9Nu.js from React build
+2025-06-21 21:57:12,277 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /assets/Security-CZu2M9Nu.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,278 - __main__ - INFO - ASSETS_FALLBACK: Serving Divider-O6xhu_E6.js from React build
+2025-06-21 21:57:12,278 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /assets/Divider-O6xhu_E6.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,279 - __main__ - INFO - ASSETS_FALLBACK: Serving Tabs-BQMsfTuX.js from React build
+2025-06-21 21:57:12,279 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /assets/Tabs-BQMsfTuX.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,280 - routes.react_app - INFO - Serving React asset: AdminDashboard-CuhmzbQ8.js
+2025-06-21 21:57:12,280 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/assets/AdminDashboard-CuhmzbQ8.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,286 - routes.react_app - INFO - Serving React asset: TextField-BVSzwmdB.js
+2025-06-21 21:57:12,286 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/assets/TextField-BVSzwmdB.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,289 - routes.react_app - INFO - Serving React asset: Typography-D7YBnnaH.js
+2025-06-21 21:57:12,289 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/assets/Typography-D7YBnnaH.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,290 - routes.react_app - INFO - Serving React asset: CardContent-DTaqgZIH.js
+2025-06-21 21:57:12,291 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/assets/CardContent-DTaqgZIH.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,292 - routes.react_app - INFO - Serving React asset: CheckCircle-Bf7nlnFE.js
+2025-06-21 21:57:12,292 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/assets/CheckCircle-Bf7nlnFE.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,293 - routes.react_app - INFO - Serving React asset: Business-BKwCzRxx.js
+2025-06-21 21:57:12,294 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/assets/Business-BKwCzRxx.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,295 - routes.react_app - INFO - Serving React asset: TrendingUp-Ca9jb24D.js
+2025-06-21 21:57:12,295 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/assets/TrendingUp-Ca9jb24D.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,297 - routes.react_app - INFO - Serving React asset: LinearProgress-Vg1NpGpT.js
+2025-06-21 21:57:12,297 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/assets/LinearProgress-Vg1NpGpT.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,298 - routes.react_app - INFO - Serving React asset: listItemTextClasses-BzT29M7G.js
+2025-06-21 21:57:12,299 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/assets/listItemTextClasses-BzT29M7G.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,300 - routes.react_app - INFO - Serving React asset: Warning-BZpcBzFY.js
+2025-06-21 21:57:12,300 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/assets/Warning-BZpcBzFY.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,301 - routes.react_app - INFO - Serving React asset: Button-BpBQy51W.js
+2025-06-21 21:57:12,302 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/assets/Button-BpBQy51W.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,303 - routes.react_app - INFO - Serving React asset: TableRow-Bm-lxJof.js
+2025-06-21 21:57:12,303 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/assets/TableRow-Bm-lxJof.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,304 - routes.react_app - INFO - Serving React asset: MoreVert-Bh44-pTM.js
+2025-06-21 21:57:12,305 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/assets/MoreVert-Bh44-pTM.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,306 - routes.react_app - INFO - Serving React asset: MenuItem-CVN9Z3E1.js
+2025-06-21 21:57:12,307 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/assets/MenuItem-CVN9Z3E1.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,308 - routes.react_app - INFO - Serving React asset: ListItemText-OCsCbz1Y.js
+2025-06-21 21:57:12,308 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/assets/ListItemText-OCsCbz1Y.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,310 - routes.react_app - INFO - Serving React asset: Edit-BT6xbhUy.js
+2025-06-21 21:57:12,310 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/assets/Edit-BT6xbhUy.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,311 - routes.react_app - INFO - Serving React asset: Delete-Djnxr2UY.js
+2025-06-21 21:57:12,311 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/assets/Delete-Djnxr2UY.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,312 - routes.react_app - INFO - Serving React asset: Save-DxBpwNrg.js
+2025-06-21 21:57:12,312 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/assets/Save-DxBpwNrg.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,314 - routes.react_app - INFO - Serving React asset: Settings-DKShINhp.js
+2025-06-21 21:57:12,314 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/assets/Settings-DKShINhp.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,315 - routes.react_app - INFO - Serving React asset: Security-CZu2M9Nu.js
+2025-06-21 21:57:12,315 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/assets/Security-CZu2M9Nu.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,316 - routes.react_app - INFO - Serving React asset: Divider-O6xhu_E6.js
+2025-06-21 21:57:12,316 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/assets/Divider-O6xhu_E6.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,317 - routes.react_app - INFO - Serving React asset: Tabs-BQMsfTuX.js
+2025-06-21 21:57:12,317 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /app/assets/Tabs-BQMsfTuX.js HTTP/1.1" 200 -
+2025-06-21 21:57:12,557 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /auth/api/me HTTP/1.1" 200 -
+2025-06-21 21:57:12,595 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:12] "GET /admin/api/analytics/overview HTTP/1.1" 200 -
+2025-06-21 21:57:23,279 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:23] "GET /admin/api/users HTTP/1.1" 200 -
+2025-06-21 21:57:23,295 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:23] "GET /admin/api/departments HTTP/1.1" 200 -
+2025-06-21 21:57:34,452 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:34] "GET /admin/api/departments HTTP/1.1" 200 -
+2025-06-21 21:57:43,366 - routes.admin - INFO - Department Demo Fire Department updated by admin admin@fireems.ai
+2025-06-21 21:57:43,368 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:43] "PUT /admin/api/departments/1 HTTP/1.1" 200 -
+2025-06-21 21:57:53,081 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:53] "GET /admin/api/users HTTP/1.1" 200 -
+2025-06-21 21:57:53,093 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:57:53] "GET /admin/api/departments HTTP/1.1" 200 -
+2025-06-21 21:58:05,155 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:58:05] "GET /admin/api/departments HTTP/1.1" 200 -
+2025-06-21 21:58:19,541 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:58:19] "GET /admin/api/users HTTP/1.1" 200 -
+2025-06-21 21:58:19,551 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:58:19] "GET /admin/api/departments HTTP/1.1" 200 -
+2025-06-21 21:58:22,526 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:58:22] "GET /admin/api/analytics/overview HTTP/1.1" 200 -
+2025-06-21 21:58:23,748 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:58:23] "GET /admin/api/users HTTP/1.1" 200 -
+2025-06-21 21:58:23,759 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 21:58:23] "GET /admin/api/departments HTTP/1.1" 200 -
+2025-06-21 22:00:04,147 - __main__ - ERROR - ASSETS_FALLBACK: Not found FireEMSHomepage-DBEuPZxg.js
+2025-06-21 22:00:04,147 - __main__ - ERROR - ASSETS_FALLBACK: Error FireEMSHomepage-DBEuPZxg.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 22:00:04,147 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:04] "[33mGET /assets/FireEMSHomepage-DBEuPZxg.js HTTP/1.1[0m" 404 -
+2025-06-21 22:00:04,150 - __main__ - ERROR - ASSETS_FALLBACK: Not found LocalFireDepartment-BmHHncqp.js
+2025-06-21 22:00:04,151 - __main__ - ERROR - ASSETS_FALLBACK: Error LocalFireDepartment-BmHHncqp.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 22:00:04,151 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:04] "[33mGET /assets/LocalFireDepartment-BmHHncqp.js HTTP/1.1[0m" 404 -
+2025-06-21 22:00:04,152 - __main__ - ERROR - ASSETS_FALLBACK: Not found TableChart-Qv5n9YFg.js
+2025-06-21 22:00:04,152 - __main__ - ERROR - ASSETS_FALLBACK: Error TableChart-Qv5n9YFg.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 22:00:04,152 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:04] "[33mGET /assets/TableChart-Qv5n9YFg.js HTTP/1.1[0m" 404 -
+2025-06-21 22:00:04,153 - __main__ - ERROR - ASSETS_FALLBACK: Not found Assessment-Cnl2r7QL.js
+2025-06-21 22:00:04,155 - __main__ - ERROR - ASSETS_FALLBACK: Error Assessment-Cnl2r7QL.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 22:00:04,155 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:04] "[33mGET /assets/Assessment-Cnl2r7QL.js HTTP/1.1[0m" 404 -
+2025-06-21 22:00:04,156 - __main__ - ERROR - ASSETS_FALLBACK: Not found Map-DcPXUCOY.js
+2025-06-21 22:00:04,156 - __main__ - ERROR - ASSETS_FALLBACK: Error Map-DcPXUCOY.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 22:00:04,157 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:04] "[33mGET /assets/Map-DcPXUCOY.js HTTP/1.1[0m" 404 -
+2025-06-21 22:00:04,158 - __main__ - ERROR - ASSETS_FALLBACK: Not found Timeline-Dhrh2Z4a.js
+2025-06-21 22:00:04,158 - __main__ - ERROR - ASSETS_FALLBACK: Error Timeline-Dhrh2Z4a.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 22:00:04,158 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:04] "[33mGET /assets/Timeline-Dhrh2Z4a.js HTTP/1.1[0m" 404 -
+2025-06-21 22:00:04,159 - routes.react_app - ERROR - React asset not found: FireEMSHomepage-DBEuPZxg.js
+2025-06-21 22:00:04,159 - routes.react_app - ERROR - Error serving React asset FireEMSHomepage-DBEuPZxg.js: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-21 22:00:04,160 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:04] "[33mGET /app/assets/FireEMSHomepage-DBEuPZxg.js HTTP/1.1[0m" 404 -
+2025-06-21 22:00:07,529 - routes.react_app - INFO - Serving React app from: /Users/josephhester/fire-ems-tools/react-app/dist
+2025-06-21 22:00:07,529 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:07] "GET /app HTTP/1.1" 200 -
+2025-06-21 22:00:07,535 - routes.react_app - INFO - Serving React asset: index-Ur6SsuKB.js
+2025-06-21 22:00:07,535 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:07] "[36mGET /app/assets/index-Ur6SsuKB.js HTTP/1.1[0m" 304 -
+2025-06-21 22:00:07,566 - __main__ - INFO - ASSETS_FALLBACK: Serving FireEMSHomepage-VrNgM_LP.js from React build
+2025-06-21 22:00:07,567 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:07] "GET /assets/FireEMSHomepage-VrNgM_LP.js HTTP/1.1" 200 -
+2025-06-21 22:00:07,571 - __main__ - INFO - ASSETS_FALLBACK: Serving LocalFireDepartment-DiQjiaak.js from React build
+2025-06-21 22:00:07,572 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:07] "GET /assets/LocalFireDepartment-DiQjiaak.js HTTP/1.1" 200 -
+2025-06-21 22:00:07,573 - __main__ - INFO - ASSETS_FALLBACK: Serving TableChart-CMOKTsqd.js from React build
+2025-06-21 22:00:07,574 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:07] "GET /assets/TableChart-CMOKTsqd.js HTTP/1.1" 200 -
+2025-06-21 22:00:07,575 - __main__ - INFO - ASSETS_FALLBACK: Serving Assessment-NOvTPXI8.js from React build
+2025-06-21 22:00:07,575 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:07] "GET /assets/Assessment-NOvTPXI8.js HTTP/1.1" 200 -
+2025-06-21 22:00:07,577 - __main__ - INFO - ASSETS_FALLBACK: Serving Map-Dr-IT9IO.js from React build
+2025-06-21 22:00:07,577 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:07] "GET /assets/Map-Dr-IT9IO.js HTTP/1.1" 200 -
+2025-06-21 22:00:07,579 - __main__ - INFO - ASSETS_FALLBACK: Serving Timeline-CocWjmk6.js from React build
+2025-06-21 22:00:07,579 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:07] "GET /assets/Timeline-CocWjmk6.js HTTP/1.1" 200 -
+2025-06-21 22:00:07,580 - __main__ - INFO - ASSETS_FALLBACK: Serving Typography-D7YBnnaH.js from React build
+2025-06-21 22:00:07,580 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:07] "[36mGET /assets/Typography-D7YBnnaH.js HTTP/1.1[0m" 304 -
+2025-06-21 22:00:07,582 - __main__ - INFO - ASSETS_FALLBACK: Serving Button-BpBQy51W.js from React build
+2025-06-21 22:00:07,582 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:07] "[36mGET /assets/Button-BpBQy51W.js HTTP/1.1[0m" 304 -
+2025-06-21 22:00:07,583 - __main__ - INFO - ASSETS_FALLBACK: Serving CheckCircle-Bf7nlnFE.js from React build
+2025-06-21 22:00:07,583 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:07] "[36mGET /assets/CheckCircle-Bf7nlnFE.js HTTP/1.1[0m" 304 -
+2025-06-21 22:00:07,585 - __main__ - INFO - ASSETS_FALLBACK: Serving Security-CZu2M9Nu.js from React build
+2025-06-21 22:00:07,585 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:07] "[36mGET /assets/Security-CZu2M9Nu.js HTTP/1.1[0m" 304 -
+2025-06-21 22:00:07,586 - routes.react_app - INFO - Serving React asset: FireEMSHomepage-VrNgM_LP.js
+2025-06-21 22:00:07,587 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:07] "GET /app/assets/FireEMSHomepage-VrNgM_LP.js HTTP/1.1" 200 -
+2025-06-21 22:00:07,590 - routes.react_app - INFO - Serving React asset: LocalFireDepartment-DiQjiaak.js
+2025-06-21 22:00:07,591 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:07] "GET /app/assets/LocalFireDepartment-DiQjiaak.js HTTP/1.1" 200 -
+2025-06-21 22:00:07,593 - routes.react_app - INFO - Serving React asset: TableChart-CMOKTsqd.js
+2025-06-21 22:00:07,594 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:07] "GET /app/assets/TableChart-CMOKTsqd.js HTTP/1.1" 200 -
+2025-06-21 22:00:07,595 - routes.react_app - INFO - Serving React asset: Assessment-NOvTPXI8.js
+2025-06-21 22:00:07,595 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:07] "GET /app/assets/Assessment-NOvTPXI8.js HTTP/1.1" 200 -
+2025-06-21 22:00:07,597 - routes.react_app - INFO - Serving React asset: Map-Dr-IT9IO.js
+2025-06-21 22:00:07,597 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:07] "GET /app/assets/Map-Dr-IT9IO.js HTTP/1.1" 200 -
+2025-06-21 22:00:07,598 - routes.react_app - INFO - Serving React asset: Typography-D7YBnnaH.js
+2025-06-21 22:00:07,599 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:07] "[36mGET /app/assets/Typography-D7YBnnaH.js HTTP/1.1[0m" 304 -
+2025-06-21 22:00:07,600 - routes.react_app - INFO - Serving React asset: Timeline-CocWjmk6.js
+2025-06-21 22:00:07,600 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:07] "GET /app/assets/Timeline-CocWjmk6.js HTTP/1.1" 200 -
+2025-06-21 22:00:07,601 - routes.react_app - INFO - Serving React asset: Button-BpBQy51W.js
+2025-06-21 22:00:07,601 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:07] "[36mGET /app/assets/Button-BpBQy51W.js HTTP/1.1[0m" 304 -
+2025-06-21 22:00:07,603 - routes.react_app - INFO - Serving React asset: CheckCircle-Bf7nlnFE.js
+2025-06-21 22:00:07,603 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:07] "[36mGET /app/assets/CheckCircle-Bf7nlnFE.js HTTP/1.1[0m" 304 -
+2025-06-21 22:00:07,604 - routes.react_app - INFO - Serving React asset: Security-CZu2M9Nu.js
+2025-06-21 22:00:07,604 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:00:07] "[36mGET /app/assets/Security-CZu2M9Nu.js HTTP/1.1[0m" 304 -
+2025-06-21 22:09:19,477 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 22:09:19,477 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 22:09:19,477 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 22:09:19,480 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 22:09:19,481 - app - INFO - Creating application with deployment fixes...
+2025-06-21 22:09:19,481 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 22:09:19,481 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 22:09:19,481 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 22:09:19,482 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 22:09:19,482 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 22:09:19,492 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 22:09:19,493 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 22:09:19,493 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 22:09:19,493 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 22:09:19,493 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 22:09:19,493 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 22:09:19,493 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 22:09:19,493 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 22:09:19,493 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 22:09:19,766 - app - INFO - Successfully registered all route blueprints
+2025-06-21 22:09:19,768 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 22:09:19,768 - app - INFO - Registered React Data Formatter routes
+2025-06-21 22:09:19,769 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 22:09:19,769 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 22:09:19,769 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 22:09:19,769 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 22:09:19,769 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 22:09:19,770 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 22:09:19,770 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 22:09:19,794 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 22:09:19,794 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 22:09:19,797 - app - INFO - Found 1 existing super_admin users
+2025-06-21 22:09:19,797 - app - INFO - Super admin user already exists, skipping creation
+2025-06-21 22:09:19,797 - app - INFO - Application created successfully with all fixes applied
+2025-06-21 22:09:19,797 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 22:09:19,797 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 22:09:19,798 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 22:09:19,798 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 22:09:19,798 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 22:09:19,799 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 22:09:19,799 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 22:09:19,799 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 22:09:19,799 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 22:09:19,799 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 22:09:19,799 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 22:09:19,799 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 22:09:19,799 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 22:09:19,799 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 22:09:19,810 - app - INFO - Successfully registered all route blueprints
+2025-06-21 22:09:19,811 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 22:09:19,812 - app - INFO - Registered React Data Formatter routes
+2025-06-21 22:12:56,439 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/app.py', reloading
+2025-06-21 22:12:56,556 - werkzeug - INFO -  * Restarting with stat
+2025-06-21 22:12:56,765 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 22:12:56,892 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 22:12:56,892 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 22:12:56,895 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 22:12:56,895 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-21 22:12:56,896 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 22:12:56,896 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 22:12:56,896 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 22:12:56,897 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 22:12:56,897 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 22:12:56,907 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 22:12:56,907 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 22:12:56,907 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 22:12:56,907 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 22:12:56,907 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 22:12:56,907 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 22:12:56,907 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 22:12:56,907 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 22:12:56,907 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 22:12:57,184 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-21 22:12:57,185 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 22:12:57,185 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-21 22:12:57,187 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 22:12:57,187 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 22:12:57,187 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 22:12:57,187 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 22:12:57,187 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 22:12:57,187 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 22:12:57,187 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 22:12:57,193 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 22:12:57,193 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 22:12:57,195 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-21 22:12:57,195 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-21 22:12:57,195 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-21 22:12:57,234 - werkzeug - WARNING -  * Debugger is active!
+2025-06-21 22:12:57,240 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-21 22:13:13,684 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/app.py', reloading
+2025-06-21 22:13:13,800 - werkzeug - INFO -  * Restarting with stat
+2025-06-21 22:13:13,941 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-21 22:13:14,045 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-21 22:13:14,046 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-21 22:13:14,048 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-21 22:13:14,048 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-21 22:13:14,048 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-21 22:13:14,048 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-21 22:13:14,049 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-21 22:13:14,049 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-21 22:13:14,049 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-21 22:13:14,056 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 22:13:14,056 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 22:13:14,056 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 22:13:14,056 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 22:13:14,056 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 22:13:14,056 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 22:13:14,057 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 22:13:14,057 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 22:13:14,057 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 22:13:14,254 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-21 22:13:14,256 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-21 22:13:14,256 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-21 22:13:14,257 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-21 22:13:14,257 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-21 22:13:14,257 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-21 22:13:14,257 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-21 22:13:14,257 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-21 22:13:14,257 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-21 22:13:14,257 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-21 22:13:14,264 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-21 22:13:14,264 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-21 22:13:14,266 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-21 22:13:14,266 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-21 22:13:14,266 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-21 22:13:14,301 - werkzeug - WARNING -  * Debugger is active!
+2025-06-21 22:13:14,307 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-21 22:13:42,403 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:13:42] "GET /api/public/health HTTP/1.1" 200 -
+2025-06-21 22:14:01,444 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:14:01] "GET /api/public/departments/search?q=demo HTTP/1.1" 200 -
+2025-06-21 22:14:11,637 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:14:11] "GET /admin/api/department-requests HTTP/1.1" 200 -
+2025-06-21 22:14:22,148 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 22:14:22] "GET /admin/api/user-requests HTTP/1.1" 200 -
+2025-06-22 06:33:20,268 - werkzeug - INFO - 127.0.0.1 - - [22/Jun/2025 06:33:20] "[32mHEAD /admin/api/department-requests HTTP/1.1[0m" 302 -
+2025-06-22 06:33:34,161 - werkzeug - INFO - 127.0.0.1 - - [22/Jun/2025 06:33:34] "HEAD /api/public/health HTTP/1.1" 200 -
+2025-06-22 06:33:44,232 - werkzeug - INFO - 127.0.0.1 - - [22/Jun/2025 06:33:44] "GET /api/public/departments/search HTTP/1.1" 200 -
+2025-06-22 08:02:15,245 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/database.py', reloading
+2025-06-22 08:02:15,363 - werkzeug - INFO -  * Restarting with stat
+2025-06-22 08:02:15,571 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-22 08:02:15,700 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-22 08:02:15,700 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-22 08:02:15,703 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-22 08:02:15,703 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-22 08:02:15,704 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-22 08:02:15,704 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-22 08:02:15,704 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-22 08:02:15,705 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-22 08:02:15,705 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-22 08:02:15,714 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:02:15,715 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:02:15,715 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:02:15,715 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:02:15,715 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:02:15,715 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:02:15,715 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:02:15,715 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:02:15,715 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:02:16,005 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-22 08:02:16,007 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-22 08:02:16,007 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-22 08:02:16,008 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-22 08:02:16,008 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-22 08:02:16,008 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-22 08:02:16,008 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-22 08:02:16,008 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-22 08:02:16,008 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-22 08:02:16,008 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-22 08:02:16,035 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-22 08:02:16,035 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-22 08:02:16,037 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-22 08:02:16,037 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-22 08:02:16,037 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-22 08:02:16,058 - werkzeug - WARNING -  * Debugger is active!
+2025-06-22 08:02:16,064 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-22 08:05:11,931 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/app.py', reloading
+2025-06-22 08:05:12,037 - werkzeug - INFO -  * Restarting with stat
+2025-06-22 08:05:12,169 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-22 08:05:12,270 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-22 08:05:12,270 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-22 08:05:12,272 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-22 08:05:12,272 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-22 08:05:12,273 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-22 08:05:12,273 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-22 08:05:12,273 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-22 08:05:12,273 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-22 08:05:12,273 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-22 08:05:12,281 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:05:12,281 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:05:12,281 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:05:12,281 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:05:12,281 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:05:12,281 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:05:12,281 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:05:12,281 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:05:12,281 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:05:12,481 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-22 08:05:12,483 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-22 08:05:12,483 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-22 08:05:12,484 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-22 08:05:12,484 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-22 08:05:12,484 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-22 08:05:12,484 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-22 08:05:12,484 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-22 08:05:12,484 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-22 08:05:12,484 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-22 08:05:12,507 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-22 08:05:12,507 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-22 08:05:12,509 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-22 08:05:12,509 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-22 08:05:12,509 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-22 08:05:12,529 - werkzeug - WARNING -  * Debugger is active!
+2025-06-22 08:05:12,535 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-22 08:05:21,746 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/app.py', reloading
+2025-06-22 08:05:21,831 - werkzeug - INFO -  * Restarting with stat
+2025-06-22 08:05:21,961 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-22 08:05:22,060 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-22 08:05:22,060 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-22 08:05:22,062 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-22 08:05:22,062 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-22 08:05:22,063 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-22 08:05:22,063 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-22 08:05:22,063 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-22 08:05:22,063 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-22 08:05:22,063 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-22 08:05:22,071 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:05:22,071 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:05:22,071 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:05:22,071 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:05:22,071 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:05:22,071 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:05:22,071 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:05:22,071 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:05:22,071 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:05:22,268 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-22 08:05:22,269 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-22 08:05:22,269 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-22 08:05:22,270 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-22 08:05:22,270 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-22 08:05:22,270 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-22 08:05:22,270 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-22 08:05:22,270 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-22 08:05:22,270 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-22 08:05:22,270 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-22 08:05:22,293 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-22 08:05:22,294 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-22 08:05:22,296 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-22 08:05:22,296 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-22 08:05:22,296 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-22 08:05:22,314 - werkzeug - WARNING -  * Debugger is active!
+2025-06-22 08:05:22,319 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-22 08:05:51,953 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/routes/approval_management.py', reloading
+2025-06-22 08:05:52,064 - werkzeug - INFO -  * Restarting with stat
+2025-06-22 08:05:52,203 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-22 08:05:52,305 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-22 08:05:52,305 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-22 08:05:52,307 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-22 08:05:52,307 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-22 08:05:52,308 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-22 08:05:52,308 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-22 08:05:52,308 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-22 08:05:52,308 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-22 08:05:52,308 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-22 08:05:52,315 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:05:52,315 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:05:52,315 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:05:52,315 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:05:52,316 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:05:52,316 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:05:52,316 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:05:52,316 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:05:52,316 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:05:52,517 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-22 08:05:52,519 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-22 08:05:52,519 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-22 08:05:52,520 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-22 08:05:52,520 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-22 08:05:52,520 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-22 08:05:52,520 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-22 08:05:52,520 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-22 08:05:52,520 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-22 08:05:52,520 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-22 08:05:52,544 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-22 08:05:52,544 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-22 08:05:52,546 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-22 08:05:52,546 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-22 08:05:52,546 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-22 08:05:52,564 - werkzeug - WARNING -  * Debugger is active!
+2025-06-22 08:05:52,570 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-22 08:06:08,949 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/routes/approval_management.py', reloading
+2025-06-22 08:06:09,046 - werkzeug - INFO -  * Restarting with stat
+2025-06-22 08:06:09,174 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-22 08:06:09,278 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-22 08:06:09,278 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-22 08:06:09,280 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-22 08:06:09,280 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-22 08:06:09,280 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-22 08:06:09,280 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-22 08:06:09,281 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-22 08:06:09,281 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-22 08:06:09,281 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-22 08:06:09,289 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:06:09,289 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:06:09,289 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:06:09,289 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:06:09,289 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:06:09,289 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:06:09,289 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:06:09,289 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:06:09,289 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:06:09,489 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-22 08:06:09,490 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-22 08:06:09,491 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-22 08:06:09,491 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-22 08:06:09,492 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-22 08:06:09,492 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-22 08:06:09,492 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-22 08:06:09,492 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-22 08:06:09,492 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-22 08:06:09,492 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-22 08:06:09,516 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-22 08:06:09,516 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-22 08:06:09,518 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-22 08:06:09,518 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-22 08:06:09,518 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-22 08:06:09,537 - werkzeug - WARNING -  * Debugger is active!
+2025-06-22 08:06:09,543 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-22 08:06:24,892 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/routes/approval_management.py', reloading
+2025-06-22 08:06:24,981 - werkzeug - INFO -  * Restarting with stat
+2025-06-22 08:06:25,110 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-22 08:06:25,213 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-22 08:06:25,213 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-22 08:06:25,215 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-22 08:06:25,215 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-22 08:06:25,216 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-22 08:06:25,216 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-22 08:06:25,216 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-22 08:06:25,217 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-22 08:06:25,217 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-22 08:06:25,224 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:06:25,224 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:06:25,224 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:06:25,224 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:06:25,224 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:06:25,224 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:06:25,224 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:06:25,224 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:06:25,224 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:06:25,424 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-22 08:06:25,426 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-22 08:06:25,426 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-22 08:06:25,427 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-22 08:06:25,427 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-22 08:06:25,427 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-22 08:06:25,427 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-22 08:06:25,427 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-22 08:06:25,427 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-22 08:06:25,427 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-22 08:06:25,451 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-22 08:06:25,451 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-22 08:06:25,453 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-22 08:06:25,453 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-22 08:06:25,453 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-22 08:06:25,471 - werkzeug - WARNING -  * Debugger is active!
+2025-06-22 08:06:25,476 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-22 08:06:49,988 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/routes/public_registration.py', reloading
+2025-06-22 08:06:50,074 - werkzeug - INFO -  * Restarting with stat
+2025-06-22 08:06:50,202 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-22 08:06:50,305 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-22 08:06:50,305 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-22 08:06:50,307 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-22 08:06:50,307 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-22 08:06:50,307 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-22 08:06:50,308 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-22 08:06:50,308 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-22 08:06:50,308 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-22 08:06:50,308 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-22 08:06:50,315 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:06:50,315 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:06:50,315 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:06:50,315 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:06:50,315 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:06:50,315 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:06:50,315 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:06:50,315 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:06:50,316 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:06:50,517 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-22 08:06:50,519 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-22 08:06:50,519 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-22 08:06:50,520 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-22 08:06:50,520 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-22 08:06:50,520 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-22 08:06:50,520 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-22 08:06:50,520 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-22 08:06:50,520 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-22 08:06:50,520 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-22 08:06:50,545 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-22 08:06:50,545 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-22 08:06:50,547 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-22 08:06:50,547 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-22 08:06:50,547 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-22 08:06:50,566 - werkzeug - WARNING -  * Debugger is active!
+2025-06-22 08:06:50,571 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-22 08:07:09,004 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/routes/public_registration.py', reloading
+2025-06-22 08:07:09,104 - werkzeug - INFO -  * Restarting with stat
+2025-06-22 08:07:09,238 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-22 08:07:09,340 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-22 08:07:09,340 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-22 08:07:09,342 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-22 08:07:09,342 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-22 08:07:09,343 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-22 08:07:09,343 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-22 08:07:09,343 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-22 08:07:09,344 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-22 08:07:09,344 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-22 08:07:09,351 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:07:09,351 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:07:09,351 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:07:09,351 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:07:09,351 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:07:09,351 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:07:09,351 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:07:09,351 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:07:09,351 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:07:09,550 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-22 08:07:09,551 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-22 08:07:09,551 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-22 08:07:09,552 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-22 08:07:09,552 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-22 08:07:09,552 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-22 08:07:09,552 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-22 08:07:09,553 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-22 08:07:09,553 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-22 08:07:09,553 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-22 08:07:09,577 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-22 08:07:09,577 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-22 08:07:09,579 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-22 08:07:09,579 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-22 08:07:09,579 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-22 08:07:09,596 - werkzeug - WARNING -  * Debugger is active!
+2025-06-22 08:07:09,602 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-22 08:07:34,157 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/routes/public_registration.py', reloading
+2025-06-22 08:07:34,255 - werkzeug - INFO -  * Restarting with stat
+2025-06-22 08:07:34,385 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-22 08:07:34,489 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-22 08:07:34,489 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-22 08:07:34,491 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-22 08:07:34,491 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-22 08:07:34,491 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-22 08:07:34,492 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-22 08:07:34,492 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-22 08:07:34,492 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-22 08:07:34,492 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-22 08:07:34,499 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:07:34,499 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:07:34,499 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:07:34,499 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:07:34,499 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:07:34,499 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:07:34,499 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:07:34,499 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:07:34,499 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:07:34,700 - __main__ - INFO - Successfully registered all route blueprints
+2025-06-22 08:07:34,701 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-22 08:07:34,701 - __main__ - INFO - Registered React Data Formatter routes
+2025-06-22 08:07:34,702 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-22 08:07:34,702 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-22 08:07:34,702 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-22 08:07:34,702 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-22 08:07:34,702 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-22 08:07:34,702 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-22 08:07:34,703 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-22 08:07:34,728 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-22 08:07:34,728 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-22 08:07:34,730 - __main__ - INFO - Found 1 existing super_admin users
+2025-06-22 08:07:34,730 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-06-22 08:07:34,730 - __main__ - INFO - Application created successfully with all fixes applied
+2025-06-22 08:07:34,749 - werkzeug - WARNING -  * Debugger is active!
+2025-06-22 08:07:34,755 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-22 08:14:21,754 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/app.py', reloading
+2025-06-22 08:14:21,840 - werkzeug - INFO -  * Restarting with stat
+2025-06-22 08:14:21,973 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-22 08:14:22,074 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-22 08:14:22,074 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-22 08:14:22,076 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-22 08:14:22,076 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-22 08:14:22,077 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-22 08:14:22,077 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-22 08:14:22,077 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-22 08:14:22,077 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-22 08:14:22,077 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-22 08:14:22,085 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:14:22,086 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:14:22,086 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:14:22,086 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:14:22,086 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:14:22,086 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:14:22,086 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:14:22,086 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:14:22,086 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:14:22,290 - __main__ - ERROR - Failed to import blueprints: No module named 'markdown'
+2025-06-22 08:14:22,290 - __main__ - ERROR - CRITICAL: Blueprint import failed. Application will not function properly.
+2025-06-22 08:14:22,290 - __main__ - CRITICAL - Failed to create application with fixes: No module named 'markdown'
+2025-06-22 08:14:22,291 - __main__ - CRITICAL - Traceback (most recent call last):
+  File "/Users/josephhester/fire-ems-tools/app.py", line 1659, in <module>
+    app = create_app(os.getenv('FLASK_ENV', 'development'))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/josephhester/fire-ems-tools/app.py", line 1582, in create_app
+    raise e
+  File "/Users/josephhester/fire-ems-tools/app.py", line 1550, in create_app
+    from routes.documentation import bp as documentation_bp
+  File "/Users/josephhester/fire-ems-tools/routes/documentation.py", line 9, in <module>
+    from markdown import markdown
+ModuleNotFoundError: No module named 'markdown'
+
+2025-06-22 08:14:22,310 - werkzeug - WARNING -  * Debugger is active!
+2025-06-22 08:14:22,316 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-22 08:14:29,484 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/app.py', reloading
+2025-06-22 08:14:29,576 - werkzeug - INFO -  * Restarting with stat
+2025-06-22 08:14:29,709 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-22 08:14:29,810 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-22 08:14:29,810 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-22 08:14:29,812 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-22 08:14:29,812 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-22 08:14:29,812 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-22 08:14:29,813 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-22 08:14:29,813 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-22 08:14:29,813 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-22 08:14:29,813 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-22 08:14:29,820 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:14:29,820 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:14:29,820 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:14:29,820 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:14:29,820 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:14:29,820 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:14:29,820 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:14:29,820 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:14:29,821 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:14:30,012 - __main__ - ERROR - Failed to import blueprints: No module named 'markdown'
+2025-06-22 08:14:30,012 - __main__ - ERROR - CRITICAL: Blueprint import failed. Application will not function properly.
+2025-06-22 08:14:30,012 - __main__ - CRITICAL - Failed to create application with fixes: No module named 'markdown'
+2025-06-22 08:14:30,013 - __main__ - CRITICAL - Traceback (most recent call last):
+  File "/Users/josephhester/fire-ems-tools/app.py", line 1660, in <module>
+    app = create_app(os.getenv('FLASK_ENV', 'development'))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/josephhester/fire-ems-tools/app.py", line 1583, in create_app
+    raise e
+  File "/Users/josephhester/fire-ems-tools/app.py", line 1550, in create_app
+    from routes.documentation import bp as documentation_bp
+  File "/Users/josephhester/fire-ems-tools/routes/documentation.py", line 9, in <module>
+    from markdown import markdown
+ModuleNotFoundError: No module named 'markdown'
+
+2025-06-22 08:14:30,031 - werkzeug - WARNING -  * Debugger is active!
+2025-06-22 08:14:30,036 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-22 08:50:37,830 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-22 08:50:37,962 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-22 08:50:37,962 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-22 08:50:37,965 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-22 08:50:37,965 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-22 08:50:37,966 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-22 08:50:37,966 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-22 08:50:37,966 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-22 08:50:37,967 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-22 08:50:37,967 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-22 08:50:37,977 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:50:37,977 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:50:37,977 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:50:37,977 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:50:37,978 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:50:37,978 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:50:37,978 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:50:37,978 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:50:37,978 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:50:38,251 - __main__ - ERROR - Failed to import blueprints: No module named 'markdown'
+2025-06-22 08:50:38,251 - __main__ - ERROR - CRITICAL: Blueprint import failed. Application will not function properly.
+2025-06-22 08:50:38,251 - __main__ - CRITICAL - Failed to create application with fixes: No module named 'markdown'
+2025-06-22 08:50:38,252 - __main__ - CRITICAL - Traceback (most recent call last):
+  File "/Users/josephhester/fire-ems-tools/app.py", line 1660, in <module>
+    app = create_app(os.getenv('FLASK_ENV', 'development'))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/josephhester/fire-ems-tools/app.py", line 1583, in create_app
+    raise e
+  File "/Users/josephhester/fire-ems-tools/app.py", line 1550, in create_app
+    from routes.documentation import bp as documentation_bp
+  File "/Users/josephhester/fire-ems-tools/routes/documentation.py", line 9, in <module>
+    from markdown import markdown
+ModuleNotFoundError: No module named 'markdown'
+

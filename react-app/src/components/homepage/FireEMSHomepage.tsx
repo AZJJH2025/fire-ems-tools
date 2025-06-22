@@ -66,7 +66,12 @@ const ToolCard: React.FC<ToolCardProps> = ({
   
   const handleClick = () => {
     if (status === 'available' && path) {
-      navigate(path);
+      // Special handling for documentation - open in new tab
+      if (title === 'User Guides & Documentation') {
+        window.open(path, '_blank');
+      } else {
+        navigate(path);
+      }
     }
   };
 
@@ -298,6 +303,20 @@ const FireEMSHomepage: React.FC = () => {
         'Interactive station placement',
         'Coverage gap identification',
         'Professional optimization reports'
+      ]
+    },
+    {
+      title: 'User Guides & Documentation',
+      description: 'Comprehensive training materials and professional guides designed specifically for fire departments. Get up and running quickly with step-by-step instructions.',
+      icon: <MenuBook />,
+      status: 'available',
+      path: '/docs/users/QUICK_START',
+      audience: 'All Fire Department Personnel',
+      features: [
+        '15-minute quick start guide',
+        'Professional training materials',
+        'Step-by-step video tutorials',
+        'Complete user documentation'
       ]
     }
   ];

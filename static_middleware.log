@@ -241,3 +241,237 @@
 2025-06-21 20:13:03,827 - static_middleware - INFO - MIME type for .jsx: application/javascript
 2025-06-21 20:13:03,827 - static_middleware - INFO - MIME type for .json: application/json
 2025-06-21 20:13:03,827 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 21:01:32,844 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 21:01:32,844 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 21:01:32,844 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 21:01:32,844 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 21:01:32,844 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 21:01:32,844 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 21:01:32,844 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 21:01:32,844 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 21:01:32,844 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 21:06:44,147 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 21:06:44,148 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 21:06:44,148 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 21:06:44,148 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 21:06:44,148 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 21:06:44,148 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 21:06:44,148 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 21:06:44,148 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 21:06:44,148 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 21:21:47,724 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 21:21:47,724 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 21:21:47,724 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 21:21:47,724 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 21:21:47,724 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 21:21:47,724 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 21:21:47,725 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 21:21:47,725 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 21:21:47,725 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 21:45:24,714 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 21:45:24,714 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 21:45:24,714 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 21:45:24,715 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 21:45:24,715 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 21:45:24,715 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 21:45:24,715 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 21:45:24,715 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 21:45:24,715 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 21:45:25,017 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 21:45:25,017 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 21:45:25,017 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 21:45:25,017 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 21:45:25,017 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 21:45:25,017 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 21:45:25,017 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 21:45:25,017 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 21:45:25,017 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 21:45:25,017 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 21:45:25,017 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 21:45:25,017 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 21:45:25,017 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 21:45:25,017 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 21:45:25,017 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 21:45:25,017 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 21:45:25,018 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 21:45:25,018 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 21:50:05,209 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 21:50:05,209 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 21:50:05,209 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 21:50:05,209 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 21:50:05,210 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 21:50:05,210 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 21:50:05,210 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 21:50:05,210 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 21:50:05,210 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 21:50:05,830 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 21:50:05,830 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 21:50:05,830 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 21:50:05,831 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 21:50:05,831 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 21:50:05,831 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 21:50:05,831 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 21:50:05,831 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 21:50:05,831 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 21:55:54,067 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 21:55:54,067 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 21:55:54,067 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 21:55:54,067 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 21:55:54,067 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 21:55:54,067 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 21:55:54,067 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 21:55:54,067 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 21:55:54,067 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 22:09:19,492 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 22:09:19,493 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 22:09:19,493 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 22:09:19,493 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 22:09:19,493 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 22:09:19,493 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 22:09:19,493 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 22:09:19,493 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 22:09:19,493 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 22:09:19,799 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 22:09:19,799 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 22:09:19,799 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 22:09:19,799 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 22:09:19,799 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 22:09:19,799 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 22:09:19,799 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 22:09:19,799 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 22:09:19,799 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 22:09:19,799 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 22:09:19,799 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 22:09:19,799 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 22:09:19,799 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 22:09:19,799 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 22:09:19,799 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 22:09:19,799 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 22:09:19,799 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 22:09:19,799 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 22:12:56,907 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 22:12:56,907 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 22:12:56,907 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 22:12:56,907 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 22:12:56,907 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 22:12:56,907 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 22:12:56,907 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 22:12:56,907 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 22:12:56,907 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-21 22:13:14,056 - static_middleware - INFO - Registered static file handler middleware
+2025-06-21 22:13:14,056 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-21 22:13:14,056 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-21 22:13:14,056 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-21 22:13:14,056 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-21 22:13:14,056 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-21 22:13:14,057 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-21 22:13:14,057 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-21 22:13:14,057 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:02:15,714 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:02:15,715 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:02:15,715 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:02:15,715 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:02:15,715 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:02:15,715 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:02:15,715 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:02:15,715 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:02:15,715 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:05:12,281 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:05:12,281 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:05:12,281 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:05:12,281 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:05:12,281 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:05:12,281 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:05:12,281 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:05:12,281 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:05:12,281 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:05:22,071 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:05:22,071 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:05:22,071 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:05:22,071 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:05:22,071 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:05:22,071 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:05:22,071 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:05:22,071 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:05:22,071 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:05:52,315 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:05:52,315 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:05:52,315 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:05:52,315 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:05:52,316 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:05:52,316 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:05:52,316 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:05:52,316 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:05:52,316 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:06:09,289 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:06:09,289 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:06:09,289 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:06:09,289 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:06:09,289 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:06:09,289 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:06:09,289 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:06:09,289 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:06:09,289 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:06:25,224 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:06:25,224 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:06:25,224 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:06:25,224 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:06:25,224 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:06:25,224 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:06:25,224 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:06:25,224 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:06:25,224 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:06:50,315 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:06:50,315 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:06:50,315 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:06:50,315 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:06:50,315 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:06:50,315 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:06:50,315 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:06:50,315 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:06:50,316 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:07:09,351 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:07:09,351 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:07:09,351 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:07:09,351 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:07:09,351 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:07:09,351 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:07:09,351 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:07:09,351 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:07:09,351 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:07:34,499 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:07:34,499 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:07:34,499 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:07:34,499 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:07:34,499 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:07:34,499 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:07:34,499 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:07:34,499 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:07:34,499 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:14:22,085 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:14:22,086 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:14:22,086 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:14:22,086 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:14:22,086 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:14:22,086 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:14:22,086 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:14:22,086 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:14:22,086 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:14:29,820 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:14:29,820 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:14:29,820 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:14:29,820 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:14:29,820 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:14:29,820 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:14:29,820 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:14:29,820 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:14:29,821 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-22 08:50:37,977 - static_middleware - INFO - Registered static file handler middleware
+2025-06-22 08:50:37,977 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-22 08:50:37,977 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-22 08:50:37,977 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-22 08:50:37,978 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-22 08:50:37,978 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-22 08:50:37,978 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-22 08:50:37,978 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-22 08:50:37,978 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
