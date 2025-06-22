@@ -2,7 +2,154 @@
 
 This file tracks changes made during Claude Code sessions for easy reference in future sessions.
 
-## Latest Session: June 21, 2025 - FIREEMS.AI HOMEPAGE BRANDING COMPLETE ✅ COMPLETE
+## Latest Session: June 22, 2025 - COMPREHENSIVE DOCUMENTATION SYSTEM & CRITICAL DEPLOYMENT FIXES ✅ COMPLETE
+
+### 🏆 **MAJOR ACHIEVEMENT: Complete Documentation System with User Type Separation**
+
+**Mission Accomplished**: Implemented comprehensive documentation system with clean separation between fire department users and system administrators, plus resolved critical deployment architecture issues.
+
+### 🚨 **CRITICAL DEPLOYMENT DISCOVERY: React Build Path Architecture**
+
+#### **Root Cause of Homepage Update Issues**:
+**Problem**: Homepage changes weren't visible despite successful Git pushes and Render deployments.
+
+**Discovery**: The `get_react_build_dir()` function in `/routes/react_app.py` was looking for React builds in the wrong directory on Render.
+
+```python
+# ❌ PROBLEMATIC CODE (FIXED):
+if os.environ.get('RENDER'):
+    react_build_dir = '/opt/render/project/src/app'  # Wrong path!
+```
+
+**Impact**: Even though React builds were successfully copied to `/app` directory and all assets were present, the homepage route couldn't find the updated React app.
+
+#### **CRITICAL FIX APPLIED**:
+```python
+# ✅ CORRECTED CODE:
+def get_react_build_dir():
+    if os.environ.get('RENDER'):
+        react_build_dir = '/opt/render/project/src/app'  # Correct Render path
+    else:
+        # Local development - prioritize /app (deploy location) over react-app/dist
+        project_root = os.path.dirname(current_app.static_folder)
+        app_build_dir = os.path.join(project_root, 'app')
+        
+        if os.path.exists(os.path.join(app_build_dir, 'index.html')):
+            react_build_dir = app_build_dir  # Use deployed build
+        else:
+            react_build_dir = os.path.join(project_root, 'react-app', 'dist')  # Fallback
+```
+
+#### **FUTURE SESSION REMINDER**:
+🔥 **CRITICAL**: If homepage changes aren't visible after deployment:
+1. **Check `routes/react_app.py`** - Verify `get_react_build_dir()` paths
+2. **Verify build copy**: Ensure `cp -r react-app/dist/* app/` completed
+3. **Check Render logs**: Look for "Serving React app from:" message
+4. **Asset path verification**: Confirm `/app/assets/` contains latest bundles
+
+### 🎯 **COMPREHENSIVE DOCUMENTATION SYSTEM IMPLEMENTED**
+
+#### **Clean User Type Separation Achieved**:
+
+**🏠 Homepage (Fire Department Users - Public)**:
+- **7 Professional Tool Tiles** (was 6, added User Guides & Documentation)
+- **Individual "Read Guide" buttons** on each tool tile for direct documentation access
+- **Comprehensive Documentation Hub** at `/docs/users/DOCUMENTATION_HUB`
+- **Complete user guides** for all 6 tools (created 3 missing guides)
+
+**🔒 Admin Console (System Administrators - Private)**:
+- **"System Documentation" tab** (super admin only)
+- **Technical documentation** moved from public to admin-only access
+- **Clean separation** of concerns (customer vs technical docs)
+
+#### **Documentation Architecture Excellence**:
+
+**New User Guides Created**:
+1. `/docs/users/WATER_SUPPLY_COVERAGE.md` - Complete water supply analysis guide
+2. `/docs/users/ISO_CREDIT_CALCULATOR.md` - ISO rating calculation and improvement
+3. `/docs/users/STATION_COVERAGE_OPTIMIZER.md` - Station placement optimization
+4. `/docs/users/DOCUMENTATION_HUB.md` - Central fire department documentation portal
+
+**Enhanced Homepage Integration**:
+```typescript
+// Each tool tile now has dual action buttons:
+<Button variant="contained">Open Tool</Button>  // Primary action
+<Button variant="outlined" onClick={() => window.open('/docs/users/TOOL_GUIDE', '_blank')}>
+  Read Guide  // Documentation access
+</Button>
+```
+
+**Admin Console Integration**:
+```typescript
+// New System Documentation tab (super admin only):
+{userRole === 'super_admin' && (
+  <Tab icon={<Description />} label="System Documentation" />
+)}
+// Links to /docs/admin/SYSTEM_ADMIN_GUIDE and /docs/admin/TROUBLESHOOTING
+```
+
+### 🏗️ **REACT BUILD DEPLOYMENT WORKFLOW**
+
+#### **Critical Build and Deploy Process**:
+```bash
+# 1. Build React app with latest changes
+cd react-app && npm run build-no-check
+
+# 2. Copy build to deployment directory
+cd .. && cp -r react-app/dist/* app/
+
+# 3. Commit and push (triggers Render deployment)
+git add . && git commit -m "Description" && git push
+
+# 4. Verify deployment serves from correct path
+# Check Render logs for: "Serving React app from: /opt/render/project/src/app"
+```
+
+#### **Asset Serving Architecture**:
+- **Homepage Route**: `/` serves from `app/index.html` with asset path rewriting
+- **React App Routes**: `/app/*` serves from same directory
+- **Asset Fallback**: `/assets/*` → `/app/assets/*` via middleware
+- **Documentation Routes**: `/docs/*` serve markdown with conversion
+
+### 🎯 **NOTIFICATION SYSTEM INTEGRATION**
+
+#### **Complete Admin Workflow Integration**:
+- **NotificationPanel**: Real-time notification management in admin console
+- **Approval Workflows**: Automatic notifications for department/user approvals
+- **Priority System**: High/normal/low priority notifications with color coding
+- **Action URLs**: Direct links to relevant admin actions from notifications
+
+### 🚀 **PROFESSIONAL STANDARDS ACHIEVED**
+
+#### **Enterprise SaaS Architecture**:
+- **Clean User Experience**: Fire departments see relevant tools and guides
+- **Administrative Separation**: Technical docs hidden from end users
+- **Professional Presentation**: Documentation hub suitable for enterprise customers
+- **Scalable Structure**: Easy to add new tools and documentation
+
+#### **Documentation Quality**:
+- **Tool-Specific Guides**: Each tool has comprehensive user documentation
+- **Use Case Organization**: Guidance by department type (urban, rural, mixed)
+- **Professional Reporting**: Integration with PDF generation and compliance documentation
+- **Training Materials**: Step-by-step instructions and best practices
+
+### 🔧 **TECHNICAL DEBT RESOLVED**
+
+#### **Build Process Reliability**:
+- **Path Resolution**: Fixed React build directory detection
+- **Asset Serving**: Robust fallback system for static assets
+- **Development/Production Parity**: Consistent behavior across environments
+- **Error Handling**: Graceful degradation when builds aren't found
+
+#### **Route Architecture Clarity**:
+- **Blueprint Separation**: Clean separation between React app and API routes
+- **Static Asset Handling**: Multiple fallback mechanisms for asset serving
+- **Documentation Integration**: Seamless markdown-to-HTML conversion
+- **Authentication Integration**: Proper admin-only documentation access
+
+---
+
+## Previous Session: June 21, 2025 - FIREEMS.AI HOMEPAGE BRANDING COMPLETE ✅ COMPLETE
 
 ### 🏆 **MAJOR ACHIEVEMENT: Professional FireEMS.AI Branding Implementation**
 
