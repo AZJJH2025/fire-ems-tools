@@ -186,8 +186,8 @@ const ToolCard: React.FC<ToolCardProps> = ({
           ))}
         </Box>
 
-        {/* Action Button */}
-        <Box sx={{ mt: 'auto' }}>
+        {/* Action Buttons */}
+        <Box sx={{ mt: 'auto', display: 'flex', gap: 1, flexDirection: 'column' }}>
           <Button 
             variant="contained" 
             size="small"
@@ -211,6 +211,45 @@ const ToolCard: React.FC<ToolCardProps> = ({
           >
             {status === 'available' ? 'Open Tool' : 'Coming Soon'}
           </Button>
+          
+          {/* Read Guide Button - only show for tools with guides, not for the documentation tile itself */}
+          {title !== 'User Guides & Documentation' && (
+            <Button 
+              variant="outlined" 
+              size="small"
+              sx={{
+                borderColor: '#2196f3',
+                color: '#2196f3',
+                fontSize: '12px',
+                fontWeight: 500,
+                px: 2,
+                py: 0.5,
+                '&:hover': {
+                  borderColor: '#1976d2',
+                  color: '#1976d2',
+                  bgcolor: 'rgba(33, 150, 243, 0.04)'
+                }
+              }}
+              startIcon={<Description sx={{ fontSize: '16px' }} />}
+              onClick={(e) => {
+                e.stopPropagation();
+                const guideMap: Record<string, string> = {
+                  'Data Formatter': '/docs/users/DATA_FORMATTER',
+                  'Response Time Analyzer': '/docs/users/RESPONSE_TIME_ANALYZER',
+                  'Fire Map Pro': '/docs/users/FIRE_MAP_PRO',
+                  'Water Supply Coverage Analysis': '/docs/users/WATER_SUPPLY_COVERAGE',
+                  'ISO Credit Calculator': '/docs/users/ISO_CREDIT_CALCULATOR',
+                  'Station Coverage Optimizer': '/docs/users/STATION_COVERAGE_OPTIMIZER'
+                };
+                const guidePath = guideMap[title];
+                if (guidePath) {
+                  window.open(guidePath, '_blank');
+                }
+              }}
+            >
+              Read Guide
+            </Button>
+          )}
         </Box>
       </Box>
     </Box>
@@ -310,13 +349,13 @@ const FireEMSHomepage: React.FC = () => {
       description: 'Comprehensive training materials and professional guides designed specifically for fire departments. Get up and running quickly with step-by-step instructions.',
       icon: <MenuBook />,
       status: 'available',
-      path: '/docs/users/QUICK_START',
+      path: '/docs/users/DOCUMENTATION_HUB',
       audience: 'All Fire Department Personnel',
       features: [
         '15-minute quick start guide',
+        'Tool-specific user guides',
         'Professional training materials',
-        'Step-by-step video tutorials',
-        'Complete user documentation'
+        'Complete documentation hub'
       ]
     }
   ];

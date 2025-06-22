@@ -8,7 +8,10 @@ import {
   Alert,
   CircularProgress,
   Button,
-  Paper
+  Paper,
+  Grid,
+  Card,
+  CardContent
 } from '@mui/material';
 import {
   Dashboard,
@@ -16,7 +19,8 @@ import {
   Business,
   AdminPanelSettings,
   HowToReg,
-  Notifications
+  Notifications,
+  Description
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -263,6 +267,13 @@ const AdminDashboard: React.FC = () => {
               {...a11yProps(4)} 
             />
           )}
+          {userRole === 'super_admin' && (
+            <Tab 
+              icon={<Description />} 
+              label="System Documentation" 
+              {...a11yProps(5)} 
+            />
+          )}
         </Tabs>
       </Paper>
 
@@ -286,6 +297,62 @@ const AdminDashboard: React.FC = () => {
       {userRole === 'super_admin' && (
         <TabPanel value={currentTab} index={4}>
           <PendingApprovals />
+        </TabPanel>
+      )}
+      
+      {userRole === 'super_admin' && (
+        <TabPanel value={currentTab} index={5}>
+          <Paper sx={{ p: 3 }}>
+            <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+              <Description />
+              System Administration Documentation
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+              Technical documentation for system administrators and product owners.
+            </Typography>
+            
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                      System Admin Guide
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      Complete guide for server setup, configuration, and maintenance.
+                    </Typography>
+                    <Button 
+                      variant="contained" 
+                      startIcon={<Description />}
+                      onClick={() => window.open('/docs/admin/SYSTEM_ADMIN_GUIDE', '_blank')}
+                    >
+                      Read Guide
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                      Troubleshooting Guide
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      Technical troubleshooting, debugging, and issue resolution.
+                    </Typography>
+                    <Button 
+                      variant="contained" 
+                      startIcon={<Description />}
+                      onClick={() => window.open('/docs/admin/TROUBLESHOOTING', '_blank')}
+                    >
+                      Read Guide
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          </Paper>
         </TabPanel>
       )}
     </Container>
