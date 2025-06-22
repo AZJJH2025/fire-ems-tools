@@ -6,7 +6,7 @@ Handles department and user request approvals by admins
 import logging
 from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
-from database import db, Department, User
+from database import db, Department, User, Notification
 from datetime import datetime
 from sqlalchemy import text
 import secrets
@@ -193,6 +193,21 @@ def approve_department_request(request_id):
             'review_notes': review_notes,
             'request_id': request_id
         })
+        
+        # Create notification for department approval
+        Notification.notify_admins(
+            notification_type='department_approved',
+            title=f"Department Approved: {department.name}",
+            message=f"Department '{department.name}' has been approved and activated. Admin user '{admin_user.email}' has been created with temporary access.",
+            action_url='/admin/departments',
+            priority='normal',
+            data={
+                'department_id': department.id,
+                'department_name': department.name,
+                'admin_email': admin_user.email,
+                'approved_by': current_user.email
+            }
+        )
         
         db.session.commit()
         
@@ -415,6 +430,24 @@ def approve_user_request(request_id):
             'review_notes': review_notes,
             'request_id': request_id
         })
+        
+        # Create notification for user approval
+        Notification.notify_admins(
+            notification_type='user_approved',
+            title=f"User Approved: {new_user.name}",
+            message=f"User '{new_user.name}' ({new_user.email}) has been approved and added to department '{department.name}'. Temporary access credentials have been generated.",
+            action_url='/admin/users',
+            priority='normal',
+            data={
+                'user_id': new_user.id,
+                'user_email': new_user.email,
+                'user_name': new_user.name,
+                'department_id': department.id,
+                'department_name': department.name,
+                'approved_by': current_user.email
+            },
+            department_id=department.id
+        )
         
         db.session.commit()
         

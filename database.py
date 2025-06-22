@@ -310,3 +310,83 @@ class Incident(db.Model):
             longitude=longitude,
             data=form_data
         )
+
+# Notification model for admin notifications
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    type = db.Column(db.String(50), nullable=False)  # 'approval_request', 'user_approved', 'system_alert', 'department_approved'
+    title = db.Column(db.String(200), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    is_read = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    action_url = db.Column(db.String(500))  # URL for notification action
+    priority = db.Column(db.String(20), default='normal')  # 'low', 'normal', 'high', 'urgent'
+    data = db.Column(db.JSON)  # Additional notification data
+    
+    # Relationships
+    user = db.relationship('User', backref='notifications')
+    
+    def __repr__(self):
+        return f"<Notification {self.id}: {self.title}>"
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'type': self.type,
+            'title': self.title,
+            'message': self.message,
+            'is_read': self.is_read,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'action_url': self.action_url,
+            'priority': self.priority,
+            'data': self.data
+        }
+    
+    @staticmethod
+    def create_notification(user_id, notification_type, title, message, action_url=None, priority='normal', data=None):
+        """Helper method to create notifications"""
+        notification = Notification(
+            user_id=user_id,
+            type=notification_type,
+            title=title,
+            message=message,
+            action_url=action_url,
+            priority=priority,
+            data=data or {}
+        )
+        db.session.add(notification)
+        return notification
+    
+    @staticmethod
+    def notify_admins(notification_type, title, message, action_url=None, priority='normal', data=None, department_id=None):
+        """Send notification to all relevant admins"""
+        if department_id:
+            # Notify department admins and super admins
+            admins = User.query.filter(
+                db.or_(
+                    User.role == 'super_admin',
+                    db.and_(User.role == 'admin', User.department_id == department_id)
+                )
+            ).filter(User.is_active == True).all()
+        else:
+            # Notify only super admins
+            admins = User.query.filter(User.role == 'super_admin', User.is_active == True).all()
+        
+        notifications = []
+        for admin in admins:
+            notification = Notification.create_notification(
+                user_id=admin.id,
+                notification_type=notification_type,
+                title=title,
+                message=message,
+                action_url=action_url,
+                priority=priority,
+                data=data
+            )
+            notifications.append(notification)
+        
+        return notifications

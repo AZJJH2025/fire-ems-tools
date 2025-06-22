@@ -5,7 +5,7 @@ Handles department requests and user join requests with approval workflows
 
 import logging
 from flask import Blueprint, jsonify, request
-from database import db
+from database import db, Notification
 from datetime import datetime
 from sqlalchemy import text
 import re
@@ -188,6 +188,22 @@ def request_department():
             'requested_at': datetime.utcnow()
         })
         
+        # Create notification for super admins about new department request
+        Notification.notify_admins(
+            notification_type='approval_request',
+            title=f"New Department Request: {data['department_name']}",
+            message=f"A new department registration request has been submitted by {data['contact_name']} ({data['contact_email']}) for '{data['department_name']}'. Please review and approve or deny this request.",
+            action_url='/admin',  # Will redirect to pending approvals tab
+            priority='high',
+            data={
+                'request_type': 'department',
+                'department_name': data['department_name'],
+                'contact_name': data['contact_name'],
+                'contact_email': data['contact_email'],
+                'department_type': data.get('department_type', 'combined')
+            }
+        )
+        
         db.session.commit()
         
         logger.info(f"Department request submitted: {data['department_name']} by {data['contact_email']}")
@@ -271,6 +287,24 @@ def request_join_department():
             'position': data.get('current_position', '').strip(),
             'requested_at': datetime.utcnow()
         })
+        
+        # Create notification for department and super admins about new user request
+        Notification.notify_admins(
+            notification_type='approval_request',
+            title=f"New User Request: {data['user_name']}",
+            message=f"A new user join request has been submitted by {data['user_name']} ({data['user_email']}) to join '{dept_info[0]}'. Please review and approve or deny this request.",
+            action_url='/admin',  # Will redirect to pending approvals tab
+            priority='normal',
+            data={
+                'request_type': 'user',
+                'user_name': data['user_name'],
+                'user_email': data['user_email'],
+                'department_id': data['department_id'],
+                'department_name': dept_info[0],
+                'requested_role': data.get('requested_role', 'user')
+            },
+            department_id=data['department_id']
+        )
         
         db.session.commit()
         

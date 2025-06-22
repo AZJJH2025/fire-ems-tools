@@ -15,7 +15,8 @@ import {
   People,
   Business,
   AdminPanelSettings,
-  HowToReg
+  HowToReg,
+  Notifications
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -24,6 +25,7 @@ import AdminOverview from './AdminOverview';
 import UserManagement from './UserManagement';
 import DepartmentSettings from './DepartmentSettings';
 import PendingApprovals from './PendingApprovals';
+import NotificationPanel from './NotificationPanel';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -249,11 +251,16 @@ const AdminDashboard: React.FC = () => {
             label="Department Settings" 
             {...a11yProps(2)} 
           />
+          <Tab 
+            icon={<Notifications />} 
+            label="Notifications" 
+            {...a11yProps(3)} 
+          />
           {userRole === 'super_admin' && (
             <Tab 
               icon={<HowToReg />} 
               label="Pending Approvals" 
-              {...a11yProps(3)} 
+              {...a11yProps(4)} 
             />
           )}
         </Tabs>
@@ -272,8 +279,12 @@ const AdminDashboard: React.FC = () => {
         <DepartmentSettings userRole={userRole} />
       </TabPanel>
       
+      <TabPanel value={currentTab} index={3}>
+        <NotificationPanel />
+      </TabPanel>
+      
       {userRole === 'super_admin' && (
-        <TabPanel value={currentTab} index={3}>
+        <TabPanel value={currentTab} index={4}>
           <PendingApprovals />
         </TabPanel>
       )}
