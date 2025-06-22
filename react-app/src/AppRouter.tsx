@@ -31,7 +31,7 @@ const LoadingSpinner = () => (
  */
 const AppRouter: React.FC = () => {
   return (
-    <BrowserRouter basename="/app">
+    <BrowserRouter basename={window.location.pathname.startsWith('/app') ? '/app' : ''}>
       <CssBaseline />
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
