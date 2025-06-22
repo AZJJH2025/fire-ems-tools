@@ -29,7 +29,7 @@ def index():
             with open(index_path, 'r') as f:
                 html_content = f.read()
             
-            # Replace /assets/ with /app/assets/ in the HTML
+            # For root route, assets should be available at /app/assets/
             html_content = html_content.replace('src="/assets/', 'src="/app/assets/')
             html_content = html_content.replace('href="/assets/', 'href="/app/assets/')
             
