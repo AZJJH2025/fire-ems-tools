@@ -27,6 +27,27 @@ def require_admin(f):
         return f(*args, **kwargs)
     return decorated_function
 
+@bp.route('/api/notifications/health', methods=['GET'])
+@login_required
+@require_admin
+def notifications_health():
+    """Check notification system health"""
+    try:
+        # Test if we can access the notification table
+        count = Notification.query.count()
+        return jsonify({
+            'success': True,
+            'message': 'Notification system healthy',
+            'notification_count': count
+        })
+    except Exception as e:
+        logger.error(f"Notification health check failed: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'message': 'Notification table may not exist or has issues'
+        }), 500
+
 @bp.route('/api/notifications', methods=['GET'])
 @login_required
 @require_admin
