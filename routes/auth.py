@@ -97,6 +97,26 @@ def reset_admin_password():
             'error': str(e)
         }), 500
 
+# Emergency database initialization endpoint (GET for browser access)
+@bp.route('/emergency-init-database')
+def emergency_init_database_get():
+    """Emergency GET endpoint to initialize database schema - for browser access"""
+    try:
+        from database import db
+        
+        # Create all database tables
+        db.create_all()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Database schema initialized successfully',
+            'tables_created': 'All missing tables and columns have been created'
+        })
+        
+    except Exception as e:
+        logger.error(f"Database initialization error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 # Emergency database initialization endpoint
 @bp.route('/api/emergency/init-database', methods=['POST'])
 def emergency_init_database():
