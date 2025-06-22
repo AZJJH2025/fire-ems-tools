@@ -103,46 +103,50 @@ def emergency_migrate_database():
     """Emergency endpoint to migrate notification table schema"""
     try:
         from database import db
+        from sqlalchemy import text
         
         # Manual database migration for notification table
         migration_results = []
         
         # Check if notifications table exists and get its current schema
-        result = db.engine.execute("PRAGMA table_info(notifications)")
-        existing_columns = [row[1] for row in result]
-        migration_results.append(f"Existing columns: {existing_columns}")
-        
-        # Define required columns for notification table
-        required_columns = {
-            'id': 'INTEGER PRIMARY KEY',
-            'user_id': 'INTEGER NOT NULL',
-            'type': 'VARCHAR(50) NOT NULL',
-            'title': 'VARCHAR(200) NOT NULL', 
-            'message': 'TEXT NOT NULL',
-            'is_read': 'BOOLEAN NOT NULL DEFAULT 0',
-            'created_at': 'DATETIME NOT NULL',
-            'action_url': 'VARCHAR(500)',
-            'priority': 'VARCHAR(20) DEFAULT "normal"',
-            'data': 'JSON'
-        }
-        
-        # Add missing columns
-        for column_name, column_def in required_columns.items():
-            if column_name not in existing_columns and column_name != 'id':
-                try:
-                    # Add the missing column
-                    alter_sql = f"ALTER TABLE notifications ADD COLUMN {column_name} {column_def}"
-                    db.engine.execute(alter_sql)
-                    migration_results.append(f"Added column: {column_name}")
-                except Exception as e:
-                    migration_results.append(f"Failed to add {column_name}: {str(e)}")
-        
-        # Create foreign key constraint for user_id if it doesn't exist
-        try:
-            db.engine.execute("CREATE INDEX IF NOT EXISTS ix_notifications_user_id ON notifications (user_id)")
-            migration_results.append("Created user_id index")
-        except Exception as e:
-            migration_results.append(f"Index creation warning: {str(e)}")
+        with db.engine.connect() as connection:
+            result = connection.execute(text("PRAGMA table_info(notifications)"))
+            existing_columns = [row[1] for row in result]
+            migration_results.append(f"Existing columns: {existing_columns}")
+            
+            # Define required columns for notification table
+            required_columns = {
+                'user_id': 'INTEGER NOT NULL',
+                'type': 'VARCHAR(50) NOT NULL',
+                'title': 'VARCHAR(200) NOT NULL', 
+                'message': 'TEXT NOT NULL',
+                'is_read': 'BOOLEAN NOT NULL DEFAULT 0',
+                'created_at': 'DATETIME NOT NULL',
+                'action_url': 'VARCHAR(500)',
+                'priority': 'VARCHAR(20) DEFAULT "normal"',
+                'data': 'JSON'
+            }
+            
+            # Add missing columns
+            for column_name, column_def in required_columns.items():
+                if column_name not in existing_columns:
+                    try:
+                        # Add the missing column
+                        alter_sql = f"ALTER TABLE notifications ADD COLUMN {column_name} {column_def}"
+                        connection.execute(text(alter_sql))
+                        migration_results.append(f"Added column: {column_name}")
+                    except Exception as e:
+                        migration_results.append(f"Failed to add {column_name}: {str(e)}")
+            
+            # Create foreign key constraint for user_id if it doesn't exist
+            try:
+                connection.execute(text("CREATE INDEX IF NOT EXISTS ix_notifications_user_id ON notifications (user_id)"))
+                migration_results.append("Created user_id index")
+            except Exception as e:
+                migration_results.append(f"Index creation warning: {str(e)}")
+            
+            # Commit the transaction
+            connection.commit()
         
         return jsonify({
             'success': True,
