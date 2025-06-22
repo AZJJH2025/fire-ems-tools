@@ -16,9 +16,14 @@ bp = Blueprint('react_app', __name__)
 
 def get_react_build_dir():
     """Get the React build directory path"""
-    # Get the project root directory (parent of current_app.static_folder)
-    project_root = os.path.dirname(current_app.static_folder)
-    react_build_dir = os.path.join(project_root, 'react-app', 'dist')
+    # Check if we're in a Render environment or local development
+    if os.environ.get('RENDER'):
+        # On Render, use the app directory in project root
+        react_build_dir = '/opt/render/project/src/app'
+    else:
+        # Local development - use react-app/dist
+        project_root = os.path.dirname(current_app.static_folder)
+        react_build_dir = os.path.join(project_root, 'react-app', 'dist')
     return react_build_dir
 
 @bp.route('/app')
