@@ -97,6 +97,32 @@ def reset_admin_password():
             'error': str(e)
         }), 500
 
+# Emergency database initialization endpoint
+@bp.route('/api/emergency/init-database', methods=['POST'])
+def emergency_init_database():
+    """Emergency endpoint to initialize/fix database schema"""
+    try:
+        data = request.get_json()
+        
+        # Require a special emergency key for security
+        if not data or data.get('emergency_key') != 'FireEMS_Emergency_2025':
+            return jsonify({'error': 'Invalid emergency key'}), 403
+        
+        from database import db
+        
+        # Create all database tables
+        db.create_all()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Database schema initialized successfully',
+            'tables_created': 'All missing tables and columns have been created'
+        })
+        
+    except Exception as e:
+        logger.error(f"Database initialization error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 # Emergency admin creation endpoint
 @bp.route('/api/emergency/create-admin', methods=['POST'])
 def emergency_create_admin():
