@@ -279,7 +279,7 @@ const AdminDashboard: React.FC = () => {
 
       {/* Tab Content */}
       <TabPanel value={currentTab} index={0}>
-        <AdminOverview userRole={userRole} />
+        <AdminOverview userRole={userRole} onTabChange={setCurrentTab} />
       </TabPanel>
       
       <TabPanel value={currentTab} index={1}>

@@ -92,9 +92,10 @@ interface ExtendedAnalyticsData extends AnalyticsData {
 
 interface AdminOverviewProps {
   userRole: string | null;
+  onTabChange?: (tabIndex: number) => void;
 }
 
-const AdminOverview: React.FC<AdminOverviewProps> = ({ userRole }) => {
+const AdminOverview: React.FC<AdminOverviewProps> = ({ userRole, onTabChange }) => {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [extendedAnalytics, setExtendedAnalytics] = useState<ExtendedAnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -301,7 +302,10 @@ const AdminOverview: React.FC<AdminOverviewProps> = ({ userRole }) => {
                 variant="contained"
                 startIcon={<PersonAdd />}
                 size="small"
-                onClick={() => {/* Navigate to user creation */}}
+                onClick={() => {
+                  console.log('🔥 Add User button clicked - navigating to User Management tab');
+                  onTabChange?.(1); // Tab index 1 = User Management
+                }}
               >
                 Add User
               </Button>
@@ -309,7 +313,10 @@ const AdminOverview: React.FC<AdminOverviewProps> = ({ userRole }) => {
                 variant="contained"
                 startIcon={<DomainAdd />}
                 size="small"
-                onClick={() => {/* Navigate to department creation */}}
+                onClick={() => {
+                  console.log('🔥 Add Department button clicked - navigating to Department Settings tab');
+                  onTabChange?.(2); // Tab index 2 = Department Settings
+                }}
               >
                 Add Department
               </Button>
@@ -318,7 +325,10 @@ const AdminOverview: React.FC<AdminOverviewProps> = ({ userRole }) => {
                 startIcon={<Notifications />}
                 size="small"
                 color="warning"
-                onClick={() => {/* Navigate to pending approvals */}}
+                onClick={() => {
+                  console.log('🔥 Pending Approvals button clicked - navigating to Pending Approvals tab');
+                  onTabChange?.(4); // Tab index 4 = Pending Approvals (super admin only)
+                }}
               >
                 Pending Approvals ({extendedAnalytics?.pending_items.pending_approvals || 0})
               </Button>
@@ -326,7 +336,10 @@ const AdminOverview: React.FC<AdminOverviewProps> = ({ userRole }) => {
                 variant="outlined"
                 startIcon={<Assessment />}
                 size="small"
-                onClick={() => {/* Navigate to detailed analytics */}}
+                onClick={() => {
+                  console.log('🔥 Detailed Reports button clicked - navigating to Notifications tab');
+                  onTabChange?.(3); // Tab index 3 = Notifications tab (can show detailed analytics there)
+                }}
               >
                 Detailed Reports
               </Button>
