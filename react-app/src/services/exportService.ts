@@ -10,6 +10,7 @@
  */
 
 import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 import { ExportConfiguration, LayoutElement } from '@/types/export';
 
 export class ExportService {
@@ -97,8 +98,7 @@ export class ExportService {
       innerHTML: mapElement.innerHTML.substring(0, 200) + '...'
     });
     
-    // Capture map with html2canvas (dynamic import for bundle optimization)
-    const { default: html2canvas } = await import('html2canvas');
+    // Capture map with html2canvas (bundled locally for firewall compatibility)
     const canvas = await html2canvas(mapElement, {
       useCORS: true,
       allowTaint: true,
@@ -182,8 +182,7 @@ export class ExportService {
     
     onProgress?.(30, 'Capturing map for PDF...');
     
-    // Capture map (dynamic import for bundle optimization)
-    const { default: html2canvas } = await import('html2canvas');
+    // Capture map (bundled locally for firewall compatibility)
     const canvas = await html2canvas(mapElement, {
       useCORS: true,
       allowTaint: true,
