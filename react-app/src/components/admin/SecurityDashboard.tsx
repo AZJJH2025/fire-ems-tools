@@ -36,7 +36,11 @@ import {
   Refresh,
   Assessment,
   VpnLock,
-  AdminPanelSettings
+  AdminPanelSettings,
+  Policy,
+  Gavel,
+  AccountBalance,
+  VerifiedUser
 } from '@mui/icons-material';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
@@ -120,6 +124,40 @@ interface AuditEvent {
   data: Record<string, any>;
 }
 
+interface ComplianceFramework {
+  id: string;
+  name: string;
+  version: string;
+  status: 'compliant' | 'partial' | 'non_compliant';
+  score: number;
+  last_assessment: string;
+  next_assessment: string;
+  controls: ComplianceControl[];
+}
+
+interface ComplianceControl {
+  id: string;
+  name: string;
+  description: string;
+  framework: string;
+  status: 'implemented' | 'in_progress' | 'planned' | 'not_applicable';
+  evidence_count: number;
+  last_review: string;
+  next_review: string;
+  criticality: 'high' | 'medium' | 'low';
+}
+
+interface PolicyDocument {
+  id: string;
+  name: string;
+  version: string;
+  status: 'active' | 'draft' | 'archived';
+  last_updated: string;
+  next_review: string;
+  owner: string;
+  approval_status: 'approved' | 'pending' | 'rejected';
+}
+
 const SecurityDashboard: React.FC = () => {
   const [currentTab, setCurrentTab] = useState(0);
   const [metrics, setMetrics] = useState<SecurityMetrics | null>(null);
@@ -129,6 +167,11 @@ const SecurityDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [eventTypeFilter, setEventTypeFilter] = useState<string>('');
+  
+  // Compliance monitoring state
+  const [complianceFrameworks, setComplianceFrameworks] = useState<ComplianceFramework[]>([]);
+  const [policyDocuments, setPolicyDocuments] = useState<PolicyDocument[]>([]);
+  const [complianceLoading, setComplianceLoading] = useState(false);
 
   const fetchSecurityMetrics = async () => {
     try {
@@ -179,13 +222,107 @@ const SecurityDashboard: React.FC = () => {
     }
   };
 
+  const fetchComplianceFrameworks = async () => {
+    try {
+      // Mock data for compliance frameworks
+      const mockFrameworks: ComplianceFramework[] = [
+        {
+          id: 'soc2',
+          name: 'SOC 2 Type II',
+          version: '2017',
+          status: 'compliant',
+          score: 94,
+          last_assessment: '2025-03-15',
+          next_assessment: '2026-03-15',
+          controls: []
+        },
+        {
+          id: 'hipaa',
+          name: 'HIPAA',
+          version: '2013',
+          status: 'partial',
+          score: 87,
+          last_assessment: '2025-06-01',
+          next_assessment: '2025-12-01',
+          controls: []
+        },
+        {
+          id: 'nist',
+          name: 'NIST Cybersecurity Framework',
+          version: '1.1',
+          status: 'compliant',
+          score: 91,
+          last_assessment: '2025-05-01',
+          next_assessment: '2025-11-01',
+          controls: []
+        }
+      ];
+      setComplianceFrameworks(mockFrameworks);
+    } catch (error) {
+      console.error('Error fetching compliance frameworks:', error);
+    }
+  };
+
+  const fetchPolicyDocuments = async () => {
+    try {
+      // Mock data for policy documents
+      const mockPolicies: PolicyDocument[] = [
+        {
+          id: 'info-sec-policy',
+          name: 'Information Security Policy',
+          version: '1.0',
+          status: 'active',
+          last_updated: '2025-06-30',
+          next_review: '2025-12-30',
+          owner: 'Security Team',
+          approval_status: 'approved'
+        },
+        {
+          id: 'incident-response',
+          name: 'Incident Response Plan',
+          version: '1.0',
+          status: 'active',
+          last_updated: '2025-06-30',
+          next_review: '2025-12-30',
+          owner: 'Security Team',
+          approval_status: 'approved'
+        },
+        {
+          id: 'data-retention',
+          name: 'Data Retention Policy',
+          version: '1.0',
+          status: 'active',
+          last_updated: '2025-06-30',
+          next_review: '2025-12-30',
+          owner: 'Data Protection Officer',
+          approval_status: 'approved'
+        },
+        {
+          id: 'change-management',
+          name: 'Change Management Procedures',
+          version: '1.0',
+          status: 'active',
+          last_updated: '2025-06-30',
+          next_review: '2025-12-30',
+          owner: 'Chief Technology Officer',
+          approval_status: 'approved'
+        }
+      ];
+      setPolicyDocuments(mockPolicies);
+    } catch (error) {
+      console.error('Error fetching policy documents:', error);
+    }
+  };
+
   const loadAllData = async () => {
     setLoading(true);
     await Promise.all([
       fetchSecurityMetrics(),
       fetchSecurityAlerts(),
       fetchComplianceStatus(),
-      fetchAuditEvents(eventTypeFilter)
+      fetchAuditEvents(eventTypeFilter),
+      fetchComplianceFrameworks(),
+      fetchPolicyDocuments()
     ]);
     setLoading(false);
     setLastRefresh(new Date());
@@ -332,6 +469,7 @@ const SecurityDashboard: React.FC = () => {
           <Tab icon={<VpnLock />} label="Compliance" />
           <Tab icon={<Warning />} label="Alerts" />
           <Tab icon={<AdminPanelSettings />} label="Audit Logs" />
+          <Tab icon={<Policy />} label="Compliance Monitoring" />
         </Tabs>
       </Box>
 
@@ -660,6 +798,219 @@ const SecurityDashboard: React.FC = () => {
                     </TableBody>
                   </Table>
                 </TableContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      )}
+
+      {/* Compliance Monitoring Tab */}
+      {currentTab === 4 && (
+        <Grid container spacing={3}>
+          {/* Compliance Frameworks Overview */}
+          <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <AccountBalance color="primary" />
+                  Compliance Frameworks
+                </Typography>
+                <Grid container spacing={2}>
+                  {complianceFrameworks.map((framework) => (
+                    <Grid item xs={12} md={4} key={framework.id}>
+                      <Card variant="outlined">
+                        <CardContent>
+                          <Typography variant="h6" gutterBottom>
+                            {framework.name}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" gutterBottom>
+                            Version {framework.version}
+                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                            <Chip 
+                              label={framework.status.replace('_', ' ').toUpperCase()}
+                              color={framework.status === 'compliant' ? 'success' : framework.status === 'partial' ? 'warning' : 'error'}
+                              size="small"
+                            />
+                            <Typography variant="h6" color="primary">
+                              {framework.score}%
+                            </Typography>
+                          </Box>
+                          <LinearProgress 
+                            variant="determinate" 
+                            value={framework.score} 
+                            sx={{ mb: 1 }}
+                            color={framework.score >= 90 ? 'success' : framework.score >= 70 ? 'warning' : 'error'}
+                          />
+                          <Typography variant="caption" color="text.secondary">
+                            Last Assessment: {new Date(framework.last_assessment).toLocaleDateString()}
+                          </Typography>
+                          <br />
+                          <Typography variant="caption" color="text.secondary">
+                            Next Assessment: {new Date(framework.next_assessment).toLocaleDateString()}
+                          </Typography>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Policy Documents */}
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Gavel color="primary" />
+                  Policy Documents
+                </Typography>
+                <TableContainer>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Policy Name</TableCell>
+                        <TableCell>Version</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Owner</TableCell>
+                        <TableCell>Next Review</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {policyDocuments.map((policy) => (
+                        <TableRow key={policy.id}>
+                          <TableCell>
+                            <Typography variant="body2" fontWeight="medium">
+                              {policy.name}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              v{policy.version}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip 
+                              label={policy.status.toUpperCase()}
+                              color={policy.status === 'active' ? 'success' : policy.status === 'draft' ? 'warning' : 'default'}
+                              size="small"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" color="text.secondary">
+                              {policy.owner}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" color="text.secondary">
+                              {new Date(policy.next_review).toLocaleDateString()}
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Compliance Metrics */}
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <VerifiedUser color="primary" />
+                  Compliance Metrics
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <Box textAlign="center">
+                      <Typography variant="h4" color="success.main">
+                        {Math.round(complianceFrameworks.reduce((sum, f) => sum + f.score, 0) / complianceFrameworks.length)}%
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Average Compliance Score
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Box textAlign="center">
+                      <Typography variant="h4" color="primary">
+                        {policyDocuments.filter(p => p.status === 'active').length}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Active Policies
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Box textAlign="center">
+                      <Typography variant="h4" color="warning.main">
+                        {complianceFrameworks.filter(f => f.status === 'partial').length}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Partial Compliance
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Box textAlign="center">
+                      <Typography variant="h4" color="info.main">
+                        {policyDocuments.filter(p => 
+                          new Date(p.next_review) <= new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                        ).length}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Due for Review (30 days)
+                      </Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Upcoming Compliance Tasks */}
+          <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Upcoming Compliance Tasks
+                </Typography>
+                <List>
+                  {complianceFrameworks
+                    .filter(f => new Date(f.next_assessment) <= new Date(Date.now() + 90 * 24 * 60 * 60 * 1000))
+                    .map((framework) => (
+                      <ListItem key={framework.id}>
+                        <ListItemText
+                          primary={`${framework.name} Assessment`}
+                          secondary={`Due: ${new Date(framework.next_assessment).toLocaleDateString()}`}
+                        />
+                        <Chip 
+                          label={`${Math.ceil((new Date(framework.next_assessment).getTime() - Date.now()) / (24 * 60 * 60 * 1000))} days`}
+                          color="warning"
+                          size="small"
+                        />
+                      </ListItem>
+                    ))}
+                  {policyDocuments
+                    .filter(p => new Date(p.next_review) <= new Date(Date.now() + 30 * 24 * 60 * 60 * 1000))
+                    .map((policy) => (
+                      <ListItem key={policy.id}>
+                        <ListItemText
+                          primary={`${policy.name} Review`}
+                          secondary={`Due: ${new Date(policy.next_review).toLocaleDateString()}`}
+                        />
+                        <Chip 
+                          label={`${Math.ceil((new Date(policy.next_review).getTime() - Date.now()) / (24 * 60 * 60 * 1000))} days`}
+                          color="info"
+                          size="small"
+                        />
+                      </ListItem>
+                    ))}
+                </List>
               </CardContent>
             </Card>
           </Grid>

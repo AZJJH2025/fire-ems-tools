@@ -93,7 +93,7 @@ const LoginPage: React.FC = () => {
         console.log('Login successful:', result.user);
         // Redirect admin users to admin console, regular users to homepage
         if (result.user.role === 'super_admin' || result.user.role === 'admin') {
-          navigate('/app/admin');
+          navigate('/admin');
         } else {
           navigate('/');
         }
