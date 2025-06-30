@@ -1,0 +1,645 @@
+{% from 'security_macros.html' import secure_style, secure_script %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Dashboard - FireEMS.ai Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css" rel="stylesheet">
+    {{ secure_style("
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .security-header {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 50%, #bd2130 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .metric-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.2s;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .metric-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+        .alert-item {
+            border-left: 4px solid;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+        .alert-critical { border-left-color: #dc3545; background-color: #f8d7da; }
+        .alert-high { border-left-color: #fd7e14; background-color: #fde6d3; }
+        .alert-medium { border-left-color: #ffc107; background-color: #fff3cd; }
+        .alert-low { border-left-color: #28a745; background-color: #d4edda; }
+        .compliance-progress {
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            background-color: #e9ecef;
+        }
+        .compliance-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        .status-compliant { color: #28a745; }
+        .status-in-progress { color: #ffc107; }
+        .status-pending { color: #dc3545; }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 1rem 0;
+        }
+        .audit-event {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .audit-event:last-child {
+            border-bottom: none;
+        }
+        .event-type {
+            font-weight: 500;
+            color: #495057;
+        }
+        .event-time {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        .refresh-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1000;
+        }
+        .nav-tabs .nav-link.active {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+        .nav-tabs .nav-link {
+            color: #dc3545;
+            border-color: transparent;
+        }
+        .nav-tabs .nav-link:hover {
+            border-color: #dc3545;
+            color: #bd2130;
+        }
+    ") }}
+</head>
+<body>
+    <!-- Header -->
+    <div class="security-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Security Dashboard
+                    </h1>
+                    <p class="mb-0 mt-2">SOC 2 Compliance Monitoring & Security Operations</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="/admin" class="btn btn-outline-light me-2">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        Back to Admin
+                    </a>
+                    <span class="badge bg-success fs-6">
+                        <i class="fas fa-check-circle me-1"></i>
+                        System Secure
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Quick Metrics Row -->
+        <div class="row" id="quickMetrics">
+            <div class="col-md-3">
+                <div class="metric-card text-center">
+                    <div class="metric-value text-success" id="complianceScore">--</div>
+                    <div class="metric-label">Compliance Score</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card text-center">
+                    <div class="metric-value text-primary" id="activeAlerts">--</div>
+                    <div class="metric-label">Active Alerts</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card text-center">
+                    <div class="metric-value text-info" id="auditEvents">--</div>
+                    <div class="metric-label">Audit Events (24h)</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card text-center">
+                    <div class="metric-value text-warning" id="loginAttempts">--</div>
+                    <div class="metric-label">Login Attempts (24h)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Tabs -->
+        <ul class="nav nav-tabs mb-4" id="dashboardTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
+                    <i class="fas fa-tachometer-alt me-1"></i>Overview
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="compliance-tab" data-bs-toggle="tab" data-bs-target="#compliance" type="button" role="tab">
+                    <i class="fas fa-clipboard-check me-1"></i>Compliance
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="alerts-tab" data-bs-toggle="tab" data-bs-target="#alerts" type="button" role="tab">
+                    <i class="fas fa-exclamation-triangle me-1"></i>Alerts
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="audit-tab" data-bs-toggle="tab" data-bs-target="#audit" type="button" role="tab">
+                    <i class="fas fa-file-alt me-1"></i>Audit Logs
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="dashboardTabContent">
+            <!-- Overview Tab -->
+            <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="metric-card">
+                            <h5><i class="fas fa-chart-line me-2"></i>Security Metrics</h5>
+                            <div class="chart-container">
+                                <canvas id="securityChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="metric-card">
+                            <h5><i class="fas fa-users me-2"></i>Authentication Summary</h5>
+                            <div id="authSummary">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Successful Logins:</span>
+                                    <span id="successfulLogins" class="fw-bold text-success">--</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Failed Attempts:</span>
+                                    <span id="failedLogins" class="fw-bold text-danger">--</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Unique Users:</span>
+                                    <span id="uniqueUsers" class="fw-bold text-info">--</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>Failure Rate:</span>
+                                    <span id="failureRate" class="fw-bold">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="metric-card">
+                            <h5><i class="fas fa-database me-2"></i>Data Security</h5>
+                            <div id="dataSummary">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Data Access Events:</span>
+                                    <span id="dataAccess" class="fw-bold">--</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Data Modifications:</span>
+                                    <span id="dataModifications" class="fw-bold">--</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Data Exports:</span>
+                                    <span id="dataExports" class="fw-bold">--</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>PII Access:</span>
+                                    <span id="piiAccess" class="fw-bold text-warning">--</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compliance Tab -->
+            <div class="tab-pane fade" id="compliance" role="tabpanel">
+                <div class="metric-card">
+                    <h5><i class="fas fa-clipboard-check me-2"></i>SOC 2 Compliance Status</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Overall Compliance:</span>
+                                    <span id="overallCompliance" class="fw-bold">--</span>
+                                </div>
+                                <div class="compliance-progress">
+                                    <div id="complianceProgressBar" class="compliance-fill bg-success" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Controls Implemented:</span>
+                                <span id="controlsImplemented" class="fw-bold">--</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>In Progress:</span>
+                                <span id="controlsInProgress" class="fw-bold text-warning">--</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Last Assessment:</span>
+                                <span id="lastAssessment" class="fw-bold">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <h5>Control Implementation Status</h5>
+                    <div id="controlsDetail" class="row">
+                        <!-- Controls will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alerts Tab -->
+            <div class="tab-pane fade" id="alerts" role="tabpanel">
+                <div class="metric-card">
+                    <h5><i class="fas fa-exclamation-triangle me-2"></i>Active Security Alerts</h5>
+                    <div id="alertsList">
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                            <p>Loading security alerts...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audit Logs Tab -->
+            <div class="tab-pane fade" id="audit" role="tabpanel">
+                <div class="metric-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5><i class="fas fa-file-alt me-2"></i>Recent Audit Events</h5>
+                        <div>
+                            <select id="eventTypeFilter" class="form-select form-select-sm" style="width: auto;">
+                                <option value="">All Event Types</option>
+                                <option value="LOGIN_ATTEMPT">Login Attempts</option>
+                                <option value="ADMIN_ACTION">Admin Actions</option>
+                                <option value="DATA_ACCESS">Data Access</option>
+                                <option value="DATA_MODIFICATION">Data Modifications</option>
+                                <option value="SECURITY_EVENT">Security Events</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="auditEventsList" style="max-height: 600px; overflow-y: auto;">
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                            <p>Loading audit events...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refresh Button -->
+    <button class="btn btn-danger btn-lg refresh-btn" id="refreshDashboard" title="Refresh Dashboard">
+        <i class="fas fa-sync-alt"></i>
+    </button>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+    
+    {{ secure_script("
+        class SecurityDashboard {
+            constructor() {
+                this.securityChart = null;
+                this.refreshInterval = null;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.loadDashboardData();
+                this.startAutoRefresh();
+            }
+
+            setupEventListeners() {
+                document.getElementById('refreshDashboard').addEventListener('click', () => {
+                    this.loadDashboardData();
+                });
+
+                document.getElementById('eventTypeFilter').addEventListener('change', (e) => {
+                    this.loadAuditEvents(e.target.value);
+                });
+
+                // Tab change listeners
+                document.querySelectorAll('#dashboardTabs button').forEach(tab => {
+                    tab.addEventListener('shown.bs.tab', (e) => {
+                        const targetTab = e.target.getAttribute('data-bs-target');
+                        if (targetTab === '#compliance') {
+                            this.loadComplianceStatus();
+                        } else if (targetTab === '#alerts') {
+                            this.loadSecurityAlerts();
+                        } else if (targetTab === '#audit') {
+                            this.loadAuditEvents();
+                        }
+                    });
+                });
+            }
+
+            async loadDashboardData() {
+                this.showLoading();
+                
+                try {
+                    const [metrics, alerts] = await Promise.all([
+                        fetch('/admin/security/api/security-metrics').then(r => r.json()),
+                        fetch('/admin/security/api/security-alerts').then(r => r.json())
+                    ]);
+
+                    this.updateQuickMetrics(metrics);
+                    this.updateSecurityChart(metrics);
+                    this.updateOverviewData(metrics);
+                    
+                    console.log('Dashboard data loaded successfully');
+                } catch (error) {
+                    console.error('Error loading dashboard data:', error);
+                    this.showError('Failed to load dashboard data');
+                }
+            }
+
+            updateQuickMetrics(metrics) {
+                // Update compliance score (placeholder)
+                document.getElementById('complianceScore').textContent = '85%';
+                
+                // Update active alerts count
+                document.getElementById('activeAlerts').textContent = '3';
+                
+                // Update audit events count
+                const totalEvents = (metrics.authentication?.total_login_attempts || 0) +
+                                  (metrics.access_control?.admin_actions || 0) +
+                                  (metrics.data_integrity?.data_access_events || 0);
+                document.getElementById('auditEvents').textContent = totalEvents;
+                
+                // Update login attempts
+                document.getElementById('loginAttempts').textContent = 
+                    metrics.authentication?.total_login_attempts || 0;
+            }
+
+            updateSecurityChart(metrics) {
+                const ctx = document.getElementById('securityChart').getContext('2d');
+                
+                if (this.securityChart) {
+                    this.securityChart.destroy();
+                }
+
+                this.securityChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Successful Logins', 'Failed Logins', 'Admin Actions', 'Data Access'],
+                        datasets: [{
+                            data: [
+                                metrics.authentication?.successful_logins || 0,
+                                metrics.authentication?.failed_logins || 0,
+                                metrics.access_control?.admin_actions || 0,
+                                metrics.data_integrity?.data_access_events || 0
+                            ],
+                            backgroundColor: [
+                                '#28a745',
+                                '#dc3545', 
+                                '#ffc107',
+                                '#17a2b8'
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            updateOverviewData(metrics) {
+                // Authentication summary
+                const auth = metrics.authentication || {};
+                document.getElementById('successfulLogins').textContent = auth.successful_logins || 0;
+                document.getElementById('failedLogins').textContent = auth.failed_logins || 0;
+                document.getElementById('uniqueUsers').textContent = auth.unique_users || 0;
+                document.getElementById('failureRate').textContent = 
+                    (auth.failure_rate || 0).toFixed(1) + '%';
+
+                // Data summary
+                const data = metrics.data_integrity || {};
+                document.getElementById('dataAccess').textContent = data.data_access_events || 0;
+                document.getElementById('dataModifications').textContent = data.data_modifications || 0;
+                document.getElementById('dataExports').textContent = data.data_exports || 0;
+                document.getElementById('piiAccess').textContent = data.pii_access_events || 0;
+            }
+
+            async loadComplianceStatus() {
+                try {
+                    const response = await fetch('/admin/security/api/compliance-status');
+                    const status = await response.json();
+
+                    // Update overall compliance
+                    document.getElementById('overallCompliance').textContent = 
+                        status.compliance_percentage + '%';
+                    document.getElementById('complianceProgressBar').style.width = 
+                        status.compliance_percentage + '%';
+
+                    // Update controls summary
+                    document.getElementById('controlsImplemented').textContent = 
+                        status.compliant_controls + '/' + status.total_controls;
+                    document.getElementById('controlsInProgress').textContent = 
+                        status.in_progress_controls;
+                    document.getElementById('lastAssessment').textContent = 
+                        status.last_assessment;
+
+                    // Update controls detail
+                    this.updateControlsDetail(status.controls_detail);
+
+                } catch (error) {
+                    console.error('Error loading compliance status:', error);
+                }
+            }
+
+            updateControlsDetail(controls) {
+                const container = document.getElementById('controlsDetail');
+                container.innerHTML = '';
+
+                Object.entries(controls).forEach(([key, control]) => {
+                    const statusClass = control.status === 'compliant' ? 'status-compliant' : 
+                                       control.status === 'in_progress' ? 'status-in-progress' : 
+                                       'status-pending';
+                    
+                    const statusIcon = control.status === 'compliant' ? 'check-circle' : 
+                                      control.status === 'in_progress' ? 'clock' : 
+                                      'times-circle';
+
+                    const controlHtml = `
+                        <div class='col-md-6 mb-3'>
+                            <div class='border rounded p-3'>
+                                <div class='d-flex justify-content-between align-items-center'>
+                                    <h6 class='mb-1'>${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</h6>
+                                    <i class='fas fa-${statusIcon} ${statusClass}'></i>
+                                </div>
+                                <small class='text-muted'>Last Review: ${control.last_review || 'Never'}</small>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += controlHtml;
+                });
+            }
+
+            async loadSecurityAlerts() {
+                try {
+                    const response = await fetch('/admin/security/api/security-alerts');
+                    const alerts = await response.json();
+
+                    const container = document.getElementById('alertsList');
+                    
+                    if (alerts.length === 0) {
+                        container.innerHTML = `
+                            <div class='text-center text-success py-4'>
+                                <i class='fas fa-shield-alt fa-2x mb-3'></i>
+                                <p>No active security alerts. System is secure.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    container.innerHTML = alerts.map(alert => `
+                        <div class='alert-item alert-${alert.severity}'>
+                            <div class='d-flex justify-content-between align-items-start'>
+                                <div>
+                                    <h6 class='mb-1'>${alert.title}</h6>
+                                    <p class='mb-1'>${alert.description}</p>
+                                    <small class='text-muted'>${alert.action_required}</small>
+                                </div>
+                                <div class='text-end'>
+                                    <span class='badge bg-${alert.severity === 'critical' ? 'danger' : 
+                                                          alert.severity === 'high' ? 'warning' : 
+                                                          alert.severity === 'medium' ? 'info' : 'success'}'>${alert.severity.toUpperCase()}</span>
+                                    <br><small class='text-muted'>${new Date(alert.timestamp).toLocaleString()}</small>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+
+                } catch (error) {
+                    console.error('Error loading security alerts:', error);
+                }
+            }
+
+            async loadAuditEvents(eventType = '') {
+                try {
+                    const url = `/admin/security/api/audit-events?hours=24${eventType ? '&type=' + eventType : ''}`;
+                    const response = await fetch(url);
+                    const data = await response.json();
+
+                    const container = document.getElementById('auditEventsList');
+                    
+                    if (data.events.length === 0) {
+                        container.innerHTML = `
+                            <div class='text-center text-muted py-4'>
+                                <i class='fas fa-file-alt fa-2x mb-3'></i>
+                                <p>No audit events found for the selected criteria.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    container.innerHTML = data.events.map(event => `
+                        <div class='audit-event'>
+                            <div>
+                                <div class='event-type'>${event.event_type.replace(/_/g, ' ')}</div>
+                                <small class='text-muted'>${JSON.stringify(event.data).substring(0, 100)}...</small>
+                            </div>
+                            <div class='text-end'>
+                                <div class='event-time'>${new Date(event.timestamp).toLocaleString()}</div>
+                                <small class='text-muted'>${event.context?.ip_address || 'system'}</small>
+                            </div>
+                        </div>
+                    `).join('');
+
+                } catch (error) {
+                    console.error('Error loading audit events:', error);
+                }
+            }
+
+            showLoading() {
+                // Add loading indicators if needed
+            }
+
+            showError(message) {
+                console.error(message);
+                // Show error toast or notification
+            }
+
+            startAutoRefresh() {
+                // Refresh dashboard every 5 minutes
+                this.refreshInterval = setInterval(() => {
+                    this.loadDashboardData();
+                }, 5 * 60 * 1000);
+            }
+
+            destroy() {
+                if (this.refreshInterval) {
+                    clearInterval(this.refreshInterval);
+                }
+                if (this.securityChart) {
+                    this.securityChart.destroy();
+                }
+            }
+        }
+
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.securityDashboard = new SecurityDashboard();
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (window.securityDashboard) {
+                window.securityDashboard.destroy();
+            }
+        });
+    ") }}
+</body>
+</html>

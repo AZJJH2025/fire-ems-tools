@@ -20,7 +20,8 @@ import {
   AdminPanelSettings,
   HowToReg,
   Notifications,
-  Description
+  Description,
+  Security
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -30,6 +31,7 @@ import UserManagement from './UserManagement';
 import DepartmentSettings from './DepartmentSettings';
 import PendingApprovals from './PendingApprovals';
 import NotificationPanel from './NotificationPanel';
+import SecurityDashboard from './SecurityDashboard';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -269,9 +271,16 @@ const AdminDashboard: React.FC = () => {
           )}
           {userRole === 'super_admin' && (
             <Tab 
+              icon={<Security />} 
+              label="Security Dashboard" 
+              {...a11yProps(5)} 
+            />
+          )}
+          {userRole === 'super_admin' && (
+            <Tab 
               icon={<Description />} 
               label="System Documentation" 
-              {...a11yProps(5)} 
+              {...a11yProps(6)} 
             />
           )}
         </Tabs>
@@ -302,6 +311,12 @@ const AdminDashboard: React.FC = () => {
       
       {userRole === 'super_admin' && (
         <TabPanel value={currentTab} index={5}>
+          <SecurityDashboard />
+        </TabPanel>
+      )}
+      
+      {userRole === 'super_admin' && (
+        <TabPanel value={currentTab} index={6}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
               <Description />

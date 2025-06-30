@@ -22,6 +22,7 @@ from werkzeug.routing import BaseConverter
 from app_utils import init_limiter, safe_limit, require_api_key
 from asset_utils import init_asset_utils
 from security_middleware import SecurityHeadersMiddleware, SecurityAuditLogger, csp_nonce, csp_style_nonce
+from compliance_logger import ComplianceLogger
 
 # Setup logging
 logging.basicConfig(
@@ -147,6 +148,9 @@ def create_app(config_name='default'):
     # Initialize enterprise security middleware
     security_headers = SecurityHeadersMiddleware(app)
     security_audit = SecurityAuditLogger(app)
+    
+    # Initialize SOC 2 compliance logging
+    compliance_logger = ComplianceLogger(app)
     
     # Add CSP nonce functions to template context
     @app.context_processor
@@ -1518,6 +1522,7 @@ def create_app(config_name='default'):
         from routes.approval_management import bp as approval_management_bp
         from routes.notifications import bp as notifications_bp
         from routes.documentation import bp as documentation_bp
+        from routes.security_dashboard import bp as security_dashboard_bp
         
         # Assets fallback route now registered earlier to take priority
         
@@ -1533,6 +1538,7 @@ def create_app(config_name='default'):
         app.register_blueprint(approval_management_bp)
         app.register_blueprint(notifications_bp)
         app.register_blueprint(documentation_bp)
+        app.register_blueprint(security_dashboard_bp)
         
         logger.info("Successfully registered all route blueprints")
         
