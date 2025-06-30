@@ -90,13 +90,15 @@ class SecurityHeadersMiddleware:
             style_nonce = f"'nonce-{style_nonce}'" if style_nonce else ""
             # Allow 'unsafe-inline' for styles and Google Fonts for Material-UI
             script_src = f"script-src 'self' {script_nonce}"
-            # Simplified style-src that allows all Material-UI dynamic styles
+            # Need BOTH style-src AND style-src-elem for complete Material-UI support
             style_src = f"style-src 'self' {style_nonce} 'unsafe-inline' https://fonts.googleapis.com data:"
+            style_src_elem = f"style-src-elem 'self' {style_nonce} 'unsafe-inline' https://fonts.googleapis.com data:"
             
             csp_directives = [
                 "default-src 'self'",
                 script_src,
                 style_src,
+                style_src_elem,  # Required for JavaScript-injected styles from Material-UI
                 "font-src 'self' data: https://fonts.gstatic.com",  # Allow Google Fonts
                 "img-src 'self' data: blob:",  # Allow blob: for charts/images
                 "connect-src 'self'",
