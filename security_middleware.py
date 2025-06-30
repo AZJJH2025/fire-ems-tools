@@ -131,8 +131,13 @@ class SecurityHeadersMiddleware:
         csp_policy = self.get_csp_policy()
         response.headers['Content-Security-Policy'] = csp_policy
         
-        # HTTP Strict Transport Security (HSTS)
-        if request.is_secure or current_app.config.get('ENV') == 'production':
+        # HTTP Strict Transport Security (HSTS) - Always set for HTTPS
+        # Check if we're on HTTPS (Render passes X-Forwarded-Proto header)
+        is_https = (request.is_secure or 
+                   request.headers.get('X-Forwarded-Proto') == 'https' or
+                   current_app.config.get('ENV') == 'production')
+        
+        if is_https:
             hsts_max_age = security_config.get('HSTS_MAX_AGE', 31536000)
             hsts_header = f"max-age={hsts_max_age}"
             
