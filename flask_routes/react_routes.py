@@ -39,6 +39,20 @@ def register_react_routes(app):
     #     from flask import send_file
     #     return send_file('static/fire-map-pro-react/index.html')
     
+    # Universal HSTS middleware - ensures HSTS headers on ALL responses
+    @app.before_request  
+    def ensure_hsts_on_all_requests():
+        """Add HSTS headers to ALL requests for HSTS preloading eligibility"""
+        pass  # This will run before any route
+    
+    @app.after_request
+    def add_hsts_to_all_responses(response):
+        """Add HSTS headers to ALL responses, including redirects"""
+        # Force HSTS headers on every response for preloading eligibility
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload'
+        response.headers['X-Universal-HSTS'] = 'Enabled'
+        return response
+
     # Root domain route - handles both fireems.ai and www.fireems.ai with HSTS headers
     @app.route('/')
     def root_domain():
@@ -47,9 +61,6 @@ def register_react_routes(app):
         
         # Ensure HSTS headers are always present on root domain responses
         response = make_response(send_file('app/index.html'))
-        
-        # Add HSTS headers explicitly for root domain (required for preloading)
-        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload'
         
         # Add debug header to confirm this route is being used
         response.headers['X-Root-Domain-Handler'] = 'Flask-App'
