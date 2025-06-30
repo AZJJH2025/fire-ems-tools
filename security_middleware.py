@@ -90,9 +90,9 @@ class SecurityHeadersMiddleware:
             style_nonce = f"'nonce-{style_nonce}'" if style_nonce else ""
             # Allow 'unsafe-inline' for styles and Google Fonts for Material-UI
             script_src = f"script-src 'self' {script_nonce}"
-            # Need BOTH style-src AND style-src-elem for complete Material-UI support
-            style_src = f"style-src 'self' {style_nonce} 'unsafe-inline' https://fonts.googleapis.com data:"
-            style_src_elem = f"style-src-elem 'self' {style_nonce} 'unsafe-inline' https://fonts.googleapis.com data:"
+            # Material-UI bundles styles at build time without nonces, so skip nonces for styles
+            style_src = f"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com data:"
+            style_src_elem = f"style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com data:"
             
             csp_directives = [
                 "default-src 'self'",
