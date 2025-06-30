@@ -54,6 +54,13 @@ class SecurityHeadersMiddleware:
             not current_app.config.get('DEBUG', True)
         )
         is_dev = not is_production
+        
+        # Debug logging for CSP environment detection
+        current_app.logger.info(f"CSP Environment Detection: RENDER={os.environ.get('RENDER')}, "
+                               f"FLASK_ENV={os.environ.get('FLASK_ENV')}, "
+                               f"CONFIG_ENV={current_app.config.get('ENV')}, "
+                               f"DEBUG={current_app.config.get('DEBUG')}, "
+                               f"is_production={is_production}, is_dev={is_dev}")
         nonce = getattr(g, 'csp_nonce', None)
         style_nonce = getattr(g, 'csp_style_nonce', None)
         
@@ -81,15 +88,15 @@ class SecurityHeadersMiddleware:
             # Production CSP - React-compatible security policy
             script_nonce = f"'nonce-{nonce}'" if nonce else ""
             style_nonce = f"'nonce-{style_nonce}'" if style_nonce else ""
-            # Allow 'unsafe-inline' for styles temporarily to support Material-UI
+            # Allow 'unsafe-inline' for styles and Google Fonts for Material-UI
             script_src = f"script-src 'self' {script_nonce}"
-            style_src = f"style-src 'self' {style_nonce} 'unsafe-inline'"
+            style_src = f"style-src 'self' {style_nonce} 'unsafe-inline' https://fonts.googleapis.com"
             
             csp_directives = [
                 "default-src 'self'",
                 script_src,
                 style_src,
-                "font-src 'self' data:",  # Allow data: for Material-UI fonts
+                "font-src 'self' data: https://fonts.gstatic.com",  # Allow Google Fonts
                 "img-src 'self' data: blob:",  # Allow blob: for charts/images
                 "connect-src 'self'",
                 "object-src 'none'",
