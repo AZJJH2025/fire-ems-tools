@@ -82,6 +82,28 @@ def react_app_assets(filename):
         logger.error(f"Error serving React asset {filename}: {str(e)}")
         abort(404)
 
+# Favicon route
+@bp.route('/favicon.svg')
+@bp.route('/app/favicon.svg')
+def favicon():
+    """Serve favicon.svg"""
+    try:
+        react_build_dir = get_react_build_dir()
+        favicon_path = os.path.join(react_build_dir, 'favicon.svg')
+        
+        if os.path.exists(favicon_path):
+            return send_file(favicon_path, mimetype='image/svg+xml')
+        else:
+            # Fallback to static directory
+            static_favicon = os.path.join('static', 'favicon.svg')
+            if os.path.exists(static_favicon):
+                return send_file(static_favicon, mimetype='image/svg+xml')
+            else:
+                abort(404)
+    except Exception as e:
+        logger.error(f"Error serving favicon: {str(e)}")
+        abort(404)
+
 # Specific routes that match React Router paths
 @bp.route('/app/fire-map-pro')
 @bp.route('/app/fire-map-pro/')

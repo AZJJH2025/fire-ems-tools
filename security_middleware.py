@@ -70,18 +70,19 @@ class SecurityHeadersMiddleware:
                 "upgrade-insecure-requests"
             ]
         else:
-            # Production CSP - strict security policy
+            # Production CSP - React-compatible security policy
             script_nonce = f"'nonce-{nonce}'" if nonce else ""
             style_nonce = f"'nonce-{style_nonce}'" if style_nonce else ""
+            # Allow 'unsafe-inline' for styles temporarily to support Material-UI
             script_src = f"script-src 'self' {script_nonce}"
-            style_src = f"style-src 'self' {style_nonce}"
+            style_src = f"style-src 'self' {style_nonce} 'unsafe-inline'"
             
             csp_directives = [
                 "default-src 'self'",
                 script_src,
                 style_src,
-                "font-src 'self'",
-                "img-src 'self' data:",
+                "font-src 'self' data:",  # Allow data: for Material-UI fonts
+                "img-src 'self' data: blob:",  # Allow blob: for charts/images
                 "connect-src 'self'",
                 "object-src 'none'",
                 "base-uri 'self'",
