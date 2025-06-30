@@ -57,14 +57,18 @@ def register_react_routes(app):
     @app.route('/')
     def root_domain():
         """Serve the root domain with HSTS headers for preloading eligibility"""
-        from flask import send_file, make_response, request
+        from flask import send_file, make_response, request, redirect, url_for
         
-        # Ensure HSTS headers are always present on root domain responses
+        # If request is for root domain without www, serve directly (don't redirect)
+        # This ensures HSTS headers are present on the root domain response
+        if request.host == 'fireems.ai':
+            response = make_response(send_file('app/index.html'))
+            response.headers['X-Root-Domain-Handler'] = 'Flask-App-Direct'
+            return response
+        
+        # For www.fireems.ai, serve normally
         response = make_response(send_file('app/index.html'))
-        
-        # Add debug header to confirm this route is being used
-        response.headers['X-Root-Domain-Handler'] = 'Flask-App'
-        
+        response.headers['X-Root-Domain-Handler'] = 'Flask-App-WWW'
         return response
 
     # Modern React App Routes - serve all /app/* routes with React app
