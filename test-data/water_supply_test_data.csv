@@ -1,0 +1,22 @@
+Type,Name,Latitude,Longitude,Capacity_Gallons,Flow_Rate_GPM,Status,Installation_Date,Last_Inspection,Notes
+Tank,Rural Tank Site A,30.2547,-97.7431,10000,500,Active,2020-03-15,2024-11-15,Elevated tank serving rural subdivision
+Tank,Volunteer Station Tank,30.2612,-97.7512,5000,300,Active,2018-07-20,2024-10-22,Ground storage tank at station 2
+Tank,Emergency Water Supply,30.2689,-97.7834,15000,750,Active,2021-09-12,2024-12-01,Large capacity for industrial area
+Tank,Backup Storage Unit,30.2456,-97.7425,8000,400,Active,2019-05-30,2024-11-08,Secondary storage for peak demand
+Tank,Community Tank North,30.2712,-97.7698,12000,600,Active,2022-01-18,2024-11-20,Serves northern residential area
+Tank,Industrial Park Tank,30.2385,-97.7289,20000,1000,Active,2023-04-10,2024-12-05,High-capacity industrial protection
+Hydrant,Main Street Hydrant,30.2578,-97.7567,0,1500,Active,2015-08-12,2024-10-15,Municipal water connection
+Hydrant,School District Hydrant,30.2634,-97.7512,0,1200,Active,2017-03-25,2024-11-10,Near elementary school
+Hydrant,Highway Junction,30.2789,-97.7823,0,1800,Active,2019-11-05,2024-12-02,High-flow highway location
+Hydrant,Industrial Access,30.2412,-97.7234,0,2000,Active,2020-06-15,2024-11-25,Industrial park main line
+Hydrant,Community Center,30.2667,-97.7589,0,1300,Active,2016-12-08,2024-10-28,Public facility protection
+Hydrant,Rural Highway 71,30.2398,-97.7267,0,800,Active,2018-09-20,2024-11-18,Rural highway location
+Hydrant,Heritage Drive,30.2745,-97.7712,0,1400,Active,2021-02-14,2024-12-03,Residential area coverage
+Hydrant,Shopping Center,30.2556,-97.7534,0,1600,Active,2022-07-30,2024-11-12,Commercial district
+Hydrant,Cedar Hills Access,30.2678,-97.7645,0,1100,Active,2017-10-15,2024-10-20,Residential subdivision
+Hydrant,Valley View Access,30.2723,-97.7689,0,1250,Active,2019-04-22,2024-11-30,Rural residential area
+Hydrant,Business Park,30.2445,-97.7378,0,1700,Active,2020-11-10,2024-12-08,Business district protection
+Hydrant,Pecan Grove,30.2601,-97.7478,0,1000,Active,2016-05-18,2024-10-25,Low-pressure rural area
+Dry_Hydrant,County Road Pond,30.2834,-97.7890,0,500,Active,2021-06-20,2024-11-15,Natural water source
+Dry_Hydrant,Farm Pond Access,30.2923,-97.7756,0,400,Active,2020-08-14,2024-10-30,Agricultural water access
+Dry_Hydrant,Creek Access Point,30.2567,-97.7623,0,300,Active,2019-12-05,2024-11-22,Seasonal water source

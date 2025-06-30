@@ -72,7 +72,21 @@ class Config:
     # Session security settings    
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'False').lower() in ('true', 't', '1', 'yes')
+    SESSION_COOKIE_SAMESITE = 'Strict'
     PERMANENT_SESSION_LIFETIME = int(os.environ.get('PERMANENT_SESSION_LIFETIME', 86400))
+    
+    # Security headers configuration
+    SECURITY_HEADERS = {
+        'HSTS_MAX_AGE': int(os.environ.get('HSTS_MAX_AGE', 31536000)),  # 1 year
+        'HSTS_INCLUDE_SUBDOMAINS': os.environ.get('HSTS_INCLUDE_SUBDOMAINS', 'True').lower() in ('true', 't', '1', 'yes'),
+        'CSP_NONCE_ENABLED': os.environ.get('CSP_NONCE_ENABLED', 'True').lower() in ('true', 't', '1', 'yes'),
+        'FRAME_OPTIONS': os.environ.get('FRAME_OPTIONS', 'SAMEORIGIN'),
+        'CONTENT_TYPE_OPTIONS': os.environ.get('CONTENT_TYPE_OPTIONS', 'nosniff'),
+        'XSS_PROTECTION': os.environ.get('XSS_PROTECTION', '1; mode=block'),
+        'REFERRER_POLICY': os.environ.get('REFERRER_POLICY', 'strict-origin-when-cross-origin'),
+        'CROSS_ORIGIN_RESOURCE_POLICY': os.environ.get('CROSS_ORIGIN_RESOURCE_POLICY', 'same-origin'),
+        'PERMISSIONS_POLICY': os.environ.get('PERMISSIONS_POLICY', 'camera=(), microphone=(), geolocation=(self), payment=(), usb=()'),
+    }
     
     # CSRF Protection
     WTF_CSRF_ENABLED = True
@@ -103,9 +117,17 @@ class ProductionConfig(Config):
     """Production configuration."""
     DEBUG = False
     
+    # Force secure cookies in production
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE = 'Strict'
+    
     @classmethod
     def init_app(cls, app):
         Config.init_app(app)
+        
+        # Force secure session settings in production
+        app.config['SESSION_COOKIE_SECURE'] = True
+        app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
         
         # Log to stderr in production
         import logging

@@ -2794,3 +2794,235 @@ ModuleNotFoundError: No module named 'markdown'
 
 2025-06-22 11:07:19,240 - werkzeug - WARNING -  * Debugger is active!
 2025-06-22 11:07:19,248 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-27 19:57:41,055 - werkzeug - INFO - 127.0.0.1 - - [27/Jun/2025 19:57:41] "GET / HTTP/1.1" 200 -
+2025-06-27 19:57:41,072 - werkzeug - INFO - 127.0.0.1 - - [27/Jun/2025 19:57:41] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-06-27 19:58:13,354 - werkzeug - INFO - 127.0.0.1 - - [27/Jun/2025 19:58:13] "GET / HTTP/1.1" 200 -
+2025-06-30 00:20:53,068 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/config.py', reloading
+2025-06-30 00:20:53,183 - werkzeug - INFO -  * Restarting with stat
+2025-06-30 00:21:02,126 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-30 00:21:02,346 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-30 00:21:02,346 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-30 00:21:02,350 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-30 00:21:02,350 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-30 00:21:02,351 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-30 00:21:02,351 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-30 00:21:02,351 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-30 00:21:02,352 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-30 00:21:02,352 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-30 00:21:02,673 - static_middleware - INFO - Registered static file handler middleware
+2025-06-30 00:21:02,674 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-30 00:21:02,674 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-30 00:21:02,674 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-30 00:21:02,674 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-30 00:21:02,674 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-30 00:21:02,674 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-30 00:21:02,674 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-30 00:21:02,674 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-30 00:21:05,201 - __main__ - ERROR - Failed to import blueprints: No module named 'markdown'
+2025-06-30 00:21:05,201 - __main__ - ERROR - CRITICAL: Blueprint import failed. Application will not function properly.
+2025-06-30 00:21:05,201 - __main__ - CRITICAL - Failed to create application with fixes: No module named 'markdown'
+2025-06-30 00:21:05,202 - __main__ - CRITICAL - Traceback (most recent call last):
+  File "/Users/josephhester/fire-ems-tools/app.py", line 1660, in <module>
+    app = create_app(os.getenv('FLASK_ENV', 'development'))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/josephhester/fire-ems-tools/app.py", line 1583, in create_app
+    raise e
+  File "/Users/josephhester/fire-ems-tools/app.py", line 1550, in create_app
+    from routes.documentation import bp as documentation_bp
+  File "/Users/josephhester/fire-ems-tools/routes/documentation.py", line 9, in <module>
+    from markdown import markdown
+ModuleNotFoundError: No module named 'markdown'
+
+2025-06-30 00:21:05,990 - werkzeug - WARNING -  * Debugger is active!
+2025-06-30 00:21:06,187 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-30 00:21:14,414 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/config.py', reloading
+2025-06-30 00:21:14,491 - werkzeug - INFO -  * Restarting with stat
+2025-06-30 00:21:14,643 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-30 00:21:14,758 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-30 00:21:14,758 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-30 00:21:14,761 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-30 00:21:14,762 - __main__ - INFO - Creating application with deployment fixes...
+2025-06-30 00:21:14,762 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-30 00:21:14,762 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-30 00:21:14,762 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-30 00:21:14,763 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-30 00:21:14,763 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-30 00:21:14,771 - static_middleware - INFO - Registered static file handler middleware
+2025-06-30 00:21:14,771 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-30 00:21:14,771 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-30 00:21:14,771 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-30 00:21:14,771 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-30 00:21:14,771 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-30 00:21:14,771 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-30 00:21:14,771 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-30 00:21:14,771 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-30 00:21:14,976 - __main__ - ERROR - Failed to import blueprints: No module named 'markdown'
+2025-06-30 00:21:14,976 - __main__ - ERROR - CRITICAL: Blueprint import failed. Application will not function properly.
+2025-06-30 00:21:14,976 - __main__ - CRITICAL - Failed to create application with fixes: No module named 'markdown'
+2025-06-30 00:21:14,977 - __main__ - CRITICAL - Traceback (most recent call last):
+  File "/Users/josephhester/fire-ems-tools/app.py", line 1660, in <module>
+    app = create_app(os.getenv('FLASK_ENV', 'development'))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/josephhester/fire-ems-tools/app.py", line 1583, in create_app
+    raise e
+  File "/Users/josephhester/fire-ems-tools/app.py", line 1550, in create_app
+    from routes.documentation import bp as documentation_bp
+  File "/Users/josephhester/fire-ems-tools/routes/documentation.py", line 9, in <module>
+    from markdown import markdown
+ModuleNotFoundError: No module named 'markdown'
+
+2025-06-30 00:21:14,997 - werkzeug - WARNING -  * Debugger is active!
+2025-06-30 00:21:15,003 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-06-30 00:22:21,301 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/app.py', reloading
+2025-06-30 00:22:21,382 - werkzeug - INFO -  * Restarting with stat
+2025-06-30 00:29:04,102 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-30 00:29:04,226 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-30 00:29:04,226 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-30 00:29:04,229 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-30 00:29:04,229 - app - INFO - Creating application with deployment fixes...
+2025-06-30 00:29:04,230 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-30 00:29:04,230 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-30 00:29:04,230 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-30 00:29:04,230 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-30 00:29:04,231 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-30 00:29:04,242 - static_middleware - INFO - Registered static file handler middleware
+2025-06-30 00:29:04,242 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-30 00:29:04,242 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-30 00:29:04,242 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-30 00:29:04,242 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-30 00:29:04,242 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-30 00:29:04,243 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-30 00:29:04,243 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-30 00:29:04,243 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-30 00:29:04,247 - app - CRITICAL - Failed to create application with fixes: View function mapping is overwriting an existing endpoint function: csp_report
+2025-06-30 00:29:04,248 - app - CRITICAL - Traceback (most recent call last):
+  File "/Users/josephhester/fire-ems-tools/app.py", line 1648, in <module>
+    app = create_app(os.getenv('FLASK_ENV', 'development'))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/josephhester/fire-ems-tools/app.py", line 1146, in create_app
+    @app.route('/api/csp-report', methods=['POST'])
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/sansio/scaffold.py", line 362, in decorator
+    self.add_url_rule(rule, endpoint, f, **options)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/sansio/scaffold.py", line 47, in wrapper_func
+    return f(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/sansio/app.py", line 657, in add_url_rule
+    raise AssertionError(
+AssertionError: View function mapping is overwriting an existing endpoint function: csp_report
+
+2025-06-30 00:29:04,249 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-30 00:29:04,249 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-30 00:29:04,249 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-30 00:29:04,249 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-30 00:29:04,249 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-30 00:29:04,251 - static_middleware - INFO - Registered static file handler middleware
+2025-06-30 00:29:04,251 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-30 00:29:04,251 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-30 00:29:04,251 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-30 00:29:04,251 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-30 00:29:04,251 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-30 00:29:04,251 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-30 00:29:04,251 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-30 00:29:04,251 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-30 00:30:17,311 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-30 00:30:17,456 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-30 00:30:17,456 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-30 00:30:17,460 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-30 00:30:17,460 - app - INFO - Creating application with deployment fixes...
+2025-06-30 00:30:17,461 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-30 00:30:17,461 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-30 00:30:17,461 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-30 00:30:17,462 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-30 00:30:17,462 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-30 00:30:17,475 - static_middleware - INFO - Registered static file handler middleware
+2025-06-30 00:30:17,475 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-30 00:30:17,475 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-30 00:30:17,475 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-30 00:30:17,475 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-30 00:30:17,475 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-30 00:30:17,475 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-30 00:30:17,475 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-30 00:30:17,476 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-30 00:30:17,840 - app - ERROR - Failed to import blueprints: No module named 'markdown'
+2025-06-30 00:30:17,840 - app - ERROR - CRITICAL: Blueprint import failed. Application will not function properly.
+2025-06-30 00:30:17,840 - app - CRITICAL - Failed to create application with fixes: No module named 'markdown'
+2025-06-30 00:30:17,841 - app - CRITICAL - Traceback (most recent call last):
+  File "/Users/josephhester/fire-ems-tools/app.py", line 1630, in <module>
+    app = create_app(os.getenv('FLASK_ENV', 'development'))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/josephhester/fire-ems-tools/app.py", line 1553, in create_app
+    raise e
+  File "/Users/josephhester/fire-ems-tools/app.py", line 1520, in create_app
+    from routes.documentation import bp as documentation_bp
+  File "/Users/josephhester/fire-ems-tools/routes/documentation.py", line 9, in <module>
+    from markdown import markdown
+ModuleNotFoundError: No module named 'markdown'
+
+2025-06-30 00:30:17,842 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-30 00:30:17,842 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-30 00:30:17,842 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-30 00:30:17,843 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-30 00:30:17,843 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-30 00:30:17,844 - static_middleware - INFO - Registered static file handler middleware
+2025-06-30 00:30:17,844 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-30 00:30:17,844 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-30 00:30:17,844 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-30 00:30:17,844 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-30 00:30:17,844 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-30 00:30:17,844 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-30 00:30:17,844 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-30 00:30:17,844 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-30 00:30:17,849 - app - ERROR - Failed to import blueprints: No module named 'markdown'
+2025-06-30 00:30:17,849 - app - ERROR - CRITICAL: Blueprint import failed. Application will not function properly.
+2025-06-30 00:30:43,687 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-06-30 00:30:43,786 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-06-30 00:30:43,787 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-06-30 00:30:43,789 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-06-30 00:30:43,789 - app - INFO - Creating application with deployment fixes...
+2025-06-30 00:30:43,790 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-30 00:30:43,790 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-30 00:30:43,790 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-30 00:30:43,790 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-30 00:30:43,790 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-30 00:30:43,798 - static_middleware - INFO - Registered static file handler middleware
+2025-06-30 00:30:43,798 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-30 00:30:43,798 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-30 00:30:43,798 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-30 00:30:43,798 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-30 00:30:43,798 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-30 00:30:43,798 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-30 00:30:43,798 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-30 00:30:43,798 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-30 00:30:44,227 - app - INFO - Successfully registered all route blueprints
+2025-06-30 00:30:44,229 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-30 00:30:44,229 - app - INFO - Registered React Data Formatter routes
+2025-06-30 00:30:44,248 - fix_deployment - INFO - Column preferences already exists in users
+2025-06-30 00:30:44,248 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-06-30 00:30:44,248 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-06-30 00:30:44,248 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-06-30 00:30:44,248 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-06-30 00:30:44,248 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-06-30 00:30:44,249 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-06-30 00:30:44,257 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-06-30 00:30:44,257 - fix_deployment - INFO - Database tables fixed successfully
+2025-06-30 00:30:44,259 - app - INFO - Found 1 existing super_admin users
+2025-06-30 00:30:44,259 - app - INFO - Super admin user already exists, skipping creation
+2025-06-30 00:30:44,259 - app - INFO - Application created successfully with all fixes applied
+2025-06-30 00:30:44,260 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-06-30 00:30:44,260 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-06-30 00:30:44,260 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-06-30 00:30:44,260 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-06-30 00:30:44,260 - asset_utils - INFO - Asset utilities initialized successfully
+2025-06-30 00:30:44,261 - static_middleware - INFO - Registered static file handler middleware
+2025-06-30 00:30:44,261 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-06-30 00:30:44,261 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-06-30 00:30:44,261 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-06-30 00:30:44,261 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-06-30 00:30:44,262 - static_middleware - INFO - MIME type for .css: text/css
+2025-06-30 00:30:44,262 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-06-30 00:30:44,262 - static_middleware - INFO - MIME type for .json: application/json
+2025-06-30 00:30:44,262 - static_middleware - ERROR - Error listing static files: [Errno 2] No such file or directory: '/Users/josephhester/fire-ems-tools/static'
+2025-06-30 00:30:44,277 - app - INFO - Successfully registered all route blueprints
+2025-06-30 00:30:44,279 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-06-30 00:30:44,279 - app - INFO - Registered React Data Formatter routes

@@ -4,7 +4,7 @@ FireEMS.ai - Fire & EMS Analytics Application
 This is the main application file that initializes the Flask app,
 registers blueprints, and sets up the database and other extensions.
 """
-from flask import Flask, jsonify, render_template, session, request, send_file
+from flask import Flask, jsonify, render_template, session, request, send_file, g
 from flask_routes.react_routes import register_react_routes
 from flask_routes.tool_routes import register_tool_routes
 from flask_cors import CORS
@@ -21,6 +21,7 @@ import secrets
 from werkzeug.routing import BaseConverter
 from app_utils import init_limiter, safe_limit, require_api_key
 from asset_utils import init_asset_utils
+from security_middleware import SecurityHeadersMiddleware, SecurityAuditLogger, csp_nonce, csp_style_nonce
 
 # Setup logging
 logging.basicConfig(
@@ -143,59 +144,18 @@ def create_app(config_name='default'):
             'active_page': request.path.strip('/') or 'home'
         }
     
-    # Configure security headers
-    @app.after_request
-    def add_security_headers(response):
-        # Determine if we're in development or production mode
-        is_dev = app.config.get('ENV', 'development') == 'development'
-        
-        if is_dev:
-            # Development CSP - more relaxed to allow external resources during development
-            csp_directives = [
-                "default-src 'self'",
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net", 
-                "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net https://fonts.googleapis.com",
-                "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net",
-                "img-src 'self' data: https:",
-                "connect-src 'self'",
-                "report-uri /api/csp-report"
-            ]
-        else:
-            # Production CSP - strict with self-hosted fonts and no external dependencies
-            csp_directives = [
-                "default-src 'self'",
-                "script-src 'self'", 
-                "style-src 'self'",
-                "font-src 'self'",
-                "img-src 'self' data:",
-                "connect-src 'self'",
-                "report-uri /api/csp-report"
-            ]
-        
-        # Join all directives with semicolons
-        response.headers['Content-Security-Policy'] = "; ".join(csp_directives)
-        
-        # Set X-Content-Type-Options
-        response.headers['X-Content-Type-Options'] = 'nosniff'
-        
-        # Set X-Frame-Options
-        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
-        
-        # Set X-XSS-Protection
-        response.headers['X-XSS-Protection'] = '1; mode=block'
-        
-        # Set Referrer-Policy
-        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
-        
-        # Set Permissions-Policy
-        response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=(self)'
-        
-        # Ensure JavaScript files have the correct content type
-        if response.mimetype == 'text/html' and request.path.endswith('.js'):
-            response.mimetype = 'application/javascript'
-            app.logger.info(f"Corrected mimetype for {request.path} to application/javascript")
-            
-        return response
+    # Initialize enterprise security middleware
+    security_headers = SecurityHeadersMiddleware(app)
+    security_audit = SecurityAuditLogger(app)
+    
+    # Add CSP nonce functions to template context
+    @app.context_processor
+    def inject_security_context():
+        return {
+            'csp_nonce': csp_nonce,
+            'csp_style_nonce': csp_style_nonce
+        }
+    
     
     # Set up CORS with more restrictive settings
     CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -219,10 +179,20 @@ def create_app(config_name='default'):
     def load_user(user_id):
         return User.query.get(int(user_id))
     
-    # Session configuration (no need to set secret_key explicitly, it comes from app.config)
+    # Enhanced session configuration for enterprise security
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SECURE'] = app.config.get('SESSION_COOKIE_SECURE', False)
+    app.config['SESSION_COOKIE_SAMESITE'] = app.config.get('SESSION_COOKIE_SAMESITE', 'Strict')
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(seconds=app.config.get('PERMANENT_SESSION_LIFETIME', 86400))
+    
+    # Additional security configurations
+    app.config['WTF_CSRF_TIME_LIMIT'] = app.config.get('WTF_CSRF_TIME_LIMIT', 3600)  # 1 hour
+    app.config['WTF_CSRF_SSL_STRICT'] = app.config.get('WTF_CSRF_SSL_STRICT', True)
+    
+    # Force secure settings in production
+    if app.config.get('ENV') == 'production':
+        app.config['SESSION_COOKIE_SECURE'] = True
+        app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
     
     # Check if we need to generate a session token
     @app.before_request
