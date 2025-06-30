@@ -87,6 +87,7 @@ def react_app_assets(filename):
 @bp.route('/app/favicon.svg')
 def favicon():
     """Serve favicon.svg"""
+    from flask import send_file, abort
     try:
         react_build_dir = get_react_build_dir()
         favicon_path = os.path.join(react_build_dir, 'favicon.svg')

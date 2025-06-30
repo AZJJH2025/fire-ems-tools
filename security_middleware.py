@@ -6,6 +6,7 @@ Implements comprehensive security headers and CSP policies for government/enterp
 import secrets
 import hashlib
 import re
+import os
 from functools import wraps
 from flask import g, request, current_app
 from urllib.parse import urlparse
@@ -45,7 +46,14 @@ class SecurityHeadersMiddleware:
         """
         Generate Content Security Policy based on environment and configuration.
         """
-        is_dev = current_app.config.get('ENV', 'development') == 'development'
+        # Check if we're in production - Render sets various production indicators
+        is_production = (
+            os.environ.get('RENDER') or  # Render platform
+            os.environ.get('FLASK_ENV') == 'production' or
+            current_app.config.get('ENV') == 'production' or
+            not current_app.config.get('DEBUG', True)
+        )
+        is_dev = not is_production
         nonce = getattr(g, 'csp_nonce', None)
         style_nonce = getattr(g, 'csp_style_nonce', None)
         
