@@ -139,6 +139,9 @@ class SecurityHeadersMiddleware:
             if security_config.get('HSTS_INCLUDE_SUBDOMAINS', True):
                 hsts_header += "; includeSubDomains"
             
+            if security_config.get('HSTS_PRELOAD', True):
+                hsts_header += "; preload"
+            
             response.headers['Strict-Transport-Security'] = hsts_header
         
         # X-Content-Type-Options

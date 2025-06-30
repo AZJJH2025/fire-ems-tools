@@ -71,14 +71,16 @@ class Config:
         
     # Session security settings    
     SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'False').lower() in ('true', 't', '1', 'yes')
+    # Enable secure cookies by default, only disable for local development
+    SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'True').lower() in ('true', 't', '1', 'yes')
     SESSION_COOKIE_SAMESITE = 'Strict'
     PERMANENT_SESSION_LIFETIME = int(os.environ.get('PERMANENT_SESSION_LIFETIME', 86400))
     
     # Security headers configuration
     SECURITY_HEADERS = {
-        'HSTS_MAX_AGE': int(os.environ.get('HSTS_MAX_AGE', 31536000)),  # 1 year
+        'HSTS_MAX_AGE': int(os.environ.get('HSTS_MAX_AGE', 31536000)),  # 1 year (required for preloading)
         'HSTS_INCLUDE_SUBDOMAINS': os.environ.get('HSTS_INCLUDE_SUBDOMAINS', 'True').lower() in ('true', 't', '1', 'yes'),
+        'HSTS_PRELOAD': os.environ.get('HSTS_PRELOAD', 'True').lower() in ('true', 't', '1', 'yes'),  # Enable for preloading
         'CSP_NONCE_ENABLED': os.environ.get('CSP_NONCE_ENABLED', 'True').lower() in ('true', 't', '1', 'yes'),
         'FRAME_OPTIONS': os.environ.get('FRAME_OPTIONS', 'SAMEORIGIN'),
         'CONTENT_TYPE_OPTIONS': os.environ.get('CONTENT_TYPE_OPTIONS', 'nosniff'),
