@@ -91,15 +91,16 @@ class SecurityHeadersMiddleware:
             # Allow 'unsafe-inline' for styles and Google Fonts for Material-UI
             script_src = f"script-src 'self' {script_nonce}"
             # Material-UI bundles styles at build time without nonces, so skip nonces for styles
-            style_src = f"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com data:"
-            style_src_elem = f"style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com data:"
+            # Allow trusted CDNs for Bootstrap, Font Awesome, and Google Fonts
+            style_src = f"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com data:"
+            style_src_elem = f"style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com data:"
             
             csp_directives = [
                 "default-src 'self'",
                 script_src,
                 style_src,
                 style_src_elem,  # Required for JavaScript-injected styles from Material-UI
-                "font-src 'self' data: https://fonts.gstatic.com",  # Allow Google Fonts
+                "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com",  # Allow Google Fonts and Font Awesome
                 "img-src 'self' data: blob:",  # Allow blob: for charts/images
                 "connect-src 'self'",
                 "object-src 'none'",
