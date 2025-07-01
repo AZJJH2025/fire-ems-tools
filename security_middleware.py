@@ -101,7 +101,7 @@ class SecurityHeadersMiddleware:
                 style_src,
                 style_src_elem,  # Required for JavaScript-injected styles from Material-UI
                 "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com",  # Allow Google Fonts and Font Awesome
-                "img-src 'self' data: blob:",  # Allow blob: for charts/images
+                "img-src 'self' data: blob: https://tile.openstreetmap.org",  # Allow OpenStreetMap tiles for Fire Map Pro
                 "connect-src 'self'",
                 "object-src 'none'",
                 "base-uri 'self'",
