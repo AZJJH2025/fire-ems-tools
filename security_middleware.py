@@ -158,8 +158,9 @@ class SecurityHeadersMiddleware:
         # Referrer-Policy
         response.headers['Referrer-Policy'] = security_config.get('REFERRER_POLICY', 'strict-origin-when-cross-origin')
         
-        # Cross-Origin-Resource-Policy
-        response.headers['Cross-Origin-Resource-Policy'] = security_config.get('CROSS_ORIGIN_RESOURCE_POLICY', 'same-origin')
+        # Cross-Origin-Resource-Policy - Allow cross-origin for Fire Map Pro tile loading
+        # Use 'cross-origin' to allow external map tiles while maintaining security
+        response.headers['Cross-Origin-Resource-Policy'] = security_config.get('CROSS_ORIGIN_RESOURCE_POLICY', 'cross-origin')
         
         # Permissions-Policy (formerly Feature-Policy)
         response.headers['Permissions-Policy'] = security_config.get('PERMISSIONS_POLICY', 
