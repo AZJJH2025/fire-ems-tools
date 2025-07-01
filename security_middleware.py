@@ -166,8 +166,9 @@ class SecurityHeadersMiddleware:
         response.headers['Permissions-Policy'] = security_config.get('PERMISSIONS_POLICY', 
             'camera=(), microphone=(), geolocation=(self), payment=(), usb=()')
         
-        # Cross-Origin-Embedder-Policy for additional isolation
-        response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
+        # Cross-Origin-Embedder-Policy - Disabled to allow Fire Map Pro tile loading
+        # 'require-corp' blocks external resources without explicit CORP headers
+        # response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
         
         # Cross-Origin-Opener-Policy for popup isolation
         response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
