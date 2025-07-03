@@ -97,6 +97,41 @@ def reset_admin_password():
             'error': str(e)
         }), 500
 
+# Quick user password reset for troubleshooting
+@bp.route('/reset-user-password/<email>')
+def reset_user_password_simple(email):
+    """Simple GET endpoint to reset any user password - for troubleshooting"""
+    try:
+        from database import db, User
+        
+        # Find the user
+        user = User.query.filter_by(email=email.lower().strip()).first()
+        
+        if user:
+            # Reset password to a simple value
+            simple_password = 'TempPass123!'
+            user.set_password(simple_password)
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'User password reset successfully',
+                'email': user.email,
+                'new_password': simple_password,
+                'note': 'You can now login with these credentials'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'User not found'
+            }), 404
+            
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 # Emergency database migration endpoint (GET for browser access)
 @bp.route('/emergency-migrate-database')
 def emergency_migrate_database():
