@@ -27,7 +27,8 @@ class EmailService:
     def init_app(self, app):
         """Initialize email service with Flask app"""
         # Default email configuration
-        app.config.setdefault('EMAIL_ENABLED', os.environ.get('EMAIL_ENABLED', 'false').lower() == 'true')
+        email_enabled = os.environ.get('EMAIL_ENABLED', 'false').lower() == 'true'
+        app.config.setdefault('EMAIL_ENABLED', email_enabled)
         app.config.setdefault('SMTP_SERVER', os.environ.get('SMTP_SERVER', 'localhost'))
         app.config.setdefault('SMTP_PORT', int(os.environ.get('SMTP_PORT', 587)))
         app.config.setdefault('SMTP_USE_TLS', os.environ.get('SMTP_USE_TLS', 'true').lower() == 'true')
@@ -35,6 +36,14 @@ class EmailService:
         app.config.setdefault('SMTP_PASSWORD', os.environ.get('SMTP_PASSWORD'))
         app.config.setdefault('EMAIL_FROM', os.environ.get('EMAIL_FROM', 'noreply@fireems.ai'))
         app.config.setdefault('EMAIL_FROM_NAME', os.environ.get('EMAIL_FROM_NAME', 'FireEMS.ai'))
+        
+        # Log email service initialization
+        if email_enabled:
+            logger.info(f"📧 Email service ENABLED - SMTP: {app.config['SMTP_SERVER']}:{app.config['SMTP_PORT']}")
+            logger.info(f"📧 Email from: {app.config['EMAIL_FROM_NAME']} <{app.config['EMAIL_FROM']}>")
+        else:
+            logger.info("📧 Email service DISABLED - notifications will be logged only")
+            logger.info(f"📧 To enable email, set EMAIL_ENABLED=true in environment variables")
     
     def send_email(self, to_email: str, subject: str, body: str, 
                    html_body: Optional[str] = None, 
