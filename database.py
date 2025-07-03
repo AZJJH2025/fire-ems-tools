@@ -193,6 +193,10 @@ class User(db.Model):
     last_login = db.Column(db.DateTime)
     has_temp_password = db.Column(db.Boolean, default=False)  # Track if user has temporary password
     
+    # Password reset fields
+    reset_token_hash = db.Column(db.String(255), nullable=True)  # Hashed reset token
+    reset_token_expires = db.Column(db.DateTime, nullable=True)  # Token expiration time
+    
     # User preferences
     preferences = db.Column(db.JSON, default=dict)
     

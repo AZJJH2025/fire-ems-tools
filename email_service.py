@@ -208,6 +208,78 @@ The FireEMS.ai Team</p>
         
         return self.send_email(contact_email, subject, body, html_body)
     
+    def send_password_reset_email(self, user_email: str, user_name: str,
+                                department_name: str, reset_url: str,
+                                expires_hours: int = 24) -> bool:
+        """Send password reset email with secure reset link"""
+        
+        subject = f"Password Reset Request - {department_name} on FireEMS.ai"
+        
+        body = f"""
+Hello {user_name},
+
+We received a request to reset your password for your FireEMS.ai account associated with {department_name}.
+
+To reset your password, please click the following link:
+{reset_url}
+
+This link will expire in {expires_hours} hours for security purposes.
+
+If you did not request a password reset, please ignore this email. Your password will remain unchanged.
+
+For security reasons:
+- Never share this reset link with anyone
+- The link can only be used once
+- It will expire automatically after {expires_hours} hours
+
+If you continue to have trouble accessing your account, please contact your department administrator or our support team.
+
+Best regards,
+The FireEMS.ai Team
+"""
+        
+        html_body = f"""
+<html>
+<body>
+<h2>Password Reset Request</h2>
+
+<p>Hello {user_name},</p>
+
+<p>We received a request to reset your password for your FireEMS.ai account associated with <strong>{department_name}</strong>.</p>
+
+<p>To reset your password, please click the button below:</p>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{reset_url}" 
+       style="background-color: #1976d2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">
+        Reset My Password
+    </a>
+</div>
+
+<p>Or copy and paste this link into your browser:</p>
+<p style="background-color: #f5f5f5; padding: 10px; border-radius: 4px; word-break: break-all;">
+    {reset_url}
+</p>
+
+<p><strong>Important Security Information:</strong></p>
+<ul>
+    <li>This link will expire in {expires_hours} hours for security purposes</li>
+    <li>The link can only be used once</li>
+    <li>Never share this reset link with anyone</li>
+</ul>
+
+<p>If you did not request a password reset, please ignore this email. Your password will remain unchanged.</p>
+
+<p>If you continue to have trouble accessing your account, please contact your department administrator or our support team.</p>
+
+<p>Best regards,<br>
+The FireEMS.ai Team</p>
+</body>
+</html>
+"""
+        
+        return self.send_email(user_email, subject, body, html_body)
+    
     def send_user_approval_email(self, user_email: str, user_name: str, 
                                department_name: str, approved: bool,
                                temp_password: Optional[str] = None,

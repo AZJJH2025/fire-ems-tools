@@ -15,7 +15,9 @@ import {
   List,
   ListItem,
   ListItemIcon,
-  ListItemText
+  ListItemText,
+  CircularProgress,
+  Badge
 } from '@mui/material';
 import { 
   Assessment, 
@@ -39,9 +41,14 @@ import {
   AccessTime,
   Group,
   Star,
-  Launch
+  Launch,
+  Person,
+  Logout,
+  Settings,
+  Dashboard
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 
 interface ToolCardProps {
   title: string;
@@ -51,21 +58,34 @@ interface ToolCardProps {
   path?: string;
   features: string[];
   audience: string;
+  requiresAuth?: boolean;
 }
 
-const ToolCard: React.FC<ToolCardProps> = ({ 
+const ToolCard: React.FC<ToolCardProps & { isAuthenticated: boolean }> = ({ 
   title, 
   description, 
   icon, 
   status, 
   path, 
   features, 
-  audience 
+  audience,
+  requiresAuth = false,
+  isAuthenticated
 }) => {
   const navigate = useNavigate();
   
+  const isAccessible = status === 'available' && (!requiresAuth || isAuthenticated);
+  
   const handleClick = () => {
-    if (status === 'available' && path) {
+    if (!isAccessible) {
+      if (requiresAuth && !isAuthenticated) {
+        navigate('/login');
+        return;
+      }
+      return;
+    }
+    
+    if (path) {
       // Special handling for documentation - open in new tab
       if (title === 'User Guides & Documentation') {
         window.open(path, '_blank');
@@ -83,13 +103,14 @@ const ToolCard: React.FC<ToolCardProps> = ({
         boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
         overflow: 'hidden',
         position: 'relative',
-        cursor: status === 'available' ? 'pointer' : 'default',
-        borderTop: status === 'available' ? '4px solid #4caf50' : '4px solid #ff9800',
+        cursor: isAccessible ? 'pointer' : 'default',
+        borderTop: isAccessible ? '4px solid #4caf50' : requiresAuth && !isAuthenticated ? '4px solid #9e9e9e' : status === 'available' ? '4px solid #4caf50' : '4px solid #ff9800',
+        opacity: requiresAuth && !isAuthenticated ? 0.7 : 1,
         minHeight: '250px',
         display: 'flex',
         flexDirection: 'column',
         transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-        '&:hover': status === 'available' ? {
+        '&:hover': isAccessible ? {
           transform: 'translateY(-5px)',
           boxShadow: '0 5px 20px rgba(0, 0, 0, 0.15)'
         } : {}
@@ -106,7 +127,7 @@ const ToolCard: React.FC<ToolCardProps> = ({
           fontWeight: 600,
           textTransform: 'uppercase',
           letterSpacing: '0.5px',
-          bgcolor: status === 'available' ? '#4caf50' : '#ff9800',
+          bgcolor: requiresAuth && !isAuthenticated ? '#9e9e9e' : status === 'available' ? '#4caf50' : '#ff9800',
           color: 'white',
           px: 0.8,
           py: 0.4,
@@ -114,7 +135,7 @@ const ToolCard: React.FC<ToolCardProps> = ({
           zIndex: 10
         }}
       >
-        {status === 'available' ? 'READY' : 'COMING SOON'}
+        {requiresAuth && !isAuthenticated ? '🔒 LOGIN REQUIRED' : status === 'available' ? 'READY' : 'COMING SOON'}
       </Box>
 
       {/* Icon */}
@@ -191,25 +212,27 @@ const ToolCard: React.FC<ToolCardProps> = ({
           <Button 
             variant="contained" 
             size="small"
-            disabled={status !== 'available'}
+            disabled={!isAccessible}
             sx={{
-              bgcolor: status === 'available' ? '#2196f3' : '#9e9e9e',
+              bgcolor: isAccessible ? '#2196f3' : '#9e9e9e',
               color: 'white',
               fontSize: '14px',
               fontWeight: 500,
               px: 2,
               py: 1,
               '&:hover': {
-                bgcolor: status === 'available' ? '#1976d2' : '#9e9e9e'
+                bgcolor: isAccessible ? '#1976d2' : '#9e9e9e'
               },
               '&:disabled': {
                 bgcolor: '#9e9e9e',
                 color: 'white'
               }
             }}
-            startIcon={<Box component="span" className="material-icons" sx={{ fontSize: '18px' }}>open_in_new</Box>}
+            startIcon={<Box component="span" className="material-icons" sx={{ fontSize: '18px' }}>
+              {requiresAuth && !isAuthenticated ? 'lock' : 'open_in_new'}
+            </Box>}
           >
-            {status === 'available' ? 'Open Tool' : 'Coming Soon'}
+            {requiresAuth && !isAuthenticated ? 'Sign In to Access' : status === 'available' ? 'Open Tool' : 'Coming Soon'}
           </Button>
           
           {/* Read Guide Button - only show for tools with guides, not for the documentation tile itself */}
@@ -258,6 +281,20 @@ const ToolCard: React.FC<ToolCardProps> = ({
 
 const FireEMSHomepage: React.FC = () => {
   const navigate = useNavigate();
+  const { user, isAuthenticated, isLoading } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/auth/api/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      // Refresh the page to clear auth state
+      window.location.reload();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
   
   const tools: ToolCardProps[] = [
     {
@@ -267,6 +304,7 @@ const FireEMSHomepage: React.FC = () => {
       status: 'available',
       path: '/data-formatter',
       audience: 'Fire Chiefs, IT Staff, Analysts',
+      requiresAuth: true,
       features: [
         'Universal CAD vendor support',
         'Smart field mapping with 95% auto-detection',
@@ -281,6 +319,7 @@ const FireEMSHomepage: React.FC = () => {
       status: 'available',
       path: '/response-time-analyzer',
       audience: 'Fire Chiefs, City Managers, Grant Writers',
+      requiresAuth: true,
       features: [
         'NFPA 1710 compliance reporting',
         'Professional PDF templates',
@@ -295,6 +334,7 @@ const FireEMSHomepage: React.FC = () => {
       status: 'available',
       path: '/fire-map-pro',
       audience: 'Fire Chiefs, Operations Commanders, Planners',
+      requiresAuth: true,
       features: [
         'Interactive incident mapping',
         'Coverage area analysis',
@@ -309,6 +349,7 @@ const FireEMSHomepage: React.FC = () => {
       status: 'available',
       path: '/water-supply-coverage',
       audience: 'Fire Chiefs, Water Supply Officers, City Planners',
+      requiresAuth: true,
       features: [
         'Tank and hydrant management',
         'Coverage area calculations',
@@ -323,6 +364,7 @@ const FireEMSHomepage: React.FC = () => {
       status: 'available',
       path: '/iso-credit-calculator',
       audience: 'Fire Chiefs, Community Leaders, Insurance Coordinators',
+      requiresAuth: true,
       features: [
         'Complete 105.5-point ISO scoring',
         'Fire department assessment tools',
@@ -337,6 +379,7 @@ const FireEMSHomepage: React.FC = () => {
       status: 'available',
       path: '/station-coverage-optimizer',
       audience: 'Fire Chiefs, Operations Commanders, City Planners',
+      requiresAuth: true,
       features: [
         'NFPA 1710/1720 coverage analysis',
         'Interactive station placement',
@@ -412,55 +455,154 @@ const FireEMSHomepage: React.FC = () => {
             </Box>
           </Box>
 
-          {/* Authentication Buttons */}
-          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, mt: 6 }}>
-            <Button
-              variant="contained"
-              size="large"
-              onClick={() => navigate('/signup')}
-              sx={{
-                bgcolor: '#ffffff',
-                color: '#1565c0',
-                fontWeight: 'bold',
-                fontSize: '1.1rem',
-                px: 4,
-                py: 1.5,
-                borderRadius: 2,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                '&:hover': {
-                  bgcolor: '#f5f5f5',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 6px 20px rgba(0,0,0,0.2)'
-                },
-                transition: 'all 0.3s ease'
-              }}
-            >
-              Get Started Free
-            </Button>
-            <Button
-              variant="outlined"
-              size="large"
-              onClick={() => navigate('/login')}
-              sx={{
-                borderColor: 'rgba(255,255,255,0.5)',
-                color: 'white',
-                fontWeight: 'bold',
-                fontSize: '1.1rem',
-                px: 4,
-                py: 1.5,
-                borderRadius: 2,
-                borderWidth: 2,
-                '&:hover': {
-                  borderColor: 'white',
-                  bgcolor: 'rgba(255,255,255,0.1)',
-                  transform: 'translateY(-2px)'
-                },
-                transition: 'all 0.3s ease'
-              }}
-            >
-              Sign In
-            </Button>
-          </Box>
+          {/* Authentication Section */}
+          {isLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
+              <CircularProgress sx={{ color: 'white' }} />
+            </Box>
+          ) : isAuthenticated && user ? (
+            /* Authenticated User Info */
+            <Box sx={{ mt: 6 }}>
+              <Paper 
+                sx={{ 
+                  bgcolor: 'rgba(255,255,255,0.15)', 
+                  backdropFilter: 'blur(10px)',
+                  color: 'white',
+                  px: 4,
+                  py: 3,
+                  borderRadius: 3,
+                  maxWidth: 600,
+                  mx: 'auto',
+                  border: '1px solid rgba(255,255,255,0.2)'
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.3)' }}>
+                      <Person sx={{ color: 'white' }} />
+                    </Avatar>
+                    <Box>
+                      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                        Welcome back, {user.name}!
+                      </Typography>
+                      <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                        {user.department_name || 'Fire Department'} • {user.role}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  {user.has_temp_password && (
+                    <Chip 
+                      label="Password Reset Required" 
+                      color="warning" 
+                      size="small"
+                      sx={{ bgcolor: '#ff9800', color: 'white' }}
+                    />
+                  )}
+                </Box>
+                
+                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+                  {(user.role === 'admin' || user.role === 'super_admin') && (
+                    <Button
+                      variant="contained"
+                      startIcon={<Dashboard />}
+                      onClick={() => navigate('/admin')}
+                      sx={{
+                        bgcolor: 'rgba(255,255,255,0.2)',
+                        color: 'white',
+                        fontWeight: 'bold',
+                        '&:hover': {
+                          bgcolor: 'rgba(255,255,255,0.3)',
+                        }
+                      }}
+                    >
+                      Admin Console
+                    </Button>
+                  )}
+                  <Button
+                    variant="outlined"
+                    startIcon={<Settings />}
+                    sx={{
+                      borderColor: 'rgba(255,255,255,0.5)',
+                      color: 'white',
+                      fontWeight: 'bold',
+                      '&:hover': {
+                        borderColor: 'white',
+                        bgcolor: 'rgba(255,255,255,0.1)',
+                      }
+                    }}
+                  >
+                    Profile Settings
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    startIcon={<Logout />}
+                    onClick={handleLogout}
+                    sx={{
+                      borderColor: 'rgba(255,255,255,0.5)',
+                      color: 'white',
+                      fontWeight: 'bold',
+                      '&:hover': {
+                        borderColor: 'white',
+                        bgcolor: 'rgba(255,255,255,0.1)',
+                      }
+                    }}
+                  >
+                    Sign Out
+                  </Button>
+                </Box>
+              </Paper>
+            </Box>
+          ) : (
+            /* Non-authenticated buttons */
+            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, mt: 6 }}>
+              <Button
+                variant="contained"
+                size="large"
+                onClick={() => navigate('/signup')}
+                sx={{
+                  bgcolor: '#ffffff',
+                  color: '#1565c0',
+                  fontWeight: 'bold',
+                  fontSize: '1.1rem',
+                  px: 4,
+                  py: 1.5,
+                  borderRadius: 2,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  '&:hover': {
+                    bgcolor: '#f5f5f5',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 6px 20px rgba(0,0,0,0.2)'
+                  },
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Get Started Free
+              </Button>
+              <Button
+                variant="outlined"
+                size="large"
+                onClick={() => navigate('/login')}
+                sx={{
+                  borderColor: 'rgba(255,255,255,0.5)',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  fontSize: '1.1rem',
+                  px: 4,
+                  py: 1.5,
+                  borderRadius: 2,
+                  borderWidth: 2,
+                  '&:hover': {
+                    borderColor: 'white',
+                    bgcolor: 'rgba(255,255,255,0.1)',
+                    transform: 'translateY(-2px)'
+                  },
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Sign In
+              </Button>
+            </Box>
+          )}
         </Container>
       </Paper>
 
@@ -526,7 +668,7 @@ const FireEMSHomepage: React.FC = () => {
           }}
         >
           {tools.map((tool, index) => (
-            <ToolCard key={index} {...tool} />
+            <ToolCard key={index} {...tool} isAuthenticated={isAuthenticated} />
           ))}
         </Box>
 

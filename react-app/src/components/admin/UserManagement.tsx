@@ -37,7 +37,8 @@ import {
   Refresh,
   PersonAdd,
   Block,
-  CheckCircle
+  CheckCircle,
+  LockReset
 } from '@mui/icons-material';
 
 interface User {

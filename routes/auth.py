@@ -8,9 +8,13 @@ from flask import Blueprint, redirect, jsonify, request, session
 from flask_login import login_user, logout_user, login_required, current_user
 from database import db, User, Department
 from datetime import datetime
+from email_service import EmailService
 
 # Setup logger
 logger = logging.getLogger(__name__)
+
+# Initialize email service
+email_service = EmailService()
 
 # Create blueprint
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -500,6 +504,173 @@ def api_current_user():
         return jsonify({
             'success': False,
             'message': 'An error occurred getting user info'
+        }), 500
+
+@bp.route('/api/forgot-password', methods=['POST'])
+def api_forgot_password():
+    """API endpoint for password reset request"""
+    try:
+        data = request.get_json()
+        
+        if not data or not data.get('email'):
+            return jsonify({
+                'success': False,
+                'message': 'Email address is required'
+            }), 400
+        
+        email = data['email'].lower().strip()
+        
+        # Find user by email
+        user = User.query.filter_by(email=email).first()
+        
+        # Always return success to prevent email enumeration attacks
+        # But only send email if user exists
+        if user and user.is_active:
+            # Generate secure reset token
+            import secrets
+            import hashlib
+            from datetime import datetime, timedelta
+            
+            # Create reset token (32 bytes = 256 bits of entropy)
+            reset_token = secrets.token_urlsafe(32)
+            reset_token_hash = hashlib.sha256(reset_token.encode()).hexdigest()
+            
+            # Set token expiration (24 hours)
+            reset_expires = datetime.utcnow() + timedelta(hours=24)
+            
+            # Store token hash and expiration in user record
+            user.reset_token_hash = reset_token_hash
+            user.reset_token_expires = reset_expires
+            user.has_temp_password = True  # Force password change after reset
+            db.session.commit()
+            
+            # Send password reset email
+            try:
+                department_name = user.department.name if user.department else "FireEMS.ai"
+                reset_url = f"https://www.fireems.ai/app/reset-password?token={reset_token}&email={email}"
+                
+                email_sent = email_service.send_password_reset_email(
+                    user_email=user.email,
+                    user_name=user.name,
+                    department_name=department_name,
+                    reset_url=reset_url,
+                    expires_hours=24
+                )
+                
+                if email_sent:
+                    logger.info(f"Password reset email sent successfully to {user.email}")
+                else:
+                    logger.error(f"Failed to send password reset email to {user.email}")
+                    
+            except Exception as e:
+                logger.error(f"Error sending password reset email to {user.email}: {str(e)}")
+        
+        # Always return success message (security best practice)
+        return jsonify({
+            'success': True,
+            'message': 'If an account with that email exists, a password reset link has been sent.'
+        })
+        
+    except Exception as e:
+        logger.error(f"Forgot password error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': 'An error occurred while processing your request'
+        }), 500
+
+@bp.route('/api/reset-password', methods=['POST'])
+def api_reset_password():
+    """API endpoint for password reset with token"""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['email', 'token', 'newPassword', 'confirmPassword']
+        if not data or not all(field in data for field in required_fields):
+            return jsonify({
+                'success': False,
+                'message': 'All fields are required'
+            }), 400
+        
+        email = data['email'].lower().strip()
+        token = data['token']
+        new_password = data['newPassword']
+        confirm_password = data['confirmPassword']
+        
+        # Validate password confirmation
+        if new_password != confirm_password:
+            return jsonify({
+                'success': False,
+                'message': 'Passwords do not match'
+            }), 400
+        
+        # Validate password strength
+        if len(new_password) < 8:
+            return jsonify({
+                'success': False,
+                'message': 'Password must be at least 8 characters long'
+            }), 400
+        
+        # Find user and validate token
+        user = User.query.filter_by(email=email).first()
+        
+        if not user or not user.is_active:
+            return jsonify({
+                'success': False,
+                'message': 'Invalid reset token or expired link'
+            }), 400
+        
+        # Check if token exists and hasn't expired
+        if not user.reset_token_hash or not user.reset_token_expires:
+            return jsonify({
+                'success': False,
+                'message': 'Invalid reset token or expired link'
+            }), 400
+        
+        # Check token expiration
+        from datetime import datetime
+        if datetime.utcnow() > user.reset_token_expires:
+            # Clear expired token
+            user.reset_token_hash = None
+            user.reset_token_expires = None
+            db.session.commit()
+            
+            return jsonify({
+                'success': False,
+                'message': 'Reset link has expired. Please request a new one.'
+            }), 400
+        
+        # Validate token
+        import hashlib
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        
+        if token_hash != user.reset_token_hash:
+            return jsonify({
+                'success': False,
+                'message': 'Invalid reset token'
+            }), 400
+        
+        # Reset password
+        user.set_password(new_password)
+        user.reset_token_hash = None  # Clear token
+        user.reset_token_expires = None
+        user.has_temp_password = False  # Password is now user-set
+        user.update_last_login()
+        db.session.commit()
+        
+        logger.info(f"Password reset successfully for user {user.email}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Password reset successfully. You can now log in with your new password.'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Password reset error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': 'An error occurred while resetting your password'
         }), 500
 
 @bp.route('/api/change-password', methods=['POST'])

@@ -20,6 +20,8 @@ import {
   VisibilityOff
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
+import ChangePasswordModal from './ChangePasswordModal';
+import ForgotPasswordModal from './ForgotPasswordModal';
 
 interface LoginForm {
   email: string;
@@ -36,6 +38,9 @@ const LoginPage: React.FC = () => {
   const [errors, setErrors] = useState<string[]>([]);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordChange, setShowPasswordChange] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Check for signup success message
   useEffect(() => {
@@ -91,6 +96,14 @@ const LoginPage: React.FC = () => {
       
       if (result.success) {
         console.log('Login successful:', result.user);
+        
+        // Check if user has temporary password and needs to change it
+        if (result.user.has_temp_password) {
+          setCurrentUser(result.user);
+          setShowPasswordChange(true);
+          return; // Don't navigate yet
+        }
+        
         // Redirect admin users to admin console, regular users to homepage
         if (result.user.role === 'super_admin' || result.user.role === 'admin') {
           navigate('/admin');
@@ -107,8 +120,16 @@ const LoginPage: React.FC = () => {
   };
 
   const handleForgotPassword = () => {
-    // TODO: Implement forgot password flow
-    alert('Forgot password functionality will be implemented soon. Please contact support for now.');
+    setShowForgotPassword(true);
+  };
+
+  const handlePasswordChangeSuccess = () => {
+    // Password changed successfully, now navigate to appropriate page
+    if (currentUser.role === 'super_admin' || currentUser.role === 'admin') {
+      navigate('/admin');
+    } else {
+      navigate('/');
+    }
   };
 
   return (
@@ -295,6 +316,21 @@ const LoginPage: React.FC = () => {
           </Link>
         </Typography>
       </Box>
+
+      {/* Password Change Modal */}
+      <ChangePasswordModal
+        open={showPasswordChange}
+        onClose={() => {}} // Don't allow closing for temporary passwords
+        onSuccess={handlePasswordChangeSuccess}
+        isTemporary={true}
+        userName={currentUser?.name || ''}
+      />
+
+      {/* Forgot Password Modal */}
+      <ForgotPasswordModal
+        open={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+      />
     </Box>
   );
 };

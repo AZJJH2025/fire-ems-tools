@@ -15,6 +15,7 @@ const FireEMSHomepage = React.lazy(() => import('./components/homepage/FireEMSHo
 // Authentication components
 const SignUpPage = React.lazy(() => import('./components/auth/SignUpPage'));
 const LoginPage = React.lazy(() => import('./components/auth/LoginPage'));
+const ResetPasswordPage = React.lazy(() => import('./components/auth/ResetPasswordPage'));
 
 // Admin components
 const AdminDashboard = React.lazy(() => import('./components/admin/AdminDashboard'));
@@ -41,6 +42,7 @@ const AppRouter: React.FC = () => {
             {/* Authentication routes */}
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             
             {/* Admin routes */}
             <Route path="/admin" element={<AdminDashboard />} />
