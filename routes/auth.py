@@ -317,6 +317,22 @@ def api_login():
         # Find user by email
         user = User.query.filter_by(email=data['email'].lower().strip()).first()
         
+        # Debug logging to understand login failure
+        if not user:
+            logger.error(f"❌ LOGIN DEBUG: User not found for email: {data['email']}")
+        else:
+            logger.info(f"✅ LOGIN DEBUG: User found - ID: {user.id}, Email: {user.email}, Active: {user.is_active}")
+            logger.info(f"🔐 LOGIN DEBUG: Password hash exists: {user.password_hash is not None}")
+            if user.password_hash:
+                logger.info(f"🔐 LOGIN DEBUG: Password hash length: {len(user.password_hash)}")
+                # Test password check
+                password_valid = user.check_password(data['password'])
+                logger.info(f"🔐 LOGIN DEBUG: Password check result: {password_valid}")
+                logger.info(f"🔐 LOGIN DEBUG: Attempted password: '{data['password']}'")
+                logger.info(f"🔐 LOGIN DEBUG: Password length: {len(data['password'])}")
+            else:
+                logger.error(f"❌ LOGIN DEBUG: Password hash is None for user {user.email}")
+        
         if not user or not user.check_password(data['password']):
             return jsonify({
                 'success': False,
