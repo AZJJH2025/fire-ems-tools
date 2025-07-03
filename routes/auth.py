@@ -491,7 +491,8 @@ def api_current_user():
                 'role': current_user.role,
                 'department_id': current_user.department_id,
                 'department_name': current_user.department.name if current_user.department else None,
-                'last_login': current_user.last_login.isoformat() if current_user.last_login else None
+                'last_login': current_user.last_login.isoformat() if current_user.last_login else None,
+                'has_temp_password': getattr(current_user, 'has_temp_password', False)
             }
         })
     except Exception as e:
@@ -499,4 +500,71 @@ def api_current_user():
         return jsonify({
             'success': False,
             'message': 'An error occurred getting user info'
+        }), 500
+
+@bp.route('/api/change-password', methods=['POST'])
+@login_required
+def api_change_password():
+    """API endpoint for user to change their password"""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        if not data or not data.get('currentPassword') or not data.get('newPassword'):
+            return jsonify({
+                'success': False,
+                'message': 'Current password and new password are required'
+            }), 400
+        
+        current_password = data['currentPassword']
+        new_password = data['newPassword']
+        confirm_password = data.get('confirmPassword')
+        
+        # Validate new password confirmation
+        if confirm_password and new_password != confirm_password:
+            return jsonify({
+                'success': False,
+                'message': 'New password and confirmation do not match'
+            }), 400
+        
+        # Verify current password
+        if not current_user.check_password(current_password):
+            return jsonify({
+                'success': False,
+                'message': 'Current password is incorrect'
+            }), 401
+        
+        # Validate new password strength
+        if len(new_password) < 8:
+            return jsonify({
+                'success': False,
+                'message': 'New password must be at least 8 characters long'
+            }), 400
+        
+        # Check if new password is different from current
+        if current_user.check_password(new_password):
+            return jsonify({
+                'success': False,
+                'message': 'New password must be different from current password'
+            }), 400
+        
+        # Update password and clear temporary password flag
+        current_user.set_password(new_password)
+        current_user.has_temp_password = False  # Clear temporary password flag
+        current_user.update_last_login()  # Update last activity
+        db.session.commit()
+        
+        logger.info(f"Password changed successfully for user {current_user.email}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Password changed successfully'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Password change error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': 'An error occurred while changing password'
         }), 500

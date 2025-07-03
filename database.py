@@ -191,6 +191,7 @@ class User(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime)
+    has_temp_password = db.Column(db.Boolean, default=False)  # Track if user has temporary password
     
     # User preferences
     preferences = db.Column(db.JSON, default=dict)

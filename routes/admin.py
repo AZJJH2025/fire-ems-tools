@@ -113,6 +113,7 @@ def create_user():
             role=role,
             department_id=department_id,
             is_active=True,
+            has_temp_password=True,  # Mark as having temporary password
             created_at=datetime.utcnow()
         )
         
@@ -261,6 +262,57 @@ def delete_user(user_id):
         db.session.rollback()
         logger.error(f"Error deleting user: {str(e)}")
         return jsonify({'error': 'Failed to delete user'}), 500
+
+@bp.route('/api/users/<int:user_id>/reset-password', methods=['POST'])
+@login_required
+@require_admin
+def reset_user_password(user_id):
+    """Reset a user's password and send new credentials via email"""
+    try:
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Department admins can only reset passwords in their department
+        if not current_user.is_super_admin() and user.department_id != current_user.department_id:
+            return jsonify({'error': 'Permission denied'}), 403
+        
+        # Generate a new secure temporary password
+        temp_password = secrets.token_urlsafe(12)
+        user.set_password(temp_password)
+        
+        db.session.commit()
+        
+        logger.info(f"Password reset for user {user.email} by admin {current_user.email}")
+        
+        # Send password reset email
+        try:
+            department_name = user.department.name if user.department else "FireEMS.ai"
+            email_sent = email_service.send_user_approval_email(
+                user_email=user.email,
+                user_name=user.name,
+                department_name=department_name,
+                approved=True,
+                temp_password=temp_password,
+                login_url="https://www.fireems.ai/app/login"
+            )
+            
+            if email_sent:
+                logger.info(f"Password reset email sent successfully to {user.email}")
+            else:
+                logger.error(f"Failed to send password reset email to {user.email}")
+                
+        except Exception as e:
+            logger.error(f"Error sending password reset email to {user.email}: {str(e)}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Password reset successfully. New credentials sent via email.'
+        })
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error resetting password: {str(e)}")
+        return jsonify({'error': 'Failed to reset password'}), 500
 
 # Department Management API Endpoints
 @bp.route('/api/departments', methods=['GET'])
