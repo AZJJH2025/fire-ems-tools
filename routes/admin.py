@@ -118,7 +118,7 @@ def create_user():
         
         # Generate a secure temporary password
         temp_password = secrets.token_urlsafe(12)
-        user.password_hash = user.set_password(temp_password)
+        user.set_password(temp_password)
         
         db.session.add(user)
         db.session.commit()
