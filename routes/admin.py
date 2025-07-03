@@ -240,6 +240,18 @@ def delete_user(user_id):
             return jsonify({'error': 'Cannot delete super admin'}), 403
         
         user_email = user.email
+        
+        # Delete related records first to avoid foreign key constraint errors
+        from database import Notification, DepartmentRequest, UserRequest
+        
+        # Delete user's notifications
+        Notification.query.filter_by(user_id=user.id).delete()
+        
+        # Clear reviewed_by references in department and user requests
+        DepartmentRequest.query.filter_by(reviewed_by=user.id).update({'reviewed_by': None})
+        UserRequest.query.filter_by(reviewed_by=user.id).update({'reviewed_by': None})
+        
+        # Delete the user
         db.session.delete(user)
         db.session.commit()
         
