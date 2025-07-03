@@ -5,7 +5,7 @@ Handles department requests and user join requests with approval workflows
 
 import logging
 from flask import Blueprint, jsonify, request
-from database import db, Notification
+from database import db, Notification, DepartmentRequest, UserRequest, Department, User
 from datetime import datetime
 from sqlalchemy import text
 import re

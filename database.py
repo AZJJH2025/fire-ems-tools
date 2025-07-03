@@ -390,3 +390,147 @@ class Notification(db.Model):
             notifications.append(notification)
         
         return notifications
+
+
+# Department Request model for new department applications
+class DepartmentRequest(db.Model):
+    __tablename__ = 'department_requests'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Department information
+    department_name = db.Column(db.String(100), nullable=False)
+    department_type = db.Column(db.String(20), nullable=False)  # fire, ems, combined
+    department_code = db.Column(db.String(50))
+    
+    # Contact information
+    contact_name = db.Column(db.String(100), nullable=False)
+    contact_email = db.Column(db.String(100), nullable=False)
+    contact_phone = db.Column(db.String(20))
+    contact_title = db.Column(db.String(100))
+    
+    # Department details
+    address = db.Column(db.String(255))
+    city = db.Column(db.String(100))
+    state = db.Column(db.String(50))
+    zip_code = db.Column(db.String(20))
+    num_stations = db.Column(db.Integer)
+    num_personnel = db.Column(db.Integer)
+    service_area = db.Column(db.Float)  # in square miles
+    population_served = db.Column(db.Integer)
+    
+    # Request status and workflow
+    status = db.Column(db.String(20), default='pending')  # pending, approved, denied
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    reviewed_at = db.Column(db.DateTime)
+    reviewed_by = db.Column(db.Integer, db.ForeignKey('users.id'))
+    review_notes = db.Column(db.Text)
+    
+    # Additional information
+    website = db.Column(db.String(255))
+    justification = db.Column(db.Text)  # Why they need the system
+    special_requirements = db.Column(db.Text)
+    data = db.Column(db.JSON)  # Additional request data
+    
+    # Relationships
+    reviewer = db.relationship('User', backref='reviewed_department_requests')
+    
+    def __repr__(self):
+        return f"<DepartmentRequest {self.id}: {self.department_name}>"
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'department_name': self.department_name,
+            'department_type': self.department_type,
+            'department_code': self.department_code,
+            'contact_name': self.contact_name,
+            'contact_email': self.contact_email,
+            'contact_phone': self.contact_phone,
+            'contact_title': self.contact_title,
+            'address': self.address,
+            'city': self.city,
+            'state': self.state,
+            'zip_code': self.zip_code,
+            'num_stations': self.num_stations,
+            'num_personnel': self.num_personnel,
+            'service_area': self.service_area,
+            'population_served': self.population_served,
+            'status': self.status,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'reviewed_at': self.reviewed_at.isoformat() if self.reviewed_at else None,
+            'reviewed_by': self.reviewed_by,
+            'review_notes': self.review_notes,
+            'website': self.website,
+            'justification': self.justification,
+            'special_requirements': self.special_requirements,
+            'data': self.data
+        }
+
+
+# User Request model for users requesting to join departments
+class UserRequest(db.Model):
+    __tablename__ = 'user_requests'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # User information
+    user_name = db.Column(db.String(100), nullable=False)
+    user_email = db.Column(db.String(100), nullable=False)
+    user_phone = db.Column(db.String(20))
+    user_title = db.Column(db.String(100))
+    
+    # Department they want to join
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'), nullable=False)
+    requested_role = db.Column(db.String(20), default='user')  # user, manager, admin
+    
+    # Request information
+    justification = db.Column(db.Text)  # Why they need access
+    supervisor_name = db.Column(db.String(100))  # Their supervisor for verification
+    supervisor_email = db.Column(db.String(100))
+    employee_id = db.Column(db.String(50))  # Department employee ID
+    
+    # Request status and workflow
+    status = db.Column(db.String(20), default='pending')  # pending, approved, denied
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    reviewed_at = db.Column(db.DateTime)
+    reviewed_by = db.Column(db.Integer, db.ForeignKey('users.id'))
+    review_notes = db.Column(db.Text)
+    
+    # Generated credentials (when approved)
+    temp_password = db.Column(db.String(255))  # Temporary password hash
+    password_expires_at = db.Column(db.DateTime)
+    
+    # Additional information
+    data = db.Column(db.JSON)  # Additional request data
+    
+    # Relationships
+    department = db.relationship('Department', backref='user_requests')
+    reviewer = db.relationship('User', backref='reviewed_user_requests')
+    
+    def __repr__(self):
+        return f"<UserRequest {self.id}: {self.user_name} -> {self.department.name if self.department else 'Unknown'}>"
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_name': self.user_name,
+            'user_email': self.user_email,
+            'user_phone': self.user_phone,
+            'user_title': self.user_title,
+            'department_id': self.department_id,
+            'department_name': self.department.name if self.department else None,
+            'requested_role': self.requested_role,
+            'justification': self.justification,
+            'supervisor_name': self.supervisor_name,
+            'supervisor_email': self.supervisor_email,
+            'employee_id': self.employee_id,
+            'status': self.status,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'reviewed_at': self.reviewed_at.isoformat() if self.reviewed_at else None,
+            'reviewed_by': self.reviewed_by,
+            'review_notes': self.review_notes,
+            'temp_password': self.temp_password,
+            'password_expires_at': self.password_expires_at.isoformat() if self.password_expires_at else None,
+            'data': self.data
+        }

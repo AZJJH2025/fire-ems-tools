@@ -23,6 +23,7 @@ from app_utils import init_limiter, safe_limit, require_api_key
 from asset_utils import init_asset_utils
 from security_middleware import SecurityHeadersMiddleware, SecurityAuditLogger, csp_nonce, csp_style_nonce
 from compliance_logger import ComplianceLogger
+from email_service import email_service
 
 # Setup logging
 logging.basicConfig(
@@ -172,6 +173,9 @@ def create_app(config_name='default'):
     
     # Initialize extensions
     db.init_app(app)
+    
+    # Initialize email service
+    email_service.init_app(app)
     
     # Set up Flask-Login using the global login_manager instance
     global login_manager
