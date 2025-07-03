@@ -7,6 +7,8 @@ import logging
 from flask import Blueprint, redirect, jsonify, request
 from flask_login import login_required, current_user
 from database import db, User, Department
+from email_service import email_service
+import secrets
 from datetime import datetime
 from sqlalchemy import func
 
@@ -114,15 +116,34 @@ def create_user():
             created_at=datetime.utcnow()
         )
         
-        # Set a temporary password (user will need to reset)
-        # In production, this should generate a secure random password
-        # and send an email invitation
-        user.password_hash = user.set_password('TempPassword123!')
+        # Generate a secure temporary password
+        temp_password = secrets.token_urlsafe(12)
+        user.password_hash = user.set_password(temp_password)
         
         db.session.add(user)
         db.session.commit()
         
         logger.info(f"User {user.email} created by super admin {current_user.email}")
+        
+        # Send welcome email with login credentials
+        try:
+            department_name = user.department.name if user.department else "FireEMS.ai"
+            email_sent = email_service.send_user_approval_email(
+                user_email=user.email,
+                user_name=user.name,
+                department_name=department_name,
+                approved=True,
+                temp_password=temp_password,
+                login_url="https://www.fireems.ai/app/login"
+            )
+            
+            if email_sent:
+                logger.info(f"Welcome email sent successfully to {user.email}")
+            else:
+                logger.error(f"Failed to send welcome email to {user.email}")
+                
+        except Exception as e:
+            logger.error(f"Error sending welcome email to {user.email}: {str(e)}")
         
         # Return the created user data
         user_data = {
