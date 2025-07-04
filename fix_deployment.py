@@ -329,12 +329,24 @@ def fix_database_tables(app, db):
                 
                 # Only proceed with column additions if tables exist
                 if users_table_exists:
-                    # Fix users table - add authentication fields
+                    # Fix users table - add authentication and profile fields
                     add_missing_columns(connection, 'users', [
                         ('preferences', 'JSON DEFAULT \'{}\''),
                         ('has_temp_password', 'BOOLEAN DEFAULT FALSE'),
                         ('reset_token_hash', 'VARCHAR(255)'),
-                        ('reset_token_expires', 'TIMESTAMP')
+                        ('reset_token_expires', 'TIMESTAMP'),
+                        # User profile fields
+                        ('phone', 'VARCHAR(20)'),
+                        ('title', 'VARCHAR(100)'),
+                        ('employee_id', 'VARCHAR(50)'),
+                        ('station_assignment', 'VARCHAR(100)'),
+                        ('shift', 'VARCHAR(20)'),
+                        ('rank', 'VARCHAR(50)'),
+                        ('timezone', 'VARCHAR(50) DEFAULT \'America/Phoenix\''),
+                        ('email_notifications', 'BOOLEAN DEFAULT TRUE'),
+                        ('report_notifications', 'BOOLEAN DEFAULT TRUE'),
+                        ('language', 'VARCHAR(10) DEFAULT \'en\''),
+                        ('date_format', 'VARCHAR(20) DEFAULT \'MM/DD/YYYY\'')
                     ], dialect)
                 
                 if departments_table_exists:
