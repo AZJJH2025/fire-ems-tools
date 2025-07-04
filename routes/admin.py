@@ -1,313 +1,506 @@
 """
-Admin routes for FireEMS.ai application.
-
-This module defines the routes for the admin interface, including:
-- Department management
-- User management
-- System settings
-- Tool management
+Admin routes for Fire EMS Tools
+Provides API endpoints for department and user management
 """
 
-from flask import Blueprint, render_template, redirect, url_for, request, flash, session
-from flask_login import login_required, current_user
 import logging
-from database import db, Department, User, Incident, Station
+from flask import Blueprint, redirect, jsonify, request
+from flask_login import login_required, current_user
+from database import db, User, Department
+from email_service import email_service
+import secrets
 from datetime import datetime
+from sqlalchemy import func
 
+# Setup logger
 logger = logging.getLogger(__name__)
 
 # Create blueprint
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 
-# Admin authentication decorator
-def admin_required(f):
-    """Decorator to check if user is an admin"""
+def require_admin(f):
+    """Decorator to require admin or super_admin role"""
+    from functools import wraps
+    @wraps(f)
     def decorated_function(*args, **kwargs):
-        # Check if user is logged in via Flask-Login
-        if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
-            if not hasattr(current_user, 'is_super_admin') or not current_user.is_super_admin():
-                flash('You do not have permission to access this page', 'error')
-                return redirect(url_for('main.index'))
-        else:
-            # Check session-based authentication
-            user_id = session.get('user_id')
-            if user_id:
-                user = User.query.get(user_id)
-                if not (user and user.role == 'super_admin'):
-                    flash('You do not have permission to access this page', 'error')
-                    return redirect(url_for('main.index'))
-            else:
-                flash('You must be logged in to access this page', 'error')
-                return redirect(url_for('auth.login'))
-        
+        if not current_user.is_authenticated:
+            return jsonify({'error': 'Authentication required'}), 401
+        if not (current_user.is_admin() or current_user.is_super_admin()):
+            return jsonify({'error': 'Admin access required'}), 403
         return f(*args, **kwargs)
-    
-    # Preserve the original function's metadata
-    decorated_function.__name__ = f.__name__
-    decorated_function.__doc__ = f.__doc__
-    
     return decorated_function
 
-# Dashboard (default admin page)
+# Legacy redirect route
 @bp.route('/')
-@admin_required
-def dashboard():
-    """Admin dashboard"""
-    # Get counts for dashboard
+def admin_index():
+    """Admin index - redirect to React app"""
+    return redirect('/app/admin')
+
+# User Management API Endpoints
+@bp.route('/api/users', methods=['GET'])
+@login_required
+@require_admin
+def get_users():
+    """Get all users for admin management"""
     try:
-        departments_count = Department.query.count()
-        users_count = User.query.count()
-        incidents_count = Incident.query.count()
+        # Super admin can see all users, department admin only sees their department
+        if current_user.is_super_admin():
+            users = User.query.all()
+        else:
+            users = User.query.filter_by(department_id=current_user.department_id).all()
+        
+        users_data = []
+        for user in users:
+            user_data = {
+                'id': user.id,
+                'email': user.email,
+                'name': user.name,
+                'role': user.role,
+                'is_active': user.is_active,
+                'created_at': user.created_at.isoformat() if user.created_at else None,
+                'last_login': user.last_login.isoformat() if user.last_login else None,
+                'department_id': user.department_id,
+                'department_name': user.department.name if user.department else None
+            }
+            users_data.append(user_data)
+        
+        return jsonify({'success': True, 'users': users_data})
     except Exception as e:
-        logger.error(f"Error querying data for admin dashboard: {str(e)}")
-        flash('An error occurred while loading the admin dashboard data', 'error')
-        departments_count = 0
-        users_count = 0
-        incidents_count = 0
-    
-    # Get current user (either from Flask-Login or session)
-    if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
-        user = current_user
-    else:
-        user_id = session.get('user_id')
-        user = User.query.get(user_id) if user_id else None
-    
-    # Render the template with the required data
-    return render_template('admin/dashboard.html', 
-                          current_user=user,
-                          departments_count=departments_count,
-                          users_count=users_count,
-                          incidents_count=incidents_count)
+        logger.error(f"Error fetching users: {str(e)}")
+        return jsonify({'error': 'Failed to fetch users'}), 500
 
-# Department routes
-@bp.route('/departments')
-@admin_required
-def departments():
-    """Department management page"""
-    departments = Department.query.all()
-    
-    # Get current user (either from Flask-Login or session)
-    if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
-        user = current_user
-    else:
-        user_id = session.get('user_id')
-        user = User.query.get(user_id) if user_id else None
-    
-    return render_template('admin/departments.html',
-                          current_user=user,
-                          departments=departments)
-
-@bp.route('/departments/register', methods=['GET', 'POST'])
-@admin_required
-def department_register():
-    """Register a new department"""
-    if request.method == 'POST':
-        name = request.form.get('name')
-        code = request.form.get('code')
-        address = request.form.get('address')
-        city = request.form.get('city')
-        state = request.form.get('state')
-        zip_code = request.form.get('zip_code')
+@bp.route('/api/users', methods=['POST'])
+@login_required
+@require_admin
+def create_user():
+    """Create a new user (super admin only)"""
+    try:
+        # Only super admins can create users
+        if not current_user.is_super_admin():
+            return jsonify({'error': 'Super admin access required'}), 403
         
-        # Basic validation
-        if not name or not code:
-            flash('Department name and code are required', 'error')
-            return render_template('admin/department-register.html')
+        data = request.get_json()
         
-        # Check if department already exists
-        existing_dept = Department.query.filter_by(code=code).first()
-        if existing_dept:
-            flash('Department with this code already exists', 'error')
-            return render_template('admin/department-register.html')
+        # Validate required fields
+        if not data or not data.get('email') or not data.get('name'):
+            return jsonify({'error': 'Email and name are required'}), 400
         
-        # Create new department
-        department = Department(
-            name=name,
-            code=code,
-            address=address,
-            city=city,
-            state=state,
-            zip_code=zip_code,
+        # Check if user email already exists
+        existing_user = User.query.filter_by(email=data['email'].lower().strip()).first()
+        if existing_user:
+            return jsonify({'error': 'User with this email already exists'}), 400
+        
+        # Validate role
+        role = data.get('role', 'user')
+        if role not in ['user', 'admin', 'manager', 'super_admin']:
+            return jsonify({'error': 'Invalid role specified'}), 400
+        
+        # Only super admin can create other super admins
+        if role == 'super_admin' and not current_user.is_super_admin():
+            return jsonify({'error': 'Cannot assign super_admin role'}), 403
+        
+        # Validate department if provided
+        department_id = data.get('department_id')
+        if department_id:
+            department = Department.query.get(department_id)
+            if not department:
+                return jsonify({'error': 'Department not found'}), 400
+        
+        # Create new user
+        user = User(
+            email=data['email'].lower().strip(),
+            name=data['name'].strip(),
+            role=role,
+            department_id=department_id,
             is_active=True,
-            created_at=datetime.utcnow(),
-            setup_complete=False
+            has_temp_password=True,  # Mark as having temporary password
+            created_at=datetime.utcnow()
         )
         
-        # Save to database
+        # Generate a secure temporary password
+        temp_password = secrets.token_urlsafe(12)
+        user.set_password(temp_password)
+        
+        db.session.add(user)
+        db.session.commit()
+        
+        logger.info(f"User {user.email} created by super admin {current_user.email}")
+        
+        # Send welcome email with login credentials
+        try:
+            department_name = user.department.name if user.department else "FireEMS.ai"
+            email_sent = email_service.send_user_approval_email(
+                user_email=user.email,
+                user_name=user.name,
+                department_name=department_name,
+                approved=True,
+                temp_password=temp_password,
+                login_url="https://www.fireems.ai/app/login"
+            )
+            
+            if email_sent:
+                logger.info(f"Welcome email sent successfully to {user.email}")
+            else:
+                logger.error(f"Failed to send welcome email to {user.email}")
+                
+        except Exception as e:
+            logger.error(f"Error sending welcome email to {user.email}: {str(e)}")
+        
+        # Return the created user data
+        user_data = {
+            'id': user.id,
+            'email': user.email,
+            'name': user.name,
+            'role': user.role,
+            'is_active': user.is_active,
+            'created_at': user.created_at.isoformat(),
+            'last_login': None,
+            'department_id': user.department_id,
+            'department_name': user.department.name if user.department else None
+        }
+        
+        return jsonify({
+            'success': True,
+            'message': 'User created successfully',
+            'user': user_data
+        })
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error creating user: {str(e)}")
+        return jsonify({'error': 'Failed to create user'}), 500
+
+@bp.route('/api/users/<int:user_id>', methods=['PUT'])
+@login_required
+@require_admin
+def update_user(user_id):
+    """Update user details"""
+    try:
+        data = request.get_json()
+        
+        # Find user
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Department admins can only edit users in their department
+        if not current_user.is_super_admin() and user.department_id != current_user.department_id:
+            return jsonify({'error': 'Permission denied'}), 403
+        
+        # Update user fields
+        if 'name' in data:
+            user.name = data['name'].strip()
+        if 'email' in data:
+            user.email = data['email'].lower().strip()
+        if 'role' in data and data['role'] in ['user', 'admin', 'manager']:
+            # Only super admin can create other super admins
+            if data['role'] == 'super_admin' and not current_user.is_super_admin():
+                return jsonify({'error': 'Cannot assign super_admin role'}), 403
+            user.role = data['role']
+        if 'is_active' in data:
+            user.is_active = bool(data['is_active'])
+        
+        db.session.commit()
+        logger.info(f"User {user.email} updated by admin {current_user.email}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'User updated successfully',
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'name': user.name,
+                'role': user.role,
+                'is_active': user.is_active
+            }
+        })
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error updating user: {str(e)}")
+        return jsonify({'error': 'Failed to update user'}), 500
+
+@bp.route('/api/users/<int:user_id>', methods=['DELETE'])
+@login_required
+@require_admin
+def delete_user(user_id):
+    """Delete a user"""
+    try:
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Department admins can only delete users in their department
+        if not current_user.is_super_admin() and user.department_id != current_user.department_id:
+            return jsonify({'error': 'Permission denied'}), 403
+        
+        # Cannot delete self
+        if user.id == current_user.id:
+            return jsonify({'error': 'Cannot delete your own account'}), 400
+        
+        # Cannot delete super admin unless you are super admin
+        if user.is_super_admin() and not current_user.is_super_admin():
+            return jsonify({'error': 'Cannot delete super admin'}), 403
+        
+        user_email = user.email
+        
+        # Delete related records first to avoid foreign key constraint errors
+        from database import Notification, DepartmentRequest, UserRequest
+        
+        # Delete user's notifications
+        Notification.query.filter_by(user_id=user.id).delete()
+        
+        # Clear reviewed_by references in department and user requests
+        DepartmentRequest.query.filter_by(reviewed_by=user.id).update({'reviewed_by': None})
+        UserRequest.query.filter_by(reviewed_by=user.id).update({'reviewed_by': None})
+        
+        # Delete the user
+        db.session.delete(user)
+        db.session.commit()
+        
+        logger.info(f"User {user_email} deleted by admin {current_user.email}")
+        return jsonify({'success': True, 'message': 'User deleted successfully'})
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error deleting user: {str(e)}")
+        return jsonify({'error': 'Failed to delete user'}), 500
+
+@bp.route('/api/users/<int:user_id>/reset-password', methods=['POST'])
+@login_required
+@require_admin
+def reset_user_password(user_id):
+    """Reset a user's password and send new credentials via email"""
+    try:
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Department admins can only reset passwords in their department
+        if not current_user.is_super_admin() and user.department_id != current_user.department_id:
+            return jsonify({'error': 'Permission denied'}), 403
+        
+        # Generate a new secure temporary password
+        temp_password = secrets.token_urlsafe(12)
+        user.set_password(temp_password)
+        
+        db.session.commit()
+        
+        logger.info(f"Password reset for user {user.email} by admin {current_user.email}")
+        
+        # Send password reset email
+        try:
+            department_name = user.department.name if user.department else "FireEMS.ai"
+            email_sent = email_service.send_user_approval_email(
+                user_email=user.email,
+                user_name=user.name,
+                department_name=department_name,
+                approved=True,
+                temp_password=temp_password,
+                login_url="https://www.fireems.ai/app/login"
+            )
+            
+            if email_sent:
+                logger.info(f"Password reset email sent successfully to {user.email}")
+            else:
+                logger.error(f"Failed to send password reset email to {user.email}")
+                
+        except Exception as e:
+            logger.error(f"Error sending password reset email to {user.email}: {str(e)}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Password reset successfully. New credentials sent via email.'
+        })
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error resetting password: {str(e)}")
+        return jsonify({'error': 'Failed to reset password'}), 500
+
+# Department Management API Endpoints
+@bp.route('/api/departments', methods=['GET'])
+@login_required
+@require_admin
+def get_departments():
+    """Get departments for admin management"""
+    try:
+        # Super admin can see all departments, department admin only sees their own
+        if current_user.is_super_admin():
+            departments = Department.query.all()
+        else:
+            departments = [current_user.department]
+        
+        departments_data = []
+        for dept in departments:
+            if dept:  # Check if department exists
+                dept_data = {
+                    'id': dept.id,
+                    'name': dept.name,
+                    'code': dept.code,
+                    'department_type': dept.department_type,
+                    'is_active': dept.is_active,
+                    'created_at': dept.created_at.isoformat() if dept.created_at else None,
+                    'user_count': len(dept.users),
+                    'api_enabled': dept.api_enabled,
+                    'features_enabled': dept.features_enabled
+                }
+                departments_data.append(dept_data)
+        
+        return jsonify({'success': True, 'departments': departments_data})
+    except Exception as e:
+        logger.error(f"Error fetching departments: {str(e)}")
+        return jsonify({'error': 'Failed to fetch departments'}), 500
+
+@bp.route('/api/departments', methods=['POST'])
+@login_required
+@require_admin
+def create_department():
+    """Create a new department (super admin only)"""
+    try:
+        # Only super admins can create departments
+        if not current_user.is_super_admin():
+            return jsonify({'error': 'Super admin access required'}), 403
+        
+        data = request.get_json()
+        
+        # Validate required fields
+        if not data or not data.get('name') or not data.get('code'):
+            return jsonify({'error': 'Department name and code are required'}), 400
+        
+        # Check if department code already exists
+        existing_dept = Department.query.filter_by(code=data['code'].strip().lower()).first()
+        if existing_dept:
+            return jsonify({'error': 'Department code already exists'}), 400
+        
+        # Create new department with default features
+        default_features = {
+            'data-formatter': True,
+            'response-time-analyzer': True,
+            'fire-map-pro': True,
+            'water-supply-coverage': True,
+            'iso-credit-calculator': False,
+            'station-coverage-optimizer': False,
+            'admin-console': True,
+            'call-density-heatmap': False,
+            'coverage-gap-finder': False
+        }
+        
+        department = Department(
+            name=data['name'].strip(),
+            code=data['code'].strip().lower(),
+            department_type=data.get('department_type', 'combined'),
+            is_active=True,
+            api_enabled=False,
+            features_enabled=default_features,
+            created_at=datetime.utcnow()
+        )
+        
         db.session.add(department)
         db.session.commit()
         
-        flash('Department registered successfully', 'success')
-        return redirect(url_for('admin.departments'))
-    
-    # Get current user (either from Flask-Login or session)
-    if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
-        user = current_user
-    else:
-        user_id = session.get('user_id')
-        user = User.query.get(user_id) if user_id else None
-    
-    return render_template('admin/department-register.html', current_user=user)
+        logger.info(f"Department {department.name} created by super admin {current_user.email}")
+        
+        # Return the created department data
+        dept_data = {
+            'id': department.id,
+            'name': department.name,
+            'code': department.code,
+            'department_type': department.department_type,
+            'is_active': department.is_active,
+            'created_at': department.created_at.isoformat(),
+            'user_count': 0,
+            'api_enabled': department.api_enabled,
+            'features_enabled': department.features_enabled
+        }
+        
+        return jsonify({
+            'success': True,
+            'message': 'Department created successfully',
+            'department': dept_data
+        })
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error creating department: {str(e)}")
+        return jsonify({'error': 'Failed to create department'}), 500
 
-@bp.route('/departments/<int:dept_id>/view')
-@admin_required
-def department_view(dept_id):
-    """View department details"""
-    department = Department.query.get_or_404(dept_id)
-    
-    # Get the department's stations
-    stations = Station.query.filter_by(department_id=dept_id).all()
-    
-    # Get the department's users
-    users = User.query.filter_by(department_id=dept_id).all()
-    
-    # Get the department's incidents
-    incidents = Incident.query.filter_by(department_id=dept_id).all()
-    
-    # Get current user (either from Flask-Login or session)
-    if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
-        user = current_user
-    else:
-        user_id = session.get('user_id')
-        user = User.query.get(user_id) if user_id else None
-    
-    return render_template('admin/department-view.html',
-                          current_user=user,
-                          department=department,
-                          stations=stations,
-                          users=users,
-                          incidents=incidents)
-
-@bp.route('/departments/<int:dept_id>/edit', methods=['GET', 'POST'])
-@admin_required
-def department_edit(dept_id):
-    """Edit department details"""
-    department = Department.query.get_or_404(dept_id)
-    
-    if request.method == 'POST':
-        department.name = request.form.get('name')
-        department.address = request.form.get('address')
-        department.city = request.form.get('city')
-        department.state = request.form.get('state')
-        department.zip_code = request.form.get('zip_code')
-        department.phone = request.form.get('phone')
-        department.email = request.form.get('email')
-        department.website = request.form.get('website')
-        department.is_active = bool(request.form.get('is_active'))
+@bp.route('/api/departments/<int:dept_id>', methods=['PUT'])
+@login_required
+@require_admin
+def update_department(dept_id):
+    """Update department details"""
+    try:
+        data = request.get_json()
+        
+        department = Department.query.get(dept_id)
+        if not department:
+            return jsonify({'error': 'Department not found'}), 404
+        
+        # Department admins can only edit their own department
+        if not current_user.is_super_admin() and department.id != current_user.department_id:
+            return jsonify({'error': 'Permission denied'}), 403
+        
+        # Update department fields
+        if 'name' in data:
+            department.name = data['name'].strip()
+        if 'department_type' in data and data['department_type'] in ['fire', 'ems', 'combined']:
+            department.department_type = data['department_type']
+        if 'is_active' in data and current_user.is_super_admin():
+            department.is_active = bool(data['is_active'])
+        if 'features_enabled' in data:
+            department.features_enabled = data['features_enabled']
         
         db.session.commit()
+        logger.info(f"Department {department.name} updated by admin {current_user.email}")
         
-        flash('Department updated successfully', 'success')
-        return redirect(url_for('admin.departments'))
-    
-    # Get current user (either from Flask-Login or session)
-    if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
-        user = current_user
-    else:
-        user_id = session.get('user_id')
-        user = User.query.get(user_id) if user_id else None
-    
-    return render_template('admin/department-edit.html',
-                          current_user=user,
-                          department=department)
+        return jsonify({
+            'success': True,
+            'message': 'Department updated successfully',
+            'department': department.to_dict()
+        })
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error updating department: {str(e)}")
+        return jsonify({'error': 'Failed to update department'}), 500
 
-@bp.route('/departments/<int:dept_id>/delete', methods=['GET', 'POST'])
-@admin_required
-def department_delete(dept_id):
-    """Delete a department"""
-    department = Department.query.get_or_404(dept_id)
-    
-    # Special protection for the ADMIN department
-    if department.code == 'ADMIN':
-        flash('The System Administration department cannot be deleted', 'error')
-        return redirect(url_for('admin.departments'))
-    
-    if request.method == 'POST':
-        # Get confirmation
-        confirm = request.form.get('confirm')
-        
-        if confirm == department.code:
-            # Delete the department and all related data (cascade should handle this)
-            db.session.delete(department)
-            db.session.commit()
+# Analytics API Endpoints
+@bp.route('/api/analytics/overview', methods=['GET'])
+@login_required
+@require_admin
+def get_analytics_overview():
+    """Get overview analytics for admin dashboard"""
+    try:
+        if current_user.is_super_admin():
+            # System-wide analytics
+            total_users = User.query.count()
+            active_users = User.query.filter_by(is_active=True).count()
+            total_departments = Department.query.count()
+            active_departments = Department.query.filter_by(is_active=True).count()
             
-            flash('Department deleted successfully', 'success')
-            return redirect(url_for('admin.departments'))
+            # Recent activity
+            recent_users = User.query.filter(
+                User.created_at >= datetime.utcnow().replace(day=1)
+            ).count()
+            
         else:
-            flash('Confirmation code does not match department code', 'error')
-    
-    # Get current user (either from Flask-Login or session)
-    if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
-        user = current_user
-    else:
-        user_id = session.get('user_id')
-        user = User.query.get(user_id) if user_id else None
-    
-    return render_template('admin/department-delete.html',
-                          current_user=user,
-                          department=department)
-
-# User management routes
-@bp.route('/users')
-@admin_required
-def users():
-    """User management page"""
-    users = User.query.all()
-    
-    # Get current user (either from Flask-Login or session)
-    if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
-        user = current_user
-    else:
-        user_id = session.get('user_id')
-        user = User.query.get(user_id) if user_id else None
-    
-    return render_template('admin/users.html',
-                          current_user=user,
-                          users=users)
-
-# Tools management routes
-@bp.route('/tools')
-@admin_required
-def tools():
-    """Tools management page"""
-    
-    # Get current user (either from Flask-Login or session)
-    if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
-        user = current_user
-    else:
-        user_id = session.get('user_id')
-        user = User.query.get(user_id) if user_id else None
-    
-    return render_template('admin/tools.html',
-                          current_user=user)
-
-@bp.route('/tools/usage')
-@admin_required
-def tools_usage():
-    """Tools usage statistics page"""
-    
-    # Get current user (either from Flask-Login or session)
-    if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
-        user = current_user
-    else:
-        user_id = session.get('user_id')
-        user = User.query.get(user_id) if user_id else None
-    
-    return render_template('admin/tools-usage.html',
-                          current_user=user)
-
-# Settings page
-@bp.route('/settings')
-@admin_required
-def settings():
-    """System settings page"""
-    
-    # Get current user (either from Flask-Login or session)
-    if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
-        user = current_user
-    else:
-        user_id = session.get('user_id')
-        user = User.query.get(user_id) if user_id else None
-    
-    return render_template('admin/settings.html',
-                          current_user=user)
+            # Department-specific analytics
+            dept_users = User.query.filter_by(department_id=current_user.department_id)
+            total_users = dept_users.count()
+            active_users = dept_users.filter_by(is_active=True).count()
+            total_departments = 1
+            active_departments = 1 if current_user.department.is_active else 0
+            
+            # Recent activity in department
+            recent_users = dept_users.filter(
+                User.created_at >= datetime.utcnow().replace(day=1)
+            ).count()
+        
+        analytics = {
+            'total_users': total_users,
+            'active_users': active_users,
+            'total_departments': total_departments,
+            'active_departments': active_departments,
+            'recent_users_this_month': recent_users,
+            'is_super_admin': current_user.is_super_admin()
+        }
+        
+        return jsonify({'success': True, 'analytics': analytics})
+    except Exception as e:
+        logger.error(f"Error fetching analytics: {str(e)}")
+        return jsonify({'error': 'Failed to fetch analytics'}), 500

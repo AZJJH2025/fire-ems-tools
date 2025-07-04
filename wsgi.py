@@ -29,8 +29,11 @@ try:
     fix_deployment.apply_fixes()
     logger.info("Applied deployment fixes")
     
-    # Import the Flask app
-    from app import app as flask_app
+    # Import the Flask app (using factory pattern)
+    from app import create_app
+    
+    # Create the application
+    flask_app = create_app()
     
     # Run database table fixes if needed
     try:

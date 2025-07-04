@@ -1,0 +1,11 @@
+Inc_Num,Inc_Date,Alarm_Time,Dispatch_Time,Arrival_Time,Clear_Time,Inc_Type_Code,Inc_Type_Desc,Inc_Address,City,State,Zip,Latitude,Longitude,Units_Dispatched,Primary_Unit,District,Beat,Response_Time_Sec,Disposition,Chief_Complaint,Property_Use,Estimated_Loss,Injuries,Fatalities
+2024-001234,01/15/2024,14:23:45,14:24:12,14:30:18,15:45:22,111,Building Fire,1425 Oak Street,Springfield,OH,45503,39.9242,-83.8088,E1 E3 L1 B1,E1,3,A,357,Extinguished,Structure Fire - Residential Kitchen,419,25000,0,0
+2024-001235,01/15/2024,09:45:12,09:45:30,09:52:45,10:15:30,321,EMS Emergency,2501 Maple Ave,Springfield,OH,45504,39.9156,-83.7951,M1 E2,M1,2,B,453,Transport BLS,Chest Pain - 65 YOM,962,0,0,0
+2024-001236,01/15/2024,16:12:33,,16:18:45,16:22:10,300,Rescue Emergency,I-70 MM 54 WB,Springfield,OH,45503,39.9355,-83.8234,E1 R1 M1,R1,3,A,375,No Transport,MVA with Entrapment - 2 Vehicles,961,0,1,0
+2024-001237,01/16/2024,22:15:45,22:16:01,22:22:30,22:35:15,522,Water Problem,3405 Elm Street,Springfield,OH,45505,39.9089,-83.8156,E2,E2,4,C,405,Resolved,Water Main Break - No Fire Involvement,891,0,0,0
+2024-001238,01/16/2024,03:33:22,03:33:45,03:41:12,04:05:33,740,Alarm Activation,1250 Business Park Dr,Springfield,OH,45506,39.9411,-83.7823,E3 L1,E3,1,D,470,False Alarm,Fire Alarm - Commercial Building,311,0,0,0
+2024-001239,01/16/2024,11:45:00,11:45:18,11:51:33,12:18:45,142,Brush Fire,County Road 15,Rural Springfield,OH,45503,39.8956,-83.8445,E1 E4 B1,E1,5,E,393,Extinguished,Grass Fire - 2 Acres,900,500,0,0
+2024-001240,01/17/2024,18:22:15,18:22:33,18:28:45,19:12:22,324,EMS Emergency,567 Pine Street Apt 2B,Springfield,OH,45504,39.9223,-83.8067,M2 E1,M2,2,B,390,Transport ALS,Difficulty Breathing - 78 YOF,429,0,0,0
+2024-001241,01/17/2024,07:15:30,,07:22:18,07:28:45,444,Hazmat Incident,1800 Industrial Blvd,Springfield,OH,45507,39.9378,-83.7712,E2 HAZ1 B1,HAZ1,1,F,408,Mitigated,Chemical Spill - Diesel Fuel,700,0,0,0
+2024-001242,01/17/2024,20:05:45,20:06:12,20:13:30,20:45:18,113,Mobile Property Fire,Walmart Parking Lot,Springfield,OH,45503,39.9289,-83.8156,E3 E1 L1,E3,3,A,465,Extinguished,Vehicle Fire - Full Involvement,961,8000,0,0
+2024-001243,01/18/2024,14:30:22,14:30:45,14:37:15,15:22:30,322,EMS Emergency,,Springfield,OH,45504,39.9134,-83.8234,M1 E2 SUPERV1,M1,2,B,413,Transport ALS,Cardiac Arrest - 45 YOM,962,0,1,1

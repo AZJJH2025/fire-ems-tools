@@ -329,9 +329,12 @@ def fix_database_tables(app, db):
                 
                 # Only proceed with column additions if tables exist
                 if users_table_exists:
-                    # Fix users table
+                    # Fix users table - add authentication fields
                     add_missing_columns(connection, 'users', [
-                        ('preferences', 'JSON DEFAULT \'{}\'')
+                        ('preferences', 'JSON DEFAULT \'{}\''),
+                        ('has_temp_password', 'BOOLEAN DEFAULT FALSE'),
+                        ('reset_token_hash', 'VARCHAR(255)'),
+                        ('reset_token_expires', 'TIMESTAMP')
                     ], dialect)
                 
                 if departments_table_exists:

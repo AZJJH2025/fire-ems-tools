@@ -234,6 +234,23 @@ FireEMS.ai uses environment variables for configuration in production environmen
 
 For testing the Data Formatter specifically, refer to [DATA_FORMATTER_TESTING.md](DATA_FORMATTER_TESTING.md).
 
+## Data Transfer System
+
+The FireEMS.ai platform includes a robust data transfer system that enables seamless movement of data between tools, particularly from the Data Formatter to the Response Time Analyzer.
+
+### Key Components
+
+- **Data Bridge**: Client-side JavaScript bridge that ensures data is properly transferred to the server
+- **Data Connector**: Server-side Python module that handles data transformation and storage
+- **Schema Mapping**: Consistent field mapping between different data formats
+
+### Documentation
+
+For detailed information about the data transfer system:
+
+- [DATA_TRANSFER_SOLUTION.md](DATA_TRANSFER_SOLUTION.md): Complete technical solution documentation
+- [DATA_TRANSFER_DEBUGGING.md](DATA_TRANSFER_DEBUGGING.md): Troubleshooting guide for data transfer issues
+
 ## Contributing
 
 We welcome contributions from the community! Please follow these steps:

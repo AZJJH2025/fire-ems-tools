@@ -347,10 +347,24 @@ for template_path, content in fallback_templates.items():
 # Try to import and create the main application
 app = None
 try:
+    # Apply deployment fixes first
+    import fix_deployment
+    fix_deployment.apply_fixes()
+    logger.info("Applied deployment fixes")
+    
+    # Import and create the application
     from app import create_app
     logger.info('Successfully imported create_app from app')
     app = create_app()
     logger.info('Successfully created main application')
+    
+    # Fix database tables if needed
+    try:
+        from database import db
+        fix_deployment.fix_database_tables(app, db)
+        logger.info("Database tables fixed successfully")
+    except Exception as e:
+        logger.error(f"Error fixing database tables: {str(e)}")
 except Exception as e:
     logger.error(f'Failed to create main application: {str(e)}')
     logger.error(traceback.format_exc())

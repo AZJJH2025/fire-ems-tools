@@ -1,0 +1,59 @@
+station_id,station_name,latitude,longitude,station_type,apparatus_count,staffing_level,operational_status,address,battalion,district
+ST001,Fire Station 1,33.447849,-112.078003,engine,2,4,active,"323 N. 4th Avenue, Phoenix, AZ 85003",1,Central
+ST003,Fire Station 3,33.427562,-112.087821,engine,2,4,active,"1257 W. Pierce Street, Phoenix, AZ 85007",1,Central
+ST004,Fire Station 4,33.461234,-112.081456,ladder,3,6,active,"1601 N. 3rd Avenue, Phoenix, AZ 85003",1,Central
+ST005,Fire Station 5,33.419876,-112.015678,engine,2,4,active,"1840 E. Cambridge Avenue, Phoenix, AZ 85006",2,East
+ST006,Fire Station 6,33.445123,-112.078934,engine,2,4,active,"368 W. Apache Street, Phoenix, AZ 85003",1,Central
+ST007,Fire Station 7,33.611234,-112.078567,engine,2,4,active,"403 E. Hatcher Road, Phoenix, AZ 85020",3,North
+ST008,Fire Station 8,33.438765,-112.063214,engine,2,4,active,"1025 E. Polk Street, Phoenix, AZ 85006",2,East
+ST010,Fire Station 10,33.489567,-112.121456,engine,2,4,active,"2731 N. 24th Drive, Phoenix, AZ 85009",4,West
+ST011,Fire Station 11,33.448123,-111.983456,rescue,3,5,active,"2727 E. Roosevelt Street, Phoenix, AZ 85008",2,East
+ST012,Fire Station 12,33.512345,-111.995678,engine,2,4,active,"4247 N. 32nd Street, Phoenix, AZ 85018",5,Northeast
+ST013,Fire Station 13,33.534567,-112.156789,engine,2,4,active,"2302 W. Bethany Home Road, Phoenix, AZ 85015",4,West
+ST014,Fire Station 14,33.398765,-112.045123,engine,2,4,active,"4041 E. Van Buren Street, Phoenix, AZ 85008",2,East
+ST015,Fire Station 15,33.567890,-112.034567,ladder,3,6,active,"1616 E. Glendale Avenue, Phoenix, AZ 85020",3,North
+ST016,Fire Station 16,33.423456,-112.178901,engine,2,4,active,"4334 W. Indian School Road, Phoenix, AZ 85031",6,West
+ST017,Fire Station 17,33.445678,-111.945123,engine,2,4,active,"3840 E. Thomas Road, Phoenix, AZ 85018",5,Northeast
+ST018,Fire Station 18,33.512890,-112.089456,engine,2,4,active,"2727 N. 16th Street, Phoenix, AZ 85006",4,Central
+ST019,Fire Station 19,33.378901,-112.167234,engine,2,4,active,"4850 W. Baseline Road, Phoenix, AZ 85041",7,Southwest
+ST020,Fire Station 20,33.623456,-112.145678,engine,2,4,active,"2434 W. Union Hills Drive, Phoenix, AZ 85027",8,Northwest
+ST021,Fire Station 21,33.456789,-111.912345,engine,2,4,active,"4826 E. McDowell Road, Phoenix, AZ 85008",5,East
+ST022,Fire Station 22,33.334567,-112.123456,hazmat,4,8,active,"5735 S. Central Avenue, Phoenix, AZ 85040",7,South
+ST023,Fire Station 23,33.589012,-112.078901,engine,2,4,active,"1802 E. Peoria Avenue, Phoenix, AZ 85020",3,North
+ST024,Fire Station 24,33.401234,-111.989567,engine,2,4,active,"4240 E. Washington Street, Phoenix, AZ 85034",2,East
+ST025,Fire Station 25,33.478901,-112.189456,engine,2,4,active,"6834 W. Indian School Road, Phoenix, AZ 85033",6,West
+ST026,Fire Station 26,33.567123,-111.967890,rescue,3,5,active,"3434 E. Cactus Road, Phoenix, AZ 85032",9,Northeast
+ST027,Fire Station 27,33.356789,-112.089123,engine,2,4,active,"2840 S. 16th Street, Phoenix, AZ 85034",7,South
+ST028,Fire Station 28,33.612345,-112.123678,engine,2,4,active,"2020 W. Thunderbird Road, Phoenix, AZ 85023",8,Northwest
+ST029,Fire Station 29,33.423678,-111.923456,engine,2,4,active,"5230 E. Van Buren Street, Phoenix, AZ 85008",5,East
+ST030,Fire Station 30,33.489123,-112.201234,ladder,3,6,active,"8434 W. Thomas Road, Phoenix, AZ 85037",6,West
+ST031,Fire Station 31,33.545678,-112.045123,engine,2,4,active,"3235 E. Bell Road, Phoenix, AZ 85032",9,Northeast
+ST032,Fire Station 32,33.378456,-112.134567,engine,2,4,active,"4545 W. Lower Buckeye Road, Phoenix, AZ 85041",7,Southwest
+ST033,Fire Station 33,33.634789,-112.089234,engine,2,4,active,"1515 E. Deer Valley Road, Phoenix, AZ 85024",8,North
+ST034,Fire Station 34,33.412890,-111.945678,engine,2,4,active,"5040 E. McDowell Road, Phoenix, AZ 85008",5,East
+ST035,Fire Station 35,33.523456,-112.178123,engine,2,4,active,"7235 W. Camelback Road, Phoenix, AZ 85033",6,West
+ST036,Fire Station 36,33.589567,-111.989123,rescue,3,5,active,"4040 E. Greenway Road, Phoenix, AZ 85032",9,Northeast
+ST037,Fire Station 37,33.367890,-112.067234,engine,2,4,active,"2735 S. 7th Street, Phoenix, AZ 85034",7,South
+ST038,Fire Station 38,33.601234,-112.156789,engine,2,4,active,"6036 W. Northern Avenue, Phoenix, AZ 85051",8,Northwest
+ST039,Fire Station 39,33.434567,-111.912678,engine,2,4,active,"5535 E. Washington Street, Phoenix, AZ 85034",5,East
+ST040,Fire Station 40,33.498123,-112.189567,engine,2,4,active,"8840 W. Indian School Road, Phoenix, AZ 85037",6,West
+ST041,Fire Station 41,33.578901,-112.023456,ladder,3,6,active,"3840 E. Shea Boulevard, Phoenix, AZ 85028",9,Northeast
+ST042,Fire Station 42,33.345678,-112.145123,engine,2,4,active,"5545 W. Baseline Road, Phoenix, AZ 85041",7,Southwest
+ST043,Fire Station 43,33.612678,-112.078234,engine,2,4,active,"1640 E. Thunderbird Road, Phoenix, AZ 85022",3,North
+ST044,Fire Station 44,33.423789,-111.967456,engine,2,4,active,"4745 E. Van Buren Street, Phoenix, AZ 85008",5,East
+ST045,Fire Station 45,33.534890,-112.167123,engine,2,4,active,"7445 W. Glendale Avenue, Phoenix, AZ 85051",6,West
+ST046,Fire Station 46,33.589234,-111.945789,engine,2,4,active,"5245 E. Cactus Road, Phoenix, AZ 85032",9,Northeast
+ST047,Fire Station 47,33.378123,-112.089567,engine,2,4,active,"3245 S. 16th Street, Phoenix, AZ 85040",7,South
+ST048,Fire Station 48,33.623789,-112.134890,engine,2,4,active,"5548 W. Union Hills Drive, Phoenix, AZ 85027",8,Northwest
+ST049,Fire Station 49,33.445890,-111.923123,engine,2,4,active,"5849 E. Thomas Road, Phoenix, AZ 85018",5,East
+ST050,Fire Station 50,33.512234,-112.201567,rescue,3,5,active,"9050 W. Camelback Road, Phoenix, AZ 85037",6,West
+ST051,Fire Station 51,33.567456,-112.045890,engine,2,4,active,"3551 E. Paradise Lane, Phoenix, AZ 85032",9,Northeast
+ST052,Fire Station 52,33.356123,-112.123789,engine,2,4,active,"4852 W. Buckeye Road, Phoenix, AZ 85043",7,Southwest
+ST053,Fire Station 53,33.634123,-112.067456,engine,2,4,active,"2053 E. Deer Valley Road, Phoenix, AZ 85024",8,North
+ST054,Fire Station 54,33.401567,-111.989234,engine,2,4,active,"5254 E. Washington Street, Phoenix, AZ 85034",5,East
+ST055,Fire Station 55,33.489890,-112.189123,engine,2,4,active,"8855 W. Thomas Road, Phoenix, AZ 85037",6,West
+ST056,Fire Station 56,33.578234,-111.967567,ladder,3,6,active,"4756 E. Shea Boulevard, Phoenix, AZ 85028",9,Northeast
+ST057,Fire Station 57,33.367234,-112.145890,engine,2,4,active,"5757 W. Lower Buckeye Road, Phoenix, AZ 85043",7,Southwest
+ST058,Fire Station 58,33.612123,-112.089890,engine,2,4,active,"2458 E. Thunderbird Road, Phoenix, AZ 85022",3,North
+ST059,Fire Station 59,33.434890,-111.945234,engine,2,4,active,"5959 E. McDowell Road, Phoenix, AZ 85008",5,East
+ST060,Fire Station 60,33.523789,-112.178567,engine,2,4,active,"7860 W. Glendale Avenue, Phoenix, AZ 85051",6,West

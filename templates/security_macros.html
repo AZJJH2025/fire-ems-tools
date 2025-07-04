@@ -1,0 +1,31 @@
+<!-- 
+Security Macros for CSP-compliant templates
+Use these macros to ensure all inline scripts and styles use proper nonces
+-->
+
+{% macro secure_script(content) %}
+<script nonce="{{ csp_nonce() }}">{{ content | safe }}</script>
+{% endmacro %}
+
+{% macro secure_style(content) %}
+<style nonce="{{ csp_style_nonce() }}">{{ content | safe }}</style>
+{% endmacro %}
+
+{% macro external_script(src, integrity=None, crossorigin="anonymous") %}
+<script src="{{ src }}"
+        {% if integrity %}integrity="{{ integrity }}" crossorigin="{{ crossorigin }}"{% endif %}
+        nonce="{{ csp_nonce() }}"></script>
+{% endmacro %}
+
+{% macro external_style(href, integrity=None, crossorigin="anonymous") %}
+<link rel="stylesheet" href="{{ href }}"
+      {% if integrity %}integrity="{{ integrity }}" crossorigin="{{ crossorigin }}"{% endif %}
+      nonce="{{ csp_style_nonce() }}">
+{% endmacro %}
+
+<!-- Example usage in templates:
+{{ secure_script("console.log('This script uses CSP nonce');") }}
+{{ secure_style("body { background-color: #f0f0f0; }") }}
+{{ external_script("/static/app.js", integrity="sha256-xyz123...") }}
+{{ external_style("/static/styles.css", integrity="sha256-abc789...") }}
+-->

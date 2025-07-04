@@ -17,3 +17,4 @@ cryptography==41.0.7
 selenium==4.15.2
 flask-wtf==1.2.1
 redis==5.0.1
+markdown==3.6
