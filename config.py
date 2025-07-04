@@ -108,7 +108,7 @@ class DevelopmentConfig(Config):
     """Development configuration."""
     DEBUG = True
     # For development, you can use a local SQLite database if needed
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///dev.db'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///instance/fire_ems.db'
 
 class TestingConfig(Config):
     """Testing configuration."""
