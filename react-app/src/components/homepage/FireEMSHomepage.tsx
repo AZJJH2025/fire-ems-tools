@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Container, 
   Box, 
@@ -49,6 +49,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import ChangePasswordModal from '../auth/ChangePasswordModal';
 
 interface ToolCardProps {
   title: string;
@@ -282,6 +283,7 @@ const ToolCard: React.FC<ToolCardProps & { isAuthenticated: boolean }> = ({
 const FireEMSHomepage: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, isLoading } = useAuth();
+  const [showPasswordChange, setShowPasswordChange] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -495,7 +497,15 @@ const FireEMSHomepage: React.FC = () => {
                       label="Password Reset Required" 
                       color="warning" 
                       size="small"
-                      sx={{ bgcolor: '#ff9800', color: 'white' }}
+                      onClick={() => setShowPasswordChange(true)}
+                      sx={{ 
+                        bgcolor: '#ff9800', 
+                        color: 'white',
+                        cursor: 'pointer',
+                        '&:hover': {
+                          bgcolor: '#f57c00'
+                        }
+                      }}
                     />
                   )}
                 </Box>
@@ -521,6 +531,7 @@ const FireEMSHomepage: React.FC = () => {
                   <Button
                     variant="outlined"
                     startIcon={<Settings />}
+                    onClick={() => setShowPasswordChange(true)}
                     sx={{
                       borderColor: 'rgba(255,255,255,0.5)',
                       color: 'white',
@@ -1199,6 +1210,18 @@ const FireEMSHomepage: React.FC = () => {
           </Typography>
         </Box>
       </Container>
+      
+      {/* Password Change Modal */}
+      <ChangePasswordModal
+        open={showPasswordChange}
+        onClose={() => setShowPasswordChange(false)}
+        onSuccess={() => {
+          setShowPasswordChange(false);
+          // Optionally refresh auth state or show success message
+        }}
+        isTemporary={user?.has_temp_password || false}
+        userName={user?.name || ''}
+      />
     </Box>
   );
 };
