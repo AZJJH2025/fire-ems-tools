@@ -103,6 +103,13 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
     }
 
     try {
+      // Create AbortController for timeout handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+        console.log('🚨 Password change request timed out after 5 seconds');
+      }, 5000); // 5 second timeout
+
       const response = await fetch('/auth/api/change-password', {
         method: 'POST',
         headers: {
@@ -113,8 +120,11 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
           newPassword: formData.newPassword,
           confirmPassword: formData.confirmPassword
         }),
+        signal: controller.signal // Add abort signal
       });
 
+      // Clear timeout on successful response
+      clearTimeout(timeoutId);
       const data = await response.json();
 
       if (response.ok && data.success) {
@@ -126,8 +136,15 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
       } else {
         setError(data.message || 'Failed to change password');
       }
-    } catch (err) {
-      setError('Network error. Please try again.');
+    } catch (err: any) {
+      console.error('Password change error:', err);
+      
+      // Handle timeout specifically
+      if (err.name === 'AbortError') {
+        setError('Request timed out. Please check your connection and try again.');
+      } else {
+        setError('Network error. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
