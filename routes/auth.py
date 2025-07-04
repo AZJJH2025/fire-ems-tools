@@ -498,7 +498,18 @@ def api_current_user():
                 'department_id': current_user.department_id,
                 'department_name': current_user.department.name if current_user.department else None,
                 'last_login': current_user.last_login.isoformat() if current_user.last_login else None,
-                'has_temp_password': getattr(current_user, 'has_temp_password', False)
+                'has_temp_password': getattr(current_user, 'has_temp_password', False),
+                'phone': getattr(current_user, 'phone', ''),
+                'title': getattr(current_user, 'title', ''),
+                'employee_id': getattr(current_user, 'employee_id', ''),
+                'station_assignment': getattr(current_user, 'station_assignment', ''),
+                'shift': getattr(current_user, 'shift', ''),
+                'rank': getattr(current_user, 'rank', ''),
+                'timezone': getattr(current_user, 'timezone', 'America/Phoenix'),
+                'email_notifications': getattr(current_user, 'email_notifications', True),
+                'report_notifications': getattr(current_user, 'report_notifications', True),
+                'language': getattr(current_user, 'language', 'en'),
+                'date_format': getattr(current_user, 'date_format', 'MM/DD/YYYY')
             }
         })
     except Exception as e:
@@ -506,6 +517,91 @@ def api_current_user():
         return jsonify({
             'success': False,
             'message': 'An error occurred getting user info'
+        }), 500
+
+@bp.route('/api/update-profile', methods=['POST'])
+@login_required
+def api_update_profile():
+    """API endpoint to update user profile information"""
+    try:
+        data = request.get_json()
+        
+        if not data or not data.get('section') or not data.get('data'):
+            return jsonify({
+                'success': False,
+                'message': 'Section and data are required'
+            }), 400
+        
+        section = data['section']
+        profile_data = data['data']
+        
+        # Update personal information
+        if section == 'personal':
+            if 'name' in profile_data:
+                current_user.name = profile_data['name']
+            if 'email' in profile_data:
+                # Check if email is already taken by another user
+                existing_user = User.query.filter(
+                    User.email == profile_data['email'],
+                    User.id != current_user.id
+                ).first()
+                if existing_user:
+                    return jsonify({
+                        'success': False,
+                        'message': 'Email address is already in use'
+                    }), 400
+                current_user.email = profile_data['email']
+            if 'phone' in profile_data:
+                current_user.phone = profile_data.get('phone', '')
+            if 'title' in profile_data:
+                current_user.title = profile_data.get('title', '')
+            if 'employee_id' in profile_data:
+                current_user.employee_id = profile_data.get('employee_id', '')
+        
+        # Update department information
+        elif section == 'department':
+            if 'station_assignment' in profile_data:
+                current_user.station_assignment = profile_data.get('station_assignment', '')
+            if 'shift' in profile_data:
+                current_user.shift = profile_data.get('shift', '')
+            if 'rank' in profile_data:
+                current_user.rank = profile_data.get('rank', '')
+        
+        # Update preferences
+        elif section == 'preferences':
+            if 'timezone' in profile_data:
+                current_user.timezone = profile_data.get('timezone', 'America/Phoenix')
+            if 'email_notifications' in profile_data:
+                current_user.email_notifications = profile_data.get('email_notifications', True)
+            if 'report_notifications' in profile_data:
+                current_user.report_notifications = profile_data.get('report_notifications', True)
+            if 'language' in profile_data:
+                current_user.language = profile_data.get('language', 'en')
+            if 'date_format' in profile_data:
+                current_user.date_format = profile_data.get('date_format', 'MM/DD/YYYY')
+        
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'Invalid section specified'
+            }), 400
+        
+        # Save changes
+        db.session.commit()
+        
+        logger.info(f"User {current_user.email} updated profile section: {section}")
+        
+        return jsonify({
+            'success': True,
+            'message': f'{section.title()} information updated successfully'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Profile update error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': 'An error occurred updating profile'
         }), 500
 
 @bp.route('/api/forgot-password', methods=['POST'])

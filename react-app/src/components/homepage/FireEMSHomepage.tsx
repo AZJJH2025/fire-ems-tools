@@ -50,6 +50,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import ChangePasswordModal from '../auth/ChangePasswordModal';
+import UserProfileModal from '../auth/UserProfileModal';
 
 interface ToolCardProps {
   title: string;
@@ -284,6 +285,7 @@ const FireEMSHomepage: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, isLoading } = useAuth();
   const [showPasswordChange, setShowPasswordChange] = useState(false);
+  const [showUserProfile, setShowUserProfile] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -296,6 +298,12 @@ const FireEMSHomepage: React.FC = () => {
     } catch (error) {
       console.error('Logout error:', error);
     }
+  };
+
+  const handleUserUpdate = (updatedUser: any) => {
+    // This would typically trigger a re-fetch of user data
+    // For now, we'll just close the modal and potentially refresh
+    console.log('User updated:', updatedUser);
   };
   
   const tools: ToolCardProps[] = [
@@ -531,7 +539,7 @@ const FireEMSHomepage: React.FC = () => {
                   <Button
                     variant="outlined"
                     startIcon={<Settings />}
-                    onClick={() => setShowPasswordChange(true)}
+                    onClick={() => setShowUserProfile(true)}
                     sx={{
                       borderColor: 'rgba(255,255,255,0.5)',
                       color: 'white',
@@ -1210,6 +1218,14 @@ const FireEMSHomepage: React.FC = () => {
           </Typography>
         </Box>
       </Container>
+      
+      {/* User Profile Modal */}
+      <UserProfileModal
+        open={showUserProfile}
+        onClose={() => setShowUserProfile(false)}
+        user={user}
+        onUserUpdate={handleUserUpdate}
+      />
       
       {/* Password Change Modal */}
       <ChangePasswordModal

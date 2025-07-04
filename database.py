@@ -197,7 +197,20 @@ class User(db.Model):
     reset_token_hash = db.Column(db.String(255), nullable=True)  # Hashed reset token
     reset_token_expires = db.Column(db.DateTime, nullable=True)  # Token expiration time
     
+    # Extended profile fields
+    phone = db.Column(db.String(20), nullable=True)
+    title = db.Column(db.String(100), nullable=True)  # Job title
+    employee_id = db.Column(db.String(50), nullable=True)
+    station_assignment = db.Column(db.String(100), nullable=True)
+    shift = db.Column(db.String(20), nullable=True)  # A, B, C, Day, Night, etc.
+    rank = db.Column(db.String(50), nullable=True)  # Firefighter, Lieutenant, Captain, etc.
+    
     # User preferences
+    timezone = db.Column(db.String(50), default='America/Phoenix')
+    email_notifications = db.Column(db.Boolean, default=True)
+    report_notifications = db.Column(db.Boolean, default=True)
+    language = db.Column(db.String(10), default='en')
+    date_format = db.Column(db.String(20), default='MM/DD/YYYY')
     preferences = db.Column(db.JSON, default=dict)
     
     # Fields required by Flask-Login
