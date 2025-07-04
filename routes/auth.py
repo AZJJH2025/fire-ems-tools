@@ -351,6 +351,8 @@ def api_login():
         
         # Log the user in
         login_user(user, remember=data.get('remember', False))
+        # Make session permanent to ensure it persists across page refreshes
+        session.permanent = True
         user.update_last_login()
         db.session.commit()
         

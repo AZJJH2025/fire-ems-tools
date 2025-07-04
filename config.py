@@ -73,7 +73,7 @@ class Config:
     SESSION_COOKIE_HTTPONLY = True
     # Enable secure cookies by default, only disable for local development
     SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'True').lower() in ('true', 't', '1', 'yes')
-    SESSION_COOKIE_SAMESITE = 'Strict'
+    SESSION_COOKIE_SAMESITE = 'Lax'
     PERMANENT_SESSION_LIFETIME = int(os.environ.get('PERMANENT_SESSION_LIFETIME', 86400))
     
     # Security headers configuration
@@ -121,7 +121,7 @@ class ProductionConfig(Config):
     
     # Force secure cookies in production
     SESSION_COOKIE_SECURE = True
-    SESSION_COOKIE_SAMESITE = 'Strict'
+    SESSION_COOKIE_SAMESITE = 'Lax'
     
     @classmethod
     def init_app(cls, app):
