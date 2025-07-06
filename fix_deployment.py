@@ -311,21 +311,58 @@ def fix_database_tables(app, db):
         logger.info(f"🔍 DATABASE DEBUG: Engine URL: {db.engine.url}")
         logger.info(f"🔍 DATABASE DEBUG: Dialect: {db.engine.dialect.name}")
         
-        # First, ensure all tables exist by creating them
+        # CRITICAL: Check if we're using SQLite (ephemeral) or PostgreSQL (persistent)
+        if str(db.engine.url).startswith('sqlite'):
+            logger.error("🚨 CRITICAL ISSUE: Using SQLite database - data will be lost on deployment!")
+            logger.error("🚨 This explains why users disappear after each deployment")
+            logger.error("🚨 Check DATABASE_URL environment variable on Render.com")
+        else:
+            logger.info("✅ Using PostgreSQL database - data should persist across deployments")
+        
+        # SAFER APPROACH: Check existing database state before making changes
         try:
-            logger.info("Creating all database tables if they don't exist...")
-            db.create_all()
-            logger.info("Database tables creation completed")
+            logger.info("🔍 CHECKING EXISTING DATABASE STATE...")
             
-            # CRITICAL: Check what actually exists in the database
+            # First, try to understand what currently exists
+            database_is_empty = True
+            tables_exist = False
+            
             try:
                 with db.engine.begin() as test_connection:
-                    # Check if users table exists and count rows
-                    user_count_query = text("SELECT COUNT(*) as count FROM users")
-                    result = test_connection.execute(user_count_query)
-                    user_count = result.fetchone()[0]
-                    logger.info(f"🔍 DATABASE DEBUG: Found {user_count} users in database")
-                    
+                    # Check if users table exists at all
+                    try:
+                        user_count_query = text("SELECT COUNT(*) as count FROM users")
+                        result = test_connection.execute(user_count_query)
+                        user_count = result.fetchone()[0]
+                        logger.info(f"🔍 DATABASE DEBUG: Found {user_count} users in existing database")
+                        tables_exist = True
+                        database_is_empty = (user_count == 0)
+                        
+                        if user_count > 0:
+                            logger.info("🔍 DATABASE DEBUG: Database contains data - will preserve existing users")
+                        else:
+                            logger.info("🔍 DATABASE DEBUG: Database tables exist but are empty")
+                            
+                    except Exception as table_error:
+                        logger.info(f"🔍 DATABASE DEBUG: Users table does not exist: {str(table_error)}")
+                        tables_exist = False
+                        
+            except Exception as connection_error:
+                logger.error(f"🔍 DATABASE DEBUG: Cannot connect to database: {str(connection_error)}")
+            
+            # Now create tables if they don't exist
+            if not tables_exist:
+                logger.info("Creating all database tables (fresh database)...")
+                db.create_all()
+                logger.info("Database tables creation completed for fresh database")
+            else:
+                logger.info("Database tables already exist - will NOT recreate (preserving data)")
+                # Just ensure we have all the columns we need
+                logger.info("Running column addition process for existing database...")
+                
+            # Final verification of schema
+            try:
+                with db.engine.begin() as test_connection:
                     # Check table schema - what columns actually exist
                     if db.engine.dialect.name == 'postgresql':
                         schema_query = text("""
@@ -339,13 +376,14 @@ def fix_database_tables(app, db):
                     
                     result = test_connection.execute(schema_query)
                     columns = result.fetchall()
-                    logger.info(f"🔍 DATABASE DEBUG: Users table columns: {[col[0] if db.engine.dialect.name == 'postgresql' else col[1] for col in columns]}")
+                    existing_columns = [col[0] if db.engine.dialect.name == 'postgresql' else col[1] for col in columns]
+                    logger.info(f"🔍 DATABASE DEBUG: Users table columns: {existing_columns}")
                     
             except Exception as debug_error:
                 logger.error(f"🔍 DATABASE DEBUG ERROR: {str(debug_error)}")
                 
         except Exception as e:
-            logger.error(f"Error creating database tables: {str(e)}")
+            logger.error(f"Error in database state check: {str(e)}")
             logger.error(traceback.format_exc())
         
         # Use a transaction to ensure all schema changes are atomic

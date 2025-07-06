@@ -144,5 +144,5 @@ config = {
     'testing': TestingConfig,
     'production': ProductionConfig,
     
-    'default': DevelopmentConfig
+    'default': ProductionConfig  # CRITICAL: Use production config by default for Render.com
 }
