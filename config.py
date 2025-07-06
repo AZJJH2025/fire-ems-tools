@@ -119,6 +119,17 @@ class ProductionConfig(Config):
     """Production configuration."""
     DEBUG = False
     
+    # CRITICAL: Override database URI to ensure no SQLite fallback in production
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    
+    # Validate DATABASE_URL exists in production
+    if not SQLALCHEMY_DATABASE_URI:
+        raise ValueError("DATABASE_URL environment variable is required for production")
+    
+    # Fix for Render Postgres URL format
+    if SQLALCHEMY_DATABASE_URI and SQLALCHEMY_DATABASE_URI.startswith("postgres://"):
+        SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace("postgres://", "postgresql://", 1)
+    
     # Force secure cookies in production
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_SAMESITE = 'Lax'

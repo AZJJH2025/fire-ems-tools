@@ -1638,7 +1638,16 @@ def create_default_admin():
 try:
     # Ensure fixes are applied
     logger.info("Creating application with deployment fixes...")
-    app = create_app(os.getenv('FLASK_ENV', 'development'))
+    # CRITICAL: Auto-detect production environment on Render.com
+    # Render.com sets RENDER=true, so use that to force production config
+    if os.getenv('RENDER'):
+        config_name = 'production'
+        logger.info("🔍 RENDER DETECTED: Using production configuration")
+    else:
+        config_name = os.getenv('FLASK_ENV', 'development')
+        logger.info(f"🔍 LOCAL DEVELOPMENT: Using {config_name} configuration")
+    
+    app = create_app(config_name)
     
     # Fix database tables after app creation
     fix_deployment.fix_database_tables(app, db)
