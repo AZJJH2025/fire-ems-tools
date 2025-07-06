@@ -243,14 +243,28 @@ def delete_user(user_id):
         user_email = user.email
         
         # Delete related records first to avoid foreign key constraint errors
-        from database import Notification, DepartmentRequest, UserRequest
-        
-        # Delete user's notifications
-        Notification.query.filter_by(user_id=user.id).delete()
-        
-        # Clear reviewed_by references in department and user requests
-        DepartmentRequest.query.filter_by(reviewed_by=user.id).update({'reviewed_by': None})
-        UserRequest.query.filter_by(reviewed_by=user.id).update({'reviewed_by': None})
+        try:
+            from database import Notification, DepartmentRequest, UserRequest
+            
+            # Try to delete user's notifications (handle missing column gracefully)
+            try:
+                Notification.query.filter_by(user_id=user.id).delete()
+            except Exception as notification_error:
+                logger.warning(f"Could not delete notifications for user {user.id}: {str(notification_error)}")
+            
+            # Try to clear reviewed_by references in department and user requests
+            try:
+                DepartmentRequest.query.filter_by(reviewed_by=user.id).update({'reviewed_by': None})
+            except Exception as dept_request_error:
+                logger.warning(f"Could not update department requests for user {user.id}: {str(dept_request_error)}")
+                
+            try:
+                UserRequest.query.filter_by(reviewed_by=user.id).update({'reviewed_by': None})
+            except Exception as user_request_error:
+                logger.warning(f"Could not update user requests for user {user.id}: {str(user_request_error)}")
+                
+        except ImportError as import_error:
+            logger.warning(f"Some database models not available for cleanup: {str(import_error)}")
         
         # Delete the user
         db.session.delete(user)
