@@ -30,8 +30,18 @@ def generate_secure_key():
 
 class Config:
     """Base configuration."""
-    # Database settings
+    # Database settings with production safety check
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    
+    # CRITICAL: If running on Render.com but no DATABASE_URL, this is a configuration error
+    if os.environ.get('RENDER') and not SQLALCHEMY_DATABASE_URI:
+        raise ValueError("🚨 CRITICAL: Running on Render.com but DATABASE_URL is not set! Check environment variables.")
+    
+    # Fallback for local development only
+    if not SQLALCHEMY_DATABASE_URI:
+        SQLALCHEMY_DATABASE_URI = 'sqlite:///instance/fire_ems.db'
+        logger.warning("Using SQLite fallback for local development")
+    
     # Fix for Render Postgres URL format - always do this for safety
     if SQLALCHEMY_DATABASE_URI and SQLALCHEMY_DATABASE_URI.startswith("postgres://"):
         SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace("postgres://", "postgresql://", 1)
@@ -119,16 +129,8 @@ class ProductionConfig(Config):
     """Production configuration."""
     DEBUG = False
     
-    # CRITICAL: Override database URI to ensure no SQLite fallback in production
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
-    
-    # Validate DATABASE_URL exists in production
-    if not SQLALCHEMY_DATABASE_URI:
-        raise ValueError("DATABASE_URL environment variable is required for production")
-    
-    # Fix for Render Postgres URL format
-    if SQLALCHEMY_DATABASE_URI and SQLALCHEMY_DATABASE_URI.startswith("postgres://"):
-        SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace("postgres://", "postgresql://", 1)
+    # Production inherits database URL validation from base Config
+    # Base Config already handles Render.com detection and DATABASE_URL validation
     
     # Force secure cookies in production
     SESSION_COOKIE_SECURE = True
