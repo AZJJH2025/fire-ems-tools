@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FireEMS Debug</title>
+    <style>
+      body { 
+        font-family: Arial, sans-serif; 
+        margin: 40px; 
+        background: #f5f5f5;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      }
+      button {
+        background: #1976d2;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 10px;
+        font-size: 16px;
+      }
+      button:hover {
+        background: #1565c0;
+      }
+      .debug-info {
+        background: #f0f0f0;
+        padding: 15px;
+        border-radius: 4px;
+        margin: 20px 0;
+        font-family: monospace;
+      }
+      .error {
+        color: red;
+        background: #ffebee;
+        border: 1px solid #ffcdd2;
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
+      }
+      .success {
+        color: green;
+        background: #e8f5e8;
+        border: 1px solid #c8e6c9;
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔧 FireEMS Debug Page</h1>
+      
+      <h2>🔍 Authentication System Test</h2>
+      
+      <button onclick="testLogin()">Test Login API</button>
+      <button onclick="testAuth()">Test Authentication Check</button>
+      <button onclick="testForgotPassword()">Test Forgot Password API</button>
+      <button onclick="clearAll()">Clear Results</button>
+      
+      <div id="results"></div>
+      
+      <h2>📊 System Information</h2>
+      <div class="debug-info">
+        <div><strong>Page URL:</strong> <span id="pageUrl"></span></div>
+        <div><strong>User Agent:</strong> <span id="userAgent"></span></div>
+        <div><strong>Local Time:</strong> <span id="localTime"></span></div>
+        <div><strong>React Bundle Status:</strong> <span id="reactStatus"></span></div>
+      </div>
+      
+      <h2>🚀 Quick Navigation</h2>
+      <button onclick="window.location.href='/app/'">Go to React App</button>
+      <button onclick="window.location.href='/app/login'">Go to Login</button>
+      <button onclick="window.location.href='/admin'">Go to Admin</button>
+      <button onclick="window.location.href='/'">Go to Homepage</button>
+    </div>
+
+    <script>
+      // Initialize page info
+      document.getElementById('pageUrl').textContent = window.location.href;
+      document.getElementById('userAgent').textContent = navigator.userAgent;
+      document.getElementById('localTime').textContent = new Date().toLocaleString();
+      
+      // Check if React bundle loaded
+      fetch('/assets/index-DD5CjxYk.js')
+        .then(response => {
+          if (response.ok) {
+            document.getElementById('reactStatus').innerHTML = '<span style="color: green;">✅ Available</span>';
+          } else {
+            document.getElementById('reactStatus').innerHTML = '<span style="color: red;">❌ Not Found (HTTP ' + response.status + ')</span>';
+          }
+        })
+        .catch(error => {
+          document.getElementById('reactStatus').innerHTML = '<span style="color: red;">❌ Error: ' + error.message + '</span>';
+        });
+      
+      function addResult(message, isError = false) {
+        const div = document.createElement('div');
+        div.className = isError ? 'error' : 'success';
+        div.innerHTML = message;
+        document.getElementById('results').appendChild(div);
+      }
+      
+      function clearAll() {
+        document.getElementById('results').innerHTML = '';
+      }
+      
+      async function testLogin() {
+        try {
+          const response = await fetch('/auth/api/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              email: 'test@example.com',
+              password: 'testpassword'
+            })
+          });
+          
+          const data = await response.json();
+          addResult(`🔐 Login API Test: ${response.status} - ${JSON.stringify(data, null, 2)}`, !response.ok);
+        } catch (error) {
+          addResult(`🔐 Login API Error: ${error.message}`, true);
+        }
+      }
+      
+      async function testAuth() {
+        try {
+          const response = await fetch('/auth/api/me', {
+            method: 'GET',
+            credentials: 'include'
+          });
+          
+          const data = await response.json();
+          addResult(`👤 Auth Check: ${response.status} - ${JSON.stringify(data, null, 2)}`, !response.ok);
+        } catch (error) {
+          addResult(`👤 Auth Check Error: ${error.message}`, true);
+        }
+      }
+      
+      async function testForgotPassword() {
+        try {
+          const response = await fetch('/auth/api/forgot-password', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              email: 'test@example.com'
+            })
+          });
+          
+          const data = await response.json();
+          addResult(`📧 Forgot Password API: ${response.status} - ${JSON.stringify(data, null, 2)}`, !response.ok);
+        } catch (error) {
+          addResult(`📧 Forgot Password Error: ${error.message}`, true);
+        }
+      }
+    </script>
+  </body>
+</html>

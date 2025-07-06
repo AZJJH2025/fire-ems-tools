@@ -29,10 +29,17 @@ export const useAuth = (): AuthState => {
 
   const checkAuthStatus = async () => {
     try {
+      // Set a timeout to prevent hanging
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
       const response = await fetch('/auth/api/me', {
         method: 'GET',
         credentials: 'include', // Include cookies for session management
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         const data = await response.json();
@@ -58,6 +65,7 @@ export const useAuth = (): AuthState => {
       }
     } catch (error) {
       console.error('Error checking auth status:', error);
+      // Always set loading to false to prevent hanging UI
       setAuthState({
         user: null,
         isAuthenticated: false,
