@@ -3128,3 +3128,235 @@ ModuleNotFoundError: No module named 'markdown'
 2025-06-30 09:13:16,886 - app - INFO - Successfully registered all route blueprints
 2025-06-30 09:13:16,887 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
 2025-06-30 09:13:16,887 - app - INFO - Registered React Data Formatter routes
+2025-07-04 14:11:33,903 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-04 14:11:34,121 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-04 14:11:34,121 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-04 14:11:34,125 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-04 14:11:34,126 - app - INFO - Creating application with deployment fixes...
+2025-07-04 14:11:34,126 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-04 14:11:34,127 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-04 14:11:34,127 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-04 14:11:34,127 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-04 14:11:34,128 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-04 14:11:34,469 - email_service - INFO - 📧 Email service DISABLED - notifications will be logged only
+2025-07-04 14:11:34,469 - email_service - INFO - 📧 To enable email, set EMAIL_ENABLED=true in environment variables
+2025-07-04 14:11:34,476 - static_middleware - INFO - Registered static file handler middleware
+2025-07-04 14:11:34,477 - static_middleware - INFO - Static folder: /Users/josephhester/Documents/fire-ems-tools/static
+2025-07-04 14:11:34,477 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-04 14:11:34,477 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-04 14:11:34,477 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-04 14:11:34,477 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-04 14:11:34,477 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-04 14:11:34,477 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-04 14:11:34,477 - static_middleware - INFO - Sample static files: []
+2025-07-04 14:11:37,683 - app - INFO - Successfully registered all route blueprints
+2025-07-04 14:11:37,712 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-04 14:11:37,713 - app - INFO - Registered React Data Formatter routes
+2025-07-04 14:11:37,715 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-04 14:11:37,716 - fix_deployment - INFO - Added column has_temp_password to users
+2025-07-04 14:11:37,716 - fix_deployment - INFO - Added column reset_token_hash to users
+2025-07-04 14:11:37,717 - fix_deployment - INFO - Added column reset_token_expires to users
+2025-07-04 14:11:37,717 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-04 14:11:37,717 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-04 14:11:37,717 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-04 14:11:37,718 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-04 14:11:37,718 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-04 14:11:37,718 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-04 14:11:37,729 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-04 14:11:37,730 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-04 14:11:37,732 - app - ERROR - Failed to create default admin user: (sqlite3.OperationalError) no such column: users.phone
+[SQL: SELECT count(*) AS count_1 
+FROM (SELECT users.id AS users_id, users.department_id AS users_department_id, users.email AS users_email, users.password_hash AS users_password_hash, users.name AS users_name, users.role AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.last_login AS users_last_login, users.has_temp_password AS users_has_temp_password, users.reset_token_hash AS users_reset_token_hash, users.reset_token_expires AS users_reset_token_expires, users.phone AS users_phone, users.title AS users_title, users.employee_id AS users_employee_id, users.station_assignment AS users_station_assignment, users.shift AS users_shift, users.rank AS users_rank, users.timezone AS users_timezone, users.email_notifications AS users_email_notifications, users.report_notifications AS users_report_notifications, users.language AS users_language, users.date_format AS users_date_format, users.preferences AS users_preferences 
+FROM users 
+WHERE users.role = ?) AS anon_1]
+[parameters: ('super_admin',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-07-04 14:11:37,738 - app - ERROR - Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 942, in do_execute
+    cursor.execute(statement, parameters)
+sqlite3.OperationalError: no such column: users.phone
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/josephhester/Documents/fire-ems-tools/app.py", line 1590, in create_default_admin
+    admin_count = User.query.filter_by(role='super_admin').count()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 3147, in count
+    self._legacy_from_self(col).enable_eagerloads(False).scalar()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2836, in scalar
+    ret = self.one()
+          ^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2809, in one
+    return self._iter().one()  # type: ignore
+           ^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/sqlalchemy/orm/query.py", line 2858, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2251, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1416, in execute
+    return meth(
+           ^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/sqlalchemy/sql/elements.py", line 523, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1843, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1983, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 942, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: users.phone
+[SQL: SELECT count(*) AS count_1 
+FROM (SELECT users.id AS users_id, users.department_id AS users_department_id, users.email AS users_email, users.password_hash AS users_password_hash, users.name AS users_name, users.role AS users_role, users.is_active AS users_is_active, users.created_at AS users_created_at, users.last_login AS users_last_login, users.has_temp_password AS users_has_temp_password, users.reset_token_hash AS users_reset_token_hash, users.reset_token_expires AS users_reset_token_expires, users.phone AS users_phone, users.title AS users_title, users.employee_id AS users_employee_id, users.station_assignment AS users_station_assignment, users.shift AS users_shift, users.rank AS users_rank, users.timezone AS users_timezone, users.email_notifications AS users_email_notifications, users.report_notifications AS users_report_notifications, users.language AS users_language, users.date_format AS users_date_format, users.preferences AS users_preferences 
+FROM users 
+WHERE users.role = ?) AS anon_1]
+[parameters: ('super_admin',)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+
+2025-07-04 14:11:37,738 - app - INFO - Application created successfully with all fixes applied
+2025-07-04 14:11:37,738 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-04 14:11:37,739 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-04 14:11:37,739 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-04 14:11:37,739 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-04 14:11:37,739 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-04 14:11:37,739 - email_service - INFO - 📧 Email service DISABLED - notifications will be logged only
+2025-07-04 14:11:37,739 - email_service - INFO - 📧 To enable email, set EMAIL_ENABLED=true in environment variables
+2025-07-04 14:11:37,740 - static_middleware - INFO - Registered static file handler middleware
+2025-07-04 14:11:37,740 - static_middleware - INFO - Static folder: /Users/josephhester/Documents/fire-ems-tools/static
+2025-07-04 14:11:37,740 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-04 14:11:37,740 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-04 14:11:37,740 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-04 14:11:37,740 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-04 14:11:37,740 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-04 14:11:37,740 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-04 14:11:37,741 - static_middleware - INFO - Sample static files: []
+2025-07-04 14:11:37,758 - app - INFO - Successfully registered all route blueprints
+2025-07-04 14:11:37,759 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-04 14:11:37,759 - app - INFO - Registered React Data Formatter routes
+2025-07-04 14:29:59,648 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-04 14:29:59,782 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-04 14:29:59,782 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-04 14:29:59,786 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-04 14:29:59,786 - __main__ - INFO - Creating application with deployment fixes...
+2025-07-04 14:29:59,787 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-04 14:29:59,787 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-04 14:29:59,787 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-04 14:29:59,788 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-04 14:29:59,788 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-04 14:29:59,800 - email_service - INFO - 📧 Email service DISABLED - notifications will be logged only
+2025-07-04 14:29:59,800 - email_service - INFO - 📧 To enable email, set EMAIL_ENABLED=true in environment variables
+2025-07-04 14:29:59,802 - static_middleware - INFO - Registered static file handler middleware
+2025-07-04 14:29:59,803 - static_middleware - INFO - Static folder: /Users/josephhester/Documents/fire-ems-tools/static
+2025-07-04 14:29:59,803 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-04 14:29:59,803 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-04 14:29:59,803 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-04 14:29:59,803 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-04 14:29:59,803 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-04 14:29:59,803 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-04 14:29:59,803 - static_middleware - INFO - Sample static files: []
+2025-07-04 14:30:00,185 - __main__ - INFO - Successfully registered all route blueprints
+2025-07-04 14:30:00,187 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-04 14:30:00,187 - __main__ - INFO - Registered React Data Formatter routes
+2025-07-04 14:30:00,190 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-04 14:30:00,190 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-04 14:30:00,190 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-04 14:30:00,190 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-04 14:30:00,190 - fix_deployment - INFO - Column phone already exists in users
+2025-07-04 14:30:00,190 - fix_deployment - INFO - Column title already exists in users
+2025-07-04 14:30:00,190 - fix_deployment - INFO - Column employee_id already exists in users
+2025-07-04 14:30:00,190 - fix_deployment - INFO - Column station_assignment already exists in users
+2025-07-04 14:30:00,190 - fix_deployment - INFO - Column shift already exists in users
+2025-07-04 14:30:00,190 - fix_deployment - INFO - Column rank already exists in users
+2025-07-04 14:30:00,190 - fix_deployment - INFO - Column timezone already exists in users
+2025-07-04 14:30:00,191 - fix_deployment - INFO - Column email_notifications already exists in users
+2025-07-04 14:30:00,191 - fix_deployment - INFO - Column report_notifications already exists in users
+2025-07-04 14:30:00,191 - fix_deployment - INFO - Column language already exists in users
+2025-07-04 14:30:00,191 - fix_deployment - INFO - Column date_format already exists in users
+2025-07-04 14:30:00,191 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-04 14:30:00,191 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-04 14:30:00,191 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-04 14:30:00,191 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-04 14:30:00,191 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-04 14:30:00,191 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-04 14:30:00,202 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-04 14:30:00,202 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-04 14:30:00,205 - __main__ - INFO - Found 1 existing super_admin users
+2025-07-04 14:30:00,205 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-07-04 14:30:00,205 - __main__ - INFO - Application created successfully with all fixes applied
+2025-07-04 14:30:01,191 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5006
+ * Running on http://192.168.1.76:5006
+2025-07-04 14:30:01,191 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-07-04 14:30:01,284 - werkzeug - INFO -  * Restarting with stat
+2025-07-04 14:30:01,423 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-04 14:30:01,528 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-04 14:30:01,528 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-04 14:30:01,530 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-04 14:30:01,530 - __main__ - INFO - Creating application with deployment fixes...
+2025-07-04 14:30:01,531 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-04 14:30:01,531 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-04 14:30:01,531 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-04 14:30:01,531 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-04 14:30:01,532 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-04 14:30:01,537 - email_service - INFO - 📧 Email service DISABLED - notifications will be logged only
+2025-07-04 14:30:01,537 - email_service - INFO - 📧 To enable email, set EMAIL_ENABLED=true in environment variables
+2025-07-04 14:30:01,539 - static_middleware - INFO - Registered static file handler middleware
+2025-07-04 14:30:01,539 - static_middleware - INFO - Static folder: /Users/josephhester/Documents/fire-ems-tools/static
+2025-07-04 14:30:01,539 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-04 14:30:01,539 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-04 14:30:01,539 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-04 14:30:01,539 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-04 14:30:01,539 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-04 14:30:01,539 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-04 14:30:01,540 - static_middleware - INFO - Sample static files: []
+2025-07-04 14:30:01,770 - __main__ - INFO - Successfully registered all route blueprints
+2025-07-04 14:30:01,771 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-04 14:30:01,772 - __main__ - INFO - Registered React Data Formatter routes
+2025-07-04 14:30:01,772 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-04 14:30:01,773 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-04 14:30:01,773 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-04 14:30:01,773 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-04 14:30:01,773 - fix_deployment - INFO - Column phone already exists in users
+2025-07-04 14:30:01,773 - fix_deployment - INFO - Column title already exists in users
+2025-07-04 14:30:01,773 - fix_deployment - INFO - Column employee_id already exists in users
+2025-07-04 14:30:01,773 - fix_deployment - INFO - Column station_assignment already exists in users
+2025-07-04 14:30:01,773 - fix_deployment - INFO - Column shift already exists in users
+2025-07-04 14:30:01,773 - fix_deployment - INFO - Column rank already exists in users
+2025-07-04 14:30:01,773 - fix_deployment - INFO - Column timezone already exists in users
+2025-07-04 14:30:01,773 - fix_deployment - INFO - Column email_notifications already exists in users
+2025-07-04 14:30:01,773 - fix_deployment - INFO - Column report_notifications already exists in users
+2025-07-04 14:30:01,773 - fix_deployment - INFO - Column language already exists in users
+2025-07-04 14:30:01,773 - fix_deployment - INFO - Column date_format already exists in users
+2025-07-04 14:30:01,774 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-04 14:30:01,774 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-04 14:30:01,774 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-04 14:30:01,774 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-04 14:30:01,774 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-04 14:30:01,774 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-04 14:30:01,785 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-04 14:30:01,785 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-04 14:30:01,788 - __main__ - INFO - Found 1 existing super_admin users
+2025-07-04 14:30:01,788 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-07-04 14:30:01,788 - __main__ - INFO - Application created successfully with all fixes applied
+2025-07-04 14:30:01,805 - werkzeug - WARNING -  * Debugger is active!
+2025-07-04 14:30:01,816 - werkzeug - INFO -  * Debugger PIN: 110-174-263

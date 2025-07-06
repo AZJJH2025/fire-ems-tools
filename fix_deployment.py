@@ -307,6 +307,15 @@ def fix_database_tables(app, db):
     from sqlalchemy import text
     
     with app.app_context():
+        # First, ensure all tables exist by creating them
+        try:
+            logger.info("Creating all database tables if they don't exist...")
+            db.create_all()
+            logger.info("Database tables creation completed")
+        except Exception as e:
+            logger.error(f"Error creating database tables: {str(e)}")
+            logger.error(traceback.format_exc())
+        
         # Use a transaction to ensure all schema changes are atomic
         with db.engine.begin() as connection:
             dialect = db.engine.dialect.name
@@ -316,16 +325,18 @@ def fix_database_tables(app, db):
                 try:
                     connection.execute(text("SELECT 1 FROM users LIMIT 1"))
                     users_table_exists = True
+                    logger.info("Users table exists")
                 except Exception:
                     users_table_exists = False
-                    logger.warning("Users table does not exist, skipping column additions")
+                    logger.warning("Users table does not exist after create_all - database may have issues")
                 
                 try:
                     connection.execute(text("SELECT 1 FROM departments LIMIT 1"))
                     departments_table_exists = True
+                    logger.info("Departments table exists")
                 except Exception:
                     departments_table_exists = False
-                    logger.warning("Departments table does not exist, skipping column additions")
+                    logger.warning("Departments table does not exist after create_all - database may have issues")
                 
                 # Only proceed with column additions if tables exist
                 if users_table_exists:
