@@ -307,11 +307,43 @@ def fix_database_tables(app, db):
     from sqlalchemy import text
     
     with app.app_context():
+        # Log critical database information for debugging
+        logger.info(f"🔍 DATABASE DEBUG: Engine URL: {db.engine.url}")
+        logger.info(f"🔍 DATABASE DEBUG: Dialect: {db.engine.dialect.name}")
+        
         # First, ensure all tables exist by creating them
         try:
             logger.info("Creating all database tables if they don't exist...")
             db.create_all()
             logger.info("Database tables creation completed")
+            
+            # CRITICAL: Check what actually exists in the database
+            try:
+                with db.engine.begin() as test_connection:
+                    # Check if users table exists and count rows
+                    user_count_query = text("SELECT COUNT(*) as count FROM users")
+                    result = test_connection.execute(user_count_query)
+                    user_count = result.fetchone()[0]
+                    logger.info(f"🔍 DATABASE DEBUG: Found {user_count} users in database")
+                    
+                    # Check table schema - what columns actually exist
+                    if db.engine.dialect.name == 'postgresql':
+                        schema_query = text("""
+                            SELECT column_name 
+                            FROM information_schema.columns 
+                            WHERE table_name = 'users' 
+                            ORDER BY ordinal_position
+                        """)
+                    else:  # SQLite
+                        schema_query = text("PRAGMA table_info(users)")
+                    
+                    result = test_connection.execute(schema_query)
+                    columns = result.fetchall()
+                    logger.info(f"🔍 DATABASE DEBUG: Users table columns: {[col[0] if db.engine.dialect.name == 'postgresql' else col[1] for col in columns]}")
+                    
+            except Exception as debug_error:
+                logger.error(f"🔍 DATABASE DEBUG ERROR: {str(debug_error)}")
+                
         except Exception as e:
             logger.error(f"Error creating database tables: {str(e)}")
             logger.error(traceback.format_exc())
