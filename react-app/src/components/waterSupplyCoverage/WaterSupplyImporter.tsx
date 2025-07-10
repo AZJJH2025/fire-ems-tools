@@ -111,11 +111,18 @@ const WaterSupplyImporter: React.FC<WaterSupplyImporterProps> = ({ open, onClose
   // Convert CSV record to tank object
   const csvToTank = useCallback((record: any): any => {
     const capacity = parseInt(record.Capacity_Gallons || record.Capacity || '25000');
-    const lat = parseFloat(record.Latitude);
-    const lng = parseFloat(record.Longitude);
+    const lat = parseFloat(
+      record.Latitude || record.latitude || record.LAT || record.lat || 
+      record.Y || record.y || record.LATITUDE
+    );
+    const lng = parseFloat(
+      record.Longitude || record.longitude || record.LNG || record.lng || 
+      record.LON || record.lon || record.X || record.x || record.LONGITUDE
+    );
+    const name = record.Name || record.name || record.NAME || record.HYD_ID || record.ST_NAME || `Tank ${Date.now()}`;
 
     return {
-      name: record.Name || `Tank ${Date.now()}`,
+      name: name,
       location: { latitude: lat, longitude: lng },
       capacity: isNaN(capacity) ? 25000 : capacity,
       type: 'municipal' as any,
@@ -133,11 +140,18 @@ const WaterSupplyImporter: React.FC<WaterSupplyImporterProps> = ({ open, onClose
   const csvToHydrant = useCallback((record: any): any => {
     const flowRate = parseInt(record.Flow_Rate_GPM || record.FlowRate || '1000');
     const staticPressure = parseInt(record.Static_Pressure_PSI || record.Pressure || '50');
-    const lat = parseFloat(record.Latitude);
-    const lng = parseFloat(record.Longitude);
+    const lat = parseFloat(
+      record.Latitude || record.latitude || record.LAT || record.lat || 
+      record.Y || record.y || record.LATITUDE
+    );
+    const lng = parseFloat(
+      record.Longitude || record.longitude || record.LNG || record.lng || 
+      record.LON || record.lon || record.X || record.x || record.LONGITUDE
+    );
+    const name = record.Name || record.name || record.NAME || record.HYD_ID || record.ST_NAME || `Hydrant ${Date.now()}`;
 
     return {
-      name: record.Name || `Hydrant ${Date.now()}`,
+      name: name,
       location: { latitude: lat, longitude: lng },
       flowRate: isNaN(flowRate) ? 1000 : flowRate,
       staticPressure: isNaN(staticPressure) ? 50 : staticPressure,
@@ -161,12 +175,23 @@ const WaterSupplyImporter: React.FC<WaterSupplyImporterProps> = ({ open, onClose
 
       for (const record of records) {
         try {
-          // Validate coordinates
-          const lat = parseFloat(record.Latitude);
-          const lng = parseFloat(record.Longitude);
+          // Validate coordinates - handle multiple column name variations
+          const lat = parseFloat(
+            record.Latitude || record.latitude || record.LAT || record.lat || 
+            record.Y || record.y || record.LATITUDE
+          );
+          const lng = parseFloat(
+            record.Longitude || record.longitude || record.LNG || record.lng || 
+            record.LON || record.lon || record.X || record.x || record.LONGITUDE
+          );
+          
+          const name = record.Name || record.name || record.NAME || record.HYD_ID || record.ST_NAME || 'Unknown';
           
           if (isNaN(lat) || isNaN(lng)) {
-            result.errors.push(`Invalid coordinates for ${record.Name}: ${record.Latitude}, ${record.Longitude}`);
+            // Show helpful error with actual column names
+            const latValue = record.Latitude || record.latitude || record.LAT || record.lat || record.Y || record.y || 'not found';
+            const lngValue = record.Longitude || record.longitude || record.LNG || record.lng || record.X || record.x || 'not found';
+            result.errors.push(`Invalid coordinates for ${name}: lat=${latValue}, lng=${lngValue}. Check column names: should be Latitude/longitude or lat/lng.`);
             continue;
           }
 
