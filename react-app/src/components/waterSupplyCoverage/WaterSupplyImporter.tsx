@@ -96,7 +96,10 @@ const WaterSupplyImporter: React.FC<WaterSupplyImporterProps> = ({ open, onClose
     const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
     const rows = lines.slice(1);
 
-    return rows.map(row => {
+    // Debug: Log the column headers found
+    console.log('🔍 WATER SUPPLY CSV HEADERS FOUND:', headers);
+
+    const records = rows.map(row => {
       const values = row.split(',').map(v => v.trim().replace(/"/g, ''));
       const record: any = {};
       
@@ -106,6 +109,13 @@ const WaterSupplyImporter: React.FC<WaterSupplyImporterProps> = ({ open, onClose
       
       return record;
     });
+
+    // Debug: Log first record to see what fields are available
+    if (records.length > 0) {
+      console.log('🔍 FIRST RECORD SAMPLE:', records[0]);
+    }
+
+    return records;
   }, []);
 
   // Convert CSV record to tank object
@@ -175,6 +185,9 @@ const WaterSupplyImporter: React.FC<WaterSupplyImporterProps> = ({ open, onClose
 
       for (const record of records) {
         try {
+          // Debug: Show what fields are available for this record
+          console.log('🔍 PROCESSING RECORD:', record);
+          
           // Validate coordinates - handle multiple column name variations
           const lat = parseFloat(
             record.Latitude || record.latitude || record.LAT || record.lat || 
@@ -186,6 +199,11 @@ const WaterSupplyImporter: React.FC<WaterSupplyImporterProps> = ({ open, onClose
           );
           
           const name = record.Name || record.name || record.NAME || record.HYD_ID || record.ST_NAME || 'Unknown';
+          
+          console.log(`🔍 COORDINATE PARSING: lat=${lat}, lng=${lng} from record:`, {
+            Y: record.Y, y: record.y, lat: record.lat, latitude: record.latitude,
+            X: record.X, x: record.x, lng: record.lng, longitude: record.longitude
+          });
           
           if (isNaN(lat) || isNaN(lng)) {
             // Show helpful error with actual column names
