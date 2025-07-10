@@ -88,48 +88,99 @@ const WaterSupplyImporter: React.FC<WaterSupplyImporterProps> = ({ open, onClose
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [dragOver, setDragOver] = useState(false);
 
-  // Parse CSV text into structured data
+  // Parse CSV text into structured data with robust parsing
   const parseCSV = useCallback((csvText: string): any[] => {
-    const lines = csvText.trim().split('\n');
-    if (lines.length < 2) return [];
+    try {
+      // Clean the input text
+      const cleanText = csvText.trim();
+      if (!cleanText) return [];
 
-    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-    const rows = lines.slice(1);
+      // Split into lines, handling different line endings
+      const lines = cleanText.split(/\r?\n/).filter(line => line.trim());
+      if (lines.length < 2) return [];
 
-    // Debug: Log the column headers found
-    console.log('🔍 WATER SUPPLY CSV HEADERS FOUND:', headers);
+      // Parse CSV properly handling quoted fields, commas inside quotes, etc.
+      const parseCSVLine = (line: string): string[] => {
+        const result: string[] = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          const nextChar = line[i + 1];
+          
+          if (char === '"') {
+            if (inQuotes && nextChar === '"') {
+              // Double quote inside quoted field
+              current += '"';
+              i++; // Skip next quote
+            } else {
+              // Start or end of quoted field
+              inQuotes = !inQuotes;
+            }
+          } else if (char === ',' && !inQuotes) {
+            // Field separator
+            result.push(current.trim());
+            current = '';
+          } else {
+            current += char;
+          }
+        }
+        
+        // Add the last field
+        result.push(current.trim());
+        return result;
+      };
 
-    const records = rows.map(row => {
-      const values = row.split(',').map(v => v.trim().replace(/"/g, ''));
-      const record: any = {};
-      
-      headers.forEach((header, index) => {
-        record[header] = values[index] || '';
+      // Parse headers with robust cleaning
+      const headers = parseCSVLine(lines[0]).map(h => 
+        h.replace(/^["']|["']$/g, '').trim() // Remove quotes and trim
+      );
+
+      // Debug: Log the column headers found
+      console.log('🔍 WATER SUPPLY CSV HEADERS FOUND:', headers);
+
+      // Parse data rows
+      const records = lines.slice(1).map((line, lineIndex) => {
+        const values = parseCSVLine(line);
+        const record: any = {};
+        
+        headers.forEach((header, index) => {
+          let value = values[index] || '';
+          // Clean the value - remove quotes and trim
+          value = value.replace(/^["']|["']$/g, '').trim();
+          record[header] = value;
+        });
+        
+        return record;
+      }).filter(record => {
+        // Filter out empty records
+        return Object.values(record).some(value => value !== '');
       });
-      
-      return record;
-    });
 
-    // Debug: Log first record to see what fields are available
-    if (records.length > 0) {
-      console.log('🔍 FIRST RECORD SAMPLE:', records[0]);
+      // Debug: Log first few records to see what fields are available
+      if (records.length > 0) {
+        console.log('🔍 FIRST RECORD SAMPLE:', records[0]);
+        console.log('🔍 TOTAL RECORDS PARSED:', records.length);
+        
+        // Log available coordinate-related fields
+        const coordFields = headers.filter(h => 
+          /^(x|y|lat|lng|lon|latitude|longitude)$/i.test(h) ||
+          h.toLowerCase().includes('coord')
+        );
+        console.log('🔍 COORDINATE-RELATED FIELDS FOUND:', coordFields);
+      }
+
+      return records;
+    } catch (error) {
+      console.error('🔥 CSV PARSING ERROR:', error);
+      return [];
     }
-
-    return records;
   }, []);
 
   // Convert CSV record to tank object
-  const csvToTank = useCallback((record: any): any => {
+  const csvToTank = useCallback((record: any, lat: number, lng: number, name: string): any => {
     const capacity = parseInt(record.Capacity_Gallons || record.Capacity || '25000');
-    const lat = parseFloat(
-      record.Latitude || record.latitude || record.LAT || record.lat || 
-      record.Y || record.y || record.LATITUDE
-    );
-    const lng = parseFloat(
-      record.Longitude || record.longitude || record.LNG || record.lng || 
-      record.LON || record.lon || record.X || record.x || record.LONGITUDE
-    );
-    const name = record.Name || record.name || record.NAME || record.HYD_ID || record.ST_NAME || `Tank ${Date.now()}`;
 
     return {
       name: name,
@@ -147,18 +198,9 @@ const WaterSupplyImporter: React.FC<WaterSupplyImporterProps> = ({ open, onClose
   }, []);
 
   // Convert CSV record to hydrant object  
-  const csvToHydrant = useCallback((record: any): any => {
+  const csvToHydrant = useCallback((record: any, lat: number, lng: number, name: string): any => {
     const flowRate = parseInt(record.Flow_Rate_GPM || record.FlowRate || '1000');
     const staticPressure = parseInt(record.Static_Pressure_PSI || record.Pressure || '50');
-    const lat = parseFloat(
-      record.Latitude || record.latitude || record.LAT || record.lat || 
-      record.Y || record.y || record.LATITUDE
-    );
-    const lng = parseFloat(
-      record.Longitude || record.longitude || record.LNG || record.lng || 
-      record.LON || record.lon || record.X || record.x || record.LONGITUDE
-    );
-    const name = record.Name || record.name || record.NAME || record.HYD_ID || record.ST_NAME || `Hydrant ${Date.now()}`;
 
     return {
       name: name,
@@ -185,31 +227,73 @@ const WaterSupplyImporter: React.FC<WaterSupplyImporterProps> = ({ open, onClose
 
       for (const record of records) {
         try {
-          // Debug: Show what fields are available for this record
-          console.log('🔍 PROCESSING RECORD:', record);
+          // Debug: Show what fields are available for this record (only first few records)
+          if (result.tanks + result.hydrants < 3) {
+            console.log(`🔍 PROCESSING RECORD #${result.tanks + result.hydrants + 1}:`, record);
+          }
           
-          // Validate coordinates - handle multiple column name variations
-          const lat = parseFloat(
-            record.Latitude || record.latitude || record.LAT || record.lat || 
-            record.Y || record.y || record.LATITUDE
-          );
-          const lng = parseFloat(
-            record.Longitude || record.longitude || record.LNG || record.lng || 
-            record.LON || record.lon || record.X || record.x || record.LONGITUDE
-          );
+          // Smart coordinate detection - try multiple approaches
+          let lat: number, lng: number;
+          let latSource = '', lngSource = '';
           
-          const name = record.Name || record.name || record.NAME || record.HYD_ID || record.ST_NAME || 'Unknown';
+          // Approach 1: Standard coordinate field names
+          const latFields = ['Latitude', 'latitude', 'LAT', 'lat', 'Y', 'y', 'LATITUDE'];
+          const lngFields = ['Longitude', 'longitude', 'LNG', 'lng', 'LON', 'lon', 'X', 'x', 'LONGITUDE'];
           
-          console.log(`🔍 COORDINATE PARSING: lat=${lat}, lng=${lng} from record:`, {
-            Y: record.Y, y: record.y, lat: record.lat, latitude: record.latitude,
-            X: record.X, x: record.x, lng: record.lng, longitude: record.longitude
-          });
+          // Find latitude
+          for (const field of latFields) {
+            if (record[field] && record[field] !== '') {
+              const val = parseFloat(record[field]);
+              if (!isNaN(val) && Math.abs(val) <= 90) { // Valid latitude range
+                lat = val;
+                latSource = field;
+                break;
+              }
+            }
+          }
           
-          if (isNaN(lat) || isNaN(lng)) {
-            // Show helpful error with actual column names
-            const latValue = record.Latitude || record.latitude || record.LAT || record.lat || record.Y || record.y || 'not found';
-            const lngValue = record.Longitude || record.longitude || record.LNG || record.lng || record.X || record.x || 'not found';
-            result.errors.push(`Invalid coordinates for ${name}: lat=${latValue}, lng=${lngValue}. Check column names: should be Latitude/longitude or lat/lng.`);
+          // Find longitude  
+          for (const field of lngFields) {
+            if (record[field] && record[field] !== '') {
+              const val = parseFloat(record[field]);
+              if (!isNaN(val) && Math.abs(val) <= 180) { // Valid longitude range
+                lng = val;
+                lngSource = field;
+                break;
+              }
+            }
+          }
+          
+          // Approach 2: If standard fields don't work, look for any numeric fields that might be coordinates
+          if (isNaN(lat!) || isNaN(lng!)) {
+            const numericFields = Object.keys(record).filter(key => {
+              const val = parseFloat(record[key]);
+              return !isNaN(val) && record[key] !== '';
+            });
+            
+            console.log('🔍 FALLBACK: Looking for coordinates in numeric fields:', numericFields);
+            
+            for (const field of numericFields) {
+              const val = parseFloat(record[field]);
+              if (Math.abs(val) <= 90 && isNaN(lat!)) {
+                lat = val;
+                latSource = `${field} (auto-detected)`;
+              } else if (Math.abs(val) <= 180 && isNaN(lng!)) {
+                lng = val;
+                lngSource = `${field} (auto-detected)`;
+              }
+            }
+          }
+          
+          const name = record.Name || record.name || record.NAME || record.HYD_ID || record.ST_NAME || 
+                      record.STATION || record.station || record.ID || record.id || `Item ${result.tanks + result.hydrants + 1}`;
+          
+          console.log(`🔍 COORDINATE PARSING: lat=${lat} (from ${latSource}), lng=${lng} (from ${lngSource})`);
+          
+          if (isNaN(lat!) || isNaN(lng!)) {
+            // More helpful error message showing what was tried
+            const availableFields = Object.keys(record).filter(k => record[k] !== '');
+            result.errors.push(`Invalid coordinates for ${name}: Could not find valid lat/lng. Available fields: ${availableFields.join(', ')}. Tried lat from: ${latFields.join(', ')}. Tried lng from: ${lngFields.join(', ')}.`);
             continue;
           }
 
@@ -220,19 +304,19 @@ const WaterSupplyImporter: React.FC<WaterSupplyImporterProps> = ({ open, onClose
 
           if (type === 'tank' || (hasCapacity && !hasFlowRate)) {
             // Process as tank
-            const tank = csvToTank(record);
+            const tank = csvToTank(record, lat, lng, name);
             dispatch(addTank(tank));
             result.tanks++;
           } else if (type === 'hydrant' || hasFlowRate) {
             // Process as hydrant
-            const hydrant = csvToHydrant(record);
+            const hydrant = csvToHydrant(record, lat, lng, name);
             dispatch(addHydrant(hydrant));
             result.hydrants++;
           } else {
-            result.warnings.push(`Unclear type for ${record.Name} - defaulting to tank`);
-            const tank = csvToTank(record);
-            dispatch(addTank(tank));
-            result.tanks++;
+            result.warnings.push(`Unclear type for ${name} - defaulting to hydrant`);
+            const hydrant = csvToHydrant(record, lat, lng, name);
+            dispatch(addHydrant(hydrant));
+            result.hydrants++;
           }
         } catch (error) {
           result.errors.push(`Error processing ${record.Name}: ${error}`);
