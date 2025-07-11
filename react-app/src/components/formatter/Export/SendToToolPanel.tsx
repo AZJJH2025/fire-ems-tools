@@ -48,16 +48,16 @@ const availableTools = [
     name: 'Water Supply Coverage Analysis',
     description: 'Comprehensive water supply analysis including tanks, hydrants, and mixed infrastructure',
     icon: <LocalFireDepartmentIcon fontSize="large" sx={{ color: '#ff5722' }} />,
-    requiredFields: ['assetId', 'latitude', 'longitude'],
-    optionalFields: ['assetType', 'capacity', 'address', 'city', 'state', 'status']
+    requiredFields: ['asset_id', 'latitude', 'longitude'],
+    optionalFields: ['asset_type', 'capacity', 'address', 'city', 'state', 'status']
   },
   {
     id: 'station-coverage-optimizer',
     name: 'Station Coverage Optimizer',
     description: 'Enterprise station placement and coverage analysis with NFPA compliance assessment',
     icon: <SecurityIcon fontSize="large" sx={{ color: '#9c27b0' }} />,
-    requiredFields: ['stationId', 'latitude', 'longitude'],
-    optionalFields: ['stationName', 'stationType', 'apparatusCount', 'staffingLevel', 'address', 'city', 'state']
+    requiredFields: ['station_id', 'latitude', 'longitude'],
+    optionalFields: ['station_name', 'station_type', 'apparatus_count', 'staffing_level', 'address', 'city', 'state']
   }
 ];
 
