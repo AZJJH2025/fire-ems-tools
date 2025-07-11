@@ -53,6 +53,10 @@ const FieldTransformationSettings: React.FC<FieldTransformationSettingsProps> = 
   // Type conversion settings
   const [convertToType, setConvertToType] = useState('string');
   
+  // Geographic coordinate parsing settings
+  const [coordinateFormat, setCoordinateFormat] = useState('point');
+  const [coordinateComponent, setCoordinateComponent] = useState('longitude');
+  
   // Initialize transformations from current mapping
   useEffect(() => {
     if (!mapping) return;
@@ -89,6 +93,10 @@ const FieldTransformationSettings: React.FC<FieldTransformationSettingsProps> = 
             break;
           case 'convert':
             setConvertToType(transform.params.toType || 'string');
+            break;
+          case 'parseCoordinates':
+            setCoordinateFormat(transform.params.format || 'point');
+            setCoordinateComponent(transform.params.component || 'longitude');
             break;
         }
       });
@@ -134,6 +142,17 @@ const FieldTransformationSettings: React.FC<FieldTransformationSettingsProps> = 
         type: 'convert',
         params: {
           toType: convertToType
+        }
+      });
+    }
+    
+    // Add coordinate parsing transformation
+    if (tab === 3) {
+      transformations.push({
+        type: 'parseCoordinates',
+        params: {
+          format: coordinateFormat,
+          component: coordinateComponent
         }
       });
     }
@@ -241,6 +260,38 @@ const FieldTransformationSettings: React.FC<FieldTransformationSettingsProps> = 
             return 'Error converting value';
           }
         });
+      
+      case 3: // Parse Coordinates
+        return sampleValues.map(value => {
+          if (!value) return 'N/A';
+          
+          try {
+            const valueStr = value.toString().trim();
+            
+            if (coordinateFormat === 'point') {
+              // Parse POINT(-86.5540806822223 39.1620537333389) format
+              const pointMatch = valueStr.match(/POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i);
+              if (pointMatch) {
+                const longitude = parseFloat(pointMatch[1]);
+                const latitude = parseFloat(pointMatch[2]);
+                
+                if (coordinateComponent === 'longitude') {
+                  return longitude.toString();
+                } else if (coordinateComponent === 'latitude') {
+                  return latitude.toString();
+                } else {
+                  return `${longitude}, ${latitude}`;
+                }
+              } else {
+                return 'Invalid POINT format';
+              }
+            }
+            
+            return 'Unsupported coordinate format';
+          } catch (e) {
+            return 'Error parsing coordinates';
+          }
+        });
     }
     
     return [];
@@ -271,6 +322,7 @@ const FieldTransformationSettings: React.FC<FieldTransformationSettingsProps> = 
               <Tab label="Date/Time Format" />
               <Tab label="Split/Extract" />
               <Tab label="Type Conversion" />
+              <Tab label="Parse Coordinates" />
             </Tabs>
           </Box>
           
@@ -363,6 +415,44 @@ const FieldTransformationSettings: React.FC<FieldTransformationSettingsProps> = 
                 <MenuItem value="string">Text (String)</MenuItem>
                 <MenuItem value="number">Number</MenuItem>
                 <MenuItem value="boolean">True/False (Boolean)</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+          
+          {/* Parse Coordinates Tab */}
+          <Box role="tabpanel" hidden={tab !== 3} sx={{ p: 2 }}>
+            <Typography variant="subtitle1" gutterBottom>
+              Parse Geographic Coordinates
+            </Typography>
+            <Typography variant="body2" color="text.secondary" paragraph>
+              Extract latitude and longitude values from geographic coordinate formats like POINT(-86.5540806822223 39.1620537333389).
+            </Typography>
+            
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel id="coordinate-format-label">Coordinate Format</InputLabel>
+              <Select
+                labelId="coordinate-format-label"
+                id="coordinate-format-select"
+                value={coordinateFormat}
+                label="Coordinate Format"
+                onChange={e => setCoordinateFormat(e.target.value)}
+              >
+                <MenuItem value="point">POINT(longitude latitude)</MenuItem>
+              </Select>
+            </FormControl>
+            
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel id="coordinate-component-label">Extract Component</InputLabel>
+              <Select
+                labelId="coordinate-component-label"
+                id="coordinate-component-select"
+                value={coordinateComponent}
+                label="Extract Component"
+                onChange={e => setCoordinateComponent(e.target.value)}
+              >
+                <MenuItem value="longitude">Longitude (X coordinate)</MenuItem>
+                <MenuItem value="latitude">Latitude (Y coordinate)</MenuItem>
+                <MenuItem value="both">Both (longitude, latitude)</MenuItem>
               </Select>
             </FormControl>
           </Box>

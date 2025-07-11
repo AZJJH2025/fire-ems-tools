@@ -367,6 +367,9 @@ export const applyTransformation = (
     case 'datetime_extract':
       return applyDateTimeExtractTransformation(value, enhancedParams);
 
+    case 'parseCoordinates':
+      return applyParseCoordinatesTransformation(value, enhancedParams);
+
     default:
       return value;
   }
@@ -763,4 +766,59 @@ const applyDateTimeExtractTransformation = (
   
   console.log('⚠️ DATETIME EXTRACT: No matching pattern found, returning original value');
   return value;
+};
+
+/**
+ * Parse geographic coordinates from various formats
+ * @param value The coordinate string to parse
+ * @param params Parameters including format and component to extract
+ * @returns Parsed coordinate value
+ */
+const applyParseCoordinatesTransformation = (
+  value: any,
+  params: Record<string, any>
+): any => {
+  if (!value || typeof value !== 'string') {
+    console.log('🗺️ COORDINATE PARSE: Invalid input value:', value);
+    return value;
+  }
+
+  const { format = 'point', component = 'longitude' } = params;
+  const valueStr = value.toString().trim();
+  
+  console.log(`🗺️ COORDINATE PARSE: Parsing "${valueStr}" with format "${format}", extracting "${component}"`);
+  
+  try {
+    if (format === 'point') {
+      // Parse POINT(-86.5540806822223 39.1620537333389) format
+      const pointMatch = valueStr.match(/POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i);
+      if (pointMatch) {
+        const longitude = parseFloat(pointMatch[1]);
+        const latitude = parseFloat(pointMatch[2]);
+        
+        console.log(`🗺️ COORDINATE PARSE: Extracted longitude=${longitude}, latitude=${latitude}`);
+        
+        switch (component) {
+          case 'longitude':
+            return longitude;
+          case 'latitude':
+            return latitude;
+          case 'both':
+            return `${longitude}, ${latitude}`;
+          default:
+            console.log(`🗺️ COORDINATE PARSE: Unknown component "${component}", returning longitude`);
+            return longitude;
+        }
+      } else {
+        console.log('🗺️ COORDINATE PARSE: Invalid POINT format');
+        return value;
+      }
+    }
+    
+    console.log(`🗺️ COORDINATE PARSE: Unsupported format "${format}"`);
+    return value;
+  } catch (error) {
+    console.error('🗺️ COORDINATE PARSE ERROR:', error);
+    return value;
+  }
 };
