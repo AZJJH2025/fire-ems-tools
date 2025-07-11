@@ -101,6 +101,17 @@ const SendToToolPanel: React.FC<SendToToolPanelProps> = ({
     const tool = availableTools.find(t => t.id === toolId);
     if (!tool) return { compatible: false, missingFields: [] };
 
+    // Check if we have transformed data
+    if (!transformedData || transformedData.length === 0) {
+      console.log('❌ No transformed data available for compatibility check');
+      return { 
+        compatible: false, 
+        missingFields: tool.requiredFields,
+        hasOptionalFields: [],
+        missingOptionalFields: tool.optionalFields || []
+      };
+    }
+
     // For tools with pre-transformation, check if transformation was successful
     if (toolId === 'fire-map-pro') {
       console.log('🔍 FIRE MAP PRO COMPATIBILITY CHECK - ENHANCED FOR ADDRESS PARSING');
@@ -150,7 +161,7 @@ const SendToToolPanel: React.FC<SendToToolPanelProps> = ({
     if (toolId === 'response-time-analyzer') {
       console.log('🔍 RESPONSE TIME ANALYZER COMPATIBILITY CHECK - FLEXIBLE FIELD MATCHING');
       
-      const dataFields = Object.keys(transformedData[0]);
+      const dataFields = Object.keys(transformedData[0] || {});
       console.log('🔍 Available data fields:', dataFields);
       console.log('🔍 Required fields (camelCase):', tool.requiredFields);
       
@@ -212,7 +223,7 @@ const SendToToolPanel: React.FC<SendToToolPanelProps> = ({
     }
 
     // For other tools, check field names in original data
-    const dataFields = Object.keys(transformedData[0]);
+    const dataFields = Object.keys(transformedData[0] || {});
     console.log(`🔍 ${toolId.toUpperCase()} COMPATIBILITY CHECK`);
     console.log('Available fields:', dataFields);
     console.log('Required fields:', tool.requiredFields);
