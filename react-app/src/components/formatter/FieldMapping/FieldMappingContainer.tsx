@@ -993,74 +993,82 @@ const FieldMappingContainer: React.FC = () => {
         }
         
         // 🌍 SMART COORDINATE PARSING: If no direct match found, check for POINT coordinate parsing opportunities
-        if ((targetField.id === 'longitude' || targetField.id === 'latitude') && !isFieldMapped(targetField.id)) {
-          console.log(`🌍 COORDINATE PARSING DEBUG: Checking ${targetField.id} field for coordinate opportunities`);
-          console.log(`🌍 COORDINATE PARSING DEBUG: Available source columns:`, sourceColumns);
-          console.log(`🌍 COORDINATE PARSING DEBUG: Sample data available:`, !!sampleData && sampleData.length > 0);
+        if (targetField.id === 'longitude' || targetField.id === 'latitude') {
+          console.log(`🌍 COORDINATE PARSING DEBUG: Evaluating ${targetField.id} field`);
+          console.log(`🌍 COORDINATE PARSING DEBUG: Field already mapped?`, isFieldMapped(targetField.id));
+          console.log(`🌍 COORDINATE PARSING DEBUG: Current mappings:`, newMappings.filter(m => m.targetField === targetField.id));
           
-          const coordinateMatch = sourceColumns.find(sourceField => 
-            normalizeFieldName(sourceField).includes('geom') ||
-            normalizeFieldName(sourceField).includes('geometry') ||
-            normalizeFieldName(sourceField).includes('point') ||
-            normalizeFieldName(sourceField).includes('coordinates') ||
-            normalizeFieldName(sourceField).includes('coord') ||
-            normalizeFieldName(sourceField).includes('location')
-          );
-          
-          console.log(`🌍 COORDINATE PARSING DEBUG: Found coordinate field match:`, coordinateMatch);
-          
-          if (coordinateMatch && sampleData && sampleData.length > 0) {
-            const sampleCoordinate = sampleData[0][coordinateMatch];
-            console.log(`🌍 COORDINATE PARSING DEBUG: Sample coordinate value:`, sampleCoordinate);
-            console.log(`🌍 COORDINATE PARSING DEBUG: Sample coordinate type:`, typeof sampleCoordinate);
+          if (!isFieldMapped(targetField.id)) {
+            console.log(`🌍 COORDINATE PARSING DEBUG: Checking ${targetField.id} field for coordinate opportunities`);
+            console.log(`🌍 COORDINATE PARSING DEBUG: Available source columns:`, sourceColumns);
+            console.log(`🌍 COORDINATE PARSING DEBUG: Sample data available:`, !!sampleData && sampleData.length > 0);
             
-            if (typeof sampleCoordinate === 'string' && sampleCoordinate.trim()) {
-              console.log(`🌍 COORDINATE PARSING DEBUG: Attempting to parse POINT coordinates from:`, sampleCoordinate.trim());
-              const parsedCoordinates = parsePOINTCoordinates(sampleCoordinate);
-              console.log(`🌍 COORDINATE PARSING DEBUG: Parsed result:`, parsedCoordinates);
+            const coordinateMatch = sourceColumns.find(sourceField => 
+              normalizeFieldName(sourceField).includes('geom') ||
+              normalizeFieldName(sourceField).includes('geometry') ||
+              normalizeFieldName(sourceField).includes('point') ||
+              normalizeFieldName(sourceField).includes('coordinates') ||
+              normalizeFieldName(sourceField).includes('coord') ||
+              normalizeFieldName(sourceField).includes('location')
+            );
+            
+            console.log(`🌍 COORDINATE PARSING DEBUG: Found coordinate field match:`, coordinateMatch);
+            
+            if (coordinateMatch && sampleData && sampleData.length > 0) {
+              const sampleCoordinate = sampleData[0][coordinateMatch];
+              console.log(`🌍 COORDINATE PARSING DEBUG: Sample coordinate value:`, sampleCoordinate);
+              console.log(`🌍 COORDINATE PARSING DEBUG: Sample coordinate type:`, typeof sampleCoordinate);
               
-              if (targetField.id === 'longitude' && parsedCoordinates.longitude !== null) {
-                console.log(`🌍 Smart coordinate parsing: Extracting longitude "${parsedCoordinates.longitude}" from "${coordinateMatch}"`);
-                newMappings.push({
-                  sourceField: coordinateMatch,
-                  targetField: targetField.id,
-                  transformations: [{
-                    type: 'parseCoordinates',
-                    params: {
-                      format: 'point',
-                      component: 'longitude',
-                      description: `Extract longitude from POINT coordinate data`
-                    }
-                  }]
-                });
-                console.log(`🌍 SUCCESS: Added longitude mapping for ${coordinateMatch} → ${targetField.id}`);
-                return;
+              if (typeof sampleCoordinate === 'string' && sampleCoordinate.trim()) {
+                console.log(`🌍 COORDINATE PARSING DEBUG: Attempting to parse POINT coordinates from:`, sampleCoordinate.trim());
+                const parsedCoordinates = parsePOINTCoordinates(sampleCoordinate);
+                console.log(`🌍 COORDINATE PARSING DEBUG: Parsed result:`, parsedCoordinates);
+                
+                if (targetField.id === 'longitude' && parsedCoordinates.longitude !== null) {
+                  console.log(`🌍 Smart coordinate parsing: Extracting longitude "${parsedCoordinates.longitude}" from "${coordinateMatch}"`);
+                  newMappings.push({
+                    sourceField: coordinateMatch,
+                    targetField: targetField.id,
+                    transformations: [{
+                      type: 'parseCoordinates',
+                      params: {
+                        format: 'point',
+                        component: 'longitude',
+                        description: `Extract longitude from POINT coordinate data`
+                      }
+                    }]
+                  });
+                  console.log(`🌍 SUCCESS: Added longitude mapping for ${coordinateMatch} → ${targetField.id}`);
+                  return;
+                }
+                
+                if (targetField.id === 'latitude' && parsedCoordinates.latitude !== null) {
+                  console.log(`🌍 Smart coordinate parsing: Extracting latitude "${parsedCoordinates.latitude}" from "${coordinateMatch}"`);
+                  newMappings.push({
+                    sourceField: coordinateMatch,
+                    targetField: targetField.id,
+                    transformations: [{
+                      type: 'parseCoordinates',
+                      params: {
+                        format: 'point',
+                        component: 'latitude',
+                        description: `Extract latitude from POINT coordinate data`
+                      }
+                    }]
+                  });
+                  console.log(`🌍 SUCCESS: Added latitude mapping for ${coordinateMatch} → ${targetField.id}`);
+                  return;
+                }
+                
+                console.log(`🌍 COORDINATE PARSING DEBUG: No valid coordinates extracted for ${targetField.id}`);
+              } else {
+                console.log(`🌍 COORDINATE PARSING DEBUG: Sample coordinate is not a valid string:`, sampleCoordinate);
               }
-              
-              if (targetField.id === 'latitude' && parsedCoordinates.latitude !== null) {
-                console.log(`🌍 Smart coordinate parsing: Extracting latitude "${parsedCoordinates.latitude}" from "${coordinateMatch}"`);
-                newMappings.push({
-                  sourceField: coordinateMatch,
-                  targetField: targetField.id,
-                  transformations: [{
-                    type: 'parseCoordinates',
-                    params: {
-                      format: 'point',
-                      component: 'latitude',
-                      description: `Extract latitude from POINT coordinate data`
-                    }
-                  }]
-                });
-                console.log(`🌍 SUCCESS: Added latitude mapping for ${coordinateMatch} → ${targetField.id}`);
-                return;
-              }
-              
-              console.log(`🌍 COORDINATE PARSING DEBUG: No valid coordinates extracted for ${targetField.id}`);
             } else {
-              console.log(`🌍 COORDINATE PARSING DEBUG: Sample coordinate is not a valid string:`, sampleCoordinate);
+              console.log(`🌍 COORDINATE PARSING DEBUG: No coordinate match or sample data unavailable`);
             }
           } else {
-            console.log(`🌍 COORDINATE PARSING DEBUG: No coordinate match or sample data unavailable`);
+            console.log(`🌍 COORDINATE PARSING DEBUG: ${targetField.id} field already mapped - skipping coordinate parsing`);
           }
         }
         
