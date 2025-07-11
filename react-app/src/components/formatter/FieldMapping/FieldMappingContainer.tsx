@@ -994,6 +994,10 @@ const FieldMappingContainer: React.FC = () => {
         
         // 🌍 SMART COORDINATE PARSING: If no direct match found, check for POINT coordinate parsing opportunities
         if ((targetField.id === 'longitude' || targetField.id === 'latitude') && !isFieldMapped(targetField.id)) {
+          console.log(`🌍 COORDINATE PARSING DEBUG: Checking ${targetField.id} field for coordinate opportunities`);
+          console.log(`🌍 COORDINATE PARSING DEBUG: Available source columns:`, sourceColumns);
+          console.log(`🌍 COORDINATE PARSING DEBUG: Sample data available:`, !!sampleData && sampleData.length > 0);
+          
           const coordinateMatch = sourceColumns.find(sourceField => 
             normalizeFieldName(sourceField).includes('geom') ||
             normalizeFieldName(sourceField).includes('geometry') ||
@@ -1003,10 +1007,17 @@ const FieldMappingContainer: React.FC = () => {
             normalizeFieldName(sourceField).includes('location')
           );
           
+          console.log(`🌍 COORDINATE PARSING DEBUG: Found coordinate field match:`, coordinateMatch);
+          
           if (coordinateMatch && sampleData && sampleData.length > 0) {
             const sampleCoordinate = sampleData[0][coordinateMatch];
+            console.log(`🌍 COORDINATE PARSING DEBUG: Sample coordinate value:`, sampleCoordinate);
+            console.log(`🌍 COORDINATE PARSING DEBUG: Sample coordinate type:`, typeof sampleCoordinate);
+            
             if (typeof sampleCoordinate === 'string' && sampleCoordinate.trim()) {
+              console.log(`🌍 COORDINATE PARSING DEBUG: Attempting to parse POINT coordinates from:`, sampleCoordinate.trim());
               const parsedCoordinates = parsePOINTCoordinates(sampleCoordinate);
+              console.log(`🌍 COORDINATE PARSING DEBUG: Parsed result:`, parsedCoordinates);
               
               if (targetField.id === 'longitude' && parsedCoordinates.longitude !== null) {
                 console.log(`🌍 Smart coordinate parsing: Extracting longitude "${parsedCoordinates.longitude}" from "${coordinateMatch}"`);
@@ -1022,6 +1033,7 @@ const FieldMappingContainer: React.FC = () => {
                     }
                   }]
                 });
+                console.log(`🌍 SUCCESS: Added longitude mapping for ${coordinateMatch} → ${targetField.id}`);
                 return;
               }
               
@@ -1039,9 +1051,16 @@ const FieldMappingContainer: React.FC = () => {
                     }
                   }]
                 });
+                console.log(`🌍 SUCCESS: Added latitude mapping for ${coordinateMatch} → ${targetField.id}`);
                 return;
               }
+              
+              console.log(`🌍 COORDINATE PARSING DEBUG: No valid coordinates extracted for ${targetField.id}`);
+            } else {
+              console.log(`🌍 COORDINATE PARSING DEBUG: Sample coordinate is not a valid string:`, sampleCoordinate);
             }
+          } else {
+            console.log(`🌍 COORDINATE PARSING DEBUG: No coordinate match or sample data unavailable`);
           }
         }
         
