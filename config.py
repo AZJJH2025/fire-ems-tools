@@ -43,6 +43,21 @@ class Config:
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
+    # Enhanced database engine options for production reliability
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_size': int(os.environ.get('DB_POOL_SIZE', 10)),
+        'max_overflow': int(os.environ.get('DB_MAX_OVERFLOW', 20)),
+        'pool_pre_ping': True,
+        'pool_recycle': int(os.environ.get('DB_POOL_RECYCLE', 3600)),
+        'pool_reset_on_return': 'commit',
+        'connect_args': {
+            'connect_timeout': int(os.environ.get('DB_CONNECT_TIMEOUT', 30)),
+            'keepalives_idle': int(os.environ.get('DB_KEEPALIVES_IDLE', 600)),
+            'keepalives_interval': int(os.environ.get('DB_KEEPALIVES_INTERVAL', 30)),
+            'keepalives_count': int(os.environ.get('DB_KEEPALIVES_COUNT', 3))
+        }
+    }
+    
     # Redis Configuration (for rate limiting and other services)
     REDIS_URL = os.environ.get('REDIS_URL')
     REDIS_SENTINEL_HOSTS = os.environ.get('REDIS_SENTINEL_HOSTS')

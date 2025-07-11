@@ -9,6 +9,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from database import db, User, Department
 from datetime import datetime
 from email_service import EmailService
+from database_utils import retry_db_query, retry_db_write, check_database_health, get_connection_pool_stats
 
 # Setup logger
 logger = logging.getLogger(__name__)
@@ -318,8 +319,12 @@ def api_login():
                 'message': 'Email and password are required'
             }), 400
         
-        # Find user by email
-        user = User.query.filter_by(email=data['email'].lower().strip()).first()
+        # Find user by email with retry logic
+        @retry_db_query
+        def find_user_by_email(email):
+            return User.query.filter_by(email=email.lower().strip()).first()
+        
+        user = find_user_by_email(data['email'])
         
         # Debug logging to understand login failure
         if not user:
@@ -349,10 +354,14 @@ def api_login():
                 'message': 'Account is inactive. Please contact your administrator.'
             }), 403
         
-        # Log the user in
-        login_user(user, remember=data.get('remember', False))
-        user.update_last_login()
-        db.session.commit()
+        # Log the user in with retry logic for database write
+        @retry_db_write
+        def update_user_login(user, remember=False):
+            login_user(user, remember=remember)
+            user.update_last_login()
+            db.session.commit()
+        
+        update_user_login(user, data.get('remember', False))
         
         logger.info(f"User {user.email} logged in successfully")
         
@@ -739,3 +748,44 @@ def api_change_password():
             'success': False,
             'message': 'An error occurred while changing password'
         }), 500
+
+# Database health check endpoint
+@bp.route('/api/health/database', methods=['GET'])
+def database_health_check():
+    """Database health check endpoint for monitoring"""
+    try:
+        # Check basic database connectivity
+        health_status = check_database_health(db)
+        
+        # Get connection pool statistics
+        pool_stats = get_connection_pool_stats(db)
+        
+        # Test a simple database operation
+        @retry_db_query
+        def test_user_query():
+            return User.query.count()
+        
+        try:
+            user_count = test_user_query()
+            query_test = True
+        except Exception as e:
+            logger.warning(f"Database query test failed: {str(e)}")
+            user_count = None
+            query_test = False
+        
+        return jsonify({
+            'status': 'healthy' if health_status and query_test else 'degraded',
+            'database_connection': health_status,
+            'query_test': query_test,
+            'user_count': user_count,
+            'connection_pool': pool_stats,
+            'timestamp': datetime.utcnow().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"Database health check failed: {str(e)}")
+        return jsonify({
+            'status': 'unhealthy',
+            'error': str(e),
+            'timestamp': datetime.utcnow().isoformat()
+        }), 503
