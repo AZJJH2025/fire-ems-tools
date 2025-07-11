@@ -121,6 +121,48 @@ const validateFieldMappingConsistency = (mappings: FieldMapping[], toolConfig: a
 };
 
 /**
+ * Parse POINT coordinate data to extract longitude and latitude
+ * @param pointData - POINT coordinate string like "POINT (-86.554080 34.730369)" or "POINT(-86.554080 34.730369)"
+ * @returns Object with longitude and latitude extracted
+ */
+const parsePOINTCoordinates = (pointData: string): { longitude: number | null; latitude: number | null } => {
+  if (!pointData || typeof pointData !== 'string') {
+    return { longitude: null, latitude: null };
+  }
+
+  const point = pointData.trim();
+  
+  // POINT coordinate patterns - handle both with and without spaces after POINT
+  const patterns = [
+    // Standard: POINT(-86.554080 34.730369)
+    /^POINT\s*\(\s*(-?\d+\.?\d*)\s+(-?\d+\.?\d*)\s*\)$/i,
+    // With comma: POINT(-86.554080, 34.730369)
+    /^POINT\s*\(\s*(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)\s*\)$/i,
+    // Strict format: POINT ( -86.554080 34.730369 )
+    /^POINT\s*\(\s*(-?\d+\.?\d*)\s+(-?\d+\.?\d*)\s*\)$/i
+  ];
+  
+  for (const pattern of patterns) {
+    const match = point.match(pattern);
+    if (match) {
+      const longitude = parseFloat(match[1]);
+      const latitude = parseFloat(match[2]);
+      
+      // Validate coordinate ranges
+      if (longitude >= -180 && longitude <= 180 && latitude >= -90 && latitude <= 90) {
+        console.log(`🌍 POINT COORDINATE PARSING: "${pointData}" → Longitude: ${longitude}, Latitude: ${latitude}`);
+        return { longitude, latitude };
+      } else {
+        console.warn(`🌍 POINT COORDINATE PARSING: Invalid coordinate ranges - Longitude: ${longitude}, Latitude: ${latitude}`);
+      }
+    }
+  }
+  
+  console.log(`🌍 POINT COORDINATE PARSING FAILED: Could not extract coordinates from "${pointData}"`);
+  return { longitude: null, latitude: null };
+};
+
+/**
  * Parse US address to extract city and state components
  * @param fullAddress - Full address string like "2805 Navigation Blvd Houston TX"
  * @returns Object with city and state extracted
@@ -941,6 +983,59 @@ const FieldMappingContainer: React.FC = () => {
                     params: {
                       pattern: '\\s+([A-Z]{2})\\s*$',
                       description: `Extract state from full address`
+                    }
+                  }]
+                });
+                return;
+              }
+            }
+          }
+        }
+        
+        // 🌍 SMART COORDINATE PARSING: If no direct match found, check for POINT coordinate parsing opportunities
+        if ((targetField.id === 'longitude' || targetField.id === 'latitude') && !isFieldMapped(targetField.id)) {
+          const coordinateMatch = sourceColumns.find(sourceField => 
+            normalizeFieldName(sourceField).includes('geom') ||
+            normalizeFieldName(sourceField).includes('geometry') ||
+            normalizeFieldName(sourceField).includes('point') ||
+            normalizeFieldName(sourceField).includes('coordinates') ||
+            normalizeFieldName(sourceField).includes('coord') ||
+            normalizeFieldName(sourceField).includes('location')
+          );
+          
+          if (coordinateMatch && sampleData && sampleData.length > 0) {
+            const sampleCoordinate = sampleData[0][coordinateMatch];
+            if (typeof sampleCoordinate === 'string' && sampleCoordinate.trim()) {
+              const parsedCoordinates = parsePOINTCoordinates(sampleCoordinate);
+              
+              if (targetField.id === 'longitude' && parsedCoordinates.longitude !== null) {
+                console.log(`🌍 Smart coordinate parsing: Extracting longitude "${parsedCoordinates.longitude}" from "${coordinateMatch}"`);
+                newMappings.push({
+                  sourceField: coordinateMatch,
+                  targetField: targetField.id,
+                  transformations: [{
+                    type: 'parseCoordinates',
+                    params: {
+                      format: 'point',
+                      component: 'longitude',
+                      description: `Extract longitude from POINT coordinate data`
+                    }
+                  }]
+                });
+                return;
+              }
+              
+              if (targetField.id === 'latitude' && parsedCoordinates.latitude !== null) {
+                console.log(`🌍 Smart coordinate parsing: Extracting latitude "${parsedCoordinates.latitude}" from "${coordinateMatch}"`);
+                newMappings.push({
+                  sourceField: coordinateMatch,
+                  targetField: targetField.id,
+                  transformations: [{
+                    type: 'parseCoordinates',
+                    params: {
+                      format: 'point',
+                      component: 'latitude',
+                      description: `Extract latitude from POINT coordinate data`
                     }
                   }]
                 });
