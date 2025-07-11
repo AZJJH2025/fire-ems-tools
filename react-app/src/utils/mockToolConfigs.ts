@@ -149,86 +149,6 @@ export const responseTimeToolConfig: ToolConfig = {
   ]
 };
 
-// Call Density Heatmap tool configuration
-export const callDensityToolConfig: ToolConfig = {
-  id: 'call-density',
-  name: 'Call Density Heatmap',
-  description: 'Visualize incident density across geographic areas',
-  requiredFields: [
-    {
-      id: 'incident_id',
-      name: 'Incident ID',
-      description: 'Unique identifier for the incident',
-      dataType: 'string' as FieldDataType,
-      isRequired: true,
-      validationRules: [
-        { type: 'required', params: {} }
-        // No additional validation for incident ID, accept any format
-      ]
-    },
-    {
-      id: 'latitude',
-      name: 'Latitude',
-      description: 'Geographic latitude of the incident',
-      dataType: 'number' as FieldDataType,
-      isRequired: true,
-      validationRules: [
-        { type: 'required', params: {} },
-        { type: 'min', params: { min: -90 } },
-        { type: 'max', params: { max: 90 } }
-      ]
-    },
-    {
-      id: 'longitude',
-      name: 'Longitude',
-      description: 'Geographic longitude of the incident',
-      dataType: 'number' as FieldDataType,
-      isRequired: true,
-      validationRules: [
-        { type: 'required', params: {} },
-        { type: 'min', params: { min: -180 } },
-        { type: 'max', params: { max: 180 } }
-      ]
-    }
-  ],
-  optionalFields: [
-    {
-      id: 'incident_date',
-      name: 'Incident Date',
-      description: 'Date when the incident occurred',
-      dataType: 'date' as FieldDataType,
-      isRequired: false
-    },
-    {
-      id: 'incident_time',
-      name: 'Incident Time',
-      description: 'Time when the incident occurred',
-      dataType: 'string' as FieldDataType,
-      isRequired: false
-    },
-    {
-      id: 'incident_type',
-      name: 'Incident Type',
-      description: 'Classification of the incident (e.g., Fire, EMS)',
-      dataType: 'string' as FieldDataType,
-      isRequired: false
-    },
-    {
-      id: 'address',
-      name: 'Address',
-      description: 'Street address of the incident',
-      dataType: 'string' as FieldDataType,
-      isRequired: false
-    },
-    {
-      id: 'priority',
-      name: 'Priority',
-      description: 'Priority level of the incident',
-      dataType: 'string' as FieldDataType,
-      isRequired: false
-    }
-  ]
-};
 
 // Fire Map Pro tool configuration
 export const fireMapProToolConfig: ToolConfig = {
@@ -338,11 +258,193 @@ export const fireMapProToolConfig: ToolConfig = {
   ]
 };
 
+// Water Supply Coverage tool configuration
+export const waterSupplyCoverageToolConfig: ToolConfig = {
+  id: 'water-supply-coverage',
+  name: 'Water Supply Coverage Analysis',
+  description: 'Comprehensive water supply analysis including tanks, hydrants, and mixed infrastructure for all fire department types',
+  requiredFields: [
+    {
+      id: 'asset_id',
+      name: 'Asset ID',
+      description: 'Unique identifier for the water supply asset (tank, hydrant, etc.)',
+      dataType: 'string' as FieldDataType,
+      isRequired: true,
+      validationRules: [
+        { type: 'required', params: {} }
+      ]
+    },
+    {
+      id: 'latitude',
+      name: 'Latitude',
+      description: 'Geographic latitude of the water supply asset',
+      dataType: 'number' as FieldDataType,
+      isRequired: true,
+      validationRules: [
+        { type: 'required', params: {} },
+        { type: 'min', params: { min: -90 } },
+        { type: 'max', params: { max: 90 } }
+      ]
+    },
+    {
+      id: 'longitude',
+      name: 'Longitude',
+      description: 'Geographic longitude of the water supply asset',
+      dataType: 'number' as FieldDataType,
+      isRequired: true,
+      validationRules: [
+        { type: 'required', params: {} },
+        { type: 'min', params: { min: -180 } },
+        { type: 'max', params: { max: 180 } }
+      ]
+    }
+  ],
+  optionalFields: [
+    {
+      id: 'asset_type',
+      name: 'Asset Type',
+      description: 'Type of water supply (Tank, Hydrant, Dry Hydrant, etc.)',
+      dataType: 'string' as FieldDataType,
+      isRequired: false
+    },
+    {
+      id: 'capacity',
+      name: 'Capacity',
+      description: 'Water capacity in gallons (for tanks) or flow rate in GPM (for hydrants)',
+      dataType: 'number' as FieldDataType,
+      isRequired: false
+    },
+    {
+      id: 'address',
+      name: 'Address',
+      description: 'Street address of the water supply location',
+      dataType: 'string' as FieldDataType,
+      isRequired: false
+    },
+    {
+      id: 'city',
+      name: 'City',
+      description: 'City where the water supply is located',
+      dataType: 'string' as FieldDataType,
+      isRequired: false
+    },
+    {
+      id: 'state',
+      name: 'State',
+      description: 'State where the water supply is located',
+      dataType: 'string' as FieldDataType,
+      isRequired: false
+    },
+    {
+      id: 'status',
+      name: 'Status',
+      description: 'Operational status (Active, Out of Service, Maintenance, etc.)',
+      dataType: 'string' as FieldDataType,
+      isRequired: false
+    }
+  ]
+};
+
+// Station Coverage Optimizer tool configuration
+export const stationCoverageToolConfig: ToolConfig = {
+  id: 'station-coverage-optimizer',
+  name: 'Station Coverage Optimizer',
+  description: 'Enterprise station placement and coverage analysis with NFPA compliance assessment for optimal response coverage',
+  requiredFields: [
+    {
+      id: 'station_id',
+      name: 'Station ID',
+      description: 'Unique identifier for the fire station',
+      dataType: 'string' as FieldDataType,
+      isRequired: true,
+      validationRules: [
+        { type: 'required', params: {} }
+      ]
+    },
+    {
+      id: 'latitude',
+      name: 'Latitude',
+      description: 'Geographic latitude of the fire station',
+      dataType: 'number' as FieldDataType,
+      isRequired: true,
+      validationRules: [
+        { type: 'required', params: {} },
+        { type: 'min', params: { min: -90 } },
+        { type: 'max', params: { max: 90 } }
+      ]
+    },
+    {
+      id: 'longitude',
+      name: 'Longitude',
+      description: 'Geographic longitude of the fire station',
+      dataType: 'number' as FieldDataType,
+      isRequired: true,
+      validationRules: [
+        { type: 'required', params: {} },
+        { type: 'min', params: { min: -180 } },
+        { type: 'max', params: { max: 180 } }
+      ]
+    }
+  ],
+  optionalFields: [
+    {
+      id: 'station_name',
+      name: 'Station Name',
+      description: 'Name or designation of the fire station',
+      dataType: 'string' as FieldDataType,
+      isRequired: false
+    },
+    {
+      id: 'station_type',
+      name: 'Station Type',
+      description: 'Type of station (Career, Volunteer, Combination)',
+      dataType: 'string' as FieldDataType,
+      isRequired: false
+    },
+    {
+      id: 'apparatus_count',
+      name: 'Apparatus Count',
+      description: 'Number of apparatus stationed at this location',
+      dataType: 'number' as FieldDataType,
+      isRequired: false
+    },
+    {
+      id: 'staffing_level',
+      name: 'Staffing Level',
+      description: 'Average number of personnel on duty',
+      dataType: 'number' as FieldDataType,
+      isRequired: false
+    },
+    {
+      id: 'address',
+      name: 'Address',
+      description: 'Street address of the fire station',
+      dataType: 'string' as FieldDataType,
+      isRequired: false
+    },
+    {
+      id: 'city',
+      name: 'City',
+      description: 'City where the station is located',
+      dataType: 'string' as FieldDataType,
+      isRequired: false
+    },
+    {
+      id: 'state',
+      name: 'State',
+      description: 'State where the station is located',
+      dataType: 'string' as FieldDataType,
+      isRequired: false
+    }
+  ]
+};
+
 // List of all tool configurations
 export const toolConfigs: ToolConfig[] = [
   responseTimeToolConfig,
-  callDensityToolConfig,
-  fireMapProToolConfig
+  fireMapProToolConfig,
+  waterSupplyCoverageToolConfig,
+  stationCoverageToolConfig
 ];
 
 // Function to get a tool configuration by ID

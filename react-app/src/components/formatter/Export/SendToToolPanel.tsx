@@ -22,6 +22,8 @@ import MapIcon from '@mui/icons-material/Map';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import ReportIcon from '@mui/icons-material/Report';
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+import SecurityIcon from '@mui/icons-material/Security';
 
 // Available tools
 const availableTools = [
@@ -42,25 +44,20 @@ const availableTools = [
     optionalFields: ['dispatchTime', 'enRouteTime', 'arrivalTime', 'latitude', 'longitude']
   },
   {
-    id: 'call-density-heatmap',
-    name: 'Call Density Heatmap',
-    description: 'Visualize incident density across geographic areas',
-    icon: <MapIcon fontSize="large" sx={{ color: '#ff9800' }} />,
-    requiredFields: ['incidentId', 'latitude', 'longitude']
+    id: 'water-supply-coverage',
+    name: 'Water Supply Coverage Analysis',
+    description: 'Comprehensive water supply analysis including tanks, hydrants, and mixed infrastructure',
+    icon: <LocalFireDepartmentIcon fontSize="large" sx={{ color: '#ff5722' }} />,
+    requiredFields: ['assetId', 'latitude', 'longitude'],
+    optionalFields: ['assetType', 'capacity', 'address', 'city', 'state', 'status']
   },
   {
-    id: 'incident-dashboard',
-    name: 'Incident Dashboard',
-    description: 'Interactive dashboard for incident analysis and reporting',
-    icon: <BarChartIcon fontSize="large" sx={{ color: '#4caf50' }} />,
-    requiredFields: ['incidentId', 'incidentType', 'incidentDate']
-  },
-  {
-    id: 'trend-analyzer',
-    name: 'Trend Analyzer',
-    description: 'Identify incident trends and patterns over time',
-    icon: <TimelineIcon fontSize="large" sx={{ color: '#9c27b0' }} />,
-    requiredFields: ['incidentId', 'incidentDate', 'incidentType']
+    id: 'station-coverage-optimizer',
+    name: 'Station Coverage Optimizer',
+    description: 'Enterprise station placement and coverage analysis with NFPA compliance assessment',
+    icon: <SecurityIcon fontSize="large" sx={{ color: '#9c27b0' }} />,
+    requiredFields: ['stationId', 'latitude', 'longitude'],
+    optionalFields: ['stationName', 'stationType', 'apparatusCount', 'staffingLevel', 'address', 'city', 'state']
   }
 ];
 
