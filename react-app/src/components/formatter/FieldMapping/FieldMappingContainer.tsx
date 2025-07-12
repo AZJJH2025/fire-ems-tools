@@ -671,8 +671,18 @@ const FieldMappingContainer: React.FC = () => {
   
   // Run auto-mapping
   const handleAutoMap = async () => {
-    if (!sourceColumns || !toolConfig) return;
+    console.log('🔥🔥🔥 AUTO MAP BUTTON CLICKED - DEBUG START');
+    console.log('🔥 sourceColumns available:', !!sourceColumns, 'length:', sourceColumns?.length);
+    console.log('🔥 toolConfig available:', !!toolConfig, 'id:', toolConfig?.id);
     
+    if (!sourceColumns || !toolConfig) {
+      console.log('🚨 AUTO MAP BLOCKED: Missing sourceColumns or toolConfig');
+      console.log('  - sourceColumns:', sourceColumns);
+      console.log('  - toolConfig:', toolConfig);
+      return;
+    }
+    
+    console.log('✅ AUTO MAP PROCEEDING: All conditions met');
     setAutoMappingInProgress(true);
     
     try {
