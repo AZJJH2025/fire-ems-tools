@@ -794,6 +794,7 @@ const FieldMappingContainer: React.FC = () => {
       
       allTargetFields.forEach(targetField => {
         console.log(`\n🎯 === DEBUGGING TARGET FIELD: ${targetField.id} (display: "${targetField.name}") ===`);
+        console.log(`🎯 Target field info:`, { id: targetField.id, name: targetField.name, dataType: targetField.dataType });
         
         // 🔧 DUAL MAPPING FIX: Don't skip if target field is already mapped - allow dual mapping
         // where same source field can map to multiple target fields (e.g., incident_date → both incident_date AND incident_time)
@@ -1003,6 +1004,7 @@ const FieldMappingContainer: React.FC = () => {
         }
         
         // 🌍 SMART COORDINATE PARSING: If no direct match found, check for POINT coordinate parsing opportunities
+        console.log(`🌍 COORDINATE PARSING ENTRY: Checking if ${targetField.id} is longitude/latitude`, targetField.id === 'longitude' || targetField.id === 'latitude');
         if (targetField.id === 'longitude' || targetField.id === 'latitude') {
           console.log(`🌍 COORDINATE PARSING DEBUG: Evaluating ${targetField.id} field`);
           console.log(`🌍 COORDINATE PARSING DEBUG: Field already mapped?`, isFieldMapped(targetField.id));
@@ -1584,7 +1586,13 @@ const FieldMappingContainer: React.FC = () => {
         <Box>
           <Button
             variant="outlined"
-            onClick={handleAutoMap}
+            onClick={(e) => {
+              console.log('🔥 BUTTON CLICK DETECTED - Raw event:', e);
+              console.log('🔥 Button disabled state:', autoMappingInProgress || !sourceColumns.length);
+              console.log('🔥 autoMappingInProgress:', autoMappingInProgress);
+              console.log('🔥 sourceColumns.length:', sourceColumns.length);
+              handleAutoMap();
+            }}
             disabled={autoMappingInProgress || !sourceColumns.length}
             sx={{ mr: 1 }}
           >
