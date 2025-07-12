@@ -1015,12 +1015,14 @@ const FieldMappingContainer: React.FC = () => {
             console.log(`🌍 COORDINATE PARSING DEBUG: Available source columns:`, sourceColumns);
             console.log(`🌍 COORDINATE PARSING DEBUG: Sample data available:`, !!sampleData && sampleData.length > 0);
             
+            // Prioritize geometry fields first, then fallback to location fields
             const coordinateMatch = sourceColumns.find(sourceField => 
               normalizeFieldName(sourceField).includes('geom') ||
               normalizeFieldName(sourceField).includes('geometry') ||
               normalizeFieldName(sourceField).includes('point') ||
               normalizeFieldName(sourceField).includes('coordinates') ||
-              normalizeFieldName(sourceField).includes('coord') ||
+              normalizeFieldName(sourceField).includes('coord')
+            ) || sourceColumns.find(sourceField => 
               normalizeFieldName(sourceField).includes('location')
             );
             
