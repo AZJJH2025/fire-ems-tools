@@ -2,7 +2,112 @@
 
 This file tracks changes made during Claude Code sessions for easy reference in future sessions.
 
-## Latest Session: June 19, 2025 - PROFESSIONAL REPORT TEMPLATES COMPLETE ✅ COMPLETE
+## Latest Session: July 12, 2025 - DATA FORMATTER TOOL INTEGRATION & POINT COORDINATE PARSING FIXES ✅ COMPLETE
+
+### 🏆 **MAJOR ACHIEVEMENT: Fixed Critical Data Formatter Tool Integration Issues**
+
+**Mission Accomplished**: Resolved tool integration failures in Data Formatter where "Send to Tool" functionality wasn't working for Water Supply Coverage tool. Fixed POINT coordinate parsing issues and critical data corruption bugs.
+
+### 🎯 **WATER SUPPLY COVERAGE TOOL INTEGRATION - COMPLETE WORKFLOW RESTORED**
+
+#### **Problems Identified & Resolved**:
+
+**1. ✅ Tool Routing Failure - "Tool ID not recognized: water-supply-coverage"**
+- **Problem**: ExportContainer.tsx missing routing cases for water-supply-coverage and station-coverage-optimizer tools
+- **Root Cause**: Tool selection worked, data preparation worked, but redirect failed silently at routing step
+- **Solution**: Added missing routing cases in `/src/components/formatter/Export/ExportContainer.tsx` lines 756-761
+- **Files Modified**: `src/components/formatter/Export/ExportContainer.tsx`
+
+**2. ✅ Incorrect URL Paths - 404 Errors on Tool Redirect**
+- **Problem**: All tool redirects used incorrect `/app/` prefix (e.g., `/app/water-supply-coverage`) 
+- **Root Cause**: Routes in AppRouter.tsx don't have `/app/` prefix, causing 404s
+- **Solution**: Removed `/app/` prefix from all tool redirect URLs
+- **Fixed URLs**:
+  - water-supply-coverage: `/app/water-supply-coverage` → `/water-supply-coverage`
+  - fire-map-pro: `/app/fire-map-pro` → `/fire-map-pro`
+  - response-time-analyzer: `/app/response-time-analyzer` → `/response-time-analyzer`
+  - station-coverage-optimizer: `/app/station-coverage-optimizer` → `/station-coverage-optimizer`
+
+**3. ✅ Critical Data Corruption Bug - Address Fields Being Split**
+- **Problem**: Datetime processing logic incorrectly splitting ALL string fields containing spaces
+- **Example**: "Landmark Dr, 180' NE of MH-8241" → Date: "Landmark", Time: "Dr,"
+- **Root Cause**: Overly broad regex matching any string with spaces instead of actual datetime patterns
+- **Solution**: Added proper datetime pattern validation to only process actual datetime fields
+- **Impact**: Prevented corruption of address, location, and other text fields
+
+**4. ✅ POINT Coordinate Parsing (Already Working)**
+- **Status**: POINT coordinate parsing from PostGIS geometry data was already working correctly
+- **Evidence**: Console logs showed successful extraction: `POINT (-86.533863726377 39.200823621172) → 39.200823621172`
+- **Auto-Mapping**: Successfully detects `the_geom` field and maps to latitude/longitude
+- **Transformations**: parseCoordinates transformations working properly
+
+#### **Technical Implementation Details**:
+
+**Tool Routing Fix:**
+```typescript
+// Added missing routing cases in ExportContainer.tsx
+} else if (selectedExportTool === 'water-supply-coverage') {
+  targetUrl = `${window.location.origin}/water-supply-coverage`;
+} else if (selectedExportTool === 'station-coverage-optimizer') {
+  targetUrl = `${window.location.origin}/station-coverage-optimizer`;
+```
+
+**Data Corruption Fix:**
+```typescript
+// Fixed datetime processing to only handle actual datetime fields
+const isDateTime = (field.toLowerCase().includes('date') || field.toLowerCase().includes('time')) &&
+                 (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(value) || /^\d{1,2}\/\d{1,2}\/\d{2,4}\s+\d{1,2}:\d{2}/.test(value));
+```
+
+### 🔧 **FILES MODIFIED**:
+
+1. **`src/components/formatter/Export/ExportContainer.tsx`**
+   - Added water-supply-coverage and station-coverage-optimizer routing cases
+   - Fixed URL paths by removing incorrect `/app/` prefix
+   - Added datetime pattern validation to prevent data corruption
+   - Added comprehensive redirect debugging logs
+
+### 🚨 **DEBUGGING APPROACH**:
+
+1. **Console Log Analysis**: Identified "Tool ID not recognized" error and React error #321
+2. **Build Cache Issue**: Discovered stale build from June 13, 2025 was running despite code changes
+3. **Cache Clearing**: Removed `.vite` cache and restarted dev server to pick up changes
+4. **Systematic Testing**: Used detailed console logging to trace data flow through export process
+
+### 🎯 **COMPLETE DATA WORKFLOW NOW WORKING**:
+
+1. **✅ Upload Data**: CSV with POINT coordinates in `the_geom` field
+2. **✅ Auto-Mapping**: Detects POINT format and maps to latitude/longitude fields
+3. **✅ Field Validation**: Shows successful coordinate parsing in console
+4. **✅ Tool Selection**: Water Supply Coverage tool properly recognized
+5. **✅ Data Export**: SessionStorage properly populated with transformed data
+6. **✅ Tool Redirect**: Successfully redirects to `/water-supply-coverage` route
+7. **✅ Data Integrity**: Address and location fields preserved without corruption
+
+### 🔗 **RELATED SYSTEMS**:
+
+- **Water Supply Coverage Tool**: `/src/components/waterSupplyCoverage/WaterSupplyImporter.tsx`
+- **POINT Coordinate Parser**: Working correctly in field transformation system
+- **App Router**: `/src/AppRouter.tsx` - Routes properly defined
+- **Tool Configurations**: `/src/utils/mockToolConfigs.ts` - Water supply tool config exists
+
+### 📊 **COMMITS MADE**:
+
+1. **Commit 8a298902**: "Fix tool integration: Add missing routing for water-supply-coverage and station-coverage-optimizer tools"
+2. **Commit 9ff24578**: "Fix redirect URLs: Remove incorrect /app/ prefix from tool routes"  
+3. **Commit d63ece4a**: "Fix critical data corruption bug in datetime processing"
+
+### 🎯 **USER IMPACT**:
+
+Fire departments can now successfully:
+- Upload hydrant/tank data with PostGIS POINT coordinates
+- Auto-map coordinate fields without manual intervention
+- Export formatted data to Water Supply Coverage analysis tool
+- Maintain data integrity throughout the transformation process
+
+---
+
+## Previous Session: June 19, 2025 - PROFESSIONAL REPORT TEMPLATES COMPLETE ✅ COMPLETE
 
 ### 🏆 **MAJOR ACHIEVEMENT: Professional Report Template System Implemented**
 
