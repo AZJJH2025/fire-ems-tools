@@ -1036,12 +1036,18 @@ const FieldMappingContainer: React.FC = () => {
               // Skip if this looks like address text instead of POINT coordinates
               if (typeof sampleCoordinate === 'string' && sampleCoordinate.trim()) {
                 const sampleStr = sampleCoordinate.trim();
+                console.log(`🌍 COORDINATE PARSING DEBUG: Checking for address text patterns in: "${sampleStr}"`);
+                console.log(`🌍 COORDINATE PARSING DEBUG: Starts with POINT(? ${sampleStr.toUpperCase().startsWith('POINT(')}`);
                 
                 // Check if this looks like address text (not POINT coordinates)
-                if (!sampleStr.toUpperCase().startsWith('POINT(') && 
+                const isAddressText = !sampleStr.toUpperCase().startsWith('POINT(') && 
                     (sampleStr.includes('Dr,') || sampleStr.includes('St,') || sampleStr.includes('Ave,') || 
                      sampleStr.includes('Road') || sampleStr.includes('Street') || sampleStr.includes('NE of') ||
-                     sampleStr.includes('SW of') || sampleStr.includes('SE of') || sampleStr.includes('NW of'))) {
+                     sampleStr.includes('SW of') || sampleStr.includes('SE of') || sampleStr.includes('NW of'));
+                
+                console.log(`🌍 COORDINATE PARSING DEBUG: Is address text? ${isAddressText}`);
+                
+                if (isAddressText) {
                   console.log(`🌍 COORDINATE PARSING DEBUG: Skipping "${coordinateMatch}" - contains address text, not POINT coordinates`);
                   console.log(`🌍 COORDINATE PARSING DEBUG: Looking for actual geometry field...`);
                   
