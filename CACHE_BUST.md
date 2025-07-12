@@ -12,4 +12,8 @@ Console logs from user confirm:
 - Tool routing error: "Tool ID not recognized: water-supply-coverage" 
 - Data corruption bug: Address fields still being split incorrectly
 
-FORCING STRONGER CACHE INVALIDATION
+FORCING STRONGER CACHE INVALIDATION - ATTEMPT #3
+
+Multiple cache-bust attempts failed. Production still shows June 13 build.
+User confirmed asset_id mapping issue and missing July 12 debug messages.
+Creating timestamp: 2025-07-12T21:01:00Z
