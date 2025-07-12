@@ -78,7 +78,7 @@ const SendToToolPanel: React.FC<SendToToolPanelProps> = ({
   isSending,
   preTransformedData
 }) => {
-  console.log('📡📡📡 SEND TO TOOL PANEL RENDER - FRESH BUILD JUN 13 2025 16:48 - selectedTool:', selectedTool);
+  console.log('📡📡📡 SEND TO TOOL PANEL RENDER - FRESH BUILD JUL 12 2025 20:20 CACHE BUST - selectedTool:', selectedTool);
   console.log('📡📡📡 SEND TO TOOL PANEL RENDER - onSendToTool function:', !!onSendToTool);
   console.log('📡📡📡 SEND TO TOOL PANEL RENDER - transformedData length:', transformedData?.length);
   console.log('📡📡📡 SEND TO TOOL PANEL RENDER - preTransformedData exists:', !!preTransformedData);
