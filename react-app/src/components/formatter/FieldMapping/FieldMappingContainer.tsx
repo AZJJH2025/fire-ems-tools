@@ -1252,8 +1252,17 @@ const FieldMappingContainer: React.FC = () => {
     });
   };
   
+  // DEBUG: Component state at render time
+  console.log('🏗️ FIELD MAPPING CONTAINER RENDER DEBUG:', {
+    sourceColumns: sourceColumns,
+    sourceColumnsLength: sourceColumns?.length,
+    toolConfig: !!toolConfig,
+    processingStatus: processingStatus
+  });
+
   // If we have no source columns or tool config, show error/loading state
   if (!sourceColumns.length) {
+    console.log('🚨 EARLY RETURN: No source columns available!', sourceColumns);
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
         <Alert severity="error">
