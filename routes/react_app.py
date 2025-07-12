@@ -155,3 +155,34 @@ def react_login():
 def react_signup():
     """Direct route to React Sign Up Page"""
     return react_app()
+
+# Tool routes without /app/ prefix for direct tool access
+@bp.route('/water-supply-coverage')
+@bp.route('/water-supply-coverage/')
+def water_supply_coverage():
+    """Direct route to Water Supply Coverage tool (no /app/ prefix)"""
+    return react_app()
+
+@bp.route('/fire-map-pro')
+@bp.route('/fire-map-pro/')
+def fire_map_pro():
+    """Direct route to Fire Map Pro tool (no /app/ prefix)"""
+    return react_app()
+
+@bp.route('/response-time-analyzer')
+@bp.route('/response-time-analyzer/')
+def response_time_analyzer():
+    """Direct route to Response Time Analyzer tool (no /app/ prefix)"""
+    return react_app()
+
+@bp.route('/station-coverage-optimizer')
+@bp.route('/station-coverage-optimizer/')
+def station_coverage_optimizer():
+    """Direct route to Station Coverage Optimizer tool (no /app/ prefix)"""
+    return react_app()
+
+@bp.route('/iso-credit-calculator')
+@bp.route('/iso-credit-calculator/')
+def iso_credit_calculator():
+    """Direct route to ISO Credit Calculator tool (no /app/ prefix)"""
+    return react_app()
