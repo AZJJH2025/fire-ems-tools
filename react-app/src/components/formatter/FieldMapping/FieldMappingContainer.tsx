@@ -1033,7 +1033,70 @@ const FieldMappingContainer: React.FC = () => {
               console.log(`🌍 COORDINATE PARSING DEBUG: Sample coordinate value:`, sampleCoordinate);
               console.log(`🌍 COORDINATE PARSING DEBUG: Sample coordinate type:`, typeof sampleCoordinate);
               
+              // Skip if this looks like address text instead of POINT coordinates
               if (typeof sampleCoordinate === 'string' && sampleCoordinate.trim()) {
+                const sampleStr = sampleCoordinate.trim();
+                
+                // Check if this looks like address text (not POINT coordinates)
+                if (!sampleStr.toUpperCase().startsWith('POINT(') && 
+                    (sampleStr.includes('Dr,') || sampleStr.includes('St,') || sampleStr.includes('Ave,') || 
+                     sampleStr.includes('Road') || sampleStr.includes('Street') || sampleStr.includes('NE of') ||
+                     sampleStr.includes('SW of') || sampleStr.includes('SE of') || sampleStr.includes('NW of'))) {
+                  console.log(`🌍 COORDINATE PARSING DEBUG: Skipping "${coordinateMatch}" - contains address text, not POINT coordinates`);
+                  console.log(`🌍 COORDINATE PARSING DEBUG: Looking for actual geometry field...`);
+                  
+                  // Look specifically for the_geom field
+                  const geomField = sourceColumns.find(col => col.toLowerCase() === 'the_geom');
+                  if (geomField && sampleData[0][geomField]) {
+                    const geomValue = sampleData[0][geomField];
+                    console.log(`🌍 COORDINATE PARSING DEBUG: Found the_geom field with value:`, geomValue);
+                    if (typeof geomValue === 'string' && geomValue.trim().toUpperCase().startsWith('POINT(')) {
+                      console.log(`🌍 COORDINATE PARSING DEBUG: Using the_geom instead of ${coordinateMatch}`);
+                      const parsedCoordinates = parsePOINTCoordinates(geomValue);
+                      console.log(`🌍 COORDINATE PARSING DEBUG: Parsed result from the_geom:`, parsedCoordinates);
+                      
+                      if (targetField.id === 'longitude' && parsedCoordinates.longitude !== null) {
+                        console.log(`🌍 Smart coordinate parsing: Extracting longitude "${parsedCoordinates.longitude}" from "${geomField}"`);
+                        newMappings.push({
+                          sourceField: geomField,
+                          targetField: targetField.id,
+                          transformations: [{
+                            type: 'parseCoordinates',
+                            params: {
+                              format: 'point',
+                              component: 'longitude',
+                              description: `Extract longitude from POINT coordinate data`
+                            }
+                          }]
+                        });
+                        console.log(`🌍 SUCCESS: Added longitude mapping for ${geomField} → ${targetField.id}`);
+                        return;
+                      }
+                      
+                      if (targetField.id === 'latitude' && parsedCoordinates.latitude !== null) {
+                        console.log(`🌍 Smart coordinate parsing: Extracting latitude "${parsedCoordinates.latitude}" from "${geomField}"`);
+                        newMappings.push({
+                          sourceField: geomField,
+                          targetField: targetField.id,
+                          transformations: [{
+                            type: 'parseCoordinates',
+                            params: {
+                              format: 'point',
+                              component: 'latitude',
+                              description: `Extract latitude from POINT coordinate data`
+                            }
+                          }]
+                        });
+                        console.log(`🌍 SUCCESS: Added latitude mapping for ${geomField} → ${targetField.id}`);
+                        return;
+                      }
+                    }
+                  }
+                  
+                  console.log(`🌍 COORDINATE PARSING DEBUG: No valid POINT geometry field found`);
+                  return; // Skip this coordinate match since it's address text
+                }
+                
                 console.log(`🌍 COORDINATE PARSING DEBUG: Attempting to parse POINT coordinates from:`, sampleCoordinate.trim());
                 const parsedCoordinates = parsePOINTCoordinates(sampleCoordinate);
                 console.log(`🌍 COORDINATE PARSING DEBUG: Parsed result:`, parsedCoordinates);
