@@ -41,7 +41,9 @@ import {
   selectError,
   setSidebarTab,
   clearError,
-  setLoading
+  setLoading,
+  addTank,
+  addHydrant
 } from '../../state/redux/waterSupplyCoverageSlice';
 
 // Import Fire Map Pro components for reuse
@@ -103,6 +105,80 @@ const WaterSupplyCoverageContainer: React.FC<TankZoneCoverageProps> = ({
       onAnalysisComplete(activeAnalysis);
     }
   }, [activeAnalysis, onAnalysisComplete]);
+
+  // Import data from Data Formatter via sessionStorage
+  useEffect(() => {
+    const checkForImportedData = () => {
+      try {
+        const exportedData = sessionStorage.getItem('fireEmsExportedData');
+        if (exportedData) {
+          const data = JSON.parse(exportedData);
+          console.log('🔥 WATER SUPPLY COVERAGE - Checking imported data:', data);
+          
+          if (data.toolId === 'water-supply-coverage' && data.data && data.data.length > 0) {
+            console.log('🔥 WATER SUPPLY COVERAGE - Processing imported data:', data.data.length, 'records');
+            
+            // Process each record and determine if it's a tank or hydrant
+            data.data.forEach((record: any, index: number) => {
+              console.log(`🔥 Processing record ${index + 1}:`, record);
+              
+              // Check for required location fields
+              const lat = record.latitude || record.lat;
+              const lng = record.longitude || record.lng || record.lon;
+              
+              if (lat && lng) {
+                // Determine if it's a tank or hydrant based on available data
+                // Default to hydrant if no clear indicator
+                const isHydrant = record.type?.toLowerCase().includes('hydrant') || 
+                                 record.infrastructure_type?.toLowerCase().includes('hydrant') ||
+                                 !record.capacity; // If no capacity, assume it's a hydrant
+                
+                if (isHydrant) {
+                  const hydrant = {
+                    id: `imported-hydrant-${index}`,
+                    latitude: parseFloat(lat),
+                    longitude: parseFloat(lng),
+                    type: 'hydrant' as const,
+                    gpm: record.gpm || record.flow_rate || 1000, // Default 1000 GPM
+                    status: 'active' as const,
+                    address: record.address || `Hydrant ${index + 1}`,
+                    notes: record.notes || ''
+                  };
+                  console.log('🔥 Adding hydrant:', hydrant);
+                  dispatch(addHydrant(hydrant));
+                } else {
+                  const tank = {
+                    id: `imported-tank-${index}`,
+                    latitude: parseFloat(lat),
+                    longitude: parseFloat(lng),
+                    type: 'tank' as const,
+                    capacity: parseInt(record.capacity) || parseInt(record.gallons) || 10000, // Default 10,000 gallons
+                    gpm: record.gpm || record.flow_rate || 500, // Default 500 GPM
+                    status: 'active' as const,
+                    address: record.address || `Tank ${index + 1}`,
+                    notes: record.notes || ''
+                  };
+                  console.log('🔥 Adding tank:', tank);
+                  dispatch(addTank(tank));
+                }
+              } else {
+                console.warn(`🔥 Skipping record ${index + 1} - missing latitude/longitude:`, record);
+              }
+            });
+            
+            // Clear the imported data after processing
+            sessionStorage.removeItem('fireEmsExportedData');
+            console.log('🔥 WATER SUPPLY COVERAGE - Data import complete, cleared sessionStorage');
+          }
+        }
+      } catch (error) {
+        console.error('🔥 WATER SUPPLY COVERAGE - Error importing data:', error);
+      }
+    };
+    
+    // Check for data on component mount
+    checkForImportedData();
+  }, [dispatch]);
 
   // Handlers
   const handleToggleSidebar = () => {
