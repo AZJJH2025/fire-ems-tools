@@ -755,6 +755,9 @@ const ExportContainer: React.FC = () => {
         let targetUrl = '';
 
         // Redirect to the appropriate URL based on the selected tool
+        console.log('🚀🚀🚀 ROUTING DEBUG - selectedExportTool value:', selectedExportTool);
+        console.log('🚀🚀🚀 ROUTING DEBUG - type:', typeof selectedExportTool);
+        console.log('🚀🚀🚀 ROUTING DEBUG - exact match test:', selectedExportTool === 'water-supply-coverage');
         if (selectedExportTool === 'fire-map-pro') {
           // For React tools, use the React router path
           targetUrl = `${window.location.origin}/fire-map-pro`;
