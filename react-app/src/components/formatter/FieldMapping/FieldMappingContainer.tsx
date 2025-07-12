@@ -1587,11 +1587,14 @@ const FieldMappingContainer: React.FC = () => {
           <Button
             variant="outlined"
             onClick={(e) => {
+              console.log('🚨🚨🚨 AUTO MAP BUTTON CLICKED!!! 🚨🚨🚨');
               console.log('🔥 BUTTON CLICK DETECTED - Raw event:', e);
               console.log('🔥 Button disabled state:', autoMappingInProgress || !sourceColumns.length);
               console.log('🔥 autoMappingInProgress:', autoMappingInProgress);
               console.log('🔥 sourceColumns.length:', sourceColumns.length);
+              console.log('🚨 ABOUT TO CALL handleAutoMap() - DEBUG MARKER');
               handleAutoMap();
+              console.log('🚨 CALLED handleAutoMap() - DEBUG MARKER');
             }}
             disabled={autoMappingInProgress || !sourceColumns.length}
             sx={{ mr: 1 }}
