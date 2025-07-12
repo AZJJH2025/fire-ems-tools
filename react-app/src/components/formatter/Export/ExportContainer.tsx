@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
-// CRITICAL DEBUG: Confirm new code is loading
-console.log('🔥🔥🔥 EXPORT CONTAINER LOADED - JULY 12 2025 CACHE BUST VERSION - SHOULD NOT SEE JUNE 13 TIMESTAMPS AT', new Date().toISOString());
+// AGGRESSIVE CACHE BUST: Force new bundle generation
+console.log('🔥🔥🔥 EXPORT CONTAINER LOADED - JULY 12 2025 23:20 AGGRESSIVE CACHE BUST - ROUTING LOGIC FRESH', new Date().toISOString());
+console.log('🔥🔥🔥 CACHE BUST VERIFICATION: If you see this, new bundle is loading');
 import { useSelector, useDispatch } from 'react-redux';
 import {
   Box,
@@ -754,9 +755,13 @@ const ExportContainer: React.FC = () => {
         const baseUrl = `http://${hostname}:${port}`;
         let targetUrl = '';
 
-        // CACHE BUST JULY 12 2025 20:45 - Force routing logic refresh to bypass Render selective caching
+        // AGGRESSIVE CACHE BUST JULY 12 2025 23:20 - Force complete routing logic refresh
+        // This timestamp forces a new bundle to be served and bypass Render selective caching
+        const cacheBustTimestamp = '2025-07-12T23:20:00Z';
+        console.log('🔥🔥🔥 AGGRESSIVE CACHE BUST', cacheBustTimestamp, 'ROUTING LOGIC REFRESH');
+        
         // Redirect to the appropriate URL based on the selected tool
-        console.log('🚀🚀🚀 ROUTING DEBUG JUL 12 21:00 FINAL FIX - selectedExportTool value:', selectedExportTool);
+        console.log('🚀🚀🚀 ROUTING DEBUG JUL 12 23:20 AGGRESSIVE - selectedExportTool value:', selectedExportTool);
         console.log('🚀🚀🚀 ROUTING DEBUG JUL 12 21:00 FINAL FIX - type:', typeof selectedExportTool);
         console.log('🚀🚀🚀 ROUTING DEBUG JUL 12 21:00 FINAL FIX - exact match test:', selectedExportTool === 'water-supply-coverage');
         console.log('🚀🚀🚀 ROUTING DEBUG JUL 12 21:00 FINAL FIX - selectedExportTool length:', selectedExportTool ? selectedExportTool.length : 'null');

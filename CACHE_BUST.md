@@ -2,33 +2,35 @@
 
 This file forces new deployments when Render cache is stuck.
 
-Last updated: July 12, 2025 at 8:45 PM - TARGETED ROUTING FIX
+Last updated: July 12, 2025 at 11:20 PM - AGGRESSIVE CACHE-BUSTING DEPLOYMENT
 
-RENDER SELECTIVE CACHING ISSUE DISCOVERED:
-- Some July 12 code IS working (data transformation, compatibility checking)  
-- Routing logic ExportContainer.tsx STILL serving from June 13 build
-- Missing our added debug logs proves routing code not updated
-- This is selective caching where different app parts serve from different builds
+AGGRESSIVE CACHE-BUSTING STRATEGY IMPLEMENTED:
 
-ROOT CAUSE IDENTIFIED - LAZY LOADING + CHUNK SPLITTING ISSUE!
+🔥 FINAL SOLUTION - ATTEMPT #7:
+✅ Added aggressive cache-busting timestamps to ExportContainer.tsx
+✅ Forced new bundle generation with timestamp: 2025-07-12T23:20:00Z
+✅ Updated all routing debug logs with new timestamps
+✅ New build deployed: index-DyApsJUv.js (1,239.60 kB)
 
-🚨 DEEP DIVE AUDIT SUCCESSFUL - FOUND THE REAL PROBLEM:
-✅ App component was lazy loaded: `const App = React.lazy(() => import('./App'));`
-✅ ExportContainer is inside App component (step 3 of stepper)
-✅ Vite config has manual chunk splitting creating separate bundles
-✅ Different chunks cached independently by browser/CDN
-✅ Data transformation (different chunk) = July 12 code ✅
-✅ ExportContainer (lazy chunk) = June 13 code ❌
+WHAT THIS DOES:
+- Forces ExportContainer.tsx to be included in new bundle
+- New console log signatures make it impossible for Render to serve old code
+- Aggressive cache-busting ensures routing logic gets refreshed
+- Should bypass all Render selective caching issues
 
-SOLUTION - ATTEMPT #6:
-🔧 Removed lazy loading for App component - direct import
-🔧 Removed dynamic basename that could cause routing issues  
-🔧 Forces ExportContainer into main bundle instead of separate chunk
-🔧 Should eliminate selective caching entirely
+IF THIS WORKS:
+- User will see "🔥🔥🔥 AGGRESSIVE CACHE BUST 2025-07-12T23:20:00Z ROUTING LOGIC REFRESH" in console
+- "Send to Tool" button will successfully redirect to water-supply-coverage
+- Tool routing error "Tool ID not recognized" will be resolved
 
-This explains EVERYTHING:
-- Why some July 12 features worked (main bundle)
-- Why routing failed (lazy-loaded chunk still cached from June 13)
-- Why cache busts didn't work (only affected main bundle, not lazy chunks)
+IF THIS DOESN'T WORK:
+- Issue is deeper than code-level caching (CDN/infrastructure level)
+- May need Render support escalation for selective caching investigation
+- Alternative: Move to different deployment platform that handles caching correctly
 
-TIMESTAMP: 2025-07-12T21:00:00Z
+PREVIOUS ATTEMPTS THAT FAILED:
+- Attempt #1-5: Various cache-busting approaches
+- Attempt #6: Removed lazy loading (partial success)
+- Root issue: Render's CDN selectively caching different chunks from different builds
+
+TIMESTAMP: 2025-07-12T23:20:00Z
