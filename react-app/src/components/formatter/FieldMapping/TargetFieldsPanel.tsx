@@ -76,6 +76,7 @@ const TargetFieldsPanel: React.FC<TargetFieldsProps> = ({
   console.log("TargetFieldsPanel received sourceColumns:", sourceColumns);
   console.log("TargetFieldsPanel received toolConfig:", toolConfig);
   console.log("TargetFieldsPanel received mappings:", mappings);
+  console.log("🚨🚨🚨 IMPORTANT: TargetFieldsPanel does NOT contain Auto Map button! Auto Map is in FieldMappingContainer which is NOT rendering!");
   
   // State for the active transformation settings
   const [transformSettingsField, setTransformSettingsField] = useState<string | null>(null);
