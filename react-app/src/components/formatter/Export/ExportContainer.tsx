@@ -749,16 +749,16 @@ const ExportContainer: React.FC = () => {
         // Redirect to the appropriate URL based on the selected tool
         if (selectedExportTool === 'fire-map-pro') {
           // For React tools, use the React router path
-          targetUrl = `${window.location.origin}/app/fire-map-pro`;
+          targetUrl = `${window.location.origin}/fire-map-pro`;
         } else if (selectedExportTool === 'response-time-analyzer') {
           // For React tools, use the React router path
-          targetUrl = `${window.location.origin}/app/response-time-analyzer`;
+          targetUrl = `${window.location.origin}/response-time-analyzer`;
         } else if (selectedExportTool === 'water-supply-coverage') {
           // For React tools, use the React router path
-          targetUrl = `${window.location.origin}/app/water-supply-coverage`;
+          targetUrl = `${window.location.origin}/water-supply-coverage`;
         } else if (selectedExportTool === 'station-coverage-optimizer') {
           // For React tools, use the React router path
-          targetUrl = `${window.location.origin}/app/station-coverage-optimizer`;
+          targetUrl = `${window.location.origin}/station-coverage-optimizer`;
         } else if (selectedExportTool === 'call-density-heatmap') {
           targetUrl = `${baseUrl}/call-density-heatmap`;
         } else if (selectedExportTool === 'incident-dashboard') {
@@ -770,8 +770,18 @@ const ExportContainer: React.FC = () => {
           return;
         }
 
-        console.log(`Redirecting to: ${targetUrl}`);
-        window.location.href = targetUrl;
+        console.log(`🚀 REDIRECT DEBUG: Current origin: ${window.location.origin}`);
+        console.log(`🚀 REDIRECT DEBUG: Target URL: ${targetUrl}`);
+        console.log(`🚀 REDIRECT DEBUG: Selected export tool: ${selectedExportTool}`);
+        console.log(`🚀 REDIRECT DEBUG: About to redirect...`);
+        
+        // Add a try-catch around the redirect to catch any errors
+        try {
+          window.location.href = targetUrl;
+          console.log(`🚀 REDIRECT DEBUG: Redirect command executed successfully`);
+        } catch (redirectError) {
+          console.error(`🚀 REDIRECT ERROR: Failed to redirect:`, redirectError);
+        }
       }, 500); // Short delay to ensure session storage is updated
     } catch (error) {
       console.error('Send to tool error:', error);
