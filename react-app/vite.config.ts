@@ -71,9 +71,9 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
-        assetFileNames: 'assets/[name]-[hash][extname]',
-        chunkFileNames: 'assets/[name]-[hash].js',
-        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash]-' + Date.now() + '[extname]',
+        chunkFileNames: 'assets/[name]-[hash]-' + Date.now() + '.js',
+        entryFileNames: 'assets/[name]-[hash]-' + Date.now() + '.js',
         manualChunks: (id) => {
           // Core React dependencies
           if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
