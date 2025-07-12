@@ -664,19 +664,27 @@ const ExportContainer: React.FC = () => {
           console.log('DEBUG - USING MAPPED DATA: Record fields:', Object.keys(record));
 
           // Process datetime fields to separate date and time components
+          // Only process fields that are explicitly datetime fields and contain actual datetime patterns
           Object.keys(incident).forEach(field => {
             if (incident[field] && typeof incident[field] === 'string' && incident[field].includes(' ')) {
-              // Split datetime into date and time parts
-              const [datePart, timePart] = incident[field].split(' ');
+              // Check if this looks like a datetime field (not an address or other text)
+              const value = incident[field];
+              const isDateTime = (field.toLowerCase().includes('date') || field.toLowerCase().includes('time')) &&
+                               (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(value) || /^\d{1,2}\/\d{1,2}\/\d{2,4}\s+\d{1,2}:\d{2}/.test(value));
               
-              console.log(`DATETIME SPLIT: Field "${field}" = "${incident[field]}" -> Date: "${datePart}", Time: "${timePart}"`);
-              
-              if (field.toLowerCase().includes('date')) {
-                console.log(`SETTING DATE FIELD "${field}" to "${datePart}"`);
-                incident[field] = datePart; // Keep only date part for date fields
-              } else if (field.toLowerCase().includes('time')) {
-                console.log(`SETTING TIME FIELD "${field}" to "${timePart}"`);
-                incident[field] = timePart; // Keep only time part for time fields
+              if (isDateTime) {
+                // Split datetime into date and time parts
+                const [datePart, timePart] = value.split(' ');
+                
+                console.log(`DATETIME SPLIT: Field "${field}" = "${value}" -> Date: "${datePart}", Time: "${timePart}"`);
+                
+                if (field.toLowerCase().includes('date')) {
+                  console.log(`SETTING DATE FIELD "${field}" to "${datePart}"`);
+                  incident[field] = datePart; // Keep only date part for date fields
+                } else if (field.toLowerCase().includes('time')) {
+                  console.log(`SETTING TIME FIELD "${field}" to "${timePart}"`);
+                  incident[field] = timePart; // Keep only time part for time fields
+                }
               }
             }
           });
