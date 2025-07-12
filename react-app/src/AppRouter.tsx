@@ -2,8 +2,8 @@ import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Container, CssBaseline, CircularProgress, Box } from '@mui/material';
 
-// Lazy load components for code splitting
-const App = React.lazy(() => import('./App'));
+// Direct import to force App into main bundle (fixes lazy loading cache issue)
+import App from './App';
 const ResponseTimeAnalyzerContainer = React.lazy(() => import('./components/analyzer/ResponseTimeAnalyzerContainer'));
 const FireMapProContainer = React.lazy(() => import('./components/fireMapPro/FireMapProContainer'));
 const WaterSupplyCoverageContainer = React.lazy(() => import('./components/waterSupplyCoverage/WaterSupplyCoverageContainer'));
@@ -32,7 +32,7 @@ const LoadingSpinner = () => (
  */
 const AppRouter: React.FC = () => {
   return (
-    <BrowserRouter basename={window.location.pathname.startsWith('/app') ? '/app' : ''}>
+    <BrowserRouter>
       <CssBaseline />
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>

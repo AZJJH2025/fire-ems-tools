@@ -10,16 +10,25 @@ RENDER SELECTIVE CACHING ISSUE DISCOVERED:
 - Missing our added debug logs proves routing code not updated
 - This is selective caching where different app parts serve from different builds
 
-TARGETED FIX STRATEGY - ATTEMPT #5:
-✅ Added "CACHE BUST JUL 12 20:45" timestamps to routing debug logs
-✅ Enhanced error messages with specific available tools list  
-✅ Strategic code changes to force routing logic refresh
-✅ Should bypass selective caching and serve updated routing code
+ROOT CAUSE IDENTIFIED - LAZY LOADING + CHUNK SPLITTING ISSUE!
 
-Evidence of selective caching:
-- ✅ Data transformation working (July 12 code)
-- ✅ Compatibility checking working (July 12 code) 
-- ❌ Routing debug logs missing (June 13 code)
-- ❌ Tool recognition failing (June 13 code)
+🚨 DEEP DIVE AUDIT SUCCESSFUL - FOUND THE REAL PROBLEM:
+✅ App component was lazy loaded: `const App = React.lazy(() => import('./App'));`
+✅ ExportContainer is inside App component (step 3 of stepper)
+✅ Vite config has manual chunk splitting creating separate bundles
+✅ Different chunks cached independently by browser/CDN
+✅ Data transformation (different chunk) = July 12 code ✅
+✅ ExportContainer (lazy chunk) = June 13 code ❌
 
-TIMESTAMP: 2025-07-12T20:45:30Z
+SOLUTION - ATTEMPT #6:
+🔧 Removed lazy loading for App component - direct import
+🔧 Removed dynamic basename that could cause routing issues  
+🔧 Forces ExportContainer into main bundle instead of separate chunk
+🔧 Should eliminate selective caching entirely
+
+This explains EVERYTHING:
+- Why some July 12 features worked (main bundle)
+- Why routing failed (lazy-loaded chunk still cached from June 13)
+- Why cache busts didn't work (only affected main bundle, not lazy chunks)
+
+TIMESTAMP: 2025-07-12T21:00:00Z
