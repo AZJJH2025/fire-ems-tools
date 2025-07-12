@@ -753,6 +753,12 @@ const ExportContainer: React.FC = () => {
         } else if (selectedExportTool === 'response-time-analyzer') {
           // For React tools, use the React router path
           targetUrl = `${window.location.origin}/app/response-time-analyzer`;
+        } else if (selectedExportTool === 'water-supply-coverage') {
+          // For React tools, use the React router path
+          targetUrl = `${window.location.origin}/app/water-supply-coverage`;
+        } else if (selectedExportTool === 'station-coverage-optimizer') {
+          // For React tools, use the React router path
+          targetUrl = `${window.location.origin}/app/station-coverage-optimizer`;
         } else if (selectedExportTool === 'call-density-heatmap') {
           targetUrl = `${baseUrl}/call-density-heatmap`;
         } else if (selectedExportTool === 'incident-dashboard') {
