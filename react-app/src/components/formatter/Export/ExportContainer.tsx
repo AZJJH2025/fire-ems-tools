@@ -70,8 +70,8 @@ const formatDateFields = (data: Record<string, any>[]): Record<string, any>[] =>
             const day = dateObj.getDate().toString().padStart(2, '0');
             const year = dateObj.getFullYear();
             newRow[field] = `${month}/${day}/${year}`;
-          } else if (newRow[field].includes(' ')) {
-            // Fallback: just split on space and take the first part
+          } else if (newRow[field].includes(' ') && field.toLowerCase().includes('date')) {
+            // Fallback: just split on space and take the first part (only for date fields)
             newRow[field] = newRow[field].split(' ')[0];
           }
         } catch (e) {
@@ -95,8 +95,8 @@ const formatDateFields = (data: Record<string, any>[]): Record<string, any>[] =>
             const minutes = dateObj.getMinutes().toString().padStart(2, '0');
             const seconds = dateObj.getSeconds().toString().padStart(2, '0');
             newRow[field] = `${hours}:${minutes}:${seconds}`;
-          } else if (newRow[field].includes(' ')) {
-            // Fallback: just split on space and take the second part
+          } else if (newRow[field].includes(' ') && field.toLowerCase().includes('time')) {
+            // Fallback: just split on space and take the second part (only for time fields)
             const parts = newRow[field].split(' ');
             if (parts.length > 1) {
               newRow[field] = parts[1];
@@ -756,9 +756,11 @@ const ExportContainer: React.FC = () => {
 
         // CACHE BUST JULY 12 2025 20:45 - Force routing logic refresh to bypass Render selective caching
         // Redirect to the appropriate URL based on the selected tool
-        console.log('🚀🚀🚀 ROUTING DEBUG JUL 12 20:45 CACHE BUST - selectedExportTool value:', selectedExportTool);
-        console.log('🚀🚀🚀 ROUTING DEBUG JUL 12 20:45 CACHE BUST - type:', typeof selectedExportTool);
-        console.log('🚀🚀🚀 ROUTING DEBUG JUL 12 20:45 CACHE BUST - exact match test:', selectedExportTool === 'water-supply-coverage');
+        console.log('🚀🚀🚀 ROUTING DEBUG JUL 12 21:00 FINAL FIX - selectedExportTool value:', selectedExportTool);
+        console.log('🚀🚀🚀 ROUTING DEBUG JUL 12 21:00 FINAL FIX - type:', typeof selectedExportTool);
+        console.log('🚀🚀🚀 ROUTING DEBUG JUL 12 21:00 FINAL FIX - exact match test:', selectedExportTool === 'water-supply-coverage');
+        console.log('🚀🚀🚀 ROUTING DEBUG JUL 12 21:00 FINAL FIX - selectedExportTool length:', selectedExportTool ? selectedExportTool.length : 'null');
+        console.log('🚀🚀🚀 ROUTING DEBUG JUL 12 21:00 FINAL FIX - selectedExportTool chars:', selectedExportTool ? Array.from(selectedExportTool).map(c => c.charCodeAt(0)) : 'null');
         if (selectedExportTool === 'fire-map-pro') {
           // For React tools, use the React router path
           targetUrl = `${window.location.origin}/fire-map-pro`;
