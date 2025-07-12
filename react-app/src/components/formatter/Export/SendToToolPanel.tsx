@@ -402,8 +402,8 @@ const SendToToolPanel: React.FC<SendToToolPanelProps> = ({
                       onClick={(event) => {
                         event.preventDefault();
                         event.stopPropagation();
-                        console.log('🚀🚀🚀 SEND TO TOOL BUTTON CLICKED - FRESH BUILD JUN 13 2025 16:49 - tool.id:', tool.id);
-                        console.log('🚀🚀🚀 SEND TO TOOL BUTTON - onSendToTool function:', onSendToTool);
+                        console.log('🚀🚀🚀 SEND TO TOOL BUTTON CLICKED - CACHE BUST JUL 12 2025 20:45 - tool.id:', tool.id);
+                        console.log('🚀🚀🚀 SEND TO TOOL BUTTON - CACHE BUST JUL 12 2025 20:45 - onSendToTool function:', onSendToTool);
                         onSendToTool();
                       }}
                     >

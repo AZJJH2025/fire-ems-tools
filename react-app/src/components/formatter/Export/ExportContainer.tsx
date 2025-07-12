@@ -754,10 +754,11 @@ const ExportContainer: React.FC = () => {
         const baseUrl = `http://${hostname}:${port}`;
         let targetUrl = '';
 
+        // CACHE BUST JULY 12 2025 20:45 - Force routing logic refresh to bypass Render selective caching
         // Redirect to the appropriate URL based on the selected tool
-        console.log('🚀🚀🚀 ROUTING DEBUG - selectedExportTool value:', selectedExportTool);
-        console.log('🚀🚀🚀 ROUTING DEBUG - type:', typeof selectedExportTool);
-        console.log('🚀🚀🚀 ROUTING DEBUG - exact match test:', selectedExportTool === 'water-supply-coverage');
+        console.log('🚀🚀🚀 ROUTING DEBUG JUL 12 20:45 CACHE BUST - selectedExportTool value:', selectedExportTool);
+        console.log('🚀🚀🚀 ROUTING DEBUG JUL 12 20:45 CACHE BUST - type:', typeof selectedExportTool);
+        console.log('🚀🚀🚀 ROUTING DEBUG JUL 12 20:45 CACHE BUST - exact match test:', selectedExportTool === 'water-supply-coverage');
         if (selectedExportTool === 'fire-map-pro') {
           // For React tools, use the React router path
           targetUrl = `${window.location.origin}/fire-map-pro`;
@@ -777,7 +778,8 @@ const ExportContainer: React.FC = () => {
         } else if (selectedExportTool === 'trend-analyzer') {
           targetUrl = `${baseUrl}/trend-analyzer`;
         } else {
-          console.log(`Tool ID not recognized: ${selectedExportTool}`);
+          console.log(`🚨 CACHE BUST JUL 12 20:45 - Tool ID not recognized: ${selectedExportTool}`);
+          console.log(`🚨 CACHE BUST JUL 12 20:45 - Available tools should include: water-supply-coverage, fire-map-pro, response-time-analyzer, station-coverage-optimizer`);
           return;
         }
 
