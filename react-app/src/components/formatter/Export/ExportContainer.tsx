@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 // CRITICAL DEBUG: Confirm new code is loading
-console.log('🚨🚨🚨 EXPORT CONTAINER LOADED - NEW VERSION WITH UPFRONT TRANSFORMATION AT', new Date().toISOString());
+console.log('🔥🔥🔥 EXPORT CONTAINER LOADED - JULY 12 2025 CACHE BUST VERSION - SHOULD NOT SEE JUNE 13 TIMESTAMPS AT', new Date().toISOString());
 import { useSelector, useDispatch } from 'react-redux';
 import {
   Box,
