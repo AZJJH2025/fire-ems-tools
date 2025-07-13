@@ -3,8 +3,9 @@
 
 echo "🚀 Starting Fire EMS Tools build process..."
 
-# Install Python dependencies (Render already did this)
-echo "📦 Python dependencies already installed by Render..."
+# Install Python dependencies (since we renamed requirements.txt)
+echo "📦 Installing Python dependencies..."
+pip install -r python-requirements.txt
 
 # Install Node.js dependencies and build React app
 echo "⚛️ Building React app with latest changes..."
