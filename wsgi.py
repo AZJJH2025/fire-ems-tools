@@ -29,6 +29,80 @@ try:
     fix_deployment.apply_fixes()
     logger.info("Applied deployment fixes")
     
+    # CRITICAL FIX: Build React app during Python startup on Render
+    # This bypasses Render's buildCommand limitation for Python projects
+    if os.environ.get('RENDER'):
+        import subprocess
+        import shutil
+        
+        logger.info("🚀 RENDER DETECTED: Building React app during Python startup...")
+        
+        react_dir = '/opt/render/project/src/react-app'
+        app_dir = '/opt/render/project/src/app'
+        
+        # Check if React build is needed (missing or outdated)
+        app_index = os.path.join(app_dir, 'index.html')
+        should_build = True
+        
+        if os.path.exists(app_index):
+            # Check if build is fresh (less than 5 minutes old)
+            import time
+            file_age = time.time() - os.path.getmtime(app_index)
+            if file_age < 300:  # 5 minutes
+                should_build = False
+                logger.info("📋 React build is fresh, skipping rebuild")
+        
+        if should_build:
+            try:
+                logger.info("📦 Installing Node.js dependencies...")
+                result = subprocess.run(
+                    ['npm', 'install'], 
+                    cwd=react_dir, 
+                    capture_output=True, 
+                    text=True, 
+                    timeout=300
+                )
+                if result.returncode != 0:
+                    logger.error(f"npm install failed: {result.stderr}")
+                    raise Exception("npm install failed")
+                
+                logger.info("🔨 Building React app...")
+                result = subprocess.run(
+                    ['npm', 'run', 'build'], 
+                    cwd=react_dir, 
+                    capture_output=True, 
+                    text=True, 
+                    timeout=300
+                )
+                if result.returncode != 0:
+                    logger.error(f"npm run build failed: {result.stderr}")
+                    raise Exception("npm run build failed")
+                
+                logger.info("📋 Copying fresh build to app directory...")
+                dist_dir = os.path.join(react_dir, 'dist')
+                
+                # Clear old app directory
+                if os.path.exists(app_dir):
+                    shutil.rmtree(app_dir)
+                os.makedirs(app_dir, exist_ok=True)
+                
+                # Copy fresh build
+                for item in os.listdir(dist_dir):
+                    src = os.path.join(dist_dir, item)
+                    dst = os.path.join(app_dir, item)
+                    if os.path.isdir(src):
+                        shutil.copytree(src, dst)
+                    else:
+                        shutil.copy2(src, dst)
+                
+                logger.info("✅ React build completed successfully! Latest hydrant fixes deployed.")
+                
+            except Exception as build_error:
+                logger.error(f"❌ React build failed: {str(build_error)}")
+                logger.warning("⚠️ Continuing with existing build if available...")
+        else:
+            logger.info("📋 Using existing React build")
+    
     # Import the Flask app (using factory pattern)
     from app import create_app
     
