@@ -3,8 +3,9 @@ services:
   # Web Service
   - type: web
     name: fire-ems-tools
+    env: python
     plan: free
-    buildCommand: chmod +x ./build_simple.sh && ./build_simple.sh
+    buildCommand: pip install -r requirements.txt && chmod +x ./build_simple.sh && ./build_simple.sh
     startCommand: gunicorn wsgi:app
     envVars:
       - key: PYTHON_VERSION
