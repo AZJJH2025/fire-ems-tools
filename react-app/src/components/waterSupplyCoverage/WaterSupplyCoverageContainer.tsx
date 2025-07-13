@@ -135,27 +135,36 @@ const WaterSupplyCoverageContainer: React.FC<TankZoneCoverageProps> = ({
                 
                 if (isHydrant) {
                   const hydrant = {
-                    id: `imported-hydrant-${index}`,
-                    latitude: parseFloat(lat),
-                    longitude: parseFloat(lng),
-                    type: 'hydrant' as const,
-                    gpm: record.gpm || record.flow_rate || 1000, // Default 1000 GPM
-                    status: 'active' as const,
-                    address: record.address || `Hydrant ${index + 1}`,
+                    name: record.address || record.name || `Hydrant ${index + 1}`,
+                    location: {
+                      latitude: parseFloat(lat),
+                      longitude: parseFloat(lng)
+                    },
+                    flowRate: record.gpm || record.flow_rate || 1000, // Default 1000 GPM
+                    staticPressure: record.staticPressure || record.static_pressure || 50, // Default 50 PSI
+                    residualPressure: record.residualPressure || record.residual_pressure || 20, // Default 20 PSI
+                    type: (record.hydrant_type as any) || 'municipal',
+                    size: (record.size as any) || '4-inch',
+                    operationalStatus: (record.status as any) || 'active',
+                    owner: record.owner || 'Municipal',
+                    contactInfo: record.contact || '',
                     notes: record.notes || ''
                   };
                   console.log('🔥 Adding hydrant:', hydrant);
                   dispatch(addHydrant(hydrant));
                 } else {
                   const tank = {
-                    id: `imported-tank-${index}`,
-                    latitude: parseFloat(lat),
-                    longitude: parseFloat(lng),
-                    type: 'tank' as const,
+                    name: record.address || record.name || `Tank ${index + 1}`,
+                    location: {
+                      latitude: parseFloat(lat),
+                      longitude: parseFloat(lng)
+                    },
                     capacity: parseInt(record.capacity) || parseInt(record.gallons) || 10000, // Default 10,000 gallons
-                    gpm: record.gpm || record.flow_rate || 500, // Default 500 GPM
-                    status: 'active' as const,
-                    address: record.address || `Tank ${index + 1}`,
+                    type: (record.tank_type as any) || 'municipal',
+                    accessRating: (record.access_rating as any) || 'good',
+                    operationalStatus: (record.status as any) || 'active',
+                    owner: record.owner || 'Municipal',
+                    contactInfo: record.contact || '',
                     notes: record.notes || ''
                   };
                   console.log('🔥 Adding tank:', tank);
