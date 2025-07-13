@@ -86,18 +86,18 @@ if is_render:
                 raise Exception("npm install failed")
             
             logger.info("✅ npm install completed successfully")
-            logger.info("🔨 Building React app with increased heap size (10min timeout)...")
+            logger.info("🔨 Building React app optimized for Render Starter plan (2GB RAM)...")
             
-            # Set NODE_OPTIONS to increase heap size for large React builds
+            # Optimized for Render Starter plan (2GB total memory)
             build_env = os.environ.copy()
-            build_env['NODE_OPTIONS'] = '--max-old-space-size=4096'  # 4GB heap
+            build_env['NODE_OPTIONS'] = '--max-old-space-size=1536'  # 1.5GB heap (leaving room for Python)
             
             result = subprocess.run(
                 ['npx', 'vite', 'build'], 
                 cwd=react_dir, 
                 capture_output=True, 
                 text=True, 
-                timeout=600,  # Increased to 10 minutes
+                timeout=600,  # 10 minutes timeout
                 env=build_env
             )
             if result.returncode != 0:
