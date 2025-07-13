@@ -86,14 +86,19 @@ if is_render:
                 raise Exception("npm install failed")
             
             logger.info("✅ npm install completed successfully")
-            logger.info("🔨 Building React app with build-no-check (faster, 10min timeout)...")
+            logger.info("🔨 Building React app with increased heap size (10min timeout)...")
+            
+            # Set NODE_OPTIONS to increase heap size for large React builds
+            build_env = os.environ.copy()
+            build_env['NODE_OPTIONS'] = '--max-old-space-size=4096'  # 4GB heap
             
             result = subprocess.run(
                 ['npx', 'vite', 'build'], 
                 cwd=react_dir, 
                 capture_output=True, 
                 text=True, 
-                timeout=600  # Increased to 10 minutes
+                timeout=600,  # Increased to 10 minutes
+                env=build_env
             )
             if result.returncode != 0:
                 logger.error(f"npm run build failed: {result.stderr}")
