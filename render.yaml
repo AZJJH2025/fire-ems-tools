@@ -3,7 +3,6 @@ services:
   # Web Service
   - type: web
     name: fire-ems-tools
-    runtime: python
     plan: free
     buildCommand: chmod +x ./build_simple.sh && ./build_simple.sh
     startCommand: gunicorn wsgi:app
