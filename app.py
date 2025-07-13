@@ -67,13 +67,9 @@ if is_render:
     app_index = os.path.join(app_dir, 'index.html')
     should_build = True
     
-    if os.path.exists(app_index):
-        # Check if build is fresh (less than 5 minutes old)
-        import time
-        file_age = time.time() - os.path.getmtime(app_index)
-        if file_age < 300:  # 5 minutes
-            should_build = False
-            logger.info("📋 React build is fresh, skipping rebuild")
+    # FORCE FRESH BUILD: Temporarily disable caching to deploy latest hydrant fixes
+    # This ensures July 13 data structure improvements and debugging code get deployed
+    logger.info("🔧 FORCING FRESH BUILD: Deploying latest hydrant fixes (cache disabled)")
     
     if should_build:
         try:
