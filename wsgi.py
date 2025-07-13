@@ -29,9 +29,18 @@ try:
     fix_deployment.apply_fixes()
     logger.info("Applied deployment fixes")
     
+    # DEBUG: Check environment variables
+    logger.info(f"🔍 ENVIRONMENT DEBUG: RENDER={os.environ.get('RENDER')}")
+    logger.info(f"🔍 ENVIRONMENT DEBUG: All env vars containing 'RENDER': {[k for k in os.environ.keys() if 'RENDER' in k.upper()]}")
+    
     # CRITICAL FIX: Build React app during Python startup on Render
     # This bypasses Render's buildCommand limitation for Python projects
-    if os.environ.get('RENDER'):
+    # Try both RENDER detection and fallback for production environments
+    is_render = os.environ.get('RENDER') or os.environ.get('RENDER_SERVICE_ID') or '/opt/render/project' in os.getcwd()
+    logger.info(f"🔍 RENDER DETECTION: RENDER={os.environ.get('RENDER')}, SERVICE_ID={os.environ.get('RENDER_SERVICE_ID')}, CWD={os.getcwd()}")
+    logger.info(f"🔍 FINAL DECISION: is_render={is_render}")
+    
+    if is_render:
         import subprocess
         import shutil
         
