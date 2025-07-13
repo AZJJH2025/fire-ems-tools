@@ -6,9 +6,24 @@ echo "🚀 Starting Fire EMS Tools build process..."
 # Install Python dependencies (Render already did this)
 echo "📦 Python dependencies already installed by Render..."
 
-# Skip React build for now - use existing build in /app directory
-echo "⚛️ Using existing React build in /app directory..."
+# Install Node.js dependencies and build React app
+echo "⚛️ Building React app with latest changes..."
+cd react-app
+
+# Install Node.js dependencies
+echo "📦 Installing Node.js dependencies..."
+npm install
+
+# Build React app with latest hydrant fixes
+echo "🔨 Building React app..."
+npm run build
+
+# Copy fresh build to /app directory
+echo "📋 Copying fresh build to /app directory..."
+cd ..
+rm -rf app/assets/*  # Clear old cached files
+cp -r react-app/dist/* app/
 
 echo "✅ Build completed successfully!"
-echo "📊 React app ready in /app directory"
-echo "🌐 Ready for Render deployment"
+echo "📊 React app built and deployed to /app directory"
+echo "🌐 Ready for Render deployment with latest hydrant fixes"
