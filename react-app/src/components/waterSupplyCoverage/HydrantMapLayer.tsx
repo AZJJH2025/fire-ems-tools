@@ -177,12 +177,22 @@ const HydrantMapLayer: React.FC<HydrantMapLayerProps> = ({ map, onHydrantEdit })
     hydrantMarkersRef.current.clear();
 
     // Add markers for each hydrant
-    hydrants.forEach(hydrant => {
+    console.log('🚰 Processing hydrants for map display:', hydrants.length);
+    console.log('🚰 Sample hydrant data:', hydrants[0]);
+    
+    hydrants.forEach((hydrant, index) => {
       // Safety check for hydrant location
       if (!hydrant.location || !hydrant.location.latitude || !hydrant.location.longitude) {
         console.warn('🚰 Skipping hydrant with invalid location:', hydrant);
         return;
       }
+      
+      console.log(`🚰 Processing hydrant ${index + 1}:`, {
+        name: hydrant.name,
+        lat: hydrant.location.latitude,
+        lng: hydrant.location.longitude,
+        hasValidCoords: !isNaN(hydrant.location.latitude) && !isNaN(hydrant.location.longitude)
+      });
 
       const icon = createHydrantIcon(hydrant);
       const marker = L.marker([hydrant.location.latitude, hydrant.location.longitude], {
@@ -239,8 +249,10 @@ const HydrantMapLayer: React.FC<HydrantMapLayerProps> = ({ map, onHydrantEdit })
       }
 
       // Add to layer group
+      console.log(`🚰 Adding hydrant ${index + 1} to layer group:`, hydrant.name);
       hydrantLayerGroupRef.current.addLayer(marker);
       hydrantMarkersRef.current.set(hydrant.id, marker);
+      console.log(`🚰 Layer group now has ${hydrantLayerGroupRef.current.getLayers().length} layers`);
 
       // Add coverage circle if enabled
       const coverageCircle = createHydrantCoverageCircle(hydrant);
@@ -264,6 +276,10 @@ const HydrantMapLayer: React.FC<HydrantMapLayerProps> = ({ map, onHydrantEdit })
     }
 
     console.log('🗺️ Hydrant markers updated:', hydrants.length, 'hydrants displayed');
+    console.log('🗺️ Layer group attached to map:', map.hasLayer(hydrantLayerGroupRef.current));
+    console.log('🗺️ Total layers in hydrant group:', hydrantLayerGroupRef.current.getLayers().length);
+    console.log('🗺️ Map zoom level:', map.getZoom());
+    console.log('🗺️ Map center:', map.getCenter());
   }, [hydrants, uiState.selectedHydrants, uiState.showCoverageZones, analysisParameters.maxEffectiveDistance, dispatch, map]);
 
   // Handle coverage zone visibility toggle
