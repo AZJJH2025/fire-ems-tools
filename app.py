@@ -89,7 +89,7 @@ if is_render:
             logger.info("🔨 Building React app with build-no-check (faster, 10min timeout)...")
             
             result = subprocess.run(
-                ['npm', 'run', 'build-no-check'], 
+                ['npx', 'vite', 'build'], 
                 cwd=react_dir, 
                 capture_output=True, 
                 text=True, 
