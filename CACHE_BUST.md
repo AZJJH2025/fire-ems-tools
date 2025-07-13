@@ -34,3 +34,29 @@ PREVIOUS ATTEMPTS THAT FAILED:
 - Root issue: Render's CDN selectively caching different chunks from different builds
 
 TIMESTAMP: 2025-07-12T23:20:00Z
+
+---
+
+🚨 CRITICAL HYDRANT DISPLAY BUG - CACHE INVALIDATION #8 - JULY 13, 2025 02:15
+
+HYDRANT DATA STRUCTURE FIXES NOT REACHING PRODUCTION:
+- Fixed hydrant data structure mismatch in commit 460868b9
+- Console logs show production still running old code
+- Still seeing: "🚰 Hydrant added to state: undefined"
+- Map still shows: "0 hydrants displayed" despite processing 100 records
+
+BUNDLE FILES STILL OLD:
+- WaterSupplyCoverageContainer-BriB5_0M.js (old version)
+- index-_BNWM61A.js (old version) 
+- Need new bundle generation with fixed hydrant structure
+
+DEPLOYMENT CACHE ISSUE SEVERITY: CRITICAL
+- Blocks core Water Supply Coverage functionality
+- 100 hydrant records processed but not displayed on map
+- Data structure fixes committed but not deployed
+
+**FORCING DEPLOYMENT REFRESH**: This modification will trigger new build with hydrant fixes included.
+
+Timestamp: 2025-07-13T02:15:00Z
+Build Target: Include hydrant data structure fixes from commit 460868b9
+Expected Result: Hydrants will display properly on map with correct Redux state structure

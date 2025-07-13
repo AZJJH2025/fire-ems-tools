@@ -755,34 +755,18 @@ const ExportContainer: React.FC = () => {
         const baseUrl = `http://${hostname}:${port}`;
         let targetUrl = '';
 
-        // AGGRESSIVE CACHE BUST JULY 12 2025 23:20 - Force complete routing logic refresh
-        // This timestamp forces a new bundle to be served and bypass Render selective caching
-        const cacheBustTimestamp = '2025-07-12T23:20:00Z';
-        console.log('🔥🔥🔥 AGGRESSIVE CACHE BUST', cacheBustTimestamp, 'ROUTING LOGIC REFRESH');
+        // Prepare redirect to target tool
         
         // Redirect to the appropriate URL based on the selected tool
-        console.log('🚀🚀🚀 ROUTING DEBUG JUL 13 00:30 ULTRA AGGRESSIVE - selectedExportTool value:', selectedExportTool);
-        console.log('🚀🚀🚀 ROUTING DEBUG JUL 13 00:30 - type:', typeof selectedExportTool);
-        console.log('🚀🚀🚀 ROUTING DEBUG JUL 13 00:30 - exact match test:', selectedExportTool === 'water-supply-coverage');
-        console.log('🚀🚀🚀 ROUTING DEBUG JUL 13 00:30 - selectedExportTool length:', selectedExportTool ? selectedExportTool.length : 'null');
-        console.log('🚀🚀🚀 ROUTING DEBUG JUL 13 00:30 - selectedExportTool chars:', selectedExportTool ? Array.from(selectedExportTool).map(c => c.charCodeAt(0)) : 'null');
-        console.log('🚀🚀🚀 ROUTING DEBUG JUL 13 00:30 - trimmed comparison:', selectedExportTool ? selectedExportTool.trim() === 'water-supply-coverage' : 'null');
-        console.log('🚀🚀🚀 ROUTING DEBUG JUL 13 00:30 - includes test:', selectedExportTool ? selectedExportTool.includes('water-supply-coverage') : 'null');
+        console.log('🔧 Routing to tool:', selectedExportTool);
         if (selectedExportTool === 'fire-map-pro') {
-          console.log('🎯 ROUTING MATCH JUL 13 00:30 - fire-map-pro case hit');
-          // For React tools, use the React router path
           targetUrl = `${window.location.origin}/fire-map-pro`;
         } else if (selectedExportTool === 'response-time-analyzer') {
-          console.log('🎯 ROUTING MATCH JUL 13 00:30 - response-time-analyzer case hit');
-          // For React tools, use the React router path
           targetUrl = `${window.location.origin}/response-time-analyzer`;
         } else if (selectedExportTool === 'water-supply-coverage') {
-          console.log('🎯 ROUTING MATCH JUL 13 00:30 - water-supply-coverage case hit - SUCCESS!');
-          // For React tools, use the React router path
+          console.log('✅ Water Supply Coverage routing successful');
           targetUrl = `${window.location.origin}/water-supply-coverage`;
         } else if (selectedExportTool === 'station-coverage-optimizer') {
-          console.log('🎯 ROUTING MATCH JUL 13 00:30 - station-coverage-optimizer case hit');
-          // For React tools, use the React router path
           targetUrl = `${window.location.origin}/station-coverage-optimizer`;
         } else if (selectedExportTool === 'call-density-heatmap') {
           targetUrl = `${baseUrl}/call-density-heatmap`;
@@ -791,44 +775,13 @@ const ExportContainer: React.FC = () => {
         } else if (selectedExportTool === 'trend-analyzer') {
           targetUrl = `${baseUrl}/trend-analyzer`;
         } else {
-          console.log(`🚨 CACHE BUST JUL 13 00:30 - Primary routing failed for: ${selectedExportTool}`);
-          
-          // FALLBACK: Try normalized string comparison
-          const normalizedTool = selectedExportTool ? selectedExportTool.trim().toLowerCase() : '';
-          console.log(`🔄 FALLBACK ROUTING JUL 13 00:30 - Normalized tool: "${normalizedTool}"`);
-          
-          if (normalizedTool === 'water-supply-coverage') {
-            console.log('🎯 FALLBACK SUCCESS JUL 13 00:30 - water-supply-coverage via normalization');
-            targetUrl = `${window.location.origin}/water-supply-coverage`;
-          } else if (normalizedTool === 'fire-map-pro') {
-            console.log('🎯 FALLBACK SUCCESS JUL 13 00:30 - fire-map-pro via normalization');
-            targetUrl = `${window.location.origin}/fire-map-pro`;
-          } else if (normalizedTool === 'response-time-analyzer') {
-            console.log('🎯 FALLBACK SUCCESS JUL 13 00:30 - response-time-analyzer via normalization');
-            targetUrl = `${window.location.origin}/response-time-analyzer`;
-          } else if (normalizedTool === 'station-coverage-optimizer') {
-            console.log('🎯 FALLBACK SUCCESS JUL 13 00:30 - station-coverage-optimizer via normalization');
-            targetUrl = `${window.location.origin}/station-coverage-optimizer`;
-          } else {
-            console.log(`🚨 FINAL FAILURE JUL 13 00:30 - Tool ID not recognized: "${selectedExportTool}"`);
-            console.log(`🚨 FINAL FAILURE JUL 13 00:30 - Normalized: "${normalizedTool}"`);
-            console.log(`🚨 FINAL FAILURE JUL 13 00:30 - Available tools should include: water-supply-coverage, fire-map-pro, response-time-analyzer, station-coverage-optimizer`);
-            return;
-          }
+          console.log(`🚨 Tool ID not recognized: ${selectedExportTool}`);
+          console.log(`Available tools: water-supply-coverage, fire-map-pro, response-time-analyzer, station-coverage-optimizer`);
+          return;
         }
 
-        console.log(`🚀 REDIRECT DEBUG: Current origin: ${window.location.origin}`);
-        console.log(`🚀 REDIRECT DEBUG: Target URL: ${targetUrl}`);
-        console.log(`🚀 REDIRECT DEBUG: Selected export tool: ${selectedExportTool}`);
-        console.log(`🚀 REDIRECT DEBUG: About to redirect...`);
-        
-        // Add a try-catch around the redirect to catch any errors
-        try {
-          window.location.href = targetUrl;
-          console.log(`🚀 REDIRECT DEBUG: Redirect command executed successfully`);
-        } catch (redirectError) {
-          console.error(`🚀 REDIRECT ERROR: Failed to redirect:`, redirectError);
-        }
+        console.log(`🚀 Redirecting to: ${targetUrl}`);
+        window.location.href = targetUrl;
       }, 500); // Short delay to ensure session storage is updated
     } catch (error) {
       console.error('Send to tool error:', error);

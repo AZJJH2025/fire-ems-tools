@@ -8,6 +8,9 @@
 
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+
+// FORCE DEPLOYMENT CACHE INVALIDATION - HYDRANT FIX - JULY 13, 2025 02:15
+console.log('🚨 HYDRANT DATA STRUCTURE FIXED - 2025-07-13T02:15:00Z - FORCING BUNDLE REFRESH');
 import {
   Box,
   Paper,
