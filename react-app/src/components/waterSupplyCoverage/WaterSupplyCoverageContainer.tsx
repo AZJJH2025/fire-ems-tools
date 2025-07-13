@@ -137,8 +137,18 @@ const WaterSupplyCoverageContainer: React.FC<TankZoneCoverageProps> = ({
                                  !record.capacity; // If no capacity, assume it's a hydrant
                 
                 if (isHydrant) {
+                  // DEBUG: Check what's in the record
+                  console.log('🔍 Record data for hydrant:', {
+                    address: record.address,
+                    name: record.name,
+                    index: index,
+                    fallback: `Hydrant ${index + 1}`,
+                    hasAddress: !!record.address,
+                    hasName: !!record.name
+                  });
+                  
                   const hydrant = {
-                    name: record.address || record.name || `Hydrant ${index + 1}`,
+                    name: record.address || record.name || `Hydrant ${(index || 0) + 1}`,
                     location: {
                       latitude: parseFloat(lat),
                       longitude: parseFloat(lng)
@@ -153,7 +163,17 @@ const WaterSupplyCoverageContainer: React.FC<TankZoneCoverageProps> = ({
                     contactInfo: record.contact || '',
                     notes: record.notes || ''
                   };
+                  
+                  // DEBUG: Validate hydrant object before dispatch
                   console.log('🔥 Adding hydrant:', hydrant);
+                  console.log('🔍 Hydrant validation:', {
+                    hasName: !!hydrant.name,
+                    nameValue: hydrant.name,
+                    hasLocation: !!hydrant.location,
+                    hasValidCoords: !isNaN(hydrant.location.latitude) && !isNaN(hydrant.location.longitude),
+                    coords: `${hydrant.location.latitude}, ${hydrant.location.longitude}`
+                  });
+                  
                   dispatch(addHydrant(hydrant));
                 } else {
                   const tank = {
