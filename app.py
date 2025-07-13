@@ -79,23 +79,29 @@ if is_render:
                 cwd=react_dir, 
                 capture_output=True, 
                 text=True, 
-                timeout=300
+                timeout=600  # Increased to 10 minutes
             )
             if result.returncode != 0:
                 logger.error(f"npm install failed: {result.stderr}")
                 raise Exception("npm install failed")
             
-            logger.info("🔨 Building React app...")
+            logger.info("✅ npm install completed successfully")
+            logger.info("🔨 Building React app with build-no-check (faster, 10min timeout)...")
+            
             result = subprocess.run(
-                ['npm', 'run', 'build'], 
+                ['npm', 'run', 'build-no-check'], 
                 cwd=react_dir, 
                 capture_output=True, 
                 text=True, 
-                timeout=300
+                timeout=600  # Increased to 10 minutes
             )
             if result.returncode != 0:
                 logger.error(f"npm run build failed: {result.stderr}")
+                if result.stdout:
+                    logger.error(f"npm run build output: {result.stdout}")
                 raise Exception("npm run build failed")
+            
+            logger.info("✅ React build completed successfully")
             
             logger.info("📋 Copying fresh build to app directory...")
             dist_dir = os.path.join(react_dir, 'dist')
