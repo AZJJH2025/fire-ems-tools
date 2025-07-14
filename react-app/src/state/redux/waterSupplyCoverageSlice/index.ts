@@ -48,14 +48,14 @@ const defaultFilterCriteria: WaterSupplyFilterCriteria = {
   accessRating: ['excellent', 'good', 'fair'],
   capacityRange: [0, 1000000], // 0 to 1M gallons
   
-  // Hydrant filters
-  hydrantTypes: ['municipal', 'industrial', 'cistern', 'dry'],
+  // Hydrant filters  
+  hydrantTypes: ['municipal', 'industrial', 'cistern', 'dry', 'private'],
   flowRateRange: [0, 5000], // 0 to 5000 GPM
   pressureRange: [0, 150], // 0 to 150 PSI
   
   // Common filters
-  operationalStatus: ['active'],
-  showInactive: false
+  operationalStatus: ['active', 'inactive', 'maintenance', 'seasonal', 'unknown'],
+  showInactive: true
 };
 
 const initialUIState: WaterSupplyCoverageUIState = {
