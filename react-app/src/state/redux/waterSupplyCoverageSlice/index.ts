@@ -385,7 +385,16 @@ export const selectFilteredTanks = createSelector(
 export const selectFilteredHydrants = createSelector(
   [selectHydrants, (state: { waterSupplyCoverage: WaterSupplyCoverageState }) => state.waterSupplyCoverage.ui.filterCriteria],
   (hydrants, criteria) => {
-    if (!criteria.showHydrants) return [];
+    console.log('🔍 selectFilteredHydrants - Debug info:', {
+      hydrantsCount: hydrants.length,
+      showHydrants: criteria.showHydrants,
+      criteria: criteria
+    });
+    
+    if (!criteria.showHydrants) {
+      console.log('🚨 Hydrants filtered out by showHydrants=false');
+      return [];
+    }
     
     return hydrants.filter(hydrant => {
       // Filter by hydrant type

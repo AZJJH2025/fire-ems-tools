@@ -27,8 +27,17 @@ interface HydrantMapLayerProps {
 const HydrantMapLayer: React.FC<HydrantMapLayerProps> = ({ map, onHydrantEdit }) => {
   const dispatch = useDispatch();
   const hydrants = useSelector(selectFilteredHydrants);
+  const allHydrants = useSelector(selectHydrants);
   const uiState = useSelector(selectUIState);
   const analysisParameters = useSelector(selectAnalysisParameters);
+  
+  // Debug state synchronization
+  console.log('🔍 HydrantMapLayer state debug:', {
+    allHydrantsCount: allHydrants.length,
+    filteredHydrantsCount: hydrants.length,
+    showHydrants: uiState.filterCriteria.showHydrants,
+    filterCriteria: uiState.filterCriteria
+  });
   
   const hydrantLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const coverageLayerGroupRef = useRef<L.LayerGroup | null>(null);
