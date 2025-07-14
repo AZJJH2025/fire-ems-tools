@@ -53,8 +53,8 @@ const defaultFilterCriteria: WaterSupplyFilterCriteria = {
   flowRateRange: [0, 5000], // 0 to 5000 GPM
   pressureRange: [0, 150], // 0 to 150 PSI
   
-  // Common filters
-  operationalStatus: ['active', 'inactive', 'maintenance', 'seasonal', 'unknown'],
+  // Common filters (include abbreviations)
+  operationalStatus: ['active', 'inactive', 'maintenance', 'seasonal', 'unknown', 'a', 'i', 'm', 's', 'u'],
   showInactive: true
 };
 
