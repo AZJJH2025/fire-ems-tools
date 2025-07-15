@@ -5,7 +5,7 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Grid,
+  Grid2 as Grid,
   TextField,
   FormControlLabel,
   Checkbox,
@@ -291,7 +291,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
           2. Department Information
         </Typography>
         <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <TextField
               label="Department Name *"
               fullWidth
@@ -300,7 +300,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
               placeholder="e.g., City Fire Department"
             />
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <TextField
               label="Fire Chief Name"
               fullWidth
@@ -309,7 +309,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
               placeholder="e.g., John Smith"
             />
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <TextField
               label="Chief Title"
               fullWidth
@@ -318,7 +318,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
               placeholder="e.g., Fire Chief, Battalion Chief"
             />
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Box>
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
                 Department Logo
@@ -355,7 +355,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
               )}
             </Box>
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <TextField
               label="Report Title"
               fullWidth
@@ -389,7 +389,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
             />
           </Grid>
           
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <TextField
               label="Report Start Date"
               type="date"
@@ -404,7 +404,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
             />
           </Grid>
           
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <TextField
               label="Report End Date"
               type="date"

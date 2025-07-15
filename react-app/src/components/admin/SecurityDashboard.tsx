@@ -1,11 +1,10 @@
-// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import {
   Box,
   Card,
   CardContent,
   Typography,
-  Grid,
+  Grid2 as Grid,
   Tabs,
   Tab,
   Alert,
@@ -413,7 +412,7 @@ const SecurityDashboard: React.FC = () => {
 
       {/* Quick Metrics */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent sx={{ textAlign: 'center' }}>
               <Typography variant="h3" color="success.main">
@@ -425,7 +424,7 @@ const SecurityDashboard: React.FC = () => {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent sx={{ textAlign: 'center' }}>
               <Typography variant="h3" color="primary.main">
@@ -437,7 +436,7 @@ const SecurityDashboard: React.FC = () => {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent sx={{ textAlign: 'center' }}>
               <Typography variant="h3" color="info.main">
@@ -449,7 +448,7 @@ const SecurityDashboard: React.FC = () => {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent sx={{ textAlign: 'center' }}>
               <Typography variant="h3" color="warning.main">
@@ -478,7 +477,7 @@ const SecurityDashboard: React.FC = () => {
       {currentTab === 0 && (
         <Grid container spacing={3}>
           {/* Authentication Chart */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -508,7 +507,7 @@ const SecurityDashboard: React.FC = () => {
           </Grid>
 
           {/* Data Integrity Chart */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -530,32 +529,32 @@ const SecurityDashboard: React.FC = () => {
           </Grid>
 
           {/* Authentication Details */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
                   Authentication Details
                 </Typography>
                 <Grid container spacing={2}>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 6 }}>
                     <Typography variant="body2">Successful Logins:</Typography>
                     <Typography variant="h6" color="success.main">
                       {metrics?.authentication.successful_logins || 0}
                     </Typography>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 6 }}>
                     <Typography variant="body2">Failed Attempts:</Typography>
                     <Typography variant="h6" color="error.main">
                       {metrics?.authentication.failed_logins || 0}
                     </Typography>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 6 }}>
                     <Typography variant="body2">Unique Users:</Typography>
                     <Typography variant="h6" color="info.main">
                       {metrics?.authentication.unique_users || 0}
                     </Typography>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 6 }}>
                     <Typography variant="body2">Failure Rate:</Typography>
                     <Typography variant="h6">
                       {metrics?.authentication.failure_rate?.toFixed(1) || 0}%
@@ -567,32 +566,32 @@ const SecurityDashboard: React.FC = () => {
           </Grid>
 
           {/* System Health */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
                   System Health
                 </Typography>
                 <Grid container spacing={2}>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 6 }}>
                     <Typography variant="body2">Uptime:</Typography>
                     <Typography variant="h6" color="success.main">
                       {metrics?.system_security.uptime_percentage || 99.5}%
                     </Typography>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 6 }}>
                     <Typography variant="body2">Avg Response:</Typography>
                     <Typography variant="h6">
                       {metrics?.system_security.response_time_avg || 250}ms
                     </Typography>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 6 }}>
                     <Typography variant="body2">Security Events:</Typography>
                     <Typography variant="h6" color="warning.main">
                       {metrics?.system_security.security_events || 0}
                     </Typography>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 6 }}>
                     <Typography variant="body2">Config Changes:</Typography>
                     <Typography variant="h6">
                       {metrics?.system_security.configuration_changes || 0}
@@ -608,14 +607,14 @@ const SecurityDashboard: React.FC = () => {
       {currentTab === 1 && complianceStatus && (
         <Grid container spacing={3}>
           {/* Overall Compliance */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
                   SOC 2 Compliance Status
                 </Typography>
                 <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
+                  <Grid size={{ xs: 12, md: 6 }}>
                     <Typography variant="body1" gutterBottom>
                       Overall Compliance: {complianceStatus.compliance_percentage}%
                     </Typography>
@@ -625,7 +624,7 @@ const SecurityDashboard: React.FC = () => {
                       sx={{ height: 10, borderRadius: 5 }}
                     />
                   </Grid>
-                  <Grid item xs={12} md={6}>
+                  <Grid size={{ xs: 12, md: 6 }}>
                     <Typography variant="body2">
                       Controls Implemented: {complianceStatus.compliant_controls}/{complianceStatus.total_controls}
                     </Typography>
@@ -642,7 +641,7 @@ const SecurityDashboard: React.FC = () => {
           </Grid>
 
           {/* Controls Detail */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -650,7 +649,7 @@ const SecurityDashboard: React.FC = () => {
                 </Typography>
                 <Grid container spacing={2}>
                   {Object.entries(complianceStatus.controls_detail).map(([key, control]) => (
-                    <Grid item xs={12} md={6} key={key}>
+                    <Grid size={{ xs: 12, md: 6 }} key={key}>
                       <Paper sx={{ p: 2, border: 1, borderColor: 'divider' }}>
                         <Box display="flex" justifyContent="space-between" alignItems="center">
                           <Typography variant="subtitle1">
@@ -679,7 +678,7 @@ const SecurityDashboard: React.FC = () => {
 
       {currentTab === 2 && (
         <Grid container spacing={3}>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -734,7 +733,7 @@ const SecurityDashboard: React.FC = () => {
 
       {currentTab === 3 && (
         <Grid container spacing={3}>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Card>
               <CardContent>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
@@ -809,7 +808,7 @@ const SecurityDashboard: React.FC = () => {
       {currentTab === 4 && (
         <Grid container spacing={3}>
           {/* Compliance Frameworks Overview */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -818,7 +817,7 @@ const SecurityDashboard: React.FC = () => {
                 </Typography>
                 <Grid container spacing={2}>
                   {complianceFrameworks.map((framework) => (
-                    <Grid item xs={12} md={4} key={framework.id}>
+                    <Grid size={{ xs: 12, md: 4 }} key={framework.id}>
                       <Card variant="outlined">
                         <CardContent>
                           <Typography variant="h6" gutterBottom>
@@ -860,7 +859,7 @@ const SecurityDashboard: React.FC = () => {
           </Grid>
 
           {/* Policy Documents */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -918,7 +917,7 @@ const SecurityDashboard: React.FC = () => {
           </Grid>
 
           {/* Compliance Metrics */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -926,7 +925,7 @@ const SecurityDashboard: React.FC = () => {
                   Compliance Metrics
                 </Typography>
                 <Grid container spacing={2}>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 6 }}>
                     <Box textAlign="center">
                       <Typography variant="h4" color="success.main">
                         {Math.round(complianceFrameworks.reduce((sum, f) => sum + f.score, 0) / complianceFrameworks.length)}%
@@ -936,7 +935,7 @@ const SecurityDashboard: React.FC = () => {
                       </Typography>
                     </Box>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 6 }}>
                     <Box textAlign="center">
                       <Typography variant="h4" color="primary">
                         {policyDocuments.filter(p => p.status === 'active').length}
@@ -946,7 +945,7 @@ const SecurityDashboard: React.FC = () => {
                       </Typography>
                     </Box>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 6 }}>
                     <Box textAlign="center">
                       <Typography variant="h4" color="warning.main">
                         {complianceFrameworks.filter(f => f.status === 'partial').length}
@@ -956,7 +955,7 @@ const SecurityDashboard: React.FC = () => {
                       </Typography>
                     </Box>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={{ xs: 6 }}>
                     <Box textAlign="center">
                       <Typography variant="h4" color="info.main">
                         {policyDocuments.filter(p => 
@@ -974,7 +973,7 @@ const SecurityDashboard: React.FC = () => {
           </Grid>
 
           {/* Upcoming Compliance Tasks */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>

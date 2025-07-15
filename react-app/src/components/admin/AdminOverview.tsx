@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -9,7 +8,7 @@ import {
   Alert,
   Chip,
   LinearProgress,
-  Grid,
+  Grid2 as Grid,
   Button,
   Table,
   TableBody,

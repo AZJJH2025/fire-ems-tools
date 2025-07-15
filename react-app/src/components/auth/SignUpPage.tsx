@@ -6,7 +6,7 @@ import {
   TextField,
   Button,
   Paper,
-  Grid,
+  Grid2 as Grid,
   FormControl,
   InputLabel,
   Select,
@@ -188,7 +188,7 @@ const SignUpPage: React.FC = () => {
             </Typography>
             
             <Grid container spacing={3}>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="Fire Department Name"
@@ -199,7 +199,7 @@ const SignUpPage: React.FC = () => {
                 />
               </Grid>
               
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <FormControl fullWidth required>
                   <InputLabel>Department Type</InputLabel>
                   <Select
@@ -214,7 +214,7 @@ const SignUpPage: React.FC = () => {
                 </FormControl>
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Estimated Population Served"
@@ -225,7 +225,7 @@ const SignUpPage: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="Fire Chief Name"
@@ -236,7 +236,7 @@ const SignUpPage: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="Email Address"
@@ -259,7 +259,7 @@ const SignUpPage: React.FC = () => {
             </Typography>
             
             <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Password"
@@ -285,7 +285,7 @@ const SignUpPage: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Confirm Password"
@@ -310,7 +310,7 @@ const SignUpPage: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="City"
@@ -321,7 +321,7 @@ const SignUpPage: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="State"
@@ -332,7 +332,7 @@ const SignUpPage: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Number of Stations"

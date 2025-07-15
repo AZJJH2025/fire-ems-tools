@@ -630,6 +630,7 @@ const FieldMappingContainer: React.FC = () => {
     }[] = [];
     
     // Check required fields - SYSTEMATIC FIX: Use field IDs with legacy support
+    let hasAutoMigrations = false;
     toolConfig.requiredFields.forEach(field => {
       // 🔧 CRITICAL FIX: Check for mapping by field ID first, then legacy display name
       const mappingById = mappings.find(m => m.targetField === field.id);
@@ -659,6 +660,7 @@ const FieldMappingContainer: React.FC = () => {
           
           // Dispatch the updated mappings
           dispatch(setMappings(updatedMappings));
+          hasAutoMigrations = true;
         }
       } else {
         // No mapping found for this required field
@@ -670,6 +672,14 @@ const FieldMappingContainer: React.FC = () => {
         });
       }
     });
+    
+    // If we performed auto-migrations, skip validation errors for this run
+    // The useEffect will trigger validation again after the mappings update
+    if (hasAutoMigrations) {
+      console.log(`  🔄 Auto-migrations performed, skipping validation errors for this run`);
+      setValidationErrors([]);
+      return;
+    }
     
     // Add more validation as needed
     

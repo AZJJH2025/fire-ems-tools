@@ -13,7 +13,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Grid,
+  Grid2 as Grid,
   Card,
   CardContent,
   CardActions,
@@ -284,7 +284,7 @@ const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorProps> = 
       
       <Grid container spacing={3}>
         {reportTemplates.map((template) => (
-          <Grid item xs={12} md={6} key={template.id}>
+          <Grid size={{ xs: 12, md: 6 }} key={template.id}>
             <Card 
               variant="outlined" 
               sx={{ 
@@ -350,7 +350,7 @@ const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorProps> = 
       </Typography>
       
       <Grid container spacing={3}>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth
             label="Department Name"
@@ -360,7 +360,7 @@ const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorProps> = 
             required
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth
             label="Fire Chief"
@@ -370,7 +370,7 @@ const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorProps> = 
             required
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth
             label="Jurisdiction"
@@ -380,7 +380,7 @@ const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorProps> = 
             required
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth
             label="Population Served"
@@ -390,7 +390,7 @@ const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorProps> = 
             placeholder="e.g., 50000"
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth
             label="Service Area (sq. miles)"
@@ -400,7 +400,7 @@ const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorProps> = 
             placeholder="e.g., 125"
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth
             label="Number of Stations"
@@ -410,7 +410,7 @@ const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorProps> = 
             placeholder="e.g., 8"
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth
             label="Apparatus Count"
@@ -420,7 +420,7 @@ const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorProps> = 
             placeholder="e.g., 15"
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth
             label="Personnel Count"
@@ -439,7 +439,7 @@ const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorProps> = 
             placeholder="e.g., 123 Main Street, Houston, TX 77001"
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth
             label="Phone Number"
@@ -448,7 +448,7 @@ const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorProps> = 
             placeholder="e.g., (555) 123-4567"
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth
             label="Email Address"
@@ -473,7 +473,7 @@ const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorProps> = 
       </Typography>
       
       <Grid container spacing={3}>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth
             label="Start Date"
@@ -484,7 +484,7 @@ const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorProps> = 
             required
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth
             label="End Date"
@@ -535,22 +535,22 @@ const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorProps> = 
                 <strong>Report Configuration</strong>
               </Typography>
               <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="body2">
                     <strong>Template:</strong> {selectedTemplate?.name}
                   </Typography>
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="body2">
                     <strong>Department:</strong> {departmentInfo.name}
                   </Typography>
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="body2">
                     <strong>Period:</strong> {reportPeriod.description}
                   </Typography>
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="body2">
                     <strong>Data Points:</strong> {incidentData.length.toLocaleString()} incidents
                   </Typography>
@@ -586,22 +586,22 @@ const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorProps> = 
                 <strong>Report Summary</strong>
               </Typography>
               <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="body2">
                     <strong>Pages:</strong> {generatedReport.metadata.totalPages}
                   </Typography>
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="body2">
                     <strong>Word Count:</strong> {generatedReport.metadata.wordCount.toLocaleString()}
                   </Typography>
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="body2">
                     <strong>Data Quality:</strong> {generatedReport.metadata.dataQuality}
                   </Typography>
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="body2">
                     <strong>Completeness:</strong> {generatedReport.metadata.completeness}%
                   </Typography>
