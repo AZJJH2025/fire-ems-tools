@@ -186,9 +186,9 @@ const TankMapContainer: React.FC<TankMapContainerProps> = ({
   }, [allSupplies, uiState.selectedTanks.length, uiState.selectedHydrants.length, placementMode, dispatch]);
 
   // Handle map errors
-  const _handleMapError = useCallback((error: string) => {
-    console.error('Tank map error:', error);
-  }, []);
+  // const _handleMapError = useCallback((error: string) => {
+  //   console.error('Tank map error:', error);
+  // }, []);
 
   // Auto-fit bounds when water supplies change
   useEffect(() => {

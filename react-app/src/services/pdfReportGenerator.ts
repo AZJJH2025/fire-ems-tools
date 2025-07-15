@@ -943,7 +943,7 @@ export class PDFReportGenerator {
     };
   }
   
-  private getNFPAComplianceOverview(): string {
+  private _getNFPAComplianceOverview(): string {
     const compliance = this.calculateNFPACompliance();
     const compliantCount = Object.values(compliance).filter(Boolean).length;
     const totalMetrics = Object.keys(compliance).length;
@@ -984,7 +984,7 @@ export class PDFReportGenerator {
     return calculateIncidentMetrics(incident);
   }
   
-  private hexToRgb(hex: string): [number, number, number] {
+  private _hexToRgb(hex: string): [number, number, number] {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? [
       parseInt(result[1], 16),

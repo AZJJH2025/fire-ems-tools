@@ -1,5 +1,5 @@
 import { ReportTemplate, ReportData, ReportSection, ComplianceMetrics } from './reportTemplates';
-import { ResponseTimeStatistics, IncidentRecord } from '@/types/analyzer';
+// import { ResponseTimeStatistics, IncidentRecord } from '@/types/analyzer';
 
 /**
  * Professional Report Template Engine
