@@ -71,7 +71,7 @@ import {
   deselectHydrant
 } from '../../state/redux/waterSupplyCoverageSlice';
 
-import { TankZoneCoverageProps } from '../../types/tankZoneCoverage';
+import { TankZoneCoverageProps, GapSeverity, RecommendationType, RecommendationPriority } from '../../types/tankZoneCoverage';
 import WaterSupplyImporter from './WaterSupplyImporter';
 
 interface WaterSupplySidebarProps {
@@ -241,7 +241,7 @@ const WaterSupplySidebar: React.FC<WaterSupplySidebarProps> = ({ mode }) => {
             };
             
             const gapDistance = distance - combinedRadius;
-            const severity = gapDistance > minCoverageRadius * 2 ? 'critical' : 
+            const severity: GapSeverity = gapDistance > minCoverageRadius * 2 ? 'critical' : 
                            gapDistance > minCoverageRadius ? 'high' : 'medium';
             
             gaps.push({
@@ -283,9 +283,11 @@ const WaterSupplySidebar: React.FC<WaterSupplySidebarProps> = ({ mode }) => {
           // Significant overlap
           redundancyAreas.push({
             id: `redundancy-${i}-${j}`,
-            zones: [zone1.supplyId, zone2.supplyId],
-            overlapArea: Math.PI * Math.pow(Math.min(zone1.radiusMeters, zone2.radiusMeters), 2),
-            efficiency: 1 - (distance / combinedRadius)
+            area: Math.PI * Math.pow(Math.min(zone1.radiusMeters, zone2.radiusMeters), 2),
+            tankCount: 2, // Number of supplies in this redundancy area
+            totalCapacity: (zone1.capacity || 0) + (zone2.capacity || 0),
+            efficiency: 1 - (distance / combinedRadius),
+            geometry: [] // Empty geometry for now, would need GIS calculation
           });
         }
       }
@@ -301,11 +303,11 @@ const WaterSupplySidebar: React.FC<WaterSupplySidebarProps> = ({ mode }) => {
     gaps.filter(gap => gap.severity === 'critical').forEach((gap, index) => {
       recommendations.push({
         id: `rec-gap-${index}`,
-        type: 'new-supply',
-        priority: 'high',
+        type: 'new-tank' as RecommendationType,
+        priority: 'high' as RecommendationPriority,
         title: `Address Critical Coverage Gap`,
         description: `Critical coverage gap of ${(gap.area / 4047).toFixed(1)} acres identified requiring immediate attention.`,
-        location: gap.location,
+        proposedLocation: gap.location,
         estimatedCost: gap.area > 100000 ? 150000 : 75000, // Larger gaps cost more
         expectedBenefit: `Improve response time by ${Math.round(gap.nearestSupply.accessTime / 60)} minutes for affected area`,
         implementation: gap.area > 100000 ? 
@@ -318,8 +320,8 @@ const WaterSupplySidebar: React.FC<WaterSupplySidebarProps> = ({ mode }) => {
     if (metrics.overallCoverage < 80) {
       recommendations.push({
         id: 'rec-coverage',
-        type: 'system-improvement',
-        priority: 'medium',
+        type: 'increase-capacity' as RecommendationType,
+        priority: 'medium' as RecommendationPriority,
         title: 'Improve Overall Coverage',
         description: `Current coverage at ${metrics.overallCoverage}% is below recommended 80% minimum.`,
         estimatedCost: 200000,
@@ -332,8 +334,8 @@ const WaterSupplySidebar: React.FC<WaterSupplySidebarProps> = ({ mode }) => {
     if (metrics.averageResponseTime > 600) { // 10 minutes
       recommendations.push({
         id: 'rec-response-time',
-        type: 'efficiency-improvement',
-        priority: 'medium',
+        type: 'upgrade-access' as RecommendationType,
+        priority: 'medium' as RecommendationPriority,
         title: 'Reduce Average Response Time',
         description: `Average response time of ${Math.round(metrics.averageResponseTime / 60)} minutes exceeds NFPA recommendations.`,
         estimatedCost: 100000,

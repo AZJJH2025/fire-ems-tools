@@ -239,8 +239,25 @@ const WaterSupplyReportGenerator: React.FC<WaterSupplyReportGeneratorProps> = ({
           owner: hydrant.owner,
           notes: hydrant.notes
         })),
-        coverageZones: coverageZones || [],
-        analysis: activeAnalysis || undefined
+        coverageZones: coverageZones ? coverageZones.map(zone => ({
+          id: zone.supplyId,
+          center: { latitude: 0, longitude: 0 }, // Default center since original doesn't have this
+          radius: zone.effectiveRange || 1000,
+          supplyId: zone.supplyId,
+          supplyType: zone.supplyType
+        })) : [],
+        analysis: activeAnalysis ? {
+          totalCoverage: activeAnalysis.coveragePercentage,
+          gaps: activeAnalysis.gapAreas.map(gap => ({
+            id: gap.id,
+            location: gap.location,
+            severity: gap.severity as 'high' | 'medium' | 'low'
+          })),
+          redundancy: activeAnalysis.redundancyAreas.map(redundancy => ({
+            location: { latitude: 0, longitude: 0 }, // Default location
+            supplyCount: redundancy.tankCount
+          }))
+        } : undefined
       };
       
       // Generate the PDF
@@ -299,7 +316,7 @@ const WaterSupplyReportGenerator: React.FC<WaterSupplyReportGeneratorProps> = ({
       
       <Grid container spacing={2}>
         {REPORT_TEMPLATES.map((template) => (
-          <Grid item xs={12} md={6} key={template.id}>
+          <Grid size={{ xs: 12, md: 6 }} key={template.id}>
             <Card 
               sx={{ 
                 cursor: 'pointer',
@@ -356,7 +373,7 @@ const WaterSupplyReportGenerator: React.FC<WaterSupplyReportGeneratorProps> = ({
       </Typography>
       
       <Grid container spacing={3}>
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <TextField
             fullWidth
             label="Department Name"
@@ -366,7 +383,7 @@ const WaterSupplyReportGenerator: React.FC<WaterSupplyReportGeneratorProps> = ({
           />
         </Grid>
         
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <TextField
             fullWidth
             label="Fire Chief Name"
@@ -375,7 +392,7 @@ const WaterSupplyReportGenerator: React.FC<WaterSupplyReportGeneratorProps> = ({
           />
         </Grid>
         
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <TextField
             fullWidth
             label="Chief Title"
@@ -384,7 +401,7 @@ const WaterSupplyReportGenerator: React.FC<WaterSupplyReportGeneratorProps> = ({
           />
         </Grid>
         
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <TextField
             fullWidth
             label="Department Logo (Base64)"
@@ -410,7 +427,7 @@ const WaterSupplyReportGenerator: React.FC<WaterSupplyReportGeneratorProps> = ({
       </Typography>
       
       <Grid container spacing={3}>
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <TextField
             fullWidth
             label="Executive Summary"
@@ -422,7 +439,7 @@ const WaterSupplyReportGenerator: React.FC<WaterSupplyReportGeneratorProps> = ({
           />
         </Grid>
         
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <TextField
             fullWidth
             label="Report Purpose"
@@ -434,7 +451,7 @@ const WaterSupplyReportGenerator: React.FC<WaterSupplyReportGeneratorProps> = ({
           />
         </Grid>
         
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <TextField
             fullWidth
             label="Chief's Message"

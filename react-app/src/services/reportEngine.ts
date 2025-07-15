@@ -69,7 +69,7 @@ export class ReportEngine {
   /**
    * Process a single report section with template data
    */
-  private static processSection(section: ReportSection, data: ReportData, template: ReportTemplate): ProcessedSection {
+  private static processSection(section: ReportSection, data: ReportData, _template: ReportTemplate): ProcessedSection {
     console.log(`🔧 Processing section: "${section.title}"`);
     
     let processedContent: string;
@@ -141,7 +141,6 @@ export class ReportEngine {
    * Extract all template variables from report data
    */
   private static extractTemplateVariables(data: ReportData): Record<string, any> {
-    const stats = data.responseTimeStats;
     const dept = data.departmentInfo;
     const compliance = data.complianceMetrics;
     
@@ -413,7 +412,7 @@ export class ReportEngine {
   private static processEachLoop(template: string, arrayName: string, items: string[]): string {
     const regex = new RegExp(`{{#each ${arrayName}}}([\\s\\S]*?){{/each}}`, 'g');
     
-    return template.replace(regex, (match, itemTemplate) => {
+    return template.replace(regex, (_match, itemTemplate) => {
       return items.map(item => itemTemplate.replace(/{{this}}/g, item)).join('\n');
     });
   }
@@ -424,7 +423,7 @@ export class ReportEngine {
   private static processObjectLoop(template: string, arrayName: string, items: any[]): string {
     const regex = new RegExp(`{{#each ${arrayName}}}([\\s\\S]*?){{/each}}`, 'g');
     
-    return template.replace(regex, (match, itemTemplate) => {
+    return template.replace(regex, (_match, itemTemplate) => {
       return items.map(item => {
         let processedTemplate = itemTemplate;
         // Replace all object properties
@@ -583,7 +582,7 @@ ${nfpa.totalResponseCompliance >= 90 ?
   /**
    * Process chart sections
    */
-  private static processChartSection(content: any, data: ReportData): string {
+  private static processChartSection(content: any, _data: ReportData): string {
     if (typeof content === 'object') {
       return `[Chart: ${content.type}]\n\nChart data visualization would be generated here based on: ${content.data}`;
     }

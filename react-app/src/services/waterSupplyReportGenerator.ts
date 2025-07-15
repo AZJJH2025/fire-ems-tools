@@ -615,7 +615,7 @@ export class WaterSupplyPDFReportGenerator {
     }
   }
   
-  private addTextFallbackTable(type: string, data: any[]): void {
+  private addTextFallbackTable(_type: string, data: any[]): void {
     this.pdf.setFontSize(10);
     this.pdf.setTextColor(this.colors.text);
     

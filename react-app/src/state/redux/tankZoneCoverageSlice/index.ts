@@ -13,10 +13,9 @@ import {
   CoverageAnalysis, 
   TankZoneCoverageUIState,
   AnalysisParameters,
-  CoverageGap,
   // CoverageRecommendation, // Unused
   TankSidebarTab,
-  TankFilterCriteria,
+  WaterSupplyFilterCriteria,
   ExecutiveSummary
 } from '../../../types/tankZoneCoverage';
 
@@ -32,27 +31,37 @@ const defaultAnalysisParameters: AnalysisParameters = {
   accessWeight: 0.3 // 30% weight on access quality
 };
 
-const defaultFilterCriteria: TankFilterCriteria = {
-  tankTypes: ['municipal', 'private', 'emergency'],
-  operationalStatus: ['active'],
-  accessRating: ['excellent', 'good', 'fair'],
-  capacityRange: [0, 1000000], // 0 to 1M gallons
-  showInactive: false,
-  // Additional properties to satisfy WaterSupplyFilterCriteria compatibility
+const defaultFilterCriteria: WaterSupplyFilterCriteria = {
+  // Supply type filters
   showTanks: true,
   showHydrants: false,
+  
+  // Tank-specific filters
+  tankTypes: ['municipal', 'private', 'emergency'],
+  accessRating: ['excellent', 'good', 'fair'],
+  capacityRange: [0, 1000000], // 0 to 1M gallons
+  
+  // Hydrant-specific filters
   hydrantTypes: [],
   flowRateRange: [0, 3000] as [number, number],
-  pressureRange: [0, 200] as [number, number]
+  pressureRange: [0, 200] as [number, number],
+  
+  // Common filters
+  operationalStatus: ['active'],
+  showInactive: false
 };
 
 const initialUIState: TankZoneCoverageUIState = {
+  selectedSupplies: [],
   selectedTanks: [],
+  selectedHydrants: [],
   highlightedGaps: [],
   analysisInProgress: false,
   showCoverageZones: true,
   showGapAreas: true,
   showRedundancyAreas: false,
+  showTanks: true,
+  showHydrants: false,
   activeAnalysis: undefined,
   sidebarTab: 'tanks',
   filterCriteria: defaultFilterCriteria
@@ -190,7 +199,7 @@ const tankZoneCoverageSlice = createSlice({
       state.ui.sidebarTab = action.payload;
     },
 
-    updateFilterCriteria: (state, action: PayloadAction<Partial<TankFilterCriteria>>) => {
+    updateFilterCriteria: (state, action: PayloadAction<Partial<WaterSupplyFilterCriteria>>) => {
       state.ui.filterCriteria = { ...state.ui.filterCriteria, ...action.payload };
     },
 

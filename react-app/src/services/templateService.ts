@@ -1,5 +1,5 @@
-import { FieldMappingTemplate, SourceFieldPattern, TemplateMetadata, TemplateSuggestion, FieldMapping, ToolConfig, SampleData } from '@/types/formatter';
-import { vendorTemplates, getCertifiedTemplates, seedVendorTemplates } from './vendorTemplates';
+import { FieldMappingTemplate, SourceFieldPattern, TemplateMetadata, TemplateSuggestion, FieldMapping, SampleData } from '@/types/formatter';
+import { getCertifiedTemplates, seedVendorTemplates } from './vendorTemplates';
 
 /**
  * Template Management Service
@@ -101,7 +101,7 @@ export class TemplateService {
    */
   static suggestTemplates(
     sourceFields: string[],
-    sampleData: SampleData,
+    _sampleData: SampleData,
     targetTool: string
   ): TemplateSuggestion[] {
     const templates = this.getTemplatesForTool(targetTool);
@@ -235,7 +235,7 @@ export class TemplateService {
     return `template_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  private static analyzeSourcePattern(sourceFields: string[], sampleData: SampleData): SourceFieldPattern {
+  private static analyzeSourcePattern(sourceFields: string[], _sampleData: SampleData): SourceFieldPattern {
     return {
       fieldNames: [...sourceFields],
       fieldCount: sourceFields.length,
@@ -306,7 +306,7 @@ export class TemplateService {
     missingFields: string[];
   } {
     const sourceSet = new Set(sourceFields.map(f => f.toLowerCase()));
-    const templateSet = new Set(templateFields.map(f => f.toLowerCase()));
+    // const _templateSet = new Set(templateFields.map(f => f.toLowerCase()));
     
     const matchingFields: string[] = [];
     const missingFields: string[] = [];
@@ -329,7 +329,7 @@ export class TemplateService {
     };
   }
 
-  private static generateSuggestions(similarity: any, template: FieldMappingTemplate): string[] {
+  private static generateSuggestions(similarity: any, _template: FieldMappingTemplate): string[] {
     const suggestions: string[] = [];
     
     if (similarity.score >= 80) {

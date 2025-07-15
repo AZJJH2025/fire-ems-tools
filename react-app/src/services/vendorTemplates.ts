@@ -1,4 +1,4 @@
-import { FieldMappingTemplate, FieldMapping } from '@/types/formatter';
+import { FieldMappingTemplate } from '@/types/formatter';
 
 /**
  * Pre-built CAD Vendor Template Library

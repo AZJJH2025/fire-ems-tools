@@ -943,19 +943,6 @@ export class PDFReportGenerator {
     };
   }
   
-  private _getNFPAComplianceOverview(): string {
-    const compliance = this.calculateNFPACompliance();
-    const compliantCount = Object.values(compliance).filter(Boolean).length;
-    const totalMetrics = Object.keys(compliance).length;
-    
-    if (compliantCount === totalMetrics) {
-      return '✓ Full NFPA 1710 compliance achieved across all measured metrics.';
-    } else if (compliantCount === 0) {
-      return '⚠ Department does not meet NFPA 1710 standards. Immediate action recommended.';
-    } else {
-      return `⚠ Partial compliance: ${compliantCount} of ${totalMetrics} metrics meet NFPA 1710 standards.`;
-    }
-  }
   
   private addNonComplianceRecommendations(compliance: any): void {
     this.pdf.setFontSize(12);
@@ -984,14 +971,6 @@ export class PDFReportGenerator {
     return calculateIncidentMetrics(incident);
   }
   
-  private _hexToRgb(hex: string): [number, number, number] {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? [
-      parseInt(result[1], 16),
-      parseInt(result[2], 16),
-      parseInt(result[3], 16)
-    ] : [0, 0, 0];
-  }
   
   private calculateCompliancePercentage(): number {
     const compliance = this.calculateNFPACompliance();
