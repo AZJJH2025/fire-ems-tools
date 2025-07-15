@@ -104,11 +104,15 @@ const LoginPage: React.FC = () => {
           return; // Don't navigate yet
         }
         
-        // Redirect admin users to admin console, regular users to homepage
+        // Redirect to the intended page or default based on user role
+        const from = location.state?.from?.pathname || '/';
+        
         if (result.user.role === 'super_admin' || result.user.role === 'admin') {
-          navigate('/admin');
+          // For admin users, redirect to admin page or their intended destination
+          navigate(from === '/' ? '/admin' : from);
         } else {
-          navigate('/');
+          // For regular users, redirect to intended page or homepage
+          navigate(from);
         }
       } else {
         setErrors([result.message || 'Login failed']);
@@ -125,10 +129,15 @@ const LoginPage: React.FC = () => {
 
   const handlePasswordChangeSuccess = () => {
     // Password changed successfully, now navigate to appropriate page
+    // Redirect to the intended page or default based on user role
+    const from = location.state?.from?.pathname || '/';
+    
     if (currentUser.role === 'super_admin' || currentUser.role === 'admin') {
-      navigate('/admin');
+      // For admin users, redirect to admin page or their intended destination
+      navigate(from === '/' ? '/admin' : from);
     } else {
-      navigate('/');
+      // For regular users, redirect to intended page or homepage
+      navigate(from);
     }
   };
 

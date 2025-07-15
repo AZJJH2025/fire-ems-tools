@@ -2,6 +2,10 @@ import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Container, CssBaseline, CircularProgress, Box } from '@mui/material';
 
+// Authentication route guards
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import PublicRoute from './components/auth/PublicRoute';
+
 // Direct import to force App into main bundle (fixes lazy loading cache issue)
 import App from './App';
 const ResponseTimeAnalyzerContainer = React.lazy(() => import('./components/analyzer/ResponseTimeAnalyzerContainer'));
@@ -35,60 +39,112 @@ const AppRouter: React.FC = () => {
       <CssBaseline />
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
-            {/* Homepage as default route */}
-            <Route path="/" element={<FireEMSHomepage />} />
+            {/* Homepage as default route - public */}
+            <Route path="/" element={
+              <PublicRoute>
+                <FireEMSHomepage />
+              </PublicRoute>
+            } />
             
-            {/* Authentication routes */}
-            <Route path="/signup" element={<SignUpPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            {/* Authentication routes - public only for non-authenticated users */}
+            <Route path="/signup" element={
+              <PublicRoute restrictWhenAuthenticated={true}>
+                <SignUpPage />
+              </PublicRoute>
+            } />
+            <Route path="/login" element={
+              <PublicRoute restrictWhenAuthenticated={true}>
+                <LoginPage />
+              </PublicRoute>
+            } />
+            <Route path="/reset-password" element={
+              <PublicRoute restrictWhenAuthenticated={true}>
+                <ResetPasswordPage />
+              </PublicRoute>
+            } />
             
-            {/* Admin routes */}
-            <Route path="/admin" element={<AdminDashboard />} />
+            {/* Admin routes - require admin role */}
+            <Route path="/admin" element={
+              <ProtectedRoute requiredRole={['admin', 'super_admin']}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
             
-            {/* Data Formatter routes */}
+            {/* Data Formatter routes - protected */}
             <Route path="/data-formatter" element={
-              <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-                <App />
-              </Container>
+              <ProtectedRoute>
+                <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+                  <App />
+                </Container>
+              </ProtectedRoute>
             } />
             <Route path="/data-formatter-react" element={
-              <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-                <App />
-              </Container>
+              <ProtectedRoute>
+                <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+                  <App />
+                </Container>
+              </ProtectedRoute>
             } />
             
-            {/* Response Time Analyzer route */}
+            {/* Response Time Analyzer route - protected */}
             <Route path="/response-time-analyzer" element={
-              <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-                <ResponseTimeAnalyzerContainer />
-              </Container>
+              <ProtectedRoute>
+                <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+                  <ResponseTimeAnalyzerContainer />
+                </Container>
+              </ProtectedRoute>
             } />
             
-            {/* Fire Map Pro routes - full screen */}
-            <Route path="/fire-map-pro" element={<FireMapProContainer mode="create" />} />
-            <Route path="/fire-map-pro-react" element={<FireMapProContainer mode="create" />} />
+            {/* Fire Map Pro routes - protected, full screen */}
+            <Route path="/fire-map-pro" element={
+              <ProtectedRoute>
+                <FireMapProContainer mode="create" />
+              </ProtectedRoute>
+            } />
+            <Route path="/fire-map-pro-react" element={
+              <ProtectedRoute>
+                <FireMapProContainer mode="create" />
+              </ProtectedRoute>
+            } />
             
-            {/* Water Supply Coverage route - full implementation */}
-            <Route path="/water-supply-coverage" element={<WaterSupplyCoverageContainer mode="analysis" />} />
+            {/* Water Supply Coverage route - protected, full implementation */}
+            <Route path="/water-supply-coverage" element={
+              <ProtectedRoute>
+                <WaterSupplyCoverageContainer mode="analysis" />
+              </ProtectedRoute>
+            } />
             
-            {/* ISO Credit Calculator route - full screen */}
-            <Route path="/iso-credit-calculator" element={<ISOCreditContainer mode="assessment" />} />
+            {/* ISO Credit Calculator route - protected, full screen */}
+            <Route path="/iso-credit-calculator" element={
+              <ProtectedRoute>
+                <ISOCreditContainer mode="assessment" />
+              </ProtectedRoute>
+            } />
             
-            {/* Station Coverage Optimizer route - full screen */}
-            <Route path="/station-coverage-optimizer" element={<StationCoverageContainer mode="analysis" />} />
+            {/* Station Coverage Optimizer route - protected, full screen */}
+            <Route path="/station-coverage-optimizer" element={
+              <ProtectedRoute>
+                <StationCoverageContainer mode="analysis" />
+              </ProtectedRoute>
+            } />
             
-            {/* Legacy Tank Zone Coverage route - redirect to new tool */}
-            <Route path="/tank-zone-coverage" element={<WaterSupplyCoverageContainer mode="analysis" />} />
+            {/* Legacy Tank Zone Coverage route - protected, redirect to new tool */}
+            <Route path="/tank-zone-coverage" element={
+              <ProtectedRoute>
+                <WaterSupplyCoverageContainer mode="analysis" />
+              </ProtectedRoute>
+            } />
             
-            {/* Fallback route for 404s */}
+            {/* Fallback route for 404s - public */}
             <Route path="*" element={
-              <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-                <div>
-                  <h2>Page Not Found</h2>
-                  <p>The page you're looking for doesn't exist.</p>
-                </div>
-              </Container>
+              <PublicRoute>
+                <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+                  <div>
+                    <h2>Page Not Found</h2>
+                    <p>The page you're looking for doesn't exist.</p>
+                  </div>
+                </Container>
+              </PublicRoute>
             } />
           </Routes>
       </Suspense>
