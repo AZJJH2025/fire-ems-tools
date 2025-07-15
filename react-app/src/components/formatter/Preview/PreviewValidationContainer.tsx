@@ -21,15 +21,15 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import DataPreviewTable from './DataPreviewTable';
 import ValidationErrorsPanel from '../Validation/ValidationErrorsPanel';
 import ValidationActionPanel from '../Validation/ValidationActionPanel';
-import { RootState } from '@/state/redux/store';
+import { RootState } from '../../../state/redux/store';
 import {
   setValidationErrors,
   setCurrentStep,
   setProcessingStatus,
   addMapping
-} from '@/state/redux/formatterSlice';
-import { validateData } from '@/services/validation/dataValidator';
-import { FieldMapping } from '@/types/formatter';
+} from '../../../state/redux/formatterSlice';
+import { validateData } from '../../../services/validation/dataValidator';
+import { FieldMapping } from '../../../types/formatter';
 
 interface TabPanelProps {
   children?: React.ReactNode;

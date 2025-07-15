@@ -23,8 +23,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
-import { ValidationError } from '@/types/formatter';
-import { getErrorStats } from '@/services/validation/dataValidator';
+import { ValidationError } from '../../../types/formatter';
+import { getErrorStats } from '../../../services/validation/dataValidator';
 
 interface ValidationErrorsPanelProps {
   errors: ValidationError[];

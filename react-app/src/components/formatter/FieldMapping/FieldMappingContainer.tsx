@@ -261,6 +261,13 @@ const getFieldVariations = (fieldId: string): string[] => {
       'incidentnum', 'eventnum'
     ],
     
+    // Asset ID variations (Water Supply Coverage Analysis)
+    'asset_id': [
+      'objectid', 'object_id', 'asset_number', 'asset_num', 'assetnum',
+      'hydrant_id', 'hydrant_number', 'tank_id', 'tank_number', 'infrastructure_id',
+      'facility_id', 'resource_id', 'id', 'uid', 'unique_id'
+    ],
+    
     // Time field variations (Console One CAD support added)
     'incident_time': [
       'call_received_time', 'callreceivedtime', 'received_time', 'call_time',

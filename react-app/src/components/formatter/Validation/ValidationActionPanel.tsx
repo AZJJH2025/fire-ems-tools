@@ -27,7 +27,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import EditIcon from '@mui/icons-material/Edit';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import { ValidationError, FieldMapping, TargetField } from '@/types/formatter';
+import { ValidationError, FieldMapping, TargetField } from '../../../types/formatter';
 
 interface ValidationActionPanelProps {
   errors: ValidationError[];
