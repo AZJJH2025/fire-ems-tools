@@ -19,7 +19,6 @@ import {
   CardContent,
   LinearProgress,
   Chip,
-  Divider,
   List,
   ListItem,
   ListItemIcon,
@@ -69,10 +68,10 @@ interface ISOScoreCalculatorProps {
 
 const ISOScoreCalculator: React.FC<ISOScoreCalculatorProps> = ({
   assessment,
-  currentScore,
-  classification,
-  sidebarOpen,
-  isMobile
+  currentScore: _currentScore,
+  classification: _classification,
+  sidebarOpen: _sidebarOpen,
+  isMobile: _isMobile
 }) => {
   
   /**
@@ -251,43 +250,43 @@ const ISOScoreCalculator: React.FC<ISOScoreCalculatorProps> = ({
   /**
    * Get improvement recommendations for specific categories
    */
-  const getImprovementRecommendations = (categoryScore: number, maxScore: number, category: string) => {
-    const percentage = (categoryScore / maxScore) * 100;
-    const missingPoints = maxScore - categoryScore;
-    
-    if (percentage >= 90) return null; // No recommendations needed
-    
-    const recommendations: string[] = [];
-    
-    switch (category) {
-      case 'staffing':
-        if (percentage < 75) {
-          recommendations.push(`Add ${Math.ceil(missingPoints / 2)} firefighters per shift`);
-          recommendations.push('Implement automatic mutual aid agreements');
-        }
-        break;
-      case 'training':
-        if (percentage < 75) {
-          recommendations.push('Document monthly training hours (need 20+ hrs)');
-          recommendations.push('Implement structured training record system');
-        }
-        break;
-      case 'waterSupply':
-        if (percentage < 75) {
-          recommendations.push('Install additional hydrants in coverage gaps');
-          recommendations.push('Upgrade water main capacity');
-        }
-        break;
-      case 'communications':
-        if (percentage < 75) {
-          recommendations.push('Improve dispatch protocols and training');
-          recommendations.push('Upgrade radio communication systems');
-        }
-        break;
-    }
-    
-    return recommendations;
-  };
+  // const _getImprovementRecommendations = (_categoryScore: number, _maxScore: number, _category: string) => {
+  //   const percentage = (categoryScore / maxScore) * 100;
+  //   const missingPoints = maxScore - categoryScore;
+  //   
+  //   if (percentage >= 90) return null; // No recommendations needed
+  //   
+  //   const recommendations: string[] = [];
+  //   
+  //   switch (category) {
+  //     case 'staffing':
+  //       if (percentage < 75) {
+  //         recommendations.push(`Add ${Math.ceil(missingPoints / 2)} firefighters per shift`);
+  //         recommendations.push('Implement automatic mutual aid agreements');
+  //       }
+  //       break;
+  //     case 'training':
+  //       if (percentage < 75) {
+  //         recommendations.push('Document monthly training hours (need 20+ hrs)');
+  //         recommendations.push('Implement structured training record system');
+  //       }
+  //       break;
+  //     case 'waterSupply':
+  //       if (percentage < 75) {
+  //         recommendations.push('Install additional hydrants in coverage gaps');
+  //         recommendations.push('Upgrade water main capacity');
+  //       }
+  //       break;
+  //     case 'communications':
+  //       if (percentage < 75) {
+  //         recommendations.push('Improve dispatch protocols and training');
+  //         recommendations.push('Upgrade radio communication systems');
+  //       }
+  //       break;
+  //   }
+  //   
+  //   return recommendations;
+  // };
   
   // Calculate current scores
   const fireDeptScore = calculateFireDepartmentScore();
@@ -322,7 +321,7 @@ const ISOScoreCalculator: React.FC<ISOScoreCalculatorProps> = ({
         }}
       >
         <Grid container spacing={3} alignItems="center">
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="h2" sx={{ color: classificationInfo.color, fontWeight: 'bold', mb: 1 }}>
                 {calculatedClassification}
@@ -340,7 +339,7 @@ const ISOScoreCalculator: React.FC<ISOScoreCalculatorProps> = ({
               />
             </Box>
           </Grid>
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <Typography variant="h5" sx={{ color: classificationInfo.color, mb: 1 }}>
               {classificationInfo.desc}
             </Typography>
@@ -386,7 +385,7 @@ const ISOScoreCalculator: React.FC<ISOScoreCalculatorProps> = ({
       {/* Score Breakdown Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {/* Fire Department Operations */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card elevation={2}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
@@ -598,7 +597,7 @@ const ISOScoreCalculator: React.FC<ISOScoreCalculatorProps> = ({
         </Grid>
         
         {/* Water Supply */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card elevation={2}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
@@ -774,7 +773,7 @@ const ISOScoreCalculator: React.FC<ISOScoreCalculatorProps> = ({
         </Grid>
         
         {/* Emergency Communications */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card elevation={2}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
@@ -904,7 +903,7 @@ const ISOScoreCalculator: React.FC<ISOScoreCalculatorProps> = ({
         </Grid>
         
         {/* Community Risk Reduction */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card elevation={2}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>

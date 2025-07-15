@@ -31,7 +31,6 @@ import {
 } from '@mui/material';
 import {
   Place as StationIcon,
-  Timeline as CoverageIcon,
   FileDownload as ExportIcon,
   Settings as SettingsIcon,
   Info as InfoIcon,
@@ -50,16 +49,16 @@ interface StationCoverageContainerProps {
 }
 
 const StationCoverageContainer: React.FC<StationCoverageContainerProps> = ({
-  mode = 'analysis'
+  mode: _mode = 'analysis'
 }) => {
   // Component state
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [selectedTab, setSelectedTab] = useState('coverage');
+  const [_selectedTab, _setSelectedTab] = useState('coverage');
   const [showReportGenerator, setShowReportGenerator] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [stations, setStations] = useState<any[]>([]);
   const [jurisdictionBoundary, setJurisdictionBoundary] = useState<any>(null);
-  const [coverageStandard, setCoverageStandard] = useState('nfpa1710'); // nfpa1710 or nfpa1720
+  const [coverageStandard, setCoverageStandard] = useState<'nfpa1710' | 'nfpa1720'>('nfpa1710'); // nfpa1710 or nfpa1720
   const [analysisResults, setAnalysisResults] = useState<any>(null);
   const [analysisTriggered, setAnalysisTriggered] = useState(0);
 

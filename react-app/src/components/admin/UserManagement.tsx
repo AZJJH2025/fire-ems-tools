@@ -33,12 +33,10 @@ import {
   Edit,
   Delete,
   MoreVert,
-  Add,
   Refresh,
   PersonAdd,
   Block,
-  CheckCircle,
-  LockReset
+  CheckCircle
 } from '@mui/icons-material';
 
 interface User {

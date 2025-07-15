@@ -16,14 +16,14 @@ import {
   CoverageAnalysis, 
   WaterSupplyCoverageUIState,
   AnalysisParameters,
-  CoverageGap,
-  CoverageRecommendation,
+  // CoverageGap, // Unused
+  // CoverageRecommendation, // Unused
   WaterSupplySidebarTab,
   WaterSupplyFilterCriteria,
-  ExecutiveSummary,
-  getSupplyLocation,
-  getSupplyName,
-  getSupplyStatus
+  // ExecutiveSummary, // Unused
+  // getSupplyLocation, // Unused
+  // getSupplyName, // Unused
+  // getSupplyStatus // Unused
 } from '../../../types/tankZoneCoverage';
 
 // Default analysis parameters optimized for mixed water supply systems

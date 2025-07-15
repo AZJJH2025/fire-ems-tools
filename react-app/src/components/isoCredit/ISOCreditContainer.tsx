@@ -7,7 +7,6 @@
  */
 
 import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
   Paper,
@@ -69,7 +68,7 @@ const ISOCreditContainer: React.FC<ISOCreditContainerProps> = ({
   const [currentAssessment, setCurrentAssessment] = React.useState(null);
   const [currentScore, setCurrentScore] = React.useState(0);
   const [classification, setClassification] = React.useState(10);
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isLoading, _setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   
   // Community profile for cost-benefit analysis
@@ -167,7 +166,7 @@ const ISOCreditContainer: React.FC<ISOCreditContainerProps> = ({
     setError(null);
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
   };
 

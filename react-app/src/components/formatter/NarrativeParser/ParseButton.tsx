@@ -9,10 +9,8 @@ import {
   IconButton,
   Tooltip,
   Button,
-  Box
 } from '@mui/material';
 import {
-  SmartToy as ParseIcon,
   AutoFixHigh as MagicIcon
 } from '@mui/icons-material';
 

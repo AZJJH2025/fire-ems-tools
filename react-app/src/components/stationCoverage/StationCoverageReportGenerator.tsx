@@ -19,17 +19,10 @@ import {
   StepLabel,
   Card,
   CardContent,
-  CardActions,
   TextField,
-  FormControlLabel,
-  Checkbox,
   Alert,
   Grid,
   Chip,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   LinearProgress
 } from '@mui/material';
 import {
@@ -273,7 +266,7 @@ const StationCoverageReportGenerator: React.FC<StationCoverageReportGeneratorPro
 
       <Grid container spacing={2}>
         {reportTemplates.map((template) => (
-          <Grid item xs={12} md={6} key={template.id}>
+          <Grid size={{ xs: 12, md: 6 }} key={template.id}>
             <Card 
               sx={{ 
                 cursor: 'pointer',
@@ -320,7 +313,7 @@ const StationCoverageReportGenerator: React.FC<StationCoverageReportGeneratorPro
       </Typography>
 
       <Grid container spacing={2}>
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <TextField
             fullWidth
             label="Department Name *"
@@ -330,7 +323,7 @@ const StationCoverageReportGenerator: React.FC<StationCoverageReportGeneratorPro
             required
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth
             label="Fire Chief Name"
@@ -339,7 +332,7 @@ const StationCoverageReportGenerator: React.FC<StationCoverageReportGeneratorPro
             placeholder="John Smith"
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth
             label="Chief Title"
@@ -348,7 +341,7 @@ const StationCoverageReportGenerator: React.FC<StationCoverageReportGeneratorPro
             placeholder="Fire Chief"
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <TextField
             fullWidth
             label="Custom Report Title"
@@ -357,7 +350,7 @@ const StationCoverageReportGenerator: React.FC<StationCoverageReportGeneratorPro
             placeholder="Leave blank to use template default"
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <TextField
             fullWidth
             label="Report Subtitle"
@@ -366,7 +359,7 @@ const StationCoverageReportGenerator: React.FC<StationCoverageReportGeneratorPro
             placeholder="Optional subtitle for the report"
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <TextField
             fullWidth
             multiline

@@ -11,7 +11,6 @@
 import React, { useState, useCallback } from 'react';
 import {
   Box,
-  Paper,
   Typography,
   Accordion,
   AccordionSummary,

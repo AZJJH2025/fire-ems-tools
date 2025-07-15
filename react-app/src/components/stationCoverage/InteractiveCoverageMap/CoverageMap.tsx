@@ -15,7 +15,6 @@ import {
   MyLocation as LocationIcon,
   Add as AddStationIcon,
   Layers as LayersIcon,
-  Settings as SettingsIcon
 } from '@mui/icons-material';
 
 // Leaflet imports - using standard pattern like other working components
@@ -65,7 +64,7 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
     boundaries: true
   });
   const [analysisStatus, setAnalysisStatus] = useState<'idle' | 'analyzing' | 'complete' | 'error'>('idle');
-  const [coverageGaps, setCoverageGaps] = useState<any[]>([]);
+  const [_coverageGaps, _setCoverageGaps] = useState<any[]>([]);
   const [recommendedStations, setRecommendedStations] = useState<any[]>([]);
 
   // NFPA Standards Configuration
@@ -210,9 +209,9 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
 
       // Add station markers
       stations.forEach((station) => {
-        const marker = L.marker([station.latitude, station.longitude], {
-          stationType: 'station' // Custom property for identification
-        }).addTo(map);
+        const marker = L.marker([station.latitude, station.longitude]).addTo(map);
+        // Add custom property for identification
+        (marker as any).stationType = 'station';
 
         // Create popup content
         const popupContent = `
@@ -270,7 +269,6 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
         
         // Create GeoJSON layer for boundary
         const boundaryLayer = L.geoJSON(jurisdictionBoundary, {
-          layerType: 'boundary',
           style: {
             color: '#ff6b35',
             weight: 3,
@@ -280,6 +278,9 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
             dashArray: '5, 5'
           }
         }).addTo(map);
+        
+        // Add custom property for identification
+        (boundaryLayer as any).layerType = 'boundary';
 
         // Add popup with boundary info if properties exist
         if (jurisdictionBoundary.features && jurisdictionBoundary.features[0]?.properties) {
@@ -397,12 +398,14 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
       // Create circle representing coverage area
       const circle = L.circle(isochroneData.center, {
         radius: isochroneData.radius,
-        layerType: 'isochrone',
         color: '#2196f3',
         fillColor: '#2196f3',
         fillOpacity: 0.1,
         weight: 2
       }).addTo(map);
+      
+      // Add custom property for identification
+      (circle as any).layerType = 'isochrone';
 
       // Add popup with coverage info
       circle.bindPopup(`
@@ -446,7 +449,7 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
 
       // Step 2: Identify coverage gaps using grid-based analysis
       const gaps = await identifyCoverageGaps(coverageAreas);
-      setCoverageGaps(gaps);
+      _setCoverageGaps(gaps);
 
       // Step 3: Generate station recommendations
       const recommendations = generateStationRecommendations(gaps);
@@ -675,7 +678,7 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
   /**
    * Calculate real coverage metrics
    */
-  const calculateRealCoverageMetrics = (coverageAreas: any[], gaps: any[]) => {
+  const calculateRealCoverageMetrics = (_coverageAreas: any[], _gaps: any[]) => {
     if (!jurisdictionBoundary) {
       return {
         coverageMetrics: {
@@ -683,7 +686,7 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
           areaCovered: 0,
           nfpaCompliance: 0
         },
-        identifiedGaps: gaps.length,
+        identifiedGaps: _gaps.length,
         recommendedStations: 0
       };
     }
@@ -694,13 +697,13 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
     const totalArea = (bounds.getNorth() - bounds.getSouth()) * (bounds.getEast() - bounds.getWest());
     
     // Calculate covered area (approximate)
-    const gapArea = gaps.length * 0.01 * 0.01; // Each gap is approximately 0.01 x 0.01 degrees
+    const gapArea = _gaps.length * 0.01 * 0.01; // Each gap is approximately 0.01 x 0.01 degrees
     const coveredArea = Math.max(0, totalArea - gapArea);
     const areaCoveredPercent = (coveredArea / totalArea) * 100;
     
     // Estimate population coverage (placeholder calculation)
-    const totalEstimatedPopulation = gaps.reduce((sum, gap) => sum + gap.estimatedPopulation, 0) + (stations.length * 5000);
-    const coveredPopulation = Math.max(0, totalEstimatedPopulation - gaps.reduce((sum, gap) => sum + gap.estimatedPopulation, 0));
+    const totalEstimatedPopulation = _gaps.reduce((sum: number, gap: any) => sum + gap.estimatedPopulation, 0) + (stations.length * 5000);
+    const coveredPopulation = Math.max(0, totalEstimatedPopulation - _gaps.reduce((sum: number, gap: any) => sum + gap.estimatedPopulation, 0));
     const populationCoveredPercent = totalEstimatedPopulation > 0 ? (coveredPopulation / totalEstimatedPopulation) * 100 : 100;
     
     // Calculate NFPA compliance
@@ -712,7 +715,7 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
         areaCovered: Math.round(areaCoveredPercent * 10) / 10,
         nfpaCompliance: Math.round(nfpaCompliance * 10) / 10
       },
-      identifiedGaps: gaps.length,
+      identifiedGaps: _gaps.length,
       recommendedStations: recommendedStations.length
     };
   };
@@ -738,12 +741,14 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
         [gap.bounds.south, gap.bounds.west],
         [gap.bounds.north, gap.bounds.east]
       ], {
-        layerType: 'gap',
         color: '#ff4444',
         fillColor: '#ff4444',
         fillOpacity: 0.3,
         weight: 1
       }).addTo(map);
+      
+      // Add custom property for identification
+      (rectangle as any).layerType = 'gap';
 
       rectangle.bindPopup(`
         <div>
@@ -776,7 +781,6 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
     // Add recommendation markers
     recommendations.forEach((rec) => {
       const marker = L.marker(rec.position, {
-        layerType: 'recommendation',
         icon: L.divIcon({
           className: 'recommended-station-marker',
           html: '<div style="background-color: #4CAF50; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">+</div>',
@@ -784,6 +788,9 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
           iconAnchor: [15, 15]
         })
       }).addTo(map);
+      
+      // Add custom property for identification
+      (marker as any).layerType = 'recommendation';
 
       marker.bindPopup(`
         <div>

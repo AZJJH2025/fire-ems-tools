@@ -8,7 +8,7 @@ import {
   Alert,
   Chip,
   LinearProgress,
-  Grid2 as Grid,
+  Grid,
   Button,
   Table,
   TableBody,
@@ -16,7 +16,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
   Avatar,
   Tooltip,
   IconButton
@@ -28,7 +27,6 @@ import {
   CheckCircle,
   Warning,
   Settings,
-  Security,
   Analytics,
   PersonAdd,
   DomainAdd,
@@ -99,7 +97,6 @@ const AdminOverview: React.FC<AdminOverviewProps> = ({ userRole, onTabChange }) 
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [extendedAnalytics, setExtendedAnalytics] = useState<ExtendedAnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [loadingExtended, setLoadingExtended] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -137,7 +134,7 @@ const AdminOverview: React.FC<AdminOverviewProps> = ({ userRole, onTabChange }) 
 
   const fetchExtendedAnalytics = async () => {
     try {
-      setLoadingExtended(true);
+      // setLoadingExtended(true);
       // For now, we'll simulate extended analytics data since the backend endpoint doesn't exist yet
       // In a real implementation, this would call '/admin/api/analytics/extended'
       
@@ -218,7 +215,7 @@ const AdminOverview: React.FC<AdminOverviewProps> = ({ userRole, onTabChange }) 
     } catch (error) {
       console.error('Error fetching extended analytics:', error);
     } finally {
-      setLoadingExtended(false);
+      // setLoadingExtended(false);
     }
   };
 

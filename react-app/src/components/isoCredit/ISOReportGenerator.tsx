@@ -139,7 +139,7 @@ const ISOReportGenerator: React.FC<ISOReportGeneratorProps> = ({
             Department Information
           </Typography>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
                 label="Department Name"
@@ -149,7 +149,7 @@ const ISOReportGenerator: React.FC<ISOReportGeneratorProps> = ({
                 placeholder="Houston Fire Department"
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
                 label="Fire Chief Name"

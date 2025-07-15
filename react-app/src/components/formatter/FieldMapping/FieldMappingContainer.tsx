@@ -1681,12 +1681,12 @@ const FieldMappingContainer: React.FC = () => {
         </Button>
         
         <Box>
-          {console.log('🎯 AUTO MAP BUTTON RENDER STATE:', {
+          {/* {console.log('🎯 AUTO MAP BUTTON RENDER STATE:', {
             autoMappingInProgress,
             sourceColumnsLength: sourceColumns?.length,
             buttonDisabled: autoMappingInProgress || !sourceColumns.length,
             sourceColumns: sourceColumns
-          })}
+          })} */}
           <Button
             variant="outlined"
             onClick={(e) => {

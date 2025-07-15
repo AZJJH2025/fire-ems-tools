@@ -223,13 +223,13 @@ const HydrantPropertyEditor: React.FC<HydrantPropertyEditorProps> = ({
       <DialogContent dividers>
         <Grid container spacing={3}>
           {/* Basic Information */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Typography variant="subtitle1" gutterBottom color="primary">
               Basic Information
             </Typography>
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               fullWidth
               label="Hydrant Name"
@@ -241,7 +241,7 @@ const HydrantPropertyEditor: React.FC<HydrantPropertyEditorProps> = ({
             />
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               fullWidth
               label="Owner"
@@ -254,14 +254,14 @@ const HydrantPropertyEditor: React.FC<HydrantPropertyEditorProps> = ({
           </Grid>
 
           {/* Hydrant Specifications */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Divider sx={{ my: 1 }} />
             <Typography variant="subtitle1" gutterBottom color="primary">
               Hydrant Specifications
             </Typography>
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               fullWidth
               label="Flow Rate"
@@ -277,7 +277,7 @@ const HydrantPropertyEditor: React.FC<HydrantPropertyEditorProps> = ({
             />
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               fullWidth
               label="Static Pressure"
@@ -293,7 +293,7 @@ const HydrantPropertyEditor: React.FC<HydrantPropertyEditorProps> = ({
             />
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               fullWidth
               label="Residual Pressure"
@@ -309,7 +309,7 @@ const HydrantPropertyEditor: React.FC<HydrantPropertyEditorProps> = ({
             />
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               select
               fullWidth
@@ -326,7 +326,7 @@ const HydrantPropertyEditor: React.FC<HydrantPropertyEditorProps> = ({
             </TextField>
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               select
               fullWidth
@@ -343,7 +343,7 @@ const HydrantPropertyEditor: React.FC<HydrantPropertyEditorProps> = ({
             </TextField>
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               select
               fullWidth
@@ -361,7 +361,7 @@ const HydrantPropertyEditor: React.FC<HydrantPropertyEditorProps> = ({
           </Grid>
 
           {/* Quick Flow Rate Selection */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Typography variant="body2" color="text.secondary" gutterBottom>
               Quick Flow Rate Selection:
             </Typography>
@@ -381,14 +381,14 @@ const HydrantPropertyEditor: React.FC<HydrantPropertyEditorProps> = ({
           </Grid>
 
           {/* Additional Information */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Divider sx={{ my: 1 }} />
             <Typography variant="subtitle1" gutterBottom color="primary">
               Additional Information
             </Typography>
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               fullWidth
               label="Contact Information"
@@ -399,7 +399,7 @@ const HydrantPropertyEditor: React.FC<HydrantPropertyEditorProps> = ({
             />
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               fullWidth
               label="Elevation (feet)"
@@ -414,7 +414,7 @@ const HydrantPropertyEditor: React.FC<HydrantPropertyEditorProps> = ({
             />
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <TextField
               fullWidth
               multiline
@@ -429,7 +429,7 @@ const HydrantPropertyEditor: React.FC<HydrantPropertyEditorProps> = ({
 
           {/* Validation Messages */}
           {Object.keys(errors).length > 0 && (
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <Alert severity="error">
                 Please correct the errors above before saving.
               </Alert>

@@ -22,20 +22,13 @@ import {
   CardContent,
   CardActions,
   TextField,
-  FormControlLabel,
-  Checkbox,
   Alert,
   Grid,
   Chip,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   LinearProgress
 } from '@mui/material';
 import {
   LocalFireDepartment as TankIcon,
-  WaterDrop as HydrantIcon,
   Assessment as ReportIcon,
   Download as DownloadIcon,
   BusinessCenter,
@@ -45,7 +38,6 @@ import {
 import {
   selectTanks,
   selectHydrants,
-  selectAllSupplies,
   selectCoverageZones,
   selectActiveAnalysis
 } from '../../state/redux/waterSupplyCoverageSlice';
@@ -154,7 +146,7 @@ const WaterSupplyReportGenerator: React.FC<WaterSupplyReportGeneratorProps> = ({
   const [activeStep, setActiveStep] = useState(0);
   const [selectedTemplate, setSelectedTemplate] = useState<ReportTemplate | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedReport, setGeneratedReport] = useState<Blob | null>(null);
+  const [_generatedReport, setGeneratedReport] = useState<Blob | null>(null);
   
   // Debug logging
   React.useEffect(() => {

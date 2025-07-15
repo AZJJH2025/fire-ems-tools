@@ -356,7 +356,7 @@ export class ChartGenerator {
     const groups: Record<string, IncidentRecord[]> = {};
     
     incidents.forEach(incident => {
-      const date = incident.incidentDate || incident.incident_date;
+      const date = incident.incidentDate || (incident as any).incident_date;
       if (!date) return;
 
       const dateKey = new Date(date).toLocaleDateString();
@@ -373,8 +373,8 @@ export class ChartGenerator {
    * Helper: Calculate response time for incident
    */
   private calculateResponseTime(incident: IncidentRecord): number | null {
-    const incidentTime = incident.incidentTime || incident.incident_time;
-    const arrivalTime = incident.arrivalTime || incident.arrival_time;
+    const incidentTime = incident.incidentTime || (incident as any).incident_time;
+    const arrivalTime = incident.arrivalTime || (incident as any).arrival_time;
 
     if (!incidentTime || !arrivalTime) return null;
 

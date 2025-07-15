@@ -6,7 +6,7 @@
  * Builds on Fire Map Pro's foundation with water supply-specific data structures.
  */
 
-import { MapFeature, Coordinates, BoundingBox } from '../fireMapPro';
+import { /* MapFeature, */ Coordinates /* , BoundingBox */ } from '../fireMapPro';
 
 // Tank-Specific Types
 export interface WaterTank {
@@ -71,6 +71,7 @@ export interface FireHydrant {
   hydrantNumber?: string;
   notes?: string;
   elevation?: number;
+  contactInfo?: string;
   created: Date;
   modified: Date;
 }
@@ -166,25 +167,42 @@ export type CoverageConstraint =
 // Analysis Results
 export interface CoverageAnalysis {
   totalTanks: number;
+  totalHydrants: number;
+  totalSupplies: number;
   coveragePercentage: number; // % of area covered
+  averageResponseTime: number;
+  totalCoverageArea: number;
   gapAreas: CoverageGap[];
   redundancyAreas: RedundancyArea[];
   recommendations: CoverageRecommendation[];
+  coverageZones: any[];
   generatedAt: Date;
   analysisParameters: AnalysisParameters;
 }
 
 export interface CoverageGap {
   id: string;
+  location: {
+    latitude: number;
+    longitude: number;
+  };
   area: number; // Square feet
   severity: GapSeverity;
-  geometry: number[][]; // Polygon of uncovered area
-  nearestTank: {
+  distance: number;
+  affectedZones: any[];
+  nearestSupply: {
+    supplyId: any;
+    supplyType: any;
+    distance: number;
+    accessTime: number;
+  };
+  riskAssessment: string;
+  geometry?: number[][]; // Polygon of uncovered area
+  nearestTank?: {
     tankId: string;
     distance: number;
     accessTime: number;
   };
-  riskAssessment: RiskLevel;
   populationAffected?: number;
   structuresAffected?: number;
 }

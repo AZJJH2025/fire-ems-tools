@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Paper,
   Typography,
   Button,
   Dialog,
@@ -9,11 +8,7 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Grid2 as Grid,
+  Grid,
   Card,
   CardContent,
   CardActions,
@@ -25,8 +20,6 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  IconButton,
-  Tooltip,
   LinearProgress,
   Divider
 } from '@mui/material';
@@ -34,14 +27,10 @@ import {
   Description as ReportIcon,
   Download as DownloadIcon,
   Preview as PreviewIcon,
-  Settings as SettingsIcon,
   Business as BusinessIcon,
   Assessment as AssessmentIcon,
   Schedule as ScheduleIcon,
   ExpandMore as ExpandMoreIcon,
-  CheckCircle as CheckCircleIcon,
-  Warning as WarningIcon,
-  Error as ErrorIcon
 } from '@mui/icons-material';
 
 import { reportTemplates, ReportTemplate, ReportData, DepartmentInfo, ReportPeriod, ComplianceMetrics } from '@/services/reportTemplates';
@@ -430,7 +419,7 @@ const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorProps> = 
             placeholder="e.g., 120"
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <TextField
             fullWidth
             label="Department Address"
@@ -495,7 +484,7 @@ const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorProps> = 
             required
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <TextField
             fullWidth
             label="Report Period Description"

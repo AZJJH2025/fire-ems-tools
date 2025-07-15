@@ -23,7 +23,6 @@ import {
   ListItemText,
   Button,
   Alert,
-  LinearProgress,
   Divider,
   Table,
   TableBody,
@@ -45,11 +44,9 @@ import {
   Phone as CommunicationsIcon,
   School as CommunityIcon,
   CheckCircle as CheckIcon,
-  Warning as WarningIcon,
   PriorityHigh as PriorityIcon,
   AccessTime as TimeIcon,
   Business as InsuranceIcon,
-  Settings as SettingsIcon,
   Tune as TuneIcon
 } from '@mui/icons-material';
 
@@ -109,7 +106,7 @@ const ISOImprovementPlanner: React.FC<ISOImprovementPlannerProps> = ({
   communityProfile
 }) => {
 
-  const [selectedRecommendations, setSelectedRecommendations] = useState<string[]>([]);
+  const [_selectedRecommendations, _setSelectedRecommendations] = useState<string[]>([]);
   const [showCostBenefit, setShowCostBenefit] = useState(false);
   const [showCostCustomization, setShowCostCustomization] = useState(true);
   
@@ -405,7 +402,7 @@ const ISOImprovementPlanner: React.FC<ISOImprovementPlannerProps> = ({
   /**
    * Calculate total cost and benefits of selected recommendations
    */
-  const calculateProjectCosts = () => {
+  /* const _calculateProjectCosts = () => { // TODO: Future feature implementation
     const recommendations = generateRecommendations();
     const selected = recommendations.filter(rec => selectedRecommendations.includes(rec.title));
     
@@ -427,12 +424,12 @@ const ISOImprovementPlanner: React.FC<ISOImprovementPlannerProps> = ({
       annualSavings,
       paybackPeriod
     };
-  };
+  }; */
 
   /**
    * Get ISO classification from score
    */
-  const getClassificationFromScore = (score: number): number => {
+  /* const _getClassificationFromScore = (score: number): number => {
     const percentage = (score / 105.5) * 100;
     
     if (percentage >= 90) return 1;
@@ -445,7 +442,7 @@ const ISOImprovementPlanner: React.FC<ISOImprovementPlannerProps> = ({
     if (percentage >= 20) return 8;
     if (percentage >= 10) return 9;
     return 10;
-  };
+  }; */
 
   /**
    * Get priority color
@@ -485,7 +482,7 @@ const ISOImprovementPlanner: React.FC<ISOImprovementPlannerProps> = ({
   };
 
   const recommendations = generateRecommendations();
-  const projectCosts = calculateProjectCosts();
+  // const projectCosts = calculateProjectCosts();
 
   if (!assessment) {
     return (
@@ -512,21 +509,21 @@ const ISOImprovementPlanner: React.FC<ISOImprovementPlannerProps> = ({
       {/* Current Status */}
       <Paper sx={{ p: 3, mb: 3 }}>
         <Grid container spacing={3}>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="h6" color="text.secondary">Current Score</Typography>
               <Typography variant="h3" color="primary">{currentScore.toFixed(1)}</Typography>
               <Typography variant="body2">out of 105.5 points</Typography>
             </Box>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="h6" color="text.secondary">Current Classification</Typography>
               <Typography variant="h3" color="primary">Class {classification}</Typography>
               <Typography variant="body2">ISO rating</Typography>
             </Box>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="h6" color="text.secondary">Improvement Opportunities</Typography>
               <Typography variant="h3" color="secondary">{recommendations.length}</Typography>
@@ -551,7 +548,7 @@ const ISOImprovementPlanner: React.FC<ISOImprovementPlannerProps> = ({
         </AccordionSummary>
         <AccordionDetails>
           <Grid container spacing={4}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <FormControl fullWidth sx={{ mb: 3 }}>
                 <FormLabel>Firefighter Annual Cost (salary + benefits): {formatCurrency(costParameters.firefighterAnnualCost)}</FormLabel>
                 <Slider
@@ -618,7 +615,7 @@ const ISOImprovementPlanner: React.FC<ISOImprovementPlannerProps> = ({
               </FormControl>
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <FormControl fullWidth sx={{ mb: 3 }}>
                 <FormLabel>Hydrant Installation Cost: {formatCurrency(costParameters.hydrantInstallationCost)}</FormLabel>
                 <Slider
@@ -733,7 +730,7 @@ const ISOImprovementPlanner: React.FC<ISOImprovementPlannerProps> = ({
           </AccordionSummary>
           <AccordionDetails>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={8}>
+              <Grid size={{ xs: 12, md: 8 }}>
                 <Typography variant="body1" paragraph>
                   {rec.description}
                 </Typography>
@@ -763,7 +760,7 @@ const ISOImprovementPlanner: React.FC<ISOImprovementPlannerProps> = ({
                 </List>
               </Grid>
               
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="h6" gutterBottom>Project Details</Typography>
@@ -836,7 +833,7 @@ const ISOImprovementPlanner: React.FC<ISOImprovementPlannerProps> = ({
           </Alert>
 
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="h6" gutterBottom>Implementation Costs</Typography>
               <TableContainer>
                 <Table size="small">
@@ -864,7 +861,7 @@ const ISOImprovementPlanner: React.FC<ISOImprovementPlannerProps> = ({
               </TableContainer>
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="h6" gutterBottom>Projected Benefits</Typography>
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="text.secondary">

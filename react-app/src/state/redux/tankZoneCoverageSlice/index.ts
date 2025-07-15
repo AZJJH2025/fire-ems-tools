@@ -14,7 +14,7 @@ import {
   TankZoneCoverageUIState,
   AnalysisParameters,
   CoverageGap,
-  CoverageRecommendation,
+  // CoverageRecommendation, // Unused
   TankSidebarTab,
   TankFilterCriteria,
   ExecutiveSummary
@@ -37,7 +37,13 @@ const defaultFilterCriteria: TankFilterCriteria = {
   operationalStatus: ['active'],
   accessRating: ['excellent', 'good', 'fair'],
   capacityRange: [0, 1000000], // 0 to 1M gallons
-  showInactive: false
+  showInactive: false,
+  // Additional properties to satisfy WaterSupplyFilterCriteria compatibility
+  showTanks: true,
+  showHydrants: false,
+  hydrantTypes: [],
+  flowRateRange: [0, 3000] as [number, number],
+  pressureRange: [0, 200] as [number, number]
 };
 
 const initialUIState: TankZoneCoverageUIState = {

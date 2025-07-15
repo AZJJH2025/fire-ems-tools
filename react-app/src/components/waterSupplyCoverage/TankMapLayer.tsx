@@ -10,7 +10,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import * as L from 'leaflet';
 
 import {
-  selectTanks,
   selectFilteredTanks,
   selectUIState,
   selectAnalysisParameters,
@@ -240,13 +239,13 @@ const TankMapLayer: React.FC<TankMapLayerProps> = ({ map, onTankEdit }) => {
       }
 
       // Add to layer group
-      tankLayerGroupRef.current.addLayer(marker);
+      tankLayerGroupRef.current?.addLayer(marker);
       tankMarkersRef.current.set(tank.id, marker);
 
       // Add coverage circle if enabled
       const coverageCircle = createCoverageCircle(tank);
       if (coverageCircle) {
-        coverageLayerGroupRef.current.addLayer(coverageCircle);
+        coverageLayerGroupRef.current?.addLayer(coverageCircle);
       }
     });
 

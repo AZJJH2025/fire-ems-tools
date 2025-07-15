@@ -31,7 +31,6 @@ import {
   Business,
   Settings,
   Security,
-  Api,
   Refresh,
   Add
 } from '@mui/icons-material';

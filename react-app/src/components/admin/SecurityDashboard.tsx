@@ -4,10 +4,9 @@ import {
   Card,
   CardContent,
   Typography,
-  Grid2 as Grid,
+  Grid,
   Tabs,
   Tab,
-  Alert,
   Chip,
   LinearProgress,
   CircularProgress,
@@ -42,7 +41,7 @@ import {
   AccountBalance,
   VerifiedUser
 } from '@mui/icons-material';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
 interface SecurityMetrics {
   authentication: {
@@ -171,7 +170,7 @@ const SecurityDashboard: React.FC = () => {
   // Compliance monitoring state
   const [complianceFrameworks, setComplianceFrameworks] = useState<ComplianceFramework[]>([]);
   const [policyDocuments, setPolicyDocuments] = useState<PolicyDocument[]>([]);
-  const [complianceLoading, setComplianceLoading] = useState(false);
+  // const [complianceLoading] = useState(false);
 
   const fetchSecurityMetrics = async () => {
     try {
@@ -340,7 +339,7 @@ const SecurityDashboard: React.FC = () => {
     fetchAuditEvents(eventTypeFilter);
   }, [eventTypeFilter]);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue);
   };
 

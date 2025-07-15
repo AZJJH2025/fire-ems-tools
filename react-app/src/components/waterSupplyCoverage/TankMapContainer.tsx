@@ -8,17 +8,17 @@
 
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Box, Typography, ToggleButton, ToggleButtonGroup, Chip } from '@mui/material';
+import { Box, Typography, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import * as L from 'leaflet';
 
 import {
   selectTanks,
   selectHydrants,
   selectAllSupplies,
-  selectUIState,
-  addTank,
-  addHydrant
+  selectUIState
 } from '../../state/redux/waterSupplyCoverageSlice';
+
+import { getSupplyLocation } from '../../types/tankZoneCoverage';
 
 // Import map components from Fire Map Pro
 import { CoordinateDisplayUI } from '../fireMapPro/Map/CoordinateDisplay';
@@ -63,7 +63,7 @@ const TankMapContainer: React.FC<TankMapContainerProps> = ({
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const [isMapReady, setIsMapReady] = useState(false);
-  const [coordinateInfo, setCoordinateInfo] = useState<{
+  const [_coordinateInfo, setCoordinateInfo] = useState<{
     latitude: number;
     longitude: number;
     zoom: number;
@@ -165,12 +165,12 @@ const TankMapContainer: React.FC<TankMapContainerProps> = ({
     if (allSupplies.length > 0) {
       // Filter supplies with valid locations
       const validSupplies = allSupplies.filter(supply => 
-        supply.location && supply.location.latitude && supply.location.longitude
+        getSupplyLocation(supply) && getSupplyLocation(supply).latitude && getSupplyLocation(supply).longitude
       );
       
       if (validSupplies.length > 0) {
         const bounds = L.latLngBounds(validSupplies.map(supply => 
-          [supply.location.latitude, supply.location.longitude]
+          [getSupplyLocation(supply).latitude, getSupplyLocation(supply).longitude]
         ));
         map.fitBounds(bounds, { padding: [20, 20], maxZoom: 16 });
       } else {
@@ -186,7 +186,7 @@ const TankMapContainer: React.FC<TankMapContainerProps> = ({
   }, [allSupplies, uiState.selectedTanks.length, uiState.selectedHydrants.length, placementMode, dispatch]);
 
   // Handle map errors
-  const handleMapError = useCallback((error: string) => {
+  const _handleMapError = useCallback((error: string) => {
     console.error('Tank map error:', error);
   }, []);
 
@@ -202,13 +202,13 @@ const TankMapContainer: React.FC<TankMapContainerProps> = ({
       
       // Filter supplies with valid locations
       const validSupplies = allSupplies.filter(supply => 
-        supply.location && supply.location.latitude && supply.location.longitude
+        getSupplyLocation(supply) && getSupplyLocation(supply).latitude && getSupplyLocation(supply).longitude
       );
       
       if (validSupplies.length === 0) return;
       
       const bounds = L.latLngBounds(validSupplies.map(supply => 
-        [supply.location.latitude, supply.location.longitude]
+        [getSupplyLocation(supply).latitude, getSupplyLocation(supply).longitude]
       ));
       
       if (bounds.isValid()) {
@@ -258,12 +258,12 @@ const TankMapContainer: React.FC<TankMapContainerProps> = ({
         // If we have supplies, recenter the view
         if (allSupplies.length > 0) {
           const validSupplies = allSupplies.filter(supply => 
-            supply.location && supply.location.latitude && supply.location.longitude
+            getSupplyLocation(supply) && getSupplyLocation(supply).latitude && getSupplyLocation(supply).longitude
           );
           
           if (validSupplies.length > 0) {
             const bounds = L.latLngBounds(validSupplies.map(supply => 
-              [supply.location.latitude, supply.location.longitude]
+              [getSupplyLocation(supply).latitude, getSupplyLocation(supply).longitude]
             ));
             
             if (bounds.isValid()) {
@@ -370,9 +370,6 @@ const TankMapContainer: React.FC<TankMapContainerProps> = ({
       {/* Map Component */}
       <PureLeafletMap
         onMapReady={handleMapReady}
-        onError={handleMapError}
-        center={[coordinateInfo.latitude, coordinateInfo.longitude]}
-        zoom={coordinateInfo.zoom}
       />
 
       {/* Water Supply Layers */}
@@ -390,10 +387,7 @@ const TankMapContainer: React.FC<TankMapContainerProps> = ({
       )}
 
       {/* Coordinate Display */}
-      <CoordinateDisplayUI
-        latitude={coordinateInfo.latitude}
-        longitude={coordinateInfo.longitude}
-        zoom={coordinateInfo.zoom}
+      <Box
         sx={{
           position: 'absolute',
           bottom: 16,
@@ -404,7 +398,9 @@ const TankMapContainer: React.FC<TankMapContainerProps> = ({
           borderRadius: 1,
           fontSize: '0.75rem'
         }}
-      />
+      >
+        <CoordinateDisplayUI mouseCoords={null} />
+      </Box>
 
       {/* Placement Mode Selector - moved to avoid zoom controls */}
       <Box

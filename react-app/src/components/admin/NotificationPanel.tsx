@@ -25,19 +25,15 @@ import {
   Divider
 } from '@mui/material';
 import {
-  Notifications,
   NotificationsActive,
   MarkEmailRead,
   Delete,
   MoreVert,
   CheckCircle,
-  Warning,
   Info,
-  Error,
   PersonAdd,
   Business,
   Security,
-  Schedule,
   Launch
 } from '@mui/icons-material';
 
@@ -106,7 +102,7 @@ const NotificationPanel: React.FC = () => {
       } else {
         throw new Error(result.error || 'Failed to load notifications');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching notifications:', error);
       setError(error instanceof Error ? error.message : 'Failed to load notifications');
     } finally {
@@ -128,7 +124,7 @@ const NotificationPanel: React.FC = () => {
       if (result.success) {
         setStats(result.stats);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching notification stats:', error);
     }
   };
@@ -151,7 +147,7 @@ const NotificationPanel: React.FC = () => {
       
       // Refresh stats
       fetchStats();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error marking notification as read:', error);
       setError('Failed to mark notification as read');
     }
@@ -175,7 +171,7 @@ const NotificationPanel: React.FC = () => {
       
       // Refresh stats
       fetchStats();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error marking all notifications as read:', error);
       setError('Failed to mark all notifications as read');
     }
@@ -199,16 +195,22 @@ const NotificationPanel: React.FC = () => {
       
       // Refresh stats
       fetchStats();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting notification:', error);
       setError('Failed to delete notification');
     }
   };
 
   const getNotificationIcon = (type: string, priority: string) => {
+    const getIconColor = () => {
+      if (priority === 'urgent') return 'error' as const;
+      if (priority === 'high') return 'warning' as const;
+      return 'primary' as const;
+    };
+
     const iconProps = {
       fontSize: 'small' as const,
-      color: priority === 'urgent' ? 'error' : priority === 'high' ? 'warning' : 'primary'
+      color: getIconColor()
     };
 
     switch (type) {

@@ -327,7 +327,7 @@ const AdminDashboard: React.FC = () => {
             </Typography>
             
             <Grid container spacing={3}>
-              <Grid xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Card>
                   <CardContent>
                     <Typography variant="h6" gutterBottom>
@@ -347,7 +347,7 @@ const AdminDashboard: React.FC = () => {
                 </Card>
               </Grid>
               
-              <Grid xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Card>
                   <CardContent>
                     <Typography variant="h6" gutterBottom>

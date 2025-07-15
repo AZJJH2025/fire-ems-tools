@@ -5,7 +5,7 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Grid2 as Grid,
+  Grid,
   TextField,
   FormControlLabel,
   Checkbox,
@@ -161,7 +161,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
   };
 
   // Handle input changes
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | object) => {
     setReportConfig(prev => ({ ...prev, [field]: value }));
   };
 
@@ -254,7 +254,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
         </Typography>
         <Grid container spacing={2} sx={{ mb: 3 }}>
           {reportTemplates.map(template => (
-            <Grid item xs={12} sm={6} key={template.id}>
+            <Grid size={{ xs: 12, sm: 6 }} key={template.id}>
               <Card 
                 variant={selectedTemplate === template.id ? 'elevation' : 'outlined'}
                 sx={{ 
@@ -373,7 +373,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
         </Typography>
         
         <Grid container spacing={3}>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <TextField
               label="Custom Subtitle"
               multiline
@@ -419,7 +419,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
             />
           </Grid>
           
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <TextField
               label="Report Purpose Statement"
               multiline
@@ -435,7 +435,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
             />
           </Grid>
           
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <TextField
               label="Executive Summary Description"
               multiline
@@ -451,7 +451,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
             />
           </Grid>
           
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <TextField
               label="Chief's Message (Optional)"
               multiline
@@ -482,7 +482,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({
             { key: 'charts', label: 'Charts & Graphs', desc: 'Visual data representation' },
             { key: 'recommendations', label: 'Recommendations', desc: 'Action items and suggestions' }
           ].map(section => (
-            <Grid item xs={12} sm={6} key={section.key}>
+            <Grid size={{ xs: 12, sm: 6 }} key={section.key}>
               <FormControlLabel
                 control={
                   <Checkbox

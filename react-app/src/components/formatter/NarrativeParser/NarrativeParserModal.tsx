@@ -29,9 +29,6 @@ import {
 } from '@mui/material';
 import {
   SmartToy as ParseIcon,
-  Preview as PreviewIcon,
-  CheckCircle as SuccessIcon,
-  Error as ErrorIcon
 } from '@mui/icons-material';
 
 export interface ParseableField {
@@ -227,7 +224,7 @@ const NarrativeParserModal: React.FC<NarrativeParserModalProps> = ({
     return value.replace(/\b\w/g, char => char.toUpperCase());
   };
 
-  const calculateConfidence = (fieldId: string, match: string, fullText: string): number => {
+  const calculateConfidence = (fieldId: string, match: string, _fullText: string): number => {
     // Simple confidence calculation - can be enhanced
     const baseConfidence = 0.7;
     

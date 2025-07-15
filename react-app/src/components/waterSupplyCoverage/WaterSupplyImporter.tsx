@@ -22,7 +22,6 @@ import {
   Card,
   CardContent,
   CardActions,
-  Divider,
   List,
   ListItem,
   ListItemText,
@@ -31,7 +30,6 @@ import {
 import {
   Upload as UploadIcon,
   CloudDownload as DownloadIcon,
-  CheckCircle as CheckIcon,
   Error as ErrorIcon,
   WaterDrop as HydrantIcon,
   LocalFireDepartment as TankIcon
@@ -141,7 +139,7 @@ const WaterSupplyImporter: React.FC<WaterSupplyImporterProps> = ({ open, onClose
       console.log('🔍 WATER SUPPLY CSV HEADERS FOUND:', headers);
 
       // Parse data rows
-      const records = lines.slice(1).map((line, lineIndex) => {
+      const records = lines.slice(1).map((line, _lineIndex) => {
         const values = parseCSVLine(line);
         const record: any = {};
         
@@ -233,7 +231,7 @@ const WaterSupplyImporter: React.FC<WaterSupplyImporterProps> = ({ open, onClose
           }
           
           // Smart coordinate detection - try multiple approaches
-          let lat: number, lng: number;
+          let lat: number | undefined, lng: number | undefined;
           let latSource = '', lngSource = '';
           
           // Approach 1: Standard coordinate field names
@@ -290,7 +288,7 @@ const WaterSupplyImporter: React.FC<WaterSupplyImporterProps> = ({ open, onClose
           
           console.log(`🔍 COORDINATE PARSING: lat=${lat} (from ${latSource}), lng=${lng} (from ${lngSource})`);
           
-          if (isNaN(lat!) || isNaN(lng!)) {
+          if (lat === undefined || lng === undefined || isNaN(lat) || isNaN(lng)) {
             // More helpful error message showing what was tried
             const availableFields = Object.keys(record).filter(k => record[k] !== '');
             result.errors.push(`Invalid coordinates for ${name}: Could not find valid lat/lng. Available fields: ${availableFields.join(', ')}. Tried lat from: ${latFields.join(', ')}. Tried lng from: ${lngFields.join(', ')}.`);
@@ -304,17 +302,17 @@ const WaterSupplyImporter: React.FC<WaterSupplyImporterProps> = ({ open, onClose
 
           if (type === 'tank' || (hasCapacity && !hasFlowRate)) {
             // Process as tank
-            const tank = csvToTank(record, lat, lng, name);
+            const tank = csvToTank(record, lat!, lng!, name);
             dispatch(addTank(tank));
             result.tanks++;
           } else if (type === 'hydrant' || hasFlowRate) {
             // Process as hydrant
-            const hydrant = csvToHydrant(record, lat, lng, name);
+            const hydrant = csvToHydrant(record, lat!, lng!, name);
             dispatch(addHydrant(hydrant));
             result.hydrants++;
           } else {
             result.warnings.push(`Unclear type for ${name} - defaulting to hydrant`);
-            const hydrant = csvToHydrant(record, lat, lng, name);
+            const hydrant = csvToHydrant(record, lat!, lng!, name);
             dispatch(addHydrant(hydrant));
             result.hydrants++;
           }
@@ -523,7 +521,7 @@ const WaterSupplyImporter: React.FC<WaterSupplyImporterProps> = ({ open, onClose
         </Typography>
         <Grid container spacing={2}>
           {TEST_SCENARIOS.map((scenario) => (
-            <Grid item xs={12} md={4} key={scenario.id}>
+            <Grid size={{ xs: 12, md: 4 }} key={scenario.id}>
               <Card>
                 <CardContent>
                   <Typography variant="subtitle1" gutterBottom>

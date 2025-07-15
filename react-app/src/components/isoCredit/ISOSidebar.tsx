@@ -15,16 +15,12 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  TextField,
   Slider,
   Grid,
   Chip,
-  FormGroup,
   FormControlLabel,
   Switch,
   Button,
-  Divider,
-  Alert,
   LinearProgress
 } from '@mui/material';
 import {
@@ -45,7 +41,7 @@ interface ISOSidebarProps {
 }
 
 const ISOSidebar: React.FC<ISOSidebarProps> = ({
-  mode = 'assessment',
+  mode: _mode = 'assessment',
   onAssessmentChange,
   onScoreChange,
   onClassificationChange
@@ -116,7 +112,7 @@ const ISOSidebar: React.FC<ISOSidebarProps> = ({
     return 10;
   };
 
-  const handleAccordionChange = (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
+  const handleAccordionChange = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
     setExpandedPanel(isExpanded ? panel : '');
   };
 
@@ -203,7 +199,7 @@ const ISOSidebar: React.FC<ISOSidebarProps> = ({
       {/* Controls */}
       <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
         <Grid container spacing={1}>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 6 }}>
             <Button
               variant="outlined"
               size="small"
@@ -215,7 +211,7 @@ const ISOSidebar: React.FC<ISOSidebarProps> = ({
               Calculate
             </Button>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 6 }}>
             <Button
               variant="outlined"
               size="small"

@@ -6,41 +6,32 @@ import {
   Grid, 
   Card, 
   CardContent, 
-  CardActions, 
+ 
   Button, 
   Chip,
   Avatar,
   Paper,
-  Divider,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
   CircularProgress,
-  Badge
 } from '@mui/material';
 import { 
   Assessment, 
   Map, 
   TableChart, 
   LocalFireDepartment,
-  AttachMoney,
   Security,
   Timeline,
   CheckCircle,
-  Schedule,
   MenuBook,
   PlayArrow,
-  School,
   AdminPanelSettings,
   Download,
   VideoLibrary,
   HelpOutline,
-  QuickHelp,
   Description,
-  AccessTime,
-  Group,
-  Star,
   Launch,
   Person,
   Logout,
@@ -68,7 +59,7 @@ const ToolCard: React.FC<ToolCardProps & { isAuthenticated: boolean }> = ({
   status, 
   path, 
   features, 
-  audience,
+  audience: _audience,
   requiresAuth = false,
   isAuthenticated
 }) => {
@@ -723,7 +714,7 @@ const FireEMSHomepage: React.FC = () => {
               🚀 Getting Started (15 Minutes)
             </Typography>
             <Grid container spacing={3}>
-              <Grid xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Card elevation={2} sx={{ height: '100%' }}>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -764,7 +755,7 @@ const FireEMSHomepage: React.FC = () => {
                 </Card>
               </Grid>
               
-              <Grid xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Card elevation={2} sx={{ height: '100%', position: 'relative' }}>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -810,7 +801,7 @@ const FireEMSHomepage: React.FC = () => {
               📚 Tool Documentation
             </Typography>
             <Grid container spacing={3}>
-              <Grid xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Card elevation={2}>
                   <CardContent>
                     <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -838,7 +829,7 @@ const FireEMSHomepage: React.FC = () => {
                 </Card>
               </Grid>
 
-              <Grid xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Card elevation={2}>
                   <CardContent>
                     <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -866,7 +857,7 @@ const FireEMSHomepage: React.FC = () => {
                 </Card>
               </Grid>
 
-              <Grid xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Card elevation={2}>
                   <CardContent>
                     <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -902,7 +893,7 @@ const FireEMSHomepage: React.FC = () => {
               🎥 Video Training Library (Coming Soon)
             </Typography>
             <Grid container spacing={3}>
-              <Grid xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Card elevation={2} sx={{ bgcolor: '#f5f5f5' }}>
                   <CardContent>
                     <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
@@ -941,7 +932,7 @@ const FireEMSHomepage: React.FC = () => {
                 </Card>
               </Grid>
 
-              <Grid xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Card elevation={2} sx={{ bgcolor: '#f5f5f5' }}>
                   <CardContent>
                     <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
@@ -988,7 +979,7 @@ const FireEMSHomepage: React.FC = () => {
               ⚙️ Administration & Setup
             </Typography>
             <Grid container spacing={3}>
-              <Grid xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Card elevation={2}>
                   <CardContent>
                     <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -1013,7 +1004,7 @@ const FireEMSHomepage: React.FC = () => {
                 </Card>
               </Grid>
 
-              <Grid xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Card elevation={2}>
                   <CardContent>
                     <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -1038,7 +1029,7 @@ const FireEMSHomepage: React.FC = () => {
                 </Card>
               </Grid>
 
-              <Grid xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Card elevation={2} sx={{ bgcolor: '#f5f5f5' }}>
                   <CardContent>
                     <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -1067,7 +1058,7 @@ const FireEMSHomepage: React.FC = () => {
               🆘 Support & Resources
             </Typography>
             <Grid container spacing={3}>
-              <Grid xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Card elevation={2}>
                   <CardContent>
                     <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -1104,7 +1095,7 @@ const FireEMSHomepage: React.FC = () => {
                 </Card>
               </Grid>
 
-              <Grid xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Card elevation={2}>
                   <CardContent>
                     <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>

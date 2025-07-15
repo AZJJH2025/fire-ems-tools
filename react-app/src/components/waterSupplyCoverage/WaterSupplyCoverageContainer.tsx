@@ -36,15 +36,11 @@ import {
 import {
   selectTanks,
   selectHydrants,
-  selectAllSupplies,
   selectCoverageZones,
   selectActiveAnalysis,
-  selectUIState,
   selectIsLoading,
   selectError,
-  setSidebarTab,
   clearError,
-  setLoading,
   addTank,
   addHydrant
 } from '../../state/redux/waterSupplyCoverageSlice';
@@ -64,7 +60,7 @@ const WaterSupplyCoverageContainer: React.FC<TankZoneCoverageProps> = ({
   initialTanks = [],
   initialAnalysisParams,
   onAnalysisComplete,
-  onTankUpdate,
+  onTankUpdate: _onTankUpdate,
   mode = 'analysis'
 }) => {
   const dispatch = useDispatch();
@@ -73,10 +69,8 @@ const WaterSupplyCoverageContainer: React.FC<TankZoneCoverageProps> = ({
   
   const tanks = useSelector(selectTanks);
   const hydrants = useSelector(selectHydrants);
-  const allSupplies = useSelector(selectAllSupplies);
   const coverageZones = useSelector(selectCoverageZones);
   const activeAnalysis = useSelector(selectActiveAnalysis);
-  const uiState = useSelector(selectUIState);
   const isLoading = useSelector(selectIsLoading);
   const error = useSelector(selectError);
   
@@ -294,7 +288,7 @@ const WaterSupplyCoverageContainer: React.FC<TankZoneCoverageProps> = ({
   };
 
   // Calculate map container styles - fixed for proper sidebar positioning
-  const mapContainerStyle = {
+  /* const _mapContainerStyle = {
     marginLeft: !isMobile && sidebarOpen ? 0 : 0, // Let flexbox handle positioning
     width: '100%', // Let flexbox calculate width
     height: fullscreen ? '100vh' : 'calc(100vh - 64px)',
@@ -303,7 +297,7 @@ const WaterSupplyCoverageContainer: React.FC<TankZoneCoverageProps> = ({
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
-  };
+  }; */
 
   return (
     <A11yProvider>

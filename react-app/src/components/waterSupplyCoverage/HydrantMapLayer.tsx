@@ -259,14 +259,14 @@ const HydrantMapLayer: React.FC<HydrantMapLayerProps> = ({ map, onHydrantEdit })
 
       // Add to layer group
       console.log(`🚰 Adding hydrant ${index + 1} to layer group:`, hydrant.name);
-      hydrantLayerGroupRef.current.addLayer(marker);
+      hydrantLayerGroupRef.current?.addLayer(marker);
       hydrantMarkersRef.current.set(hydrant.id, marker);
-      console.log(`🚰 Layer group now has ${hydrantLayerGroupRef.current.getLayers().length} layers`);
+      console.log(`🚰 Layer group now has ${hydrantLayerGroupRef.current?.getLayers().length} layers`);
 
       // Add coverage circle if enabled
       const coverageCircle = createHydrantCoverageCircle(hydrant);
       if (coverageCircle) {
-        coverageLayerGroupRef.current.addLayer(coverageCircle);
+        coverageLayerGroupRef.current?.addLayer(coverageCircle);
       }
     });
 

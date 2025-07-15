@@ -6,7 +6,7 @@ import {
   TextField,
   Button,
   Paper,
-  Grid2 as Grid,
+  Grid,
   FormControl,
   InputLabel,
   Select,
@@ -14,8 +14,6 @@ import {
   Chip,
   Card,
   CardContent,
-  CardActions,
-  Divider,
   Alert,
   IconButton,
   InputAdornment
@@ -23,10 +21,6 @@ import {
 import {
   LocalFireDepartment,
   CheckCircle,
-  Star,
-  Business,
-  Group,
-  Security,
   Visibility,
   VisibilityOff
 } from '@mui/icons-material';
@@ -355,7 +349,7 @@ const SignUpPage: React.FC = () => {
             
             <Grid container spacing={3} sx={{ justifyContent: 'center' }}>
               {pricingPlans.map((plan) => (
-                <Grid item xs={12} md={6} key={plan.id}>
+                <Grid size={{ xs: 12, md: 6 }} key={plan.id}>
                   <Card 
                     sx={{ 
                       height: '100%',

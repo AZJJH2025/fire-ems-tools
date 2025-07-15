@@ -17,6 +17,7 @@ import {
   Button,
   List,
   ListItem,
+  ListItemButton,
   ListItemText,
   ListItemIcon,
   ListItemSecondaryAction,
@@ -34,11 +35,8 @@ import {
 import {
   LocalFireDepartment as TankIcon,
   WaterDrop as HydrantIcon,
-  Add as AddIcon,
   Delete as DeleteIcon,
   PlayArrow as AnalyzeIcon,
-  Visibility as ViewIcon,
-  VisibilityOff as HideIcon,
   FilterList as FilterIcon,
   Settings as SettingsIcon,
   Assessment as ReportIcon,
@@ -51,8 +49,6 @@ import {
   selectFilteredTanks,
   selectHydrants,
   selectFilteredHydrants,
-  selectAllSupplies,
-  selectCoverageZones,
   selectActiveAnalysis,
   selectUIState,
   selectAnalysisParameters,
@@ -90,8 +86,8 @@ const WaterSupplySidebar: React.FC<WaterSupplySidebarProps> = ({ mode }) => {
   const filteredTanks = useSelector(selectFilteredTanks);
   const hydrants = useSelector(selectHydrants);
   const filteredHydrants = useSelector(selectFilteredHydrants);
-  const allSupplies = useSelector(selectAllSupplies);
-  const coverageZones = useSelector(selectCoverageZones);
+  // const allSupplies = useSelector(selectAllSupplies); // TODO: Use for future features
+  // const _coverageZones = useSelector(selectCoverageZones);
   const activeAnalysis = useSelector(selectActiveAnalysis);
   const uiState = useSelector(selectUIState);
   const analysisParameters = useSelector(selectAnalysisParameters);
@@ -204,7 +200,7 @@ const WaterSupplySidebar: React.FC<WaterSupplySidebarProps> = ({ mode }) => {
     return travelTime + setupTime + accessTime; // Total time in seconds
   };
 
-  const analyzeCoverageMetrics = (coverageZones: any[], params: any) => {
+  const analyzeCoverageMetrics = (coverageZones: any[], _params: any) => {
     const totalArea = coverageZones.reduce((sum, zone) => sum + zone.coverageArea, 0);
     const avgResponseTime = coverageZones.reduce((sum, zone) => sum + zone.responseTime, 0) / coverageZones.length;
     
@@ -221,11 +217,11 @@ const WaterSupplySidebar: React.FC<WaterSupplySidebarProps> = ({ mode }) => {
     };
   };
 
-  const identifyCoverageGaps = (coverageZones: any[], tanks: any[], hydrants: any[], params: any) => {
+  const identifyCoverageGaps = (coverageZones: any[], _tanks: any[], _hydrants: any[], _params: any) => {
     const gaps = [];
     
     // Identify areas with poor coverage (simplified analysis)
-    const minCoverageRadius = params.maxEffectiveDistance * 0.3048; // Convert to meters
+    const minCoverageRadius = _params.maxEffectiveDistance * 0.3048; // Convert to meters
     
     // Look for gaps between coverage zones
     if (coverageZones.length >= 2) {
@@ -259,7 +255,7 @@ const WaterSupplySidebar: React.FC<WaterSupplySidebarProps> = ({ mode }) => {
                 supplyId: zone1.supplyId,
                 supplyType: zone1.supplyType,
                 distance: gapDistance / 2,
-                accessTime: calculateResponseTime(gapDistance / 2 / 0.3048, params)
+                accessTime: calculateResponseTime(gapDistance / 2 / 0.3048, _params)
               },
               riskAssessment: severity === 'critical' ? 'high' : 'medium'
             });
@@ -298,7 +294,7 @@ const WaterSupplySidebar: React.FC<WaterSupplySidebarProps> = ({ mode }) => {
     return redundancyAreas;
   };
 
-  const generateRecommendations = (gaps: any[], metrics: any, tanks: any[], hydrants: any[]) => {
+  const generateRecommendations = (gaps: any[], metrics: any, _tanks: any[], _hydrants: any[]) => {
     const recommendations = [];
     
     // Recommendation for critical gaps
@@ -420,7 +416,7 @@ const WaterSupplySidebar: React.FC<WaterSupplySidebarProps> = ({ mode }) => {
     setImportDialogOpen(true);
   };
 
-  const parseCSVFile = (file: File) => {
+  /* const _parseCSVFile = (file: File) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const csvText = e.target?.result as string;
@@ -444,9 +440,9 @@ const WaterSupplySidebar: React.FC<WaterSupplySidebarProps> = ({ mode }) => {
       }
     };
     reader.readAsText(file);
-  };
+  }; */
 
-  const parseCSVData = (csvText: string) => {
+  /* const parseCSVData = (csvText: string) => {
     const lines = csvText.trim().split('\n');
     if (lines.length < 2) {
       throw new Error('CSV file must contain at least a header row and one data row');
@@ -551,7 +547,7 @@ const WaterSupplySidebar: React.FC<WaterSupplySidebarProps> = ({ mode }) => {
     }
 
     return { tanks, hydrants };
-  };
+  }; */
 
   const handleTankTypeFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -568,7 +564,7 @@ const WaterSupplySidebar: React.FC<WaterSupplySidebarProps> = ({ mode }) => {
   };
 
   const handleCapacityRangeChange = (_event: Event, newValue: number | number[]) => {
-    const capacityRange = Array.isArray(newValue) ? newValue as [number, number] : [0, newValue as number];
+    const capacityRange: [number, number] = Array.isArray(newValue) ? [newValue[0], newValue[1]] : [0, newValue as number];
     dispatch(updateFilterCriteria({ capacityRange }));
     console.log('🔍 Capacity range changed:', capacityRange);
   };
@@ -669,11 +665,12 @@ const WaterSupplySidebar: React.FC<WaterSupplySidebarProps> = ({ mode }) => {
         {filteredTanks.map((tank) => (
           <ListItem
             key={tank.id}
-            button
-            selected={uiState.selectedTanks.includes(tank.id)}
-            onClick={() => handleTankSelect(tank.id)}
             sx={{ border: 1, borderColor: 'divider', mb: 1, borderRadius: 1 }}
           >
+            <ListItemButton
+              selected={uiState.selectedTanks.includes(tank.id)}
+              onClick={() => handleTankSelect(tank.id)}
+            >
             <ListItemIcon>
               <TankIcon color={tank.operationalStatus === 'active' ? 'primary' : 'disabled'} />
             </ListItemIcon>
@@ -692,6 +689,7 @@ const WaterSupplySidebar: React.FC<WaterSupplySidebarProps> = ({ mode }) => {
                 </Box>
               }
             />
+            </ListItemButton>
             <ListItemSecondaryAction>
               <IconButton 
                 size="small" 
@@ -715,17 +713,18 @@ const WaterSupplySidebar: React.FC<WaterSupplySidebarProps> = ({ mode }) => {
         {filteredHydrants.map((hydrant) => (
           <ListItem
             key={hydrant.id}
-            button
-            selected={uiState.selectedHydrants?.includes(hydrant.id)}
-            onClick={() => {
-              if (uiState.selectedHydrants?.includes(hydrant.id)) {
-                dispatch(deselectHydrant(hydrant.id));
-              } else {
-                dispatch(selectHydrant(hydrant.id));
-              }
-            }}
             sx={{ border: 1, borderColor: 'divider', mb: 1, borderRadius: 1 }}
           >
+            <ListItemButton
+              selected={uiState.selectedHydrants?.includes(hydrant.id)}
+              onClick={() => {
+                if (uiState.selectedHydrants?.includes(hydrant.id)) {
+                  dispatch(deselectHydrant(hydrant.id));
+                } else {
+                  dispatch(selectHydrant(hydrant.id));
+                }
+              }}
+            >
             <ListItemIcon>
               <HydrantIcon color={hydrant.operationalStatus === 'active' ? 'primary' : 'disabled'} />
             </ListItemIcon>
@@ -739,11 +738,12 @@ const WaterSupplySidebar: React.FC<WaterSupplySidebarProps> = ({ mode }) => {
                   <Chip 
                     size="small" 
                     label={hydrant.type} 
-                    color={hydrant.type === 'high-pressure' ? 'success' : 'default'}
+                    color={hydrant.type === 'municipal' ? 'success' : 'default'}
                   />
                 </Box>
               }
             />
+            </ListItemButton>
             <ListItemSecondaryAction>
               <IconButton 
                 size="small" 

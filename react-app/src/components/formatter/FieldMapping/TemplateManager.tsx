@@ -21,8 +21,6 @@ import {
   CardContent,
   Stack,
   Tooltip,
-  Badge,
-  Divider
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
@@ -480,7 +478,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
               </Alert>
               
               <List>
-                {suggestions.map((suggestion, index) => (
+                {suggestions.map((suggestion, _index) => (
                   <ListItem
                     key={suggestion.template.id}
                     component="button"

@@ -204,13 +204,13 @@ const TankPropertyEditor: React.FC<TankPropertyEditorProps> = ({
       <DialogContent dividers>
         <Grid container spacing={3}>
           {/* Basic Information */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Typography variant="subtitle1" gutterBottom color="primary">
               Basic Information
             </Typography>
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               fullWidth
               label="Tank Name"
@@ -222,7 +222,7 @@ const TankPropertyEditor: React.FC<TankPropertyEditorProps> = ({
             />
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               fullWidth
               label="Owner"
@@ -235,14 +235,14 @@ const TankPropertyEditor: React.FC<TankPropertyEditorProps> = ({
           </Grid>
 
           {/* Tank Specifications */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Divider sx={{ my: 1 }} />
             <Typography variant="subtitle1" gutterBottom color="primary">
               Tank Specifications
             </Typography>
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               fullWidth
               label="Capacity"
@@ -258,7 +258,7 @@ const TankPropertyEditor: React.FC<TankPropertyEditorProps> = ({
             />
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               select
               fullWidth
@@ -276,7 +276,7 @@ const TankPropertyEditor: React.FC<TankPropertyEditorProps> = ({
             </TextField>
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               select
               fullWidth
@@ -293,7 +293,7 @@ const TankPropertyEditor: React.FC<TankPropertyEditorProps> = ({
             </TextField>
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               select
               fullWidth
@@ -311,7 +311,7 @@ const TankPropertyEditor: React.FC<TankPropertyEditorProps> = ({
           </Grid>
 
           {/* Quick Capacity Selection */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Typography variant="body2" color="text.secondary" gutterBottom>
               Quick Capacity Selection:
             </Typography>
@@ -331,14 +331,14 @@ const TankPropertyEditor: React.FC<TankPropertyEditorProps> = ({
           </Grid>
 
           {/* Additional Information */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Divider sx={{ my: 1 }} />
             <Typography variant="subtitle1" gutterBottom color="primary">
               Additional Information
             </Typography>
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               fullWidth
               label="Contact Information"
@@ -349,7 +349,7 @@ const TankPropertyEditor: React.FC<TankPropertyEditorProps> = ({
             />
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               fullWidth
               label="Elevation (feet)"
@@ -364,7 +364,7 @@ const TankPropertyEditor: React.FC<TankPropertyEditorProps> = ({
             />
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <TextField
               fullWidth
               multiline
@@ -379,7 +379,7 @@ const TankPropertyEditor: React.FC<TankPropertyEditorProps> = ({
 
           {/* Validation Messages */}
           {Object.keys(errors).length > 0 && (
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <Alert severity="error">
                 Please correct the errors above before saving.
               </Alert>
