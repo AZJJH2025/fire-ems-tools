@@ -27,7 +27,7 @@ export interface FieldTransformation {
 }
 
 // Transformation types
-export type TransformationType = 'split' | 'join' | 'format' | 'convert' | 'extract' | 'replace';
+export type TransformationType = 'split' | 'join' | 'format' | 'convert' | 'extract' | 'replace' | 'datetime_combine' | 'datetime_extract' | 'parseCoordinates';
 
 // Template management types
 export interface FieldMappingTemplate {

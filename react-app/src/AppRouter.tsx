@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Container, CssBaseline, CircularProgress, Box } from '@mui/material';
 
 // Direct import to force App into main bundle (fixes lazy loading cache issue)
@@ -9,7 +9,6 @@ const FireMapProContainer = React.lazy(() => import('./components/fireMapPro/Fir
 const WaterSupplyCoverageContainer = React.lazy(() => import('./components/waterSupplyCoverage/WaterSupplyCoverageContainer'));
 const ISOCreditContainer = React.lazy(() => import('./components/isoCredit/ISOCreditContainer'));
 const StationCoverageContainer = React.lazy(() => import('./components/stationCoverage/StationCoverageContainer'));
-const SimpleTankTest = React.lazy(() => import('./components/waterSupplyCoverage/SimpleTankTest'));
 const FireEMSHomepage = React.lazy(() => import('./components/homepage/FireEMSHomepage'));
 
 // Authentication components

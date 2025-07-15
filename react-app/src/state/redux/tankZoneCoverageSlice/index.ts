@@ -18,7 +18,7 @@ import {
   TankSidebarTab,
   TankFilterCriteria,
   ExecutiveSummary
-} from '../../types/tankZoneCoverage';
+} from '../../../types/tankZoneCoverage';
 
 // Default analysis parameters optimized for typical rural fire departments
 const defaultAnalysisParameters: AnalysisParameters = {

@@ -46,7 +46,14 @@ export type OperationalStatus =
   | 'inactive' 
   | 'maintenance'
   | 'seasonal'
-  | 'unknown';
+  | 'unknown'
+  | 'a'    // Abbreviated active
+  | 'i'    // Abbreviated inactive
+  | 'm'    // Abbreviated maintenance
+  | 's'    // Abbreviated seasonal
+  | 'u'    // Abbreviated unknown
+  | 'ac'   // Cincinnati Water Works active
+  | 'AC';  // Cincinnati Water Works active (uppercase)
 
 // Hydrant-Specific Types
 export interface FireHydrant {
