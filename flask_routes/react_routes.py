@@ -57,17 +57,17 @@ def register_react_routes(app):
     @app.route('/')
     def root_domain():
         """Serve the root domain with HSTS headers for preloading eligibility"""
-        from flask import send_file, make_response, request, redirect, url_for
+        from flask import render_template, make_response, request, redirect, url_for
         
         # If request is for root domain without www, serve directly (don't redirect)
         # This ensures HSTS headers are present on the root domain response
         if request.host == 'fireems.ai':
-            response = make_response(send_file('app/index.html'))
+            response = make_response(render_template('react_app.html'))
             response.headers['X-Root-Domain-Handler'] = 'Flask-App-Direct'
             return response
         
         # For www.fireems.ai, serve normally
-        response = make_response(send_file('app/index.html'))
+        response = make_response(render_template('react_app.html'))
         response.headers['X-Root-Domain-Handler'] = 'Flask-App-WWW'
         return response
 
@@ -76,8 +76,8 @@ def register_react_routes(app):
     @app.route('/app/<path:subpath>')
     def react_app(subpath=None):
         """Serve the modern React application for all /app/* routes"""
-        from flask import send_file
-        return send_file('app/index.html')
+        from flask import render_template
+        return render_template('react_app.html')
     
     # Test route to verify route registration
     @app.route('/test-react-routes')
@@ -132,31 +132,7 @@ def register_react_routes(app):
         # Default handling for other files
         return send_from_directory('static', filename)
     
-    # Add routes for the React app build in /app/ directory
-    @app.route('/app/')
-    @app.route('/app/<path:filename>')
-    def serve_react_app(filename='index.html'):
-        """Serve React app files from /app/ directory with proper MIME types"""
-        from flask import send_from_directory
-        import os
-        
-        # Set proper MIME types
-        if filename.endswith('.js'):
-            return send_from_directory('app', filename, mimetype='application/javascript')
-        elif filename.endswith('.css'):
-            return send_from_directory('app', filename, mimetype='text/css')
-        elif filename.endswith('.json'):
-            return send_from_directory('app', filename, mimetype='application/json')
-        elif filename.endswith('.html'):
-            return send_from_directory('app', filename, mimetype='text/html')
-        elif filename.endswith('.png'):
-            return send_from_directory('app', filename, mimetype='image/png')
-        elif filename.endswith('.jpg') or filename.endswith('.jpeg'):
-            return send_from_directory('app', filename, mimetype='image/jpeg')
-        elif filename.endswith('.svg'):
-            return send_from_directory('app', filename, mimetype='image/svg+xml')
-        else:
-            return send_from_directory('app', filename)
+    # Remove duplicate route - handled above by react_app function
 
     # Add specific routes for assets with MIME type handling
     @app.route('/assets/<path:filename>')
