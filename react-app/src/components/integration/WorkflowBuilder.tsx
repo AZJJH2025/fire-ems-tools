@@ -64,7 +64,7 @@ import {
   ToolWorkflow, 
   WorkflowStep 
 } from '@/services/integration/toolWorkflowService';
-import { mockToolConfigs } from '@/utils/mockToolConfigs';
+import { toolConfigs } from '@/utils/mockToolConfigs';
 import { ToolConfig } from '@/types/formatter';
 
 interface WorkflowBuilderProps {
@@ -100,7 +100,7 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({
 
   // Load available tools
   useEffect(() => {
-    setAvailableTools(mockToolConfigs);
+    setAvailableTools(toolConfigs);
   }, []);
 
   // Validate workflow

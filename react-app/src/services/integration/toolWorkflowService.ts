@@ -4,8 +4,8 @@
  */
 
 import { ToolConfig } from '@/types/formatter';
-import { transformData } from './dataTransformer';
-import { mockToolConfigs } from '@/utils/mockToolConfigs';
+import DataTransformer from './dataTransformer';
+import { toolConfigs } from '@/utils/mockToolConfigs';
 
 export interface WorkflowStep {
   id: string;
@@ -148,7 +148,7 @@ export class ToolWorkflowService {
     }
 
     const step = workflow.steps[stepIndex];
-    const tool = mockToolConfigs.find(t => t.id === step.toolId);
+    const tool = toolConfigs.find(t => t.id === step.toolId);
     if (!tool) {
       throw new Error(`Tool ${step.toolId} not found`);
     }
@@ -164,7 +164,20 @@ export class ToolWorkflowService {
         : execution.results[workflow.steps[stepIndex - 1].id];
 
       // Transform data for the current tool
-      const transformedData = await transformData(inputData, tool);
+      let transformedData: any;
+      switch (step.toolId) {
+        case 'fire-map-pro':
+          const fireMapResult = DataTransformer.transformToFireMapPro(inputData);
+          transformedData = fireMapResult.success ? fireMapResult.data : inputData;
+          break;
+        case 'response-time-analyzer':
+          const responseTimeResult = DataTransformer.transformToResponseTimeAnalyzer(inputData);
+          transformedData = responseTimeResult.success ? responseTimeResult.data : inputData;
+          break;
+        default:
+          // For other tools, use the data as-is
+          transformedData = inputData;
+      }
 
       // Store step result
       execution.results[step.id] = {
@@ -297,7 +310,7 @@ export class ToolWorkflowService {
 
     // Check each step's requirements
     for (const step of workflow.steps) {
-      const tool = mockToolConfigs.find(t => t.id === step.toolId);
+      const tool = toolConfigs.find(t => t.id === step.toolId);
       if (!tool) {
         warnings.push(`Tool ${step.toolId} not found`);
         continue;
@@ -337,7 +350,7 @@ export class ToolWorkflowService {
       .map(workflow => {
         const compatibility = this.validateWorkflowCompatibility(workflow.id, data);
         const fieldMatch = workflow.steps.reduce((acc, step) => {
-          const tool = mockToolConfigs.find(t => t.id === step.toolId);
+          const tool = toolConfigs.find(t => t.id === step.toolId);
           if (!tool) return acc;
           
           const requiredFields = tool.requiredFields.length;

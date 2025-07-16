@@ -441,9 +441,14 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
           Browse Template Library
         </MenuItem>
         <MenuItem onClick={() => {
-          setSharingDialogOpen(true);
-          const storedTemplates = loadTemplates();
-          setTemplates(storedTemplates);
+          try {
+            setSharingDialogOpen(true);
+            const storedTemplates = loadTemplates();
+            setTemplates(storedTemplates);
+          } catch (error) {
+            console.error('Error opening sharing dialog:', error);
+            alert('Template sharing feature is temporarily unavailable. Please try again later.');
+          }
         }}>
           <Share fontSize="small" sx={{ mr: 1 }} />
           Share & Collaborate
