@@ -193,29 +193,63 @@ export class TemplateService {
 
   /**
    * Generate CAD vendor signature for pattern recognition
+   * Enhanced with more accurate pattern matching and confidence scoring
    */
   static generateCADSignature(sourceFields: string[]): string {
     const patterns = {
-      'Console One': ['INC_DATE_TIME', 'PROBLEM_TYPE', 'UNIT_ID'],
-      'Tyler': ['ALARM_TIME', 'INCIDENT_DATE', 'DISPATCH_DATE'],
-      'Hexagon': ['CallDateTime', 'DispatchDateTime', 'ArrivalDateTime'],
-      'TriTech': ['EventNum', 'Call_Date_Time', 'Unit_ID']
+      'Console One': {
+        required: ['INC_DATE_TIME', 'PROBLEM_TYPE', 'UNIT_ID'],
+        optional: ['INC_NUM', 'LOCATION_ADDRESS', 'CLEAR_TIME'],
+        confidence: 0
+      },
+      'Tyler': {
+        required: ['ALARM_TIME', 'INCIDENT_DATE', 'DISPATCH_DATE'],
+        optional: ['INCIDENT_NUMBER', 'NATURE_CODE', 'PRIMARY_UNIT'],
+        confidence: 0
+      },
+      'Hexagon': {
+        required: ['CallDateTime', 'DispatchDateTime', 'ArrivalDateTime'],
+        optional: ['IncidentNumber', 'IncidentType', 'UnitId'],
+        confidence: 0
+      },
+      'TriTech': {
+        required: ['EventNum', 'Call_Date_Time', 'Unit_ID'],
+        optional: ['Call_Type', 'Address', 'City'],
+        confidence: 0
+      }
     };
     
     let bestMatch = 'Other';
-    let maxScore = 0;
+    let maxConfidence = 0;
     
-    for (const [vendor, vendorPatterns] of Object.entries(patterns)) {
-      const score = vendorPatterns.filter(pattern => 
-        sourceFields.some(field => field.toLowerCase().includes(pattern.toLowerCase()))
+    for (const [vendor, vendorData] of Object.entries(patterns)) {
+      // Score based on required field matches (weighted heavily)
+      const requiredMatches = vendorData.required.filter(pattern => 
+        sourceFields.some(field => 
+          field.toLowerCase().includes(pattern.toLowerCase()) ||
+          pattern.toLowerCase().includes(field.toLowerCase())
+        )
       ).length;
       
-      if (score > maxScore) {
-        maxScore = score;
+      // Score based on optional field matches (weighted lightly)
+      const optionalMatches = vendorData.optional.filter(pattern => 
+        sourceFields.some(field => 
+          field.toLowerCase().includes(pattern.toLowerCase()) ||
+          pattern.toLowerCase().includes(field.toLowerCase())
+        )
+      ).length;
+      
+      // Calculate confidence: 70% weight on required, 30% on optional
+      const confidence = (requiredMatches / vendorData.required.length * 0.7) + 
+                        (optionalMatches / vendorData.optional.length * 0.3);
+      
+      if (confidence > maxConfidence && confidence > 0.4) { // Minimum 40% confidence threshold
+        maxConfidence = confidence;
         bestMatch = vendor;
       }
     }
     
+    console.log(`🏅 CAD Vendor Detection: ${bestMatch} (${Math.round(maxConfidence * 100)}% confidence)`);
     return bestMatch;
   }
 
@@ -269,12 +303,41 @@ export class TemplateService {
   }
 
   private static generateMetadata(fieldMappings: FieldMapping[], sampleData: SampleData): TemplateMetadata {
-    // Calculate quality score based on mapping completeness
-    const totalPossibleMappings = 10; // Estimate based on common requirements
-    const qualityScore = Math.min(100, (fieldMappings.length / totalPossibleMappings) * 100);
+    // Enhanced quality scoring based on field importance and completeness
+    const fieldWeights = {
+      'incident_id': 10,      // Critical for all tools
+      'incident_time': 10,    // Critical for response time analysis
+      'incident_date': 8,     // Important for temporal analysis
+      'dispatch_time': 9,     // Critical for NFPA compliance
+      'arrival_time': 9,      // Critical for NFPA compliance
+      'latitude': 7,          // Important for mapping tools
+      'longitude': 7,         // Important for mapping tools
+      'incident_type': 6,     // Useful for categorization
+      'responding_unit': 5,   // Useful for unit analysis
+      'address': 4,           // Helpful for context
+      'city': 3,              // Geographic context
+      'state': 3,             // Geographic context
+      'enroute_time': 6,      // NFPA compliance
+      'clear_time': 5         // Scene time analysis
+    };
     
-    // Extract sample values for validation
+    // Calculate weighted quality score
+    let totalWeight = 0;
+    let achievedWeight = 0;
+    
+    for (const [fieldId, weight] of Object.entries(fieldWeights)) {
+      totalWeight += weight;
+      if (fieldMappings.some(mapping => mapping.targetField === fieldId)) {
+        achievedWeight += weight;
+      }
+    }
+    
+    const qualityScore = Math.round((achievedWeight / totalWeight) * 100);
+    
+    // Extract sample values for validation with enhanced data type detection
     const sampleValues: Record<string, string[]> = {};
+    const dataTypes: Record<string, string> = {};
+    
     if (sampleData.length > 0) {
       for (const mapping of fieldMappings) {
         const values = sampleData
@@ -285,19 +348,97 @@ export class TemplateService {
         
         if (values.length > 0) {
           sampleValues[mapping.sourceField] = values;
+          
+          // Detect data type from sample values
+          dataTypes[mapping.sourceField] = this.detectDataType(values);
         }
       }
     }
     
+    // Generate smart tags based on template characteristics
+    const tags = this.generateSmartTags(fieldMappings, sampleData);
+    
     return {
       version: this.VERSION,
       compatibility: ['1.0.0'], // Compatible versions
-      qualityScore: Math.round(qualityScore),
+      qualityScore: Math.max(20, qualityScore), // Minimum 20% quality score
       successRate: 100, // Start with 100%, adjust based on usage
-      dataTypes: {}, // TODO: Implement data type detection
+      dataTypes,
       sampleValues,
-      tags: [] // User can add tags later
+      tags
     };
+  }
+
+  /**
+   * Detect data type from sample values
+   */
+  private static detectDataType(values: string[]): string {
+    if (values.length === 0) return 'unknown';
+    
+    const firstValue = values[0];
+    
+    // DateTime patterns
+    if (/\d{1,2}\/\d{1,2}\/\d{2,4}\s+\d{1,2}:\d{2}/.test(firstValue)) return 'datetime';
+    if (/\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(firstValue)) return 'datetime';
+    
+    // Date patterns
+    if (/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(firstValue)) return 'date';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(firstValue)) return 'date';
+    
+    // Time patterns
+    if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(firstValue)) return 'time';
+    
+    // Number patterns
+    if (/^-?\d+(\.\d+)?$/.test(firstValue)) return 'number';
+    
+    // ID patterns
+    if (/^[A-Z0-9]+[-_]?[A-Z0-9]*$/i.test(firstValue) && firstValue.length < 20) return 'id';
+    
+    // Default to string
+    return 'string';
+  }
+
+  /**
+   * Generate smart tags based on template characteristics
+   */
+  private static generateSmartTags(fieldMappings: FieldMapping[], sampleData: SampleData): string[] {
+    const tags: string[] = [];
+    
+    // Tool capability tags
+    const hasResponseTimeFields = fieldMappings.some(m => 
+      ['incident_time', 'dispatch_time', 'arrival_time'].includes(m.targetField)
+    );
+    if (hasResponseTimeFields) tags.push('response-time-ready');
+    
+    const hasGeographicFields = fieldMappings.some(m => 
+      ['latitude', 'longitude', 'address'].includes(m.targetField)
+    );
+    if (hasGeographicFields) tags.push('mapping-ready');
+    
+    const hasNFPAFields = fieldMappings.some(m => 
+      ['dispatch_time', 'enroute_time', 'arrival_time'].includes(m.targetField)
+    );
+    if (hasNFPAFields) tags.push('nfpa-1710');
+    
+    // Data quality tags
+    const fieldCount = fieldMappings.length;
+    if (fieldCount >= 10) tags.push('comprehensive');
+    else if (fieldCount >= 6) tags.push('standard');
+    else if (fieldCount >= 3) tags.push('basic');
+    
+    // Data pattern tags
+    if (sampleData.length > 0) {
+      const firstRow = sampleData[0];
+      const fieldNames = Object.keys(firstRow);
+      
+      // CAD vendor patterns (more specific detection)
+      if (fieldNames.some(f => f.includes('INC_DATE_TIME'))) tags.push('console-one');
+      if (fieldNames.some(f => f.includes('ALARM_TIME'))) tags.push('tyler');
+      if (fieldNames.some(f => f.includes('CallDateTime'))) tags.push('hexagon');
+      if (fieldNames.some(f => f.includes('EventNum'))) tags.push('tritech');
+    }
+    
+    return tags;
   }
 
   private static calculateSimilarity(sourceFields: string[], templateFields: string[]): {
