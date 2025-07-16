@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useSearchParams } from 'react-router-dom';
 import {
   Box,
   Paper,
@@ -31,6 +32,7 @@ import ValidationPanel from './ValidationPanel';
 import LivePreviewStrip from './LivePreviewStrip';
 import TemplateManager from './TemplateManager';
 import useTemplateSync from '@/hooks/useTemplateSync';
+import { TemplateSharingService } from '@/services/templateSharingService';
 
 // 🔧 FIELD MAPPING MIGRATION HELPERS - For systematic fix
 // These helpers ensure safe migration from display names to field IDs
@@ -375,6 +377,7 @@ export interface MappingTemplate {
 
 const FieldMappingContainer: React.FC = () => {
   const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
   const { 
     sourceColumns, 
     sampleData, 
@@ -382,6 +385,43 @@ const FieldMappingContainer: React.FC = () => {
     mappings, 
     processingStatus 
   } = useSelector((state: RootState) => state.formatter);
+  
+  // Handle URL-based template imports
+  useEffect(() => {
+    const templateData = searchParams.get('import');
+    if (templateData) {
+      try {
+        const importResult = TemplateSharingService.importFromShareLink(templateData);
+        if (importResult.success && importResult.templates.length > 0) {
+          console.log(`📥 Successfully imported ${importResult.templates.length} templates from URL`);
+          
+          // Apply the first template's mappings if available
+          const firstTemplate = importResult.templates[0];
+          if (firstTemplate.mappings && firstTemplate.mappings.length > 0) {
+            dispatch(setMappings(firstTemplate.mappings));
+            setStatusMessage({
+              message: `Successfully imported template "${firstTemplate.name}"`,
+              severity: 'success',
+              open: true
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Failed to import template from URL:', error);
+        setStatusMessage({
+          message: 'Failed to import template from URL',
+          severity: 'error',
+          open: true
+        });
+      }
+      
+      // Clean up URL parameter
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('import');
+      const newUrl = `${window.location.pathname}${newSearchParams.toString() ? '?' + newSearchParams.toString() : ''}`;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, [searchParams, dispatch]);
   
   // State for the current active template
   const [currentTemplate, setCurrentTemplate] = useState<MappingTemplate>({
@@ -1279,6 +1319,71 @@ const FieldMappingContainer: React.FC = () => {
     }
   };
   
+  // 🔗 URL IMPORT HANDLING: Check for shared template links
+  const [searchParams] = useSearchParams();
+  
+  useEffect(() => {
+    const importParam = searchParams.get('import');
+    if (importParam) {
+      console.log('🔗 Found import parameter, attempting to parse share link...');
+      
+      try {
+        const exportData = TemplateSharingService.parseShareLink(window.location.href);
+        if (exportData) {
+          console.log('✅ Successfully parsed share link:', exportData);
+          
+          // Import the templates
+          const result = TemplateSharingService.importTemplates(exportData, {
+            overwriteExisting: false,
+            minimumQuality: 60
+          });
+          
+          if (result.imported.length > 0) {
+            setStatusMessage({
+              message: `Imported ${result.imported.length} templates from share link`,
+              severity: 'success',
+              open: true
+            });
+            
+            // If we imported templates successfully, refresh the template suggestions
+            if (sampleData && sampleData.length > 0 && selectedTool) {
+              const newMappings = mappings.length > 0 ? mappings : [];
+              const similar = findSimilarTemplates(newMappings, selectedTool.id);
+              setSuggestedTemplates(similar.slice(0, 3));
+            }
+          }
+          
+          if (result.conflicts.length > 0) {
+            setStatusMessage({
+              message: `${result.conflicts.length} templates had name conflicts and were skipped`,
+              severity: 'warning',
+              open: true
+            });
+          }
+        } else {
+          console.warn('❌ Failed to parse share link');
+          setStatusMessage({
+            message: 'Invalid share link format',
+            severity: 'error',
+            open: true
+          });
+        }
+      } catch (error) {
+        console.error('❌ Error processing share link:', error);
+        setStatusMessage({
+          message: 'Error processing share link',
+          severity: 'error',
+          open: true
+        });
+      }
+      
+      // Clean up the URL parameter after processing
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('import');
+      window.history.replaceState({}, '', newUrl.toString());
+    }
+  }, [searchParams, findSimilarTemplates, mappings, sampleData, selectedTool]);
+
   // Check if we can proceed (all required fields mapped)
   const canProceed = useMemo(() => {
     // Re-compute this whenever validationErrors or mappings change

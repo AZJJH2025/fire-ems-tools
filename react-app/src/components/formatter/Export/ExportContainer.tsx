@@ -22,7 +22,8 @@ import {
   ListItemText,
   ListItemIcon,
   Collapse,
-  IconButton
+  IconButton,
+  Dialog
 } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import SendIcon from '@mui/icons-material/Send';
@@ -46,6 +47,8 @@ import ExportFormatSelector from './ExportFormatSelector';
 import SendToToolPanel from './SendToToolPanel';
 import DownloadExportSummary from './DownloadExportSummary';
 import { DataTransformer } from '@/services/integration/dataTransformer';
+import WorkflowOrchestrator from '@/components/integration/WorkflowOrchestrator';
+import WorkflowBuilder from '@/components/integration/WorkflowBuilder';
 
 // Helper function to format dates in the export data
 const formatDateFields = (data: Record<string, any>[]): Record<string, any>[] => {
@@ -191,6 +194,9 @@ const ExportContainer: React.FC = () => {
   // State for export history
   const [exportHistory, setExportHistory] = useState<ExportHistoryItem[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  
+  // State for workflow integration
+  const [workflowBuilderOpen, setWorkflowBuilderOpen] = useState(false);
 
   // Load export history from localStorage on mount
   useEffect(() => {
@@ -1011,6 +1017,7 @@ const ExportContainer: React.FC = () => {
         <Tabs value={tabValue} onChange={handleTabChange} aria-label="export options tabs">
           <Tab label="Download File" id="export-tab-0" aria-controls="export-tabpanel-0" />
           <Tab label="Send to Tool" id="export-tab-1" aria-controls="export-tabpanel-1" />
+          <Tab label="Workflow Integration" id="export-tab-2" aria-controls="export-tabpanel-2" />
         </Tabs>
       </Box>
       
@@ -1059,6 +1066,50 @@ const ExportContainer: React.FC = () => {
         />
       </TabPanel>
       
+      {/* Workflow Integration tab panel */}
+      <TabPanel value={tabValue} index={2}>
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Seamless Tool Integration Workflows
+          </Typography>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            Execute multi-step workflows that seamlessly integrate multiple FireEMS tools for comprehensive analysis.
+          </Typography>
+          <Button
+            variant="outlined"
+            onClick={() => setWorkflowBuilderOpen(true)}
+            sx={{ mt: 2 }}
+          >
+            Create Custom Workflow
+          </Button>
+        </Box>
+        
+        <WorkflowOrchestrator
+          data={transformedData}
+          onWorkflowComplete={(results) => {
+            console.log('Workflow completed:', results);
+            setExportStatus({
+              success: true,
+              message: 'Workflow completed successfully!',
+              open: true
+            });
+          }}
+          onToolRedirect={(toolId, data) => {
+            console.log('Redirecting to tool:', toolId, data);
+            // Store data in sessionStorage for tool access
+            sessionStorage.setItem('fireEmsExportedData', JSON.stringify({
+              toolId,
+              data,
+              timestamp: new Date().toISOString(),
+              source: 'workflow'
+            }));
+            
+            // Navigate to tool (in real app this would be proper routing)
+            window.open(`/tools/${toolId}`, '_blank');
+          }}
+        />
+      </TabPanel>
+      
       {/* Navigation buttons */}
       <Divider sx={{ my: 3 }} />
       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -1084,6 +1135,32 @@ const ExportContainer: React.FC = () => {
           {exportStatus.message}
         </Alert>
       </Snackbar>
+      
+      {/* Workflow Builder Dialog */}
+      {workflowBuilderOpen && (
+        <Dialog
+          open={workflowBuilderOpen}
+          onClose={() => setWorkflowBuilderOpen(false)}
+          maxWidth="lg"
+          fullWidth
+          PaperProps={{
+            sx: { height: '90vh' }
+          }}
+        >
+          <WorkflowBuilder
+            onWorkflowCreated={(workflow) => {
+              console.log('New workflow created:', workflow);
+              setWorkflowBuilderOpen(false);
+              setExportStatus({
+                success: true,
+                message: `Workflow "${workflow.name}" created successfully!`,
+                open: true
+              });
+            }}
+            onClose={() => setWorkflowBuilderOpen(false)}
+          />
+        </Dialog>
+      )}
     </Box>
   );
 };

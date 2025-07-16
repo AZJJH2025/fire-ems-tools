@@ -30,11 +30,13 @@ import HistoryIcon from '@mui/icons-material/History';
 import BusinessIcon from '@mui/icons-material/Business';
 import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import VerifiedIcon from '@mui/icons-material/Verified';
+import Share from '@mui/icons-material/Share';
 import useTemplateSync from '@/hooks/useTemplateSync';
 import { MappingTemplate } from './FieldMappingContainer';
 import { TemplateService } from '@/services/templateService';
 import { FieldMappingTemplate, TemplateSuggestion, FieldMapping, SampleData } from '@/types/formatter';
 import { seedVendorTemplates } from '@/services/vendorTemplates';
+import TemplateSharing from './TemplateSharing';
 
 interface TemplateManagerProps {
   currentTemplate: MappingTemplate;
@@ -68,6 +70,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
   // Dialog states
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [loadDialogOpen, setLoadDialogOpen] = useState(false);
+  const [sharingDialogOpen, setSharingDialogOpen] = useState(false);
   
   // Template name in save dialog
   const [templateName, setTemplateName] = useState(currentTemplate.name);
@@ -76,6 +79,10 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
   // Available templates
   const [templates, setTemplates] = useState<MappingTemplate[]>([]);
   const [suggestions, setSuggestions] = useState<TemplateSuggestion[]>([]);
+  
+  // Enhanced template browsing state
+  const [templateFilter, setTemplateFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [cadVendor, setCadVendor] = useState<string>('');
   const [departmentName, setDepartmentName] = useState('');
   
@@ -141,12 +148,33 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
     handleMenuClose();
   };
   
-  // Save template
+  // Save template with enhanced features
   const handleSaveTemplate = async () => {
     try {
+      // Check if template name already exists
+      const existingTemplate = templates.find(t => t.name === templateName);
+      
+      if (existingTemplate && existingTemplate.id !== currentTemplate.id) {
+        // Ask user if they want to create a new version or overwrite
+        const shouldCreateVersion = window.confirm(
+          `A template named "${templateName}" already exists. ` +
+          'Click OK to create a new version, or Cancel to overwrite the existing template.'
+        );
+        
+        if (shouldCreateVersion) {
+          const version = existingTemplate.metadata?.version || '1.0.0';
+          const [major, minor, patch] = version.split('.').map(Number);
+          const newVersion = `${major}.${minor}.${patch + 1}`;
+          
+          // Update template name to include version
+          const versionedName = `${templateName} (v${newVersion})`;
+          setTemplateName(versionedName);
+        }
+      }
+
       // If we have current field mappings, save using TemplateService
       if (currentMappings.length > 0 && sourceFields.length > 0 && targetTool) {
-        await TemplateService.saveTemplate(
+        const savedTemplate = await TemplateService.saveTemplate(
           templateName,
           templateDescription,
           currentMappings,
@@ -156,6 +184,9 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
           departmentName || undefined,
           cadVendor || undefined
         );
+        
+        console.log(`✅ Template saved with quality score: ${savedTemplate.metadata.qualityScore}%`);
+        console.log(`🏷️ Auto-generated tags: ${savedTemplate.metadata.tags?.join(', ')}`);
       } else {
         // Fallback to legacy template save
         const updatedTemplate: MappingTemplate = {
@@ -176,10 +207,16 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
       const storedTemplates = loadTemplates();
       setTemplates(storedTemplates);
       
-      // Close dialog
+      // Close dialog and show success message
       setSaveDialogOpen(false);
+      
+      // Optional: Show success toast or snackbar
+      console.log(`🎉 Template "${templateName}" saved successfully!`);
+      
     } catch (error) {
       console.error('Error saving template:', error);
+      // Optional: Show error message to user
+      alert(`Failed to save template: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
   
@@ -282,13 +319,48 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
     }
   };
   
-  // Group templates by tool and category
-  const groupedTemplates = templates.reduce((groups, template) => {
+  // Filter and search templates
+  const filteredTemplates = templates.filter(template => {
+    // Filter by category
+    if (templateFilter !== 'all') {
+      const category = getTemplateCategory(template);
+      if (category !== templateFilter) return false;
+    }
+    
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesName = template.name.toLowerCase().includes(query);
+      const matchesDescription = template.description?.toLowerCase().includes(query);
+      const matchesTags = template.metadata?.tags?.some(tag => tag.toLowerCase().includes(query));
+      const matchesDepartment = template.departmentName?.toLowerCase().includes(query);
+      
+      if (!matchesName && !matchesDescription && !matchesTags && !matchesDepartment) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
+
+  // Group filtered templates by tool and category
+  const groupedTemplates = filteredTemplates.reduce((groups, template) => {
     const key = template.toolId || 'unknown';
     if (!groups[key]) groups[key] = [];
     groups[key].push(template);
     return groups;
   }, {} as Record<string, MappingTemplate[]>);
+
+  // Get available filter categories
+  const availableCategories = ['all', ...new Set(templates.map(getTemplateCategory))];
+  
+  // Get template statistics
+  const templateStats = {
+    total: templates.length,
+    certified: templates.filter(t => t.metadata?.tags?.includes('certified')).length,
+    myTemplates: templates.filter(t => !t.id?.startsWith('vendor_')).length,
+    filtered: filteredTemplates.length
+  };
   
   // Generate smart template name suggestions
   const getSmartTemplateName = (): string => {
@@ -308,6 +380,15 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
     }
     
     return `${toolName} Mapping Template`;
+  };
+
+  // Handle template import from sharing
+  const handleTemplateImported = (importedTemplates: FieldMappingTemplate[]) => {
+    // Refresh templates list to include imported templates
+    const storedTemplates = loadTemplates();
+    setTemplates(storedTemplates);
+    
+    console.log(`📥 Imported ${importedTemplates.length} templates successfully`);
   };
   
   return (
@@ -348,6 +429,24 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
         }}>
           <BusinessIcon fontSize="small" sx={{ mr: 1 }} />
           Load Vendor Templates
+        </MenuItem>
+        <MenuItem onClick={() => {
+          // Open template discovery browser
+          setLoadDialogOpen(true);
+          // Focus on browsing all templates
+          const storedTemplates = loadTemplates();
+          setTemplates(storedTemplates);
+        }}>
+          <AutoAwesome fontSize="small" sx={{ mr: 1 }} />
+          Browse Template Library
+        </MenuItem>
+        <MenuItem onClick={() => {
+          setSharingDialogOpen(true);
+          const storedTemplates = loadTemplates();
+          setTemplates(storedTemplates);
+        }}>
+          <Share fontSize="small" sx={{ mr: 1 }} />
+          Share & Collaborate
         </MenuItem>
       </Menu>
       
@@ -461,6 +560,71 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
         <DialogTitle>Load Mapping Template</DialogTitle>
         
         <DialogContent>
+          {/* Template Discovery & Filtering Section */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+              <AutoAwesome sx={{ mr: 1, fontSize: 20 }} />
+              Template Library
+              <Chip 
+                label={`${templateStats.filtered}/${templateStats.total}`} 
+                size="small" 
+                sx={{ ml: 1 }} 
+                color={templateStats.filtered === templateStats.total ? 'default' : 'primary'}
+              />
+            </Typography>
+            
+            {/* Search and Filter Controls */}
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}>
+              <TextField
+                placeholder="Search templates..."
+                size="small"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                sx={{ flexGrow: 1 }}
+                InputProps={{
+                  startAdornment: <AutoAwesome sx={{ mr: 1, color: 'text.secondary' }} />
+                }}
+              />
+              <TextField
+                select
+                label="Category"
+                size="small"
+                value={templateFilter}
+                onChange={(e) => setTemplateFilter(e.target.value)}
+                sx={{ minWidth: 140 }}
+              >
+                {availableCategories.map(category => (
+                  <MenuItem key={category} value={category}>
+                    {category === 'all' ? 'All Categories' : category}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Stack>
+            
+            {/* Template Statistics */}
+            <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+              <Chip 
+                label={`${templateStats.certified} Certified`}
+                color="primary"
+                size="small"
+                icon={<VerifiedIcon />}
+              />
+              <Chip 
+                label={`${templateStats.myTemplates} My Templates`}
+                color="secondary"
+                size="small"
+              />
+              {searchQuery && (
+                <Chip 
+                  label={`${templateStats.filtered} Found`}
+                  color="success"
+                  size="small"
+                  onDelete={() => setSearchQuery('')}
+                />
+              )}
+            </Stack>
+          </Box>
+
           {/* Template Suggestions Section */}
           {suggestions.length > 0 && (
             <Box sx={{ mb: 4 }}>
@@ -547,23 +711,48 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
             </Box>
           )}
           
-          {templates.length === 0 && suggestions.length === 0 ? (
+          {filteredTemplates.length === 0 && suggestions.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 4 }}>
               <BusinessIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
               <Typography variant="h6" gutterBottom>
-                No saved templates found
+                {searchQuery || templateFilter !== 'all' ? 'No templates match your criteria' : 'No saved templates found'}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Templates save your field mapping configurations for reuse with similar data exports.
+                {searchQuery || templateFilter !== 'all' 
+                  ? 'Try adjusting your search or filter criteria to find more templates.'
+                  : 'Templates save your field mapping configurations for reuse with similar data exports.'
+                }
               </Typography>
-              <Alert severity="info">
-                <Typography variant="body2">
-                  <strong>Pro Tip:</strong> After mapping fields for your CAD system, save it as a template. 
-                  Next month's export will auto-map instantly!
-                </Typography>
-              </Alert>
+              
+              {searchQuery || templateFilter !== 'all' ? (
+                <Stack direction="row" spacing={1} justifyContent="center">
+                  <Button 
+                    variant="outlined" 
+                    size="small" 
+                    onClick={() => setSearchQuery('')}
+                    disabled={!searchQuery}
+                  >
+                    Clear Search
+                  </Button>
+                  <Button 
+                    variant="outlined" 
+                    size="small" 
+                    onClick={() => setTemplateFilter('all')}
+                    disabled={templateFilter === 'all'}
+                  >
+                    Show All Categories
+                  </Button>
+                </Stack>
+              ) : (
+                <Alert severity="info">
+                  <Typography variant="body2">
+                    <strong>Pro Tip:</strong> After mapping fields for your CAD system, save it as a template. 
+                    Next month's export will auto-map instantly!
+                  </Typography>
+                </Alert>
+              )}
             </Box>
-          ) : templates.length > 0 && (
+          ) : filteredTemplates.length > 0 && (
             <Box>
               {suggestions.length > 0 && (
                 <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
@@ -683,6 +872,17 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
           <Button onClick={() => setLoadDialogOpen(false)}>Cancel</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Template Sharing Dialog */}
+      <TemplateSharing
+        open={sharingDialogOpen}
+        onClose={() => setSharingDialogOpen(false)}
+        currentTemplate={currentTemplate}
+        allTemplates={templates}
+        onTemplateImported={handleTemplateImported}
+        departmentName={departmentName || 'Unknown Department'}
+        contactEmail={undefined}
+      />
     </>
   );
 };
