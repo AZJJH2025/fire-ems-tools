@@ -735,6 +735,40 @@ def create_app(config_name='default'):
             "environment": app.config.get('ENV', 'development'),
             "note": "Direct health check - bypassing blueprints"
         })
+    
+    # Direct admin debug endpoint that bypasses blueprint routing
+    @app.route('/direct-admin-debug')
+    def direct_admin_debug():
+        """Direct admin debug endpoint - bypasses blueprint routing"""
+        try:
+            from flask_login import current_user
+            from database import User, Department
+            
+            # Get admin user count
+            admin_count = User.query.filter(
+                (User.role == 'admin') | (User.role == 'super_admin')
+            ).count()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Direct admin debug endpoint working',
+                'authenticated': current_user.is_authenticated,
+                'user_id': current_user.id if current_user.is_authenticated else None,
+                'user_email': current_user.email if current_user.is_authenticated else None,
+                'user_role': current_user.role if current_user.is_authenticated else None,
+                'is_admin': current_user.is_admin() if current_user.is_authenticated else False,
+                'is_super_admin': current_user.is_super_admin() if current_user.is_authenticated else False,
+                'admin_users_count': admin_count,
+                'timestamp': datetime.utcnow().isoformat(),
+                'note': 'This endpoint bypasses blueprint routing'
+            })
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': str(e),
+                'message': 'Direct admin debug failed',
+                'timestamp': datetime.utcnow().isoformat()
+            }), 500
         
     def check_database_health():
         """Check if database is reachable and responding"""
@@ -1657,6 +1691,41 @@ def create_app(config_name='default'):
     def server_error(e):
         return jsonify({'error': 'Internal server error'}), 500
     
+    # Direct admin debug endpoint that bypasses blueprint routing
+    @app.route('/direct-admin-debug')
+    def direct_admin_debug():
+        """Direct admin debug endpoint - bypasses blueprint routing"""
+        try:
+            from flask_login import current_user
+            from database import User, Department
+            from datetime import datetime
+            
+            # Get admin user count
+            admin_count = User.query.filter(
+                (User.role == 'admin') | (User.role == 'super_admin')
+            ).count()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Direct admin debug endpoint working',
+                'authenticated': current_user.is_authenticated,
+                'user_id': current_user.id if current_user.is_authenticated else None,
+                'user_email': current_user.email if current_user.is_authenticated else None,
+                'user_role': current_user.role if current_user.is_authenticated else None,
+                'is_admin': current_user.is_admin() if current_user.is_authenticated else False,
+                'is_super_admin': current_user.is_super_admin() if current_user.is_authenticated else False,
+                'admin_users_count': admin_count,
+                'timestamp': datetime.utcnow().isoformat(),
+                'note': 'This endpoint bypasses blueprint routing'
+            })
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': str(e),
+                'message': 'Direct admin debug failed',
+                'timestamp': datetime.utcnow().isoformat()
+            }), 500
+
     return app
 
 # Function to create a default super admin user
