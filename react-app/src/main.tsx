@@ -6,8 +6,14 @@ import AppRouter from './AppRouter';
 import { store } from './state/redux/store';
 import { theme } from './theme';
 
+// Initialize security configuration
+import { initializeSecurity } from './security/contentSecurityPolicy';
+
 // AGGRESSIVE CACHE BUST - FORCE RENDER TO SERVE LATEST BUILD
 console.log('🔥🔥🔥 MAIN.TSX CACHE BUST JULY 12 2025 22:50 - FORCE NEW BUILD');
+
+// Initialize security systems
+initializeSecurity();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

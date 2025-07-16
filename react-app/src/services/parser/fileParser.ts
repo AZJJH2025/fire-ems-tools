@@ -72,66 +72,25 @@ const parseCSV = (file: File): Promise<{
  * @param file The Excel file to parse
  * @returns Object containing columns and data
  */
-const parseExcel = (file: File): Promise<{
+const parseExcel = async (file: File): Promise<{
   columns: string[];
   data: Record<string, any>[];
 }> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
+  // Use secure Excel parser with security protections
+  const { parseExcelFileSecurely } = await import('../security/secureExcelParser');
+  
+  try {
+    const result = await parseExcelFileSecurely(file, {
+      maxRows: 100, // Limit to first 100 rows for sample data
+      maxColumns: 100,
+      maxFileSize: 50 * 1024 * 1024, // 50MB
+      timeoutMs: 30000 // 30 seconds
+    });
     
-    reader.onload = async (e) => {
-      try {
-        const data = e.target?.result;
-        if (!data) {
-          reject(new Error('Failed to read Excel file'));
-          return;
-        }
-        
-        // Parse the Excel data (dynamic import for bundle optimization)
-        const XLSX = await import('xlsx');
-        const workbook = XLSX.read(data, { type: 'array' });
-        
-        // Get the first sheet
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        
-        // Convert to JSON
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-        
-        if (jsonData.length === 0) {
-          reject(new Error('Excel file is empty'));
-          return;
-        }
-        
-        // Get column names from the first row
-        const columns = (jsonData[0] as string[]).map(String);
-        
-        // Convert remaining rows to objects
-        const rows = jsonData.slice(1).map((row: any) => {
-          const obj: Record<string, any> = {};
-          (row as any[]).forEach((value, index) => {
-            if (index < columns.length) {
-              obj[columns[index]] = value;
-            }
-          });
-          return obj;
-        });
-        
-        resolve({
-          columns,
-          data: rows.slice(0, 100) // Limit to first 100 rows for sample data
-        });
-      } catch (error) {
-        reject(new Error(`Error parsing Excel file: ${error instanceof Error ? error.message : 'Unknown error'}`));
-      }
-    };
-    
-    reader.onerror = () => {
-      reject(new Error('Error reading Excel file'));
-    };
-    
-    reader.readAsArrayBuffer(file);
-  });
+    return result;
+  } catch (error) {
+    throw new Error(`Error parsing Excel file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 };
 
 /**

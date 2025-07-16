@@ -2,6 +2,11 @@ import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Container, CssBaseline, CircularProgress, Box } from '@mui/material';
 
+// Error boundary components
+import ErrorBoundaryProvider from './components/common/ErrorBoundaryProvider';
+import RouteErrorBoundary from './components/common/RouteErrorBoundary';
+import { AsyncErrorBoundary } from './components/common/AsyncErrorBoundary';
+
 // Authentication route guards
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import PublicRoute from './components/auth/PublicRoute';
@@ -37,8 +42,10 @@ const AppRouter: React.FC = () => {
   return (
     <BrowserRouter>
       <CssBaseline />
-      <Suspense fallback={<LoadingSpinner />}>
-        <Routes>
+      <ErrorBoundaryProvider>
+        <RouteErrorBoundary>
+          <Suspense fallback={<LoadingSpinner />}>
+            <Routes>
             {/* Homepage as default route - public */}
             <Route path="/" element={
               <PublicRoute>
@@ -73,65 +80,83 @@ const AppRouter: React.FC = () => {
             {/* Data Formatter routes - protected */}
             <Route path="/data-formatter" element={
               <ProtectedRoute>
-                <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-                  <App />
-                </Container>
+                <AsyncErrorBoundary>
+                  <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+                    <App />
+                  </Container>
+                </AsyncErrorBoundary>
               </ProtectedRoute>
             } />
             <Route path="/data-formatter-react" element={
               <ProtectedRoute>
-                <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-                  <App />
-                </Container>
+                <AsyncErrorBoundary>
+                  <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+                    <App />
+                  </Container>
+                </AsyncErrorBoundary>
               </ProtectedRoute>
             } />
             
             {/* Response Time Analyzer route - protected */}
             <Route path="/response-time-analyzer" element={
               <ProtectedRoute>
-                <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-                  <ResponseTimeAnalyzerContainer />
-                </Container>
+                <AsyncErrorBoundary>
+                  <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+                    <ResponseTimeAnalyzerContainer />
+                  </Container>
+                </AsyncErrorBoundary>
               </ProtectedRoute>
             } />
             
             {/* Fire Map Pro routes - protected, full screen */}
             <Route path="/fire-map-pro" element={
               <ProtectedRoute>
-                <FireMapProContainer mode="create" />
+                <AsyncErrorBoundary>
+                  <FireMapProContainer mode="create" />
+                </AsyncErrorBoundary>
               </ProtectedRoute>
             } />
             <Route path="/fire-map-pro-react" element={
               <ProtectedRoute>
-                <FireMapProContainer mode="create" />
+                <AsyncErrorBoundary>
+                  <FireMapProContainer mode="create" />
+                </AsyncErrorBoundary>
               </ProtectedRoute>
             } />
             
             {/* Water Supply Coverage route - protected, full implementation */}
             <Route path="/water-supply-coverage" element={
               <ProtectedRoute>
-                <WaterSupplyCoverageContainer mode="analysis" />
+                <AsyncErrorBoundary>
+                  <WaterSupplyCoverageContainer mode="analysis" />
+                </AsyncErrorBoundary>
               </ProtectedRoute>
             } />
             
             {/* ISO Credit Calculator route - protected, full screen */}
             <Route path="/iso-credit-calculator" element={
               <ProtectedRoute>
-                <ISOCreditContainer mode="assessment" />
+                <AsyncErrorBoundary>
+                  <ISOCreditContainer mode="assessment" />
+                </AsyncErrorBoundary>
               </ProtectedRoute>
             } />
             
             {/* Station Coverage Optimizer route - protected, full screen */}
             <Route path="/station-coverage-optimizer" element={
               <ProtectedRoute>
-                <StationCoverageContainer mode="analysis" />
+                <AsyncErrorBoundary>
+                  <StationCoverageContainer mode="analysis" />
+                </AsyncErrorBoundary>
               </ProtectedRoute>
             } />
             
             {/* Legacy Tank Zone Coverage route - protected, redirect to new tool */}
             <Route path="/tank-zone-coverage" element={
               <ProtectedRoute>
-                <WaterSupplyCoverageContainer mode="analysis" />
+                <AsyncErrorBoundary>
+                  <WaterSupplyCoverageContainer mode="analysis" />
+                </AsyncErrorBoundary>
               </ProtectedRoute>
             } />
             
@@ -146,8 +171,10 @@ const AppRouter: React.FC = () => {
                 </Container>
               </PublicRoute>
             } />
-          </Routes>
-      </Suspense>
+            </Routes>
+          </Suspense>
+        </RouteErrorBoundary>
+      </ErrorBoundaryProvider>
     </BrowserRouter>
   );
 };
