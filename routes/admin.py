@@ -459,6 +459,30 @@ def update_department(dept_id):
         logger.error(f"Error updating department: {str(e)}")
         return jsonify({'error': 'Failed to update department'}), 500
 
+# Debug endpoint for admin API testing
+@bp.route('/api/debug/test', methods=['GET'])
+def test_admin_api():
+    """Debug endpoint to test admin API connectivity"""
+    try:
+        from flask_login import current_user
+        return jsonify({
+            'success': True,
+            'message': 'Admin API is working',
+            'authenticated': current_user.is_authenticated,
+            'user_id': current_user.id if current_user.is_authenticated else None,
+            'user_email': current_user.email if current_user.is_authenticated else None,
+            'user_role': current_user.role if current_user.is_authenticated else None,
+            'is_admin': current_user.is_admin() if current_user.is_authenticated else False,
+            'is_super_admin': current_user.is_super_admin() if current_user.is_authenticated else False,
+            'timestamp': datetime.utcnow().isoformat()
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'message': 'Admin API test failed'
+        }), 500
+
 # Analytics API Endpoints
 @bp.route('/api/analytics/overview', methods=['GET'])
 @login_required
