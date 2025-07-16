@@ -1691,41 +1691,6 @@ def create_app(config_name='default'):
     def server_error(e):
         return jsonify({'error': 'Internal server error'}), 500
     
-    # Direct admin debug endpoint that bypasses blueprint routing
-    @app.route('/direct-admin-debug')
-    def direct_admin_debug():
-        """Direct admin debug endpoint - bypasses blueprint routing"""
-        try:
-            from flask_login import current_user
-            from database import User, Department
-            from datetime import datetime
-            
-            # Get admin user count
-            admin_count = User.query.filter(
-                (User.role == 'admin') | (User.role == 'super_admin')
-            ).count()
-            
-            return jsonify({
-                'success': True,
-                'message': 'Direct admin debug endpoint working',
-                'authenticated': current_user.is_authenticated,
-                'user_id': current_user.id if current_user.is_authenticated else None,
-                'user_email': current_user.email if current_user.is_authenticated else None,
-                'user_role': current_user.role if current_user.is_authenticated else None,
-                'is_admin': current_user.is_admin() if current_user.is_authenticated else False,
-                'is_super_admin': current_user.is_super_admin() if current_user.is_authenticated else False,
-                'admin_users_count': admin_count,
-                'timestamp': datetime.utcnow().isoformat(),
-                'note': 'This endpoint bypasses blueprint routing'
-            })
-        except Exception as e:
-            return jsonify({
-                'success': False,
-                'error': str(e),
-                'message': 'Direct admin debug failed',
-                'timestamp': datetime.utcnow().isoformat()
-            }), 500
-
     return app
 
 # Function to create a default super admin user
@@ -1788,32 +1753,33 @@ def create_default_admin():
         logger.error(f"Failed to create default admin user: {str(e)}")
         logger.error(traceback.format_exc())
 
-# Create app instance for running directly
-try:
-    # Ensure fixes are applied
-    logger.info("Creating application with deployment fixes...")
-    app = create_app(os.getenv('FLASK_ENV', 'development'))
-    
-    # Fix database tables after app creation
-    fix_deployment.fix_database_tables(app, db)
-    
-    # Create default admin user if necessary
-    create_default_admin()
-    
-    logger.info("Application created successfully with all fixes applied")
-except Exception as e:
-    logger.critical(f"Failed to create application with fixes: {str(e)}")
-    logger.critical(traceback.format_exc())
-    # Create a basic app without fixes for emergency access
-    app = Flask(__name__)
-    
-    @app.route('/')
-    def emergency_home():
-        return "Emergency mode - application failed to start properly. Check logs."
-    
-    @app.route('/error')
-    def error_details():
-        return f"Error: {str(e)}"
+# Create app instance for running directly (only when script is run directly)
+if __name__ == "__main__":
+    try:
+        # Ensure fixes are applied
+        logger.info("Creating application with deployment fixes...")
+        app = create_app(os.getenv('FLASK_ENV', 'development'))
+        
+        # Fix database tables after app creation
+        fix_deployment.fix_database_tables(app, db)
+        
+        # Create default admin user if necessary
+        create_default_admin()
+        
+        logger.info("Application created successfully with all fixes applied")
+    except Exception as e:
+        logger.critical(f"Failed to create application with fixes: {str(e)}")
+        logger.critical(traceback.format_exc())
+        # Create a basic app without fixes for emergency access
+        app = Flask(__name__)
+        
+        @app.route('/')
+        def emergency_home():
+            return "Emergency mode - application failed to start properly. Check logs."
+        
+        @app.route('/error')
+        def error_details():
+            return f"Error: {str(e)}"
 
 if __name__ == "__main__":
     # Run the application
