@@ -30,11 +30,13 @@ import HistoryIcon from '@mui/icons-material/History';
 import BusinessIcon from '@mui/icons-material/Business';
 import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import VerifiedIcon from '@mui/icons-material/Verified';
+import Share from '@mui/icons-material/Share';
 import useTemplateSync from '@/hooks/useTemplateSync';
 import { MappingTemplate } from './FieldMappingContainer';
 import { TemplateService } from '@/services/templateService';
 import { FieldMappingTemplate, TemplateSuggestion, FieldMapping, SampleData } from '@/types/formatter';
 import { seedVendorTemplates } from '@/services/vendorTemplates';
+import TemplateSharing from './TemplateSharing';
 
 interface TemplateManagerProps {
   currentTemplate: MappingTemplate;
@@ -68,6 +70,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
   // Dialog states
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [loadDialogOpen, setLoadDialogOpen] = useState(false);
+  const [sharingDialogOpen, setSharingDialogOpen] = useState(false);
   
   // Template name in save dialog
   const [templateName, setTemplateName] = useState(currentTemplate.name);
@@ -378,6 +381,15 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
     
     return `${toolName} Mapping Template`;
   };
+
+  // Handle template import from sharing
+  const handleTemplateImported = (importedTemplates: FieldMappingTemplate[]) => {
+    // Refresh templates list to include imported templates
+    const storedTemplates = loadTemplates();
+    setTemplates(storedTemplates);
+    
+    console.log(`📥 Imported ${importedTemplates.length} templates successfully`);
+  };
   
   return (
     <>
@@ -427,6 +439,14 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
         }}>
           <AutoAwesome fontSize="small" sx={{ mr: 1 }} />
           Browse Template Library
+        </MenuItem>
+        <MenuItem onClick={() => {
+          setSharingDialogOpen(true);
+          const storedTemplates = loadTemplates();
+          setTemplates(storedTemplates);
+        }}>
+          <Share fontSize="small" sx={{ mr: 1 }} />
+          Share & Collaborate
         </MenuItem>
       </Menu>
       
@@ -852,6 +872,17 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
           <Button onClick={() => setLoadDialogOpen(false)}>Cancel</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Template Sharing Dialog */}
+      <TemplateSharing
+        open={sharingDialogOpen}
+        onClose={() => setSharingDialogOpen(false)}
+        currentTemplate={currentTemplate}
+        allTemplates={templates}
+        onTemplateImported={handleTemplateImported}
+        departmentName={departmentName || 'Unknown Department'}
+        contactEmail={undefined}
+      />
     </>
   );
 };
