@@ -68,7 +68,7 @@ class SecurityHeadersMiddleware:
             # Development CSP - more permissive for development tools
             script_nonce = f"'nonce-{nonce}'" if nonce else ""
             style_nonce = f"'nonce-{style_nonce}'" if style_nonce else ""
-            script_src = f"script-src 'self' {script_nonce} 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net"
+            script_src = f"script-src 'self' 'strict-dynamic' {script_nonce} 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net"
             style_src = f"style-src 'self' {style_nonce} 'unsafe-inline' https://fonts.googleapis.com"
             
             csp_directives = [
@@ -89,7 +89,8 @@ class SecurityHeadersMiddleware:
             script_nonce = f"'nonce-{nonce}'" if nonce else ""
             style_nonce = f"'nonce-{style_nonce}'" if style_nonce else ""
             # Allow 'unsafe-inline' for styles and Google Fonts for Material-UI
-            script_src = f"script-src 'self' {script_nonce}"
+            # Add 'strict-dynamic' to allow dynamic imports for React lazy loading
+            script_src = f"script-src 'self' 'strict-dynamic' {script_nonce}"
             # Material-UI bundles styles at build time without nonces, so skip nonces for styles
             # Allow trusted CDNs for Bootstrap, Font Awesome, and Google Fonts
             style_src = f"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com data:"
