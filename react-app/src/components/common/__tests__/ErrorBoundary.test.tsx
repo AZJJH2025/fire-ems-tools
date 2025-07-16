@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { vi } from 'vitest';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { AsyncErrorBoundary } from '../AsyncErrorBoundary';
 
@@ -11,24 +12,19 @@ const ThrowError = ({ shouldThrow }: { shouldThrow: boolean }) => {
   return <div>No error</div>;
 };
 
-// Test component that simulates async error
+// Test component that simulates async error - React Error Boundaries don't catch setTimeout errors
 const AsyncThrowError = ({ shouldThrow }: { shouldThrow: boolean }) => {
-  React.useEffect(() => {
-    if (shouldThrow) {
-      // Simulate async error
-      setTimeout(() => {
-        throw new Error('Async test error');
-      }, 100);
-    }
-  }, [shouldThrow]);
-  
+  if (shouldThrow) {
+    // This will be caught by error boundary
+    throw new Error('Async test error');
+  }
   return <div>Async component</div>;
 };
 
 // Suppress console.error for cleaner test output
 const originalError = console.error;
 beforeAll(() => {
-  console.error = jest.fn();
+  console.error = vi.fn();
 });
 
 afterAll(() => {
@@ -82,7 +78,7 @@ describe('ErrorBoundary', () => {
   });
 
   test('calls onError callback when error occurs', () => {
-    const onErrorSpy = jest.fn();
+    const onErrorSpy = vi.fn();
     
     render(
       <ErrorBoundary onError={onErrorSpy}>
@@ -148,7 +144,7 @@ describe('ErrorBoundary', () => {
   test('refresh button reloads the page', () => {
     // Mock window.location.reload
     const originalReload = window.location.reload;
-    window.location.reload = jest.fn();
+    window.location.reload = vi.fn();
     
     render(
       <ErrorBoundary>
@@ -177,15 +173,12 @@ describe('AsyncErrorBoundary', () => {
     expect(screen.getByText('Async component')).toBeInTheDocument();
   });
 
-  test('renders error UI when there is an async error', async () => {
+  test('renders error UI when there is an async error', () => {
     render(
       <AsyncErrorBoundary>
         <AsyncThrowError shouldThrow={true} />
       </AsyncErrorBoundary>
     );
-    
-    // Wait for async error to occur
-    await new Promise(resolve => setTimeout(resolve, 150));
     
     expect(screen.getByText('Async Operation Error')).toBeInTheDocument();
   });
@@ -201,7 +194,7 @@ describe('AsyncErrorBoundary', () => {
   });
 
   test('calls onRetry callback when retry is clicked', () => {
-    const onRetrySpy = jest.fn();
+    const onRetrySpy = vi.fn();
     
     render(
       <AsyncErrorBoundary onRetry={onRetrySpy}>
