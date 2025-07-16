@@ -183,7 +183,7 @@ export const useTemplateSharing = (
         templates: [shareableTemplate.template],
         metadata: {
           totalTemplates: 1,
-          averageQuality: shareableTemplate.template.metadata.qualityScore || 0,
+          averageQuality: shareableTemplate.template.metadata?.qualityScore || 0,
           cadVendors: shareableTemplate.template.cadVendor ? [shareableTemplate.template.cadVendor] : [],
           tools: [shareableTemplate.template.targetTool]
         }

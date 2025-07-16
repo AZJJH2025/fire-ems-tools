@@ -185,7 +185,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
           cadVendor || undefined
         );
         
-        console.log(`✅ Template saved with quality score: ${savedTemplate.metadata.qualityScore}%`);
+        console.log(`✅ Template saved with quality score: ${savedTemplate.metadata?.qualityScore || 0}%`);
         console.log(`🏷️ Auto-generated tags: ${savedTemplate.metadata.tags?.join(', ')}`);
       } else {
         // Fallback to legacy template save

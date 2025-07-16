@@ -272,7 +272,7 @@ export const getTemplatesForTool = (targetTool: string): FieldMappingTemplate[] 
  */
 export const getCertifiedTemplates = (): FieldMappingTemplate[] => {
   return vendorTemplates.filter(template => 
-    template.metadata.tags?.includes('certified') && template.isPublic
+    template.metadata?.tags?.includes('certified') && template.isPublic
   );
 };
 

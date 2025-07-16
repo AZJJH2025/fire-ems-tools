@@ -113,7 +113,7 @@ export class TemplateService {
       if (similarity.score >= 30) { // Only suggest if 30%+ similarity
         // Boost certified vendor templates in ranking
         let adjustedScore = similarity.score;
-        if (template.metadata.tags?.includes('certified') && template.isPublic) {
+        if (template.metadata?.tags?.includes('certified') && template.isPublic) {
           adjustedScore += 10; // 10 point boost for certified templates
           console.log(`🏅 Certified template boost: "${template.name}" ${similarity.score}% → ${adjustedScore}%`);
         }
@@ -131,8 +131,8 @@ export class TemplateService {
     // Sort by adjusted similarity score (highest first), with certified templates prioritized
     suggestions.sort((a, b) => {
       // First priority: certified templates
-      const aCertified = a.template.metadata.tags?.includes('certified') ? 1 : 0;
-      const bCertified = b.template.metadata.tags?.includes('certified') ? 1 : 0;
+      const aCertified = a.template.metadata?.tags?.includes('certified') ? 1 : 0;
+      const bCertified = b.template.metadata?.tags?.includes('certified') ? 1 : 0;
       
       if (aCertified !== bCertified) {
         return bCertified - aCertified; // Certified first
@@ -143,7 +143,7 @@ export class TemplateService {
     });
     
     console.log(`🔍 Found ${suggestions.length} template suggestions for tool: ${targetTool}`);
-    console.log(`🏅 Certified templates: ${suggestions.filter(s => s.template.metadata.tags?.includes('certified')).length}`);
+    console.log(`🏅 Certified templates: ${suggestions.filter(s => s.template.metadata?.tags?.includes('certified')).length}`);
     return suggestions.slice(0, 8); // Return top 8 suggestions (more room for certified templates)
   }
 

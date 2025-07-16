@@ -687,6 +687,6 @@ export const getTemplateById = (id: string): ReportTemplate | undefined => {
  */
 export const getTemplatesForTool = (toolId: string): ReportTemplate[] => {
   return reportTemplates.filter(template => 
-    template.metadata.compatibleTools.includes(toolId)
+    template.metadata?.compatibleTools?.includes(toolId)
   );
 };

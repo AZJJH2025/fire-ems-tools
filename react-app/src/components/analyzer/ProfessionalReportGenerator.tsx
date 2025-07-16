@@ -301,8 +301,8 @@ const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorProps> = 
                 </Typography>
                 
                 <Box display="flex" gap={1} mb={2} flexWrap="wrap">
-                  <Chip label={`${template.metadata.estimatedPages} pages`} size="small" variant="outlined" />
-                  <Chip label={template.metadata.professionalLevel} size="small" variant="outlined" />
+                  <Chip label={`${template.metadata?.estimatedPages} pages`} size="small" variant="outlined" />
+                  <Chip label={template.metadata?.professionalLevel} size="small" variant="outlined" />
                   <Chip label={`${template.sections.length} sections`} size="small" variant="outlined" />
                 </Box>
                 
@@ -577,22 +577,22 @@ const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorProps> = 
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="body2">
-                    <strong>Pages:</strong> {generatedReport.metadata.totalPages}
+                    <strong>Pages:</strong> {generatedReport.metadata?.totalPages}
                   </Typography>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="body2">
-                    <strong>Word Count:</strong> {generatedReport.metadata.wordCount.toLocaleString()}
+                    <strong>Word Count:</strong> {generatedReport.metadata?.wordCount?.toLocaleString()}
                   </Typography>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="body2">
-                    <strong>Data Quality:</strong> {generatedReport.metadata.dataQuality}
+                    <strong>Data Quality:</strong> {generatedReport.metadata?.dataQuality}
                   </Typography>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="body2">
-                    <strong>Completeness:</strong> {generatedReport.metadata.completeness}%
+                    <strong>Completeness:</strong> {generatedReport.metadata?.completeness}%
                   </Typography>
                 </Grid>
               </Grid>

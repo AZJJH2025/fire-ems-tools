@@ -89,7 +89,7 @@ export class TemplateSharingService {
     const cadVendors = [...new Set(cleanedTemplates.map(t => t.cadVendor).filter(Boolean))];
     const tools = [...new Set(cleanedTemplates.map(t => t.targetTool).filter(Boolean))];
     const averageQuality = Math.round(
-      cleanedTemplates.reduce((sum, t) => sum + (t.metadata.qualityScore || 0), 0) / cleanedTemplates.length
+      cleanedTemplates.reduce((sum, t) => sum + (t.metadata?.qualityScore || 0), 0) / cleanedTemplates.length
     );
 
     const exportData: TemplateExportData = {
@@ -142,7 +142,7 @@ export class TemplateSharingService {
 
     for (const template of exportData.templates) {
       // Quality filter
-      if (onlyHighQuality && (template.metadata.qualityScore || 0) < minimumQuality) {
+      if (onlyHighQuality && (template.metadata?.qualityScore || 0) < minimumQuality) {
         skipped.push(template);
         continue;
       }
@@ -169,7 +169,7 @@ export class TemplateSharingService {
           // Mark as imported
           metadata: {
             ...template.metadata,
-            tags: [...(template.metadata.tags || []), 'imported'],
+            tags: [...(template.metadata?.tags || []), 'imported'],
             importedAt: new Date().toISOString(),
             importedFrom: exportData.exportedBy
           }
@@ -292,7 +292,7 @@ export class TemplateSharingService {
         isPublic: true,
         metadata: {
           ...template.metadata,
-          tags: [...(template.metadata.tags || []), 'community', 'shared'],
+          tags: [...(template.metadata?.tags || []), 'community', 'shared'],
           sharedAt: new Date().toISOString()
         }
       },
@@ -379,7 +379,7 @@ export class TemplateSharingService {
 
       // Text search
       if (query) {
-        const searchText = `${template.name} ${template.description} ${template.departmentName} ${template.metadata.tags?.join(' ')}`.toLowerCase();
+        const searchText = `${template.name} ${template.description} ${template.departmentName} ${template.metadata?.tags?.join(' ')}`.toLowerCase();
         if (!searchText.includes(query.toLowerCase())) {
           return false;
         }
@@ -428,7 +428,7 @@ export class TemplateSharingService {
       name: `${newTemplate.name} (Imported)`,
       metadata: {
         ...newTemplate.metadata,
-        tags: [...(newTemplate.metadata.tags || []), 'imported', 'conflict-resolved'],
+        tags: [...(newTemplate.metadata?.tags || []), 'imported', 'conflict-resolved'],
         originalName: newTemplate.name,
         conflictResolvedAt: new Date().toISOString()
       }

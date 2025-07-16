@@ -351,7 +351,7 @@ const TemplateSharing: React.FC<TemplateSharingProps> = ({
           templates: [shareableTemplate.template],
           metadata: {
             totalTemplates: 1,
-            averageQuality: shareableTemplate.template.metadata.qualityScore || 0,
+            averageQuality: shareableTemplate.template.metadata?.qualityScore || 0,
             cadVendors: shareableTemplate.template.cadVendor ? [shareableTemplate.template.cadVendor] : [],
             tools: [shareableTemplate.template.targetTool]
           }
@@ -431,8 +431,8 @@ const TemplateSharing: React.FC<TemplateSharingProps> = ({
                       </Typography>
                       <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
                         <Chip 
-                          label={`${template.metadata.qualityScore || 0}% quality`}
-                          color={getQualityColor(template.metadata.qualityScore || 0)}
+                          label={`${template.metadata?.qualityScore || 0}% quality`}
+                          color={getQualityColor(template.metadata?.qualityScore || 0)}
                           size="small"
                         />
                         {template.cadVendor && (
@@ -541,8 +541,8 @@ const TemplateSharing: React.FC<TemplateSharingProps> = ({
                         secondary={template.description}
                       />
                       <Chip 
-                        label={`${template.metadata.qualityScore || 0}%`}
-                        color={getQualityColor(template.metadata.qualityScore || 0)}
+                        label={`${template.metadata?.qualityScore || 0}%`}
+                        color={getQualityColor(template.metadata?.qualityScore || 0)}
                         size="small"
                       />
                     </ListItem>
@@ -619,8 +619,8 @@ const TemplateSharing: React.FC<TemplateSharingProps> = ({
                     
                     <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
                       <Chip 
-                        label={`${shareableTemplate.template.metadata.qualityScore || 0}% quality`}
-                        color={getQualityColor(shareableTemplate.template.metadata.qualityScore || 0)}
+                        label={`${shareableTemplate.template.metadata?.qualityScore || 0}% quality`}
+                        color={getQualityColor(shareableTemplate.template.metadata?.qualityScore || 0)}
                         size="small"
                       />
                       {shareableTemplate.template.cadVendor && (
