@@ -172,11 +172,11 @@ export class SecureExcelParser {
     
     // Extract columns and data
     const columns = this.extractColumns(jsonData);
-    const data = this.extractData(jsonData, columns);
+    const processedData = this.extractData(jsonData, columns);
     
     return {
       columns,
-      data
+      data: processedData
     };
   }
   
