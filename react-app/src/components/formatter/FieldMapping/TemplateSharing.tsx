@@ -59,17 +59,21 @@ import { MappingTemplate } from './FieldMappingContainer';
 
 // Helper function to convert MappingTemplate to FieldMappingTemplate
 const convertMappingTemplateToFieldMappingTemplate = (template: MappingTemplate): FieldMappingTemplate => {
+  // Safely handle missing or undefined properties
+  const safeMappings = template.mappings || [];
+  const safeLastModified = template.lastModified || Date.now();
+  
   return {
-    id: template.id,
-    name: template.name,
+    id: template.id || `template_${Date.now()}`,
+    name: template.name || 'Untitled Template',
     description: template.description || '',
     departmentName: undefined,
     cadVendor: undefined,
-    targetTool: template.toolId,
-    fieldMappings: template.mappings,
+    targetTool: template.toolId || 'unknown',
+    fieldMappings: safeMappings,
     sourceFieldPattern: {
-      fieldNames: template.mappings.map(m => m.sourceField),
-      fieldCount: template.mappings.length,
+      fieldNames: safeMappings.map(m => m.sourceField || ''),
+      fieldCount: safeMappings.length,
       hasHeaderRow: true,
       commonPatterns: [],
       cadVendorSignature: ''
@@ -83,8 +87,8 @@ const convertMappingTemplateToFieldMappingTemplate = (template: MappingTemplate)
       sampleValues: {},
       tags: []
     },
-    createdAt: new Date(template.lastModified).toISOString(),
-    lastUsed: new Date(template.lastModified).toISOString(),
+    createdAt: new Date(safeLastModified).toISOString(),
+    lastUsed: new Date(safeLastModified).toISOString(),
     useCount: 0,
     isPublic: true
   };
@@ -158,10 +162,30 @@ const TemplateSharing: React.FC<TemplateSharingProps> = ({
 
     setExporting(true);
     try {
+      // Safely filter and convert templates
+      const templatesToExport = allTemplates.filter(template => 
+        template && template.id && selectedTemplates.includes(template.id)
+      );
+      
+      if (templatesToExport.length === 0) {
+        alert('No valid templates found to export');
+        return;
+      }
+      
       // Convert MappingTemplate to FieldMappingTemplate for export
-      const convertedTemplates = allTemplates
-        .filter(template => selectedTemplates.includes(template.id))
-        .map(convertMappingTemplateToFieldMappingTemplate);
+      const convertedTemplates = templatesToExport.map(template => {
+        try {
+          return convertMappingTemplateToFieldMappingTemplate(template);
+        } catch (error) {
+          console.error('Error converting template:', template.name, error);
+          return null;
+        }
+      }).filter(Boolean); // Remove null values
+      
+      if (convertedTemplates.length === 0) {
+        alert('Failed to convert templates for export');
+        return;
+      }
       
       // Store converted templates temporarily for export
       const existingTemplates = TemplateService.getTemplates();
@@ -202,10 +226,30 @@ const TemplateSharing: React.FC<TemplateSharingProps> = ({
     }
 
     try {
+      // Safely filter and convert templates
+      const templatesToShare = allTemplates.filter(template => 
+        template && template.id && selectedTemplates.includes(template.id)
+      );
+      
+      if (templatesToShare.length === 0) {
+        alert('No valid templates found to share');
+        return;
+      }
+      
       // Convert MappingTemplate to FieldMappingTemplate for sharing
-      const convertedTemplates = allTemplates
-        .filter(template => selectedTemplates.includes(template.id))
-        .map(convertMappingTemplateToFieldMappingTemplate);
+      const convertedTemplates = templatesToShare.map(template => {
+        try {
+          return convertMappingTemplateToFieldMappingTemplate(template);
+        } catch (error) {
+          console.error('Error converting template for sharing:', template.name, error);
+          return null;
+        }
+      }).filter(Boolean); // Remove null values
+      
+      if (convertedTemplates.length === 0) {
+        alert('Failed to convert templates for sharing');
+        return;
+      }
       
       // Store converted templates temporarily for sharing
       const existingTemplates = TemplateService.getTemplates();
@@ -216,7 +260,7 @@ const TemplateSharing: React.FC<TemplateSharingProps> = ({
       setShareLink(link);
     } catch (error) {
       console.error('Failed to generate share link:', error);
-      alert('Failed to generate share link');
+      alert('Failed to generate share link: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
 
