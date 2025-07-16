@@ -1,1 +1,0 @@
-import{j as s}from"./index-bJiMa1ne.js";import{c as o}from"./Typography-TJq5Ci0H.js";const c=o(s.jsx("path",{d:"M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"}));export{c as M};

@@ -1,1 +1,0 @@
-import{j as s}from"./index-BF8t0v4A.js";import{c as o}from"./Typography-13spNxpp.js";const c=o(s.jsx("path",{d:"M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"}));export{c as M};
