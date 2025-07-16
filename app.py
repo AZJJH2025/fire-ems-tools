@@ -1753,33 +1753,32 @@ def create_default_admin():
         logger.error(f"Failed to create default admin user: {str(e)}")
         logger.error(traceback.format_exc())
 
-# Create app instance for running directly (only when script is run directly)
-if __name__ == "__main__":
-    try:
-        # Ensure fixes are applied
-        logger.info("Creating application with deployment fixes...")
-        app = create_app(os.getenv('FLASK_ENV', 'development'))
-        
-        # Fix database tables after app creation
-        fix_deployment.fix_database_tables(app, db)
-        
-        # Create default admin user if necessary
-        create_default_admin()
-        
-        logger.info("Application created successfully with all fixes applied")
-    except Exception as e:
-        logger.critical(f"Failed to create application with fixes: {str(e)}")
-        logger.critical(traceback.format_exc())
-        # Create a basic app without fixes for emergency access
-        app = Flask(__name__)
-        
-        @app.route('/')
-        def emergency_home():
-            return "Emergency mode - application failed to start properly. Check logs."
-        
-        @app.route('/error')
-        def error_details():
-            return f"Error: {str(e)}"
+# Create app instance for production deployment (WSGI)
+try:
+    # Ensure fixes are applied
+    logger.info("Creating application with deployment fixes...")
+    app = create_app(os.getenv('FLASK_ENV', 'development'))
+    
+    # Fix database tables after app creation
+    fix_deployment.fix_database_tables(app, db)
+    
+    # Create default admin user if necessary
+    create_default_admin()
+    
+    logger.info("Application created successfully with all fixes applied")
+except Exception as e:
+    logger.critical(f"Failed to create application with fixes: {str(e)}")
+    logger.critical(traceback.format_exc())
+    # Create a basic app without fixes for emergency access
+    app = Flask(__name__)
+    
+    @app.route('/')
+    def emergency_home():
+        return "Emergency mode - application failed to start properly. Check logs."
+    
+    @app.route('/error')
+    def error_details():
+        return f"Error: {str(e)}"
 
 if __name__ == "__main__":
     # Run the application
