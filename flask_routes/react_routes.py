@@ -58,16 +58,20 @@ def register_react_routes(app):
     def root_domain():
         """Serve the root domain with HSTS headers for preloading eligibility"""
         from flask import render_template, make_response, request, redirect, url_for
+        from utils.asset_utils import get_main_asset_file
+        
+        # Get the current main asset file dynamically
+        main_asset = get_main_asset_file()
         
         # If request is for root domain without www, serve directly (don't redirect)
         # This ensures HSTS headers are present on the root domain response
         if request.host == 'fireems.ai':
-            response = make_response(render_template('react_app.html'))
+            response = make_response(render_template('react_app.html', main_asset=main_asset))
             response.headers['X-Root-Domain-Handler'] = 'Flask-App-Direct'
             return response
         
         # For www.fireems.ai, serve normally
-        response = make_response(render_template('react_app.html'))
+        response = make_response(render_template('react_app.html', main_asset=main_asset))
         response.headers['X-Root-Domain-Handler'] = 'Flask-App-WWW'
         return response
 
@@ -77,7 +81,12 @@ def register_react_routes(app):
     def react_app(subpath=None):
         """Serve the modern React application for all /app/* routes"""
         from flask import render_template
-        return render_template('react_app.html')
+        from utils.asset_utils import get_main_asset_file
+        
+        # Get the current main asset file dynamically
+        main_asset = get_main_asset_file()
+        
+        return render_template('react_app.html', main_asset=main_asset)
     
     # Test route to verify route registration
     @app.route('/test-react-routes')
