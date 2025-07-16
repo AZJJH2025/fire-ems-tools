@@ -40,27 +40,20 @@ def react_app(path=''):
     """
     Serve the React application for all /app routes
     This includes Fire Map Pro, Data Formatter, Response Time Analyzer, etc.
+    Uses template system with CSP nonce injection for security.
     """
     try:
-        react_build_dir = get_react_build_dir()
-        index_path = os.path.join(react_build_dir, 'index.html')
+        from flask import render_template
+        from utils.asset_utils import get_main_asset_file
         
-        if os.path.exists(index_path):
-            logger.info(f"Serving React app from: {react_build_dir}")
-            
-            # Read the HTML and fix asset paths
-            with open(index_path, 'r') as f:
-                html_content = f.read()
-            
-            # Replace /assets/ with /app/assets/ in the HTML
-            html_content = html_content.replace('src="/assets/', 'src="/app/assets/')
-            html_content = html_content.replace('href="/assets/', 'href="/app/assets/')
-            
-            from flask import Response
-            return Response(html_content, mimetype='text/html')
-        else:
-            logger.error(f"React build not found at: {react_build_dir}")
-            abort(404)
+        # Get the current main asset file dynamically
+        main_asset = get_main_asset_file()
+        
+        logger.info(f"Serving React app with asset: {main_asset}")
+        
+        # Use template system with nonce injection and dynamic asset detection
+        return render_template('react_app.html', main_asset=main_asset)
+        
     except Exception as e:
         logger.error(f"Error serving React app: {str(e)}")
         abort(500)
