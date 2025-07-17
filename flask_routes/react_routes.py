@@ -11,14 +11,26 @@ def register_react_routes(app):
     @app.route('/data-formatter')
     def data_formatter():
         """Serve the React Data Formatter tool"""
-        from flask import send_file
-        return send_file('static/react-data-formatter/index.html')
+        from flask import render_template
+        from utils.asset_utils import get_main_asset_file
+        
+        # Get the current main asset file dynamically
+        main_asset = get_main_asset_file()
+        
+        # Use template system with nonce injection and dynamic asset detection
+        return render_template('react_app.html', main_asset=main_asset)
         
     @app.route('/data-formatter-react')
     def data_formatter_react():
         """Alternative route for the Data Formatter tool"""
-        from flask import send_file
-        return send_file('static/react-data-formatter/index.html')
+        from flask import render_template
+        from utils.asset_utils import get_main_asset_file
+        
+        # Get the current main asset file dynamically
+        main_asset = get_main_asset_file()
+        
+        # Use template system with nonce injection and dynamic asset detection
+        return render_template('react_app.html', main_asset=main_asset)
     
     @app.route('/response-time-analyzer')
     def response_time_analyzer():
@@ -44,12 +56,65 @@ def register_react_routes(app):
         # Use template system with nonce injection and dynamic asset detection
         return render_template('react_app.html', main_asset=main_asset)
     
-    # Temporarily disabled - using HTML template version instead
-    # @app.route('/fire-map-pro')
-    # def fire_map_pro():
-    #     """Serve the Fire Map Pro React application"""
-    #     from flask import send_file
-    #     return send_file('static/fire-map-pro-react/index.html')
+    @app.route('/fire-map-pro')
+    def fire_map_pro():
+        """Serve the Fire Map Pro React application"""
+        from flask import render_template
+        from utils.asset_utils import get_main_asset_file
+        
+        # Get the current main asset file dynamically
+        main_asset = get_main_asset_file()
+        
+        # Use template system with nonce injection and dynamic asset detection
+        return render_template('react_app.html', main_asset=main_asset)
+    
+    @app.route('/water-supply-coverage')
+    def water_supply_coverage():
+        """Serve the Water Supply Coverage tool"""
+        from flask import render_template
+        from utils.asset_utils import get_main_asset_file
+        
+        # Get the current main asset file dynamically
+        main_asset = get_main_asset_file()
+        
+        # Use template system with nonce injection and dynamic asset detection
+        return render_template('react_app.html', main_asset=main_asset)
+    
+    @app.route('/station-coverage-optimizer')
+    def station_coverage_optimizer():
+        """Serve the Station Coverage Optimizer tool"""
+        from flask import render_template
+        from utils.asset_utils import get_main_asset_file
+        
+        # Get the current main asset file dynamically
+        main_asset = get_main_asset_file()
+        
+        # Use template system with nonce injection and dynamic asset detection
+        return render_template('react_app.html', main_asset=main_asset)
+    
+    @app.route('/iso-credit-calculator')
+    def iso_credit_calculator():
+        """Serve the ISO Credit Calculator tool"""
+        from flask import render_template
+        from utils.asset_utils import get_main_asset_file
+        
+        # Get the current main asset file dynamically
+        main_asset = get_main_asset_file()
+        
+        # Use template system with nonce injection and dynamic asset detection
+        return render_template('react_app.html', main_asset=main_asset)
+    
+    @app.route('/tank-zone-coverage')
+    def tank_zone_coverage():
+        """Serve the Tank Zone Coverage tool (legacy route - redirects to Water Supply Coverage)"""
+        from flask import render_template
+        from utils.asset_utils import get_main_asset_file
+        
+        # Get the current main asset file dynamically
+        main_asset = get_main_asset_file()
+        
+        # Use template system with nonce injection and dynamic asset detection
+        return render_template('react_app.html', main_asset=main_asset)
     
     # Universal HSTS middleware - ensures HSTS headers on ALL responses
     @app.before_request  
