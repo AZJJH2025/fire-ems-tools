@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { configureStore } from '@reduxjs/toolkit';
-import { rootReducer } from '../store';
+import { rootReducer, RootState } from '../store';
 
 describe('Redux Store', () => {
   let store: ReturnType<typeof configureStore>;
@@ -12,7 +12,7 @@ describe('Redux Store', () => {
   });
 
   it('should create store with initial state', () => {
-    const state = store.getState();
+    const state = store.getState() as RootState;
     
     expect(state).toHaveProperty('formatter');
     expect(state).toHaveProperty('analyzer');
@@ -21,7 +21,7 @@ describe('Redux Store', () => {
   });
 
   it('should handle formatter actions', () => {
-    const initialState = store.getState();
+    const initialState = store.getState() as RootState;
     
     // Test data upload
     store.dispatch({
@@ -32,7 +32,7 @@ describe('Redux Store', () => {
       ]
     });
     
-    const newState = store.getState();
+    const newState = store.getState() as RootState;
     expect(newState.formatter.data).toHaveLength(2);
     expect(newState.formatter.data[0]).toEqual({ id: 1, name: 'Test Data' });
   });
@@ -48,7 +48,7 @@ describe('Redux Store', () => {
       payload: fieldMappings
     });
     
-    const state = store.getState();
+    const state = store.getState() as RootState;
     expect(state.formatter.mappings).toEqual(fieldMappings);
   });
 
@@ -63,7 +63,7 @@ describe('Redux Store', () => {
       payload: validationErrors
     });
     
-    const state = store.getState();
+    const state = store.getState() as RootState;
     expect(state.formatter.validationErrors).toEqual(validationErrors);
   });
 
@@ -82,8 +82,8 @@ describe('Redux Store', () => {
       payload: incidentData
     });
     
-    const state = store.getState();
-    expect(state.analyzer.data).toEqual(incidentData);
+    const state = store.getState() as RootState;
+    expect(state.analyzer.results).toEqual(incidentData);
   });
 
   it('should handle response time calculations', () => {
@@ -99,7 +99,7 @@ describe('Redux Store', () => {
       payload: responseTimeMetrics
     });
     
-    const state = store.getState();
+    const state = store.getState() as RootState;
     expect(state.analyzer.responseTimeMetrics).toEqual(responseTimeMetrics);
   });
 
@@ -121,7 +121,7 @@ describe('Redux Store', () => {
       payload: mapFeatures
     });
     
-    const state = store.getState();
+    const state = store.getState() as RootState;
     expect(state.fireMapPro.features).toEqual(mapFeatures);
   });
 
@@ -141,7 +141,7 @@ describe('Redux Store', () => {
       payload: hydrants
     });
     
-    const state = store.getState();
+    const state = store.getState() as RootState;
     expect(state.waterSupplyCoverage.hydrants).toEqual(hydrants);
   });
 
@@ -162,7 +162,7 @@ describe('Redux Store', () => {
       payload: tanks
     });
     
-    const state = store.getState();
+    const state = store.getState() as RootState;
     expect(state.waterSupplyCoverage.tanks).toEqual(tanks);
   });
 
@@ -172,7 +172,7 @@ describe('Redux Store', () => {
       payload: 'performance-metrics'
     });
     
-    const state = store.getState();
+    const state = store.getState() as RootState;
     expect(state.analyzer.ui.activeTab).toBe('performance-metrics');
   });
 
@@ -188,7 +188,7 @@ describe('Redux Store', () => {
       payload: error
     });
     
-    const state = store.getState();
+    const state = store.getState() as RootState;
     expect(state.formatter.error).toEqual(error);
   });
 
@@ -198,16 +198,16 @@ describe('Redux Store', () => {
       payload: true
     });
     
-    let state = store.getState();
-    expect(state.formatter.loading).toBe(true);
+    let state = store.getState() as RootState;
+    expect(state.formatter.processingStatus).toBe(true);
     
     store.dispatch({
       type: 'formatter/setLoading',
       payload: false
     });
     
-    state = store.getState();
-    expect(state.formatter.loading).toBe(false);
+    state = store.getState() as RootState;
+    expect(state.formatter.processingStatus).toBe(false);
   });
 
   it('should handle complex state updates', () => {
@@ -245,14 +245,14 @@ describe('Redux Store', () => {
       payload: transformedData
     });
     
-    const state = store.getState();
-    expect(state.formatter.data).toEqual(csvData);
+    const state = store.getState() as RootState;
+    expect(state.formatter.transformedData).toEqual(csvData);
     expect(state.formatter.mappings).toEqual(fieldMappings);
-    expect(state.analyzer.data).toEqual(transformedData);
+    expect(state.analyzer.results).toEqual(transformedData);
   });
 
   it('should maintain state immutability', () => {
-    const initialState = store.getState();
+    const initialState = store.getState() as RootState;
     const testData = [{ id: 1, name: 'Test' }];
     
     store.dispatch({
@@ -260,7 +260,7 @@ describe('Redux Store', () => {
       payload: testData
     });
     
-    const newState = store.getState();
+    const newState = store.getState() as RootState;
     
     // States should be different objects
     expect(newState).not.toBe(initialState);
@@ -283,9 +283,9 @@ describe('Redux Store', () => {
       store.dispatch(action);
     });
     
-    const state = store.getState();
-    expect(state.formatter.data).toEqual([{ id: 1 }]);
-    expect(state.formatter.loading).toBe(false);
-    expect(state.formatter.error).toBeNull();
+    const state = store.getState() as RootState;
+    expect(state.formatter.transformedData).toEqual([{ id: 1 }]);
+    expect(state.formatter.processingStatus).toBe('complete');
+    expect(state.formatter.validationErrors).toEqual([]);
   });
 });

@@ -1,18 +1,20 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import formatterReducer from './formatterSlice';
 import analyzerReducer from './analyzerSlice';
 import fireMapProReducer from './fireMapProSlice';
 import tankZoneCoverageReducer from './tankZoneCoverageSlice';
 import waterSupplyCoverageReducer from './waterSupplyCoverageSlice';
 
+export const rootReducer = combineReducers({
+  formatter: formatterReducer,
+  analyzer: analyzerReducer,
+  fireMapPro: fireMapProReducer,
+  tankZoneCoverage: tankZoneCoverageReducer, // Legacy support
+  waterSupplyCoverage: waterSupplyCoverageReducer,
+});
+
 export const store = configureStore({
-  reducer: {
-    formatter: formatterReducer,
-    analyzer: analyzerReducer,
-    fireMapPro: fireMapProReducer,
-    tankZoneCoverage: tankZoneCoverageReducer, // Legacy support
-    waterSupplyCoverage: waterSupplyCoverageReducer,
-  },
+  reducer: rootReducer,
 });
 
 // Make store accessible for debugging

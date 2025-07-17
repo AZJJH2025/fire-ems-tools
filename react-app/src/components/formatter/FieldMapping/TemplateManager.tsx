@@ -32,17 +32,16 @@ import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import Share from '@mui/icons-material/Share';
 import useTemplateSync from '@/hooks/useTemplateSync';
-import { MappingTemplate } from './FieldMappingContainer';
 import { TemplateService } from '@/services/templateService';
-import { FieldMappingTemplate, TemplateSuggestion, FieldMapping, SampleData } from '@/types/formatter';
+import { FieldFieldMappingTemplate, TemplateSuggestion, FieldMapping, SampleData } from '@/types/formatter';
 import { seedVendorTemplates } from '@/services/vendorTemplates';
 import TemplateSharing from './TemplateSharing';
 
 interface TemplateManagerProps {
-  currentTemplate: MappingTemplate;
-  setCurrentTemplate: (template: MappingTemplate) => void;
+  currentTemplate: FieldMappingTemplate;
+  setCurrentTemplate: (template: FieldMappingTemplate) => void;
   setTemplateDirty: (dirty: boolean) => void;
-  onTemplateApplied?: (template: MappingTemplate) => void;
+  onTemplateApplied?: (template: FieldMappingTemplate) => void;
   disabled?: boolean;
   // New template service integration props
   currentMappings?: FieldMapping[];
@@ -77,7 +76,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
   const [templateDescription, setTemplateDescription] = useState(currentTemplate.description || '');
   
   // Available templates
-  const [templates, setTemplates] = useState<MappingTemplate[]>([]);
+  const [templates, setTemplates] = useState<FieldMappingTemplate[]>([]);
   const [suggestions, setSuggestions] = useState<TemplateSuggestion[]>([]);
   
   // Enhanced template browsing state
@@ -189,7 +188,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
         console.log(`🏷️ Auto-generated tags: ${savedTemplate.metadata.tags?.join(', ')}`);
       } else {
         // Fallback to legacy template save
-        const updatedTemplate: MappingTemplate = {
+        const updatedTemplate: FieldMappingTemplate = {
           ...currentTemplate,
           name: templateName,
           description: templateDescription,
@@ -221,7 +220,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
   };
   
   // Load template
-  const handleLoadTemplate = (template: MappingTemplate) => {
+  const handleLoadTemplate = (template: FieldMappingTemplate) => {
     // Update current template
     setCurrentTemplate(template);
     
@@ -238,7 +237,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
   };
   
   // Apply field mapping template from TemplateService
-  const handleApplyFieldMappingTemplate = (template: FieldMappingTemplate) => {
+  const handleApplyFieldFieldMappingTemplate = (template: FieldFieldMappingTemplate) => {
     try {
       const appliedMappings = TemplateService.applyTemplate(template, sourceFields);
       if (onApplyFieldMappings) {
@@ -261,9 +260,9 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
   };
   
   // Duplicate template
-  const handleDuplicateTemplate = (template: MappingTemplate) => {
+  const handleDuplicateTemplate = (template: FieldMappingTemplate) => {
     // Create a copy with a new ID and updated name
-    const duplicatedTemplate: MappingTemplate = {
+    const duplicatedTemplate: FieldMappingTemplate = {
       ...template,
       id: `template-${Date.now()}`,
       name: `${template.name} (Copy)`,
@@ -294,7 +293,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
   };
   
   // Get template category based on name/description
-  const getTemplateCategory = (template: MappingTemplate): string => {
+  const getTemplateCategory = (template: FieldMappingTemplate): string => {
     const name = template.name.toLowerCase();
     const desc = (template.description || '').toLowerCase();
     const text = `${name} ${desc}`;
@@ -349,7 +348,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
     if (!groups[key]) groups[key] = [];
     groups[key].push(template);
     return groups;
-  }, {} as Record<string, MappingTemplate[]>);
+  }, {} as Record<string, FieldMappingTemplate[]>);
 
   // Get available filter categories
   const availableCategories = ['all', ...new Set(templates.map(getTemplateCategory))];
@@ -383,7 +382,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
   };
 
   // Handle template import from sharing
-  const handleTemplateImported = (importedTemplates: FieldMappingTemplate[]) => {
+  const handleTemplateImported = (importedTemplates: FieldFieldMappingTemplate[]) => {
     // Refresh templates list to include imported templates
     const storedTemplates = loadTemplates();
     setTemplates(storedTemplates);
@@ -651,7 +650,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
                   <ListItem
                     key={suggestion.template.id}
                     component="button"
-                    onClick={() => handleApplyFieldMappingTemplate(suggestion.template)}
+                    onClick={() => handleApplyFieldFieldMappingTemplate(suggestion.template)}
                     sx={{ 
                       py: 2, 
                       borderRadius: 1, 

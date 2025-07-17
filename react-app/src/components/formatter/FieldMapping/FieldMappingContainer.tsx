@@ -365,15 +365,6 @@ const getFieldVariations = (fieldId: string): string[] => {
   return variations[fieldId] || [];
 };
 
-// Field mapping context
-export interface MappingTemplate {
-  id: string;
-  name: string;
-  description?: string;
-  toolId: string;
-  mappings: FieldMapping[];
-  lastModified: number;
-}
 
 const FieldMappingContainer: React.FC = () => {
   const dispatch = useDispatch();
@@ -397,8 +388,8 @@ const FieldMappingContainer: React.FC = () => {
           
           // Apply the first template's mappings if available
           const firstTemplate = importResult.templates[0];
-          if (firstTemplate.mappings && firstTemplate.mappings.length > 0) {
-            dispatch(setMappings(firstTemplate.mappings));
+          if (firstTemplate.fieldMappings && firstTemplate.fieldMappings.length > 0) {
+            dispatch(setMappings(firstTemplate.fieldMappings));
             setStatusMessage({
               message: `Successfully imported template "${firstTemplate.name}"`,
               severity: 'success',

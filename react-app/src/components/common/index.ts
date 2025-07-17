@@ -6,18 +6,27 @@
  */
 
 // Error boundary components
-export { ErrorBoundary } from './ErrorBoundary';
-export { AsyncErrorBoundary } from './AsyncErrorBoundary';
-export { default as RouteErrorBoundary } from './RouteErrorBoundary';
-export { default as ErrorBoundaryProvider, useErrorBoundary } from './ErrorBoundaryProvider';
+import { ErrorBoundary } from './ErrorBoundary';
+import { AsyncErrorBoundary } from './AsyncErrorBoundary';
+import RouteErrorBoundary from './RouteErrorBoundary';
+import ErrorBoundaryProvider, { useErrorBoundary } from './ErrorBoundaryProvider';
+
+export { ErrorBoundary, AsyncErrorBoundary, RouteErrorBoundary, ErrorBoundaryProvider, useErrorBoundary };
 
 // Higher-order components
-export { 
+import { 
   withErrorBoundary, 
   withAsyncErrorBoundary, 
   errorBoundary, 
   asyncErrorBoundary 
 } from './withErrorBoundary';
+
+export { 
+  withErrorBoundary, 
+  withAsyncErrorBoundary, 
+  errorBoundary, 
+  asyncErrorBoundary 
+};
 
 // Types and interfaces
 export type { 
@@ -26,7 +35,8 @@ export type {
 } from '../../hooks/useErrorHandler';
 
 // Re-export the error handler hook
-export { useErrorHandler } from '../../hooks/useErrorHandler';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
+export { useErrorHandler };
 
 // Common error boundary configurations
 export const commonErrorBoundaryConfigs = {

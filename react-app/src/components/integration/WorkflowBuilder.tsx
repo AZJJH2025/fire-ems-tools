@@ -267,7 +267,7 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({
         </DialogTitle>
         <DialogContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{xs: 12, md: 6}}>
               <TextField
                 fullWidth
                 label="Step Name"
@@ -276,7 +276,7 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({
                 margin="normal"
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid size={{xs: 12, md: 6}}>
               <FormControl fullWidth margin="normal">
                 <InputLabel>Tool</InputLabel>
                 <Select
@@ -294,7 +294,7 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 fullWidth
                 label="Description"
@@ -305,7 +305,7 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({
                 margin="normal"
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid size={{xs: 12, md: 6}}>
               <Typography variant="subtitle2" gutterBottom>
                 Input Fields
               </Typography>
@@ -332,7 +332,7 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({
                 ))}
               </Box>
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid size={{xs: 12, md: 6}}>
               <Typography variant="subtitle2" gutterBottom>
                 Output Fields
               </Typography>
@@ -347,7 +347,7 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({
                 } : null)}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <label>
                 <input
                   type="checkbox"
@@ -400,7 +400,7 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({
             </AccordionSummary>
             <AccordionDetails>
               <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
+                <Grid size={{xs: 12, md: 6}}>
                   <TextField
                     fullWidth
                     label="Workflow Name"
@@ -409,7 +409,7 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({
                     margin="normal"
                   />
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid size={{xs: 12, md: 6}}>
                   <FormControl fullWidth margin="normal">
                     <InputLabel>Category</InputLabel>
                     <Select
@@ -423,7 +423,7 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({
                     </Select>
                   </FormControl>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <TextField
                     fullWidth
                     label="Description"
@@ -434,7 +434,7 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({
                     margin="normal"
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                     <TextField
                       label="Add Tag"

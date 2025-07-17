@@ -426,7 +426,7 @@ const WorkflowOrchestrator: React.FC<WorkflowOrchestratorProps> = ({
         
         <Grid container spacing={3}>
           {suggestedWorkflows.map((workflow) => (
-            <Grid item xs={12} md={6} lg={4} key={workflow.id}>
+            <Grid size={{xs: 12, md: 6, lg: 4}} key={workflow.id}>
               <WorkflowCard workflow={workflow} />
             </Grid>
           ))}
@@ -446,7 +446,7 @@ const WorkflowOrchestrator: React.FC<WorkflowOrchestratorProps> = ({
         
         <Grid container spacing={3}>
           {workflows.map((workflow) => (
-            <Grid item xs={12} md={6} lg={4} key={workflow.id}>
+            <Grid size={{xs: 12, md: 6, lg: 4}} key={workflow.id}>
               <WorkflowCard workflow={workflow} />
             </Grid>
           ))}
@@ -466,7 +466,7 @@ const WorkflowOrchestrator: React.FC<WorkflowOrchestratorProps> = ({
         
         <Grid container spacing={3}>
           {templates.map((template) => (
-            <Grid item xs={12} md={6} lg={4} key={template.id}>
+            <Grid size={{xs: 12, md: 6, lg: 4}} key={template.id}>
               <WorkflowCard workflow={template.workflow} isTemplate />
             </Grid>
           ))}

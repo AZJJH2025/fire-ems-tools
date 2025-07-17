@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, describe, test, expect, beforeAll, afterAll } from 'vitest';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { AsyncErrorBoundary } from '../AsyncErrorBoundary';
 

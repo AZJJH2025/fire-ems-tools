@@ -128,7 +128,7 @@ global.URL.createObjectURL = vi.fn(() => 'mocked-url');
 global.URL.revokeObjectURL = vi.fn();
 
 // Mock FileReader for file upload tests
-global.FileReader = vi.fn().mockImplementation(() => ({
+const MockFileReader = vi.fn().mockImplementation(() => ({
   readAsText: vi.fn(),
   readAsDataURL: vi.fn(),
   readAsArrayBuffer: vi.fn(),
@@ -143,6 +143,14 @@ global.FileReader = vi.fn().mockImplementation(() => ({
   removeEventListener: vi.fn(),
   dispatchEvent: vi.fn(),
 }));
+
+// Add static properties to the mock
+(MockFileReader as any).EMPTY = 0;
+(MockFileReader as any).LOADING = 1;
+(MockFileReader as any).DONE = 2;
+(MockFileReader as any).prototype = {};
+
+global.FileReader = MockFileReader as any;
 
 // Mock crypto for security features
 Object.defineProperty(global, 'crypto', {

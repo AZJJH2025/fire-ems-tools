@@ -3549,3 +3549,539 @@ TypeError: 'connect_timeout' is an invalid keyword argument for Connection()
 2025-07-16 15:16:02,984 - app - INFO - Found 1 existing super_admin users
 2025-07-16 15:16:02,986 - app - INFO - Super admin user already exists, skipping creation
 2025-07-16 15:16:02,986 - app - INFO - Application created successfully with all fixes applied
+2025-07-16 17:45:47,683 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-16 17:45:47,875 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-16 17:45:47,875 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-16 17:45:47,875 - __main__ - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-16 17:45:47,875 - __main__ - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-16 17:45:47,879 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-16 17:45:47,879 - __main__ - INFO - Creating application with deployment fixes...
+2025-07-16 17:45:47,881 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-16 17:45:47,881 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-16 17:45:47,881 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-16 17:45:47,881 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-16 17:45:47,882 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-16 17:45:48,124 - email_service - INFO - 📧 Email service DISABLED - notifications will be logged only
+2025-07-16 17:45:48,125 - email_service - INFO - 📧 To enable email, set EMAIL_ENABLED=true in environment variables
+2025-07-16 17:45:48,129 - static_middleware - INFO - Registered static file handler middleware
+2025-07-16 17:45:48,129 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-16 17:45:48,129 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-16 17:45:48,129 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-16 17:45:48,129 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-16 17:45:48,129 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-16 17:45:48,129 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-16 17:45:48,129 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-16 17:45:48,130 - static_middleware - INFO - Sample static files: []
+2025-07-16 17:45:51,367 - __main__ - INFO - Successfully registered all route blueprints
+2025-07-16 17:45:51,369 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-16 17:45:51,369 - __main__ - INFO - Registered React Data Formatter routes
+2025-07-16 17:45:51,371 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-16 17:45:51,372 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-16 17:45:51,372 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-16 17:45:51,372 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-16 17:45:51,372 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-16 17:45:51,372 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-16 17:45:51,372 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-16 17:45:51,372 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-16 17:45:51,372 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-16 17:45:51,372 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-16 17:45:51,383 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-16 17:45:51,383 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-16 17:45:51,385 - __main__ - INFO - Found 1 existing super_admin users
+2025-07-16 17:45:51,386 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-07-16 17:45:51,386 - __main__ - INFO - Application created successfully with all fixes applied
+2025-07-16 17:45:52,250 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5006
+ * Running on http://192.168.1.77:5006
+2025-07-16 17:45:52,250 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-07-16 17:45:52,252 - werkzeug - INFO -  * Restarting with stat
+2025-07-16 17:45:52,546 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-16 17:45:52,651 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-16 17:45:52,651 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-16 17:45:52,651 - __main__ - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-16 17:45:52,651 - __main__ - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-16 17:45:52,654 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-16 17:45:52,654 - __main__ - INFO - Creating application with deployment fixes...
+2025-07-16 17:45:52,655 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-16 17:45:52,655 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-16 17:45:52,655 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-16 17:45:52,655 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-16 17:45:52,655 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-16 17:45:52,661 - email_service - INFO - 📧 Email service DISABLED - notifications will be logged only
+2025-07-16 17:45:52,661 - email_service - INFO - 📧 To enable email, set EMAIL_ENABLED=true in environment variables
+2025-07-16 17:45:52,663 - static_middleware - INFO - Registered static file handler middleware
+2025-07-16 17:45:52,663 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-16 17:45:52,663 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-16 17:45:52,663 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-16 17:45:52,663 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-16 17:45:52,663 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-16 17:45:52,663 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-16 17:45:52,663 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-16 17:45:52,664 - static_middleware - INFO - Sample static files: []
+2025-07-16 17:45:52,904 - __main__ - INFO - Successfully registered all route blueprints
+2025-07-16 17:45:52,906 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-16 17:45:52,906 - __main__ - INFO - Registered React Data Formatter routes
+2025-07-16 17:45:52,907 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-16 17:45:52,907 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-16 17:45:52,907 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-16 17:45:52,907 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-16 17:45:52,907 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-16 17:45:52,907 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-16 17:45:52,907 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-16 17:45:52,907 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-16 17:45:52,907 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-16 17:45:52,907 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-16 17:45:52,918 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-16 17:45:52,918 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-16 17:45:52,920 - __main__ - INFO - Found 1 existing super_admin users
+2025-07-16 17:45:52,920 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-07-16 17:45:52,920 - __main__ - INFO - Application created successfully with all fixes applied
+2025-07-16 17:45:52,938 - werkzeug - WARNING -  * Debugger is active!
+2025-07-16 17:45:52,946 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-07-16 19:16:56,320 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-16 19:16:56,462 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-16 19:16:56,462 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-16 19:16:56,462 - app - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-16 19:16:56,462 - app - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-16 19:16:56,465 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-16 19:16:56,465 - app - INFO - Creating application with deployment fixes...
+2025-07-16 19:16:56,466 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-16 19:16:56,467 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-16 19:16:56,467 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-16 19:16:56,467 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-16 19:16:56,467 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-16 19:16:56,477 - email_service - INFO - 📧 Email service DISABLED - notifications will be logged only
+2025-07-16 19:16:56,477 - email_service - INFO - 📧 To enable email, set EMAIL_ENABLED=true in environment variables
+2025-07-16 19:16:56,480 - static_middleware - INFO - Registered static file handler middleware
+2025-07-16 19:16:56,480 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-16 19:16:56,480 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-16 19:16:56,480 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-16 19:16:56,480 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-16 19:16:56,480 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-16 19:16:56,480 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-16 19:16:56,480 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-16 19:16:56,480 - static_middleware - INFO - Sample static files: []
+2025-07-16 19:16:56,951 - app - INFO - Successfully registered all route blueprints
+2025-07-16 19:16:56,956 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-16 19:16:56,956 - app - INFO - Registered React Data Formatter routes
+2025-07-16 19:16:56,967 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-16 19:16:56,967 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-16 19:16:56,967 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-16 19:16:56,968 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-16 19:16:56,968 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-16 19:16:56,968 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-16 19:16:56,968 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-16 19:16:56,968 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-16 19:16:56,968 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-16 19:16:56,968 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-16 19:16:56,983 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-16 19:16:56,983 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-16 19:16:56,989 - app - INFO - Found 1 existing super_admin users
+2025-07-16 19:16:56,989 - app - INFO - Super admin user already exists, skipping creation
+2025-07-16 19:16:56,989 - app - INFO - Application created successfully with all fixes applied
+2025-07-16 19:18:17,891 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-16 19:18:18,019 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-16 19:18:18,019 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-16 19:18:18,020 - app - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-16 19:18:18,020 - app - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-16 19:18:18,022 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-16 19:18:18,023 - app - INFO - Creating application with deployment fixes...
+2025-07-16 19:18:18,023 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-16 19:18:18,024 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-16 19:18:18,024 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-16 19:18:18,024 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-16 19:18:18,024 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-16 19:18:18,033 - email_service - INFO - 📧 Email service DISABLED - notifications will be logged only
+2025-07-16 19:18:18,033 - email_service - INFO - 📧 To enable email, set EMAIL_ENABLED=true in environment variables
+2025-07-16 19:18:18,035 - static_middleware - INFO - Registered static file handler middleware
+2025-07-16 19:18:18,035 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-16 19:18:18,036 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-16 19:18:18,036 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-16 19:18:18,036 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-16 19:18:18,036 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-16 19:18:18,036 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-16 19:18:18,036 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-16 19:18:18,036 - static_middleware - INFO - Sample static files: []
+2025-07-16 19:18:18,451 - app - INFO - Successfully registered all route blueprints
+2025-07-16 19:18:18,456 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-16 19:18:18,456 - app - INFO - Registered React Data Formatter routes
+2025-07-16 19:18:18,459 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-16 19:18:18,460 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-16 19:18:18,460 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-16 19:18:18,460 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-16 19:18:18,460 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-16 19:18:18,460 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-16 19:18:18,460 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-16 19:18:18,460 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-16 19:18:18,460 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-16 19:18:18,460 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-16 19:18:18,472 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-16 19:18:18,472 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-16 19:18:18,474 - app - INFO - Found 1 existing super_admin users
+2025-07-16 19:18:18,474 - app - INFO - Super admin user already exists, skipping creation
+2025-07-16 19:18:18,475 - app - INFO - Application created successfully with all fixes applied
+2025-07-16 19:18:18,481 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-16 19:18:18,481 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-16 19:18:18,482 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-16 19:18:18,482 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-16 19:18:18,483 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-16 19:18:18,483 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-16 19:18:18,483 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-16 19:18:18,483 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-16 19:18:18,484 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-16 19:18:18,484 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-16 19:18:18,485 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-16 19:18:18,485 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-16 19:18:18,485 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-16 19:18:18,485 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-16 19:18:18,486 - routes.react_app - INFO - Serving React asset: index-CtqP-_vm.js
+2025-07-16 19:19:35,863 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-16 19:19:35,963 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-16 19:19:35,964 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-16 19:19:35,964 - app - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-16 19:19:35,964 - app - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-16 19:19:35,966 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-16 19:19:35,966 - app - INFO - Creating application with deployment fixes...
+2025-07-16 19:19:35,966 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-16 19:19:35,966 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-16 19:19:35,966 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-16 19:19:35,967 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-16 19:19:35,967 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-16 19:19:35,972 - email_service - INFO - 📧 Email service DISABLED - notifications will be logged only
+2025-07-16 19:19:35,973 - email_service - INFO - 📧 To enable email, set EMAIL_ENABLED=true in environment variables
+2025-07-16 19:19:35,974 - static_middleware - INFO - Registered static file handler middleware
+2025-07-16 19:19:35,974 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-16 19:19:35,974 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-16 19:19:35,974 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-16 19:19:35,975 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-16 19:19:35,975 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-16 19:19:35,975 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-16 19:19:35,975 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-16 19:19:35,975 - static_middleware - INFO - Sample static files: []
+2025-07-16 19:19:36,212 - app - INFO - Successfully registered all route blueprints
+2025-07-16 19:19:36,214 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-16 19:19:36,214 - app - INFO - Registered React Data Formatter routes
+2025-07-16 19:19:36,214 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-16 19:19:36,215 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-16 19:19:36,215 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-16 19:19:36,215 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-16 19:19:36,215 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-16 19:19:36,215 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-16 19:19:36,215 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-16 19:19:36,215 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-16 19:19:36,215 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-16 19:19:36,215 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-16 19:19:36,225 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-16 19:19:36,226 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-16 19:19:36,228 - app - INFO - Found 1 existing super_admin users
+2025-07-16 19:19:36,228 - app - INFO - Super admin user already exists, skipping creation
+2025-07-16 19:19:36,228 - app - INFO - Application created successfully with all fixes applied
+2025-07-16 19:20:14,523 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-16 19:20:14,636 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-16 19:20:14,637 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-16 19:20:14,637 - app - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-16 19:20:14,637 - app - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-16 19:20:14,639 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-16 19:20:14,639 - app - INFO - Creating application with deployment fixes...
+2025-07-16 19:20:14,639 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-16 19:20:14,640 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-16 19:20:14,640 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-16 19:20:14,640 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-16 19:20:14,640 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-16 19:20:14,647 - email_service - INFO - 📧 Email service DISABLED - notifications will be logged only
+2025-07-16 19:20:14,647 - email_service - INFO - 📧 To enable email, set EMAIL_ENABLED=true in environment variables
+2025-07-16 19:20:14,649 - static_middleware - INFO - Registered static file handler middleware
+2025-07-16 19:20:14,649 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-16 19:20:14,649 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-16 19:20:14,649 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-16 19:20:14,649 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-16 19:20:14,649 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-16 19:20:14,649 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-16 19:20:14,649 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-16 19:20:14,649 - static_middleware - INFO - Sample static files: []
+2025-07-16 19:20:14,921 - app - INFO - Successfully registered all route blueprints
+2025-07-16 19:20:14,923 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-16 19:20:14,923 - app - INFO - Registered React Data Formatter routes
+2025-07-16 19:20:14,924 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-16 19:20:14,924 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-16 19:20:14,924 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-16 19:20:14,924 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-16 19:20:14,924 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-16 19:20:14,924 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-16 19:20:14,925 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-16 19:20:14,925 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-16 19:20:14,925 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-16 19:20:14,925 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-16 19:20:14,936 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-16 19:20:14,936 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-16 19:20:14,939 - app - INFO - Found 1 existing super_admin users
+2025-07-16 19:20:14,939 - app - INFO - Super admin user already exists, skipping creation
+2025-07-16 19:20:14,939 - app - INFO - Application created successfully with all fixes applied
+2025-07-16 19:20:14,941 - app - INFO - SECURITY_AUDIT: GET /auth/api/me from 127.0.0.1 User-Agent: Werkzeug/3.1.3
+2025-07-16 19:20:14,942 - app - INFO - SECURITY_AUDIT: Response 302 for GET /auth/api/me
+2025-07-16 19:20:14,942 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-16 19:20:14,942 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-16 19:20:14,942 - app - INFO - SECURITY_AUDIT: GET /auth/api/login from 127.0.0.1 User-Agent: Werkzeug/3.1.3
+2025-07-16 19:20:14,943 - app - INFO - SECURITY_AUDIT: Response 405 for GET /auth/api/login
+2025-07-16 19:20:14,943 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-16 19:20:14,943 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-16 19:20:14,943 - app - INFO - SECURITY_AUDIT: GET /auth/api/signup from 127.0.0.1 User-Agent: Werkzeug/3.1.3
+2025-07-16 19:20:14,943 - app - INFO - SECURITY_AUDIT: Response 404 for GET /auth/api/signup
+2025-07-16 19:20:14,943 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-16 19:20:14,943 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-16 19:20:14,943 - app - INFO - SECURITY_AUDIT: GET /admin from 127.0.0.1 User-Agent: Werkzeug/3.1.3
+2025-07-16 19:20:14,943 - app - INFO - SECURITY_AUDIT: Response 308 for GET /admin
+2025-07-16 19:20:14,944 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-16 19:20:14,944 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-16 19:20:14,944 - app - INFO - SECURITY_AUDIT: GET /admin/security from 127.0.0.1 User-Agent: Werkzeug/3.1.3
+2025-07-16 19:20:14,944 - app - INFO - SECURITY_AUDIT: Response 404 for GET /admin/security
+2025-07-16 19:20:14,944 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-16 19:20:14,944 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-16 19:22:45,684 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-16 19:22:45,809 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-16 19:22:45,809 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-16 19:22:45,809 - app - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-16 19:22:45,809 - app - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-16 19:22:45,812 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-16 19:22:45,812 - app - INFO - Creating application with deployment fixes...
+2025-07-16 19:22:45,813 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-16 19:22:45,813 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-16 19:22:45,813 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-16 19:22:45,814 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-16 19:22:45,814 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-16 19:22:45,823 - email_service - INFO - 📧 Email service DISABLED - notifications will be logged only
+2025-07-16 19:22:45,823 - email_service - INFO - 📧 To enable email, set EMAIL_ENABLED=true in environment variables
+2025-07-16 19:22:45,825 - static_middleware - INFO - Registered static file handler middleware
+2025-07-16 19:22:45,825 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-16 19:22:45,825 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-16 19:22:45,825 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-16 19:22:45,825 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-16 19:22:45,825 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-16 19:22:45,825 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-16 19:22:45,825 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-16 19:22:45,825 - static_middleware - INFO - Sample static files: []
+2025-07-16 19:22:46,184 - app - INFO - Successfully registered all route blueprints
+2025-07-16 19:22:46,186 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-16 19:22:46,186 - app - INFO - Registered React Data Formatter routes
+2025-07-16 19:22:46,189 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-16 19:22:46,189 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-16 19:22:46,189 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-16 19:22:46,189 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-16 19:22:46,189 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-16 19:22:46,190 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-16 19:22:46,190 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-16 19:22:46,190 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-16 19:22:46,190 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-16 19:22:46,190 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-16 19:22:46,200 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-16 19:22:46,200 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-16 19:22:46,203 - app - INFO - Found 1 existing super_admin users
+2025-07-16 19:22:46,203 - app - INFO - Super admin user already exists, skipping creation
+2025-07-16 19:22:46,203 - app - INFO - Application created successfully with all fixes applied
+2025-07-16 19:22:46,205 - app - INFO - SECURITY_AUDIT: POST /auth/api/signup from 127.0.0.1 User-Agent: Werkzeug/3.1.3
+2025-07-16 19:22:46,205 - app - INFO - SECURITY_AUDIT: Response 404 for POST /auth/api/signup
+2025-07-16 19:22:46,205 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-16 19:22:46,205 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-16 19:22:46,206 - app - INFO - SECURITY_AUDIT: GET /admin from 127.0.0.1 User-Agent: Werkzeug/3.1.3
+2025-07-16 19:22:46,206 - app - INFO - SECURITY_AUDIT: Response 308 for GET /admin
+2025-07-16 19:22:46,206 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-16 19:22:46,206 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-16 19:22:46,207 - app - INFO - SECURITY_AUDIT: GET /app/login from 127.0.0.1 User-Agent: Werkzeug/3.1.3
+2025-07-16 19:22:46,208 - routes.react_app - INFO - Serving React app with asset: index-Cb7r-ZWP.js
+2025-07-16 19:22:46,209 - app - INFO - SECURITY_AUDIT: Response 200 for GET /app/login
+2025-07-16 19:22:46,209 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-16 19:22:46,209 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-16 19:22:46,210 - routes.react_app - INFO - Serving React app with asset: index-Cb7r-ZWP.js
+2025-07-16 19:22:46,210 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-16 19:22:46,210 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-16 19:23:17,571 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-16 19:23:17,673 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-16 19:23:17,673 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-16 19:23:17,673 - app - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-16 19:23:17,673 - app - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-16 19:23:17,675 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-16 19:23:17,675 - app - INFO - Creating application with deployment fixes...
+2025-07-16 19:23:17,676 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-16 19:23:17,676 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-16 19:23:17,676 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-16 19:23:17,676 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-16 19:23:17,676 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-16 19:23:17,682 - email_service - INFO - 📧 Email service DISABLED - notifications will be logged only
+2025-07-16 19:23:17,682 - email_service - INFO - 📧 To enable email, set EMAIL_ENABLED=true in environment variables
+2025-07-16 19:23:17,684 - static_middleware - INFO - Registered static file handler middleware
+2025-07-16 19:23:17,684 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-16 19:23:17,684 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-16 19:23:17,684 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-16 19:23:17,684 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-16 19:23:17,684 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-16 19:23:17,684 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-16 19:23:17,684 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-16 19:23:17,684 - static_middleware - INFO - Sample static files: []
+2025-07-16 19:23:17,943 - app - INFO - Successfully registered all route blueprints
+2025-07-16 19:23:17,945 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-16 19:23:17,945 - app - INFO - Registered React Data Formatter routes
+2025-07-16 19:23:17,946 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-16 19:23:17,946 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-16 19:23:17,946 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-16 19:23:17,946 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-16 19:23:17,947 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-16 19:23:17,947 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-16 19:23:17,947 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-16 19:23:17,947 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-16 19:23:17,947 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-16 19:23:17,947 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-16 19:23:17,959 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-16 19:23:17,959 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-16 19:23:17,961 - app - INFO - Found 1 existing super_admin users
+2025-07-16 19:23:17,961 - app - INFO - Super admin user already exists, skipping creation
+2025-07-16 19:23:17,962 - app - INFO - Application created successfully with all fixes applied
+2025-07-16 19:23:17,966 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-16 19:23:17,966 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-16 19:23:17,967 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-16 19:23:17,967 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-16 19:23:17,968 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-16 19:23:17,968 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-16 19:23:42,555 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-16 19:23:42,666 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-16 19:23:42,666 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-16 19:23:42,666 - app - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-16 19:23:42,666 - app - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-16 19:23:42,668 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-16 19:23:42,668 - app - INFO - Creating application with deployment fixes...
+2025-07-16 19:23:42,669 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-16 19:23:42,669 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-16 19:23:42,669 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-16 19:23:42,669 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-16 19:23:42,669 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-16 19:23:42,676 - email_service - INFO - 📧 Email service DISABLED - notifications will be logged only
+2025-07-16 19:23:42,676 - email_service - INFO - 📧 To enable email, set EMAIL_ENABLED=true in environment variables
+2025-07-16 19:23:42,677 - static_middleware - INFO - Registered static file handler middleware
+2025-07-16 19:23:42,677 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-16 19:23:42,677 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-16 19:23:42,678 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-16 19:23:42,678 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-16 19:23:42,678 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-16 19:23:42,678 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-16 19:23:42,678 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-16 19:23:42,678 - static_middleware - INFO - Sample static files: []
+2025-07-16 19:23:42,942 - app - INFO - Successfully registered all route blueprints
+2025-07-16 19:23:42,944 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-16 19:23:42,944 - app - INFO - Registered React Data Formatter routes
+2025-07-16 19:23:42,945 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-16 19:23:42,945 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-16 19:23:42,945 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-16 19:23:42,945 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-16 19:23:42,945 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-16 19:23:42,945 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-16 19:23:42,945 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-16 19:23:42,946 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-16 19:23:42,946 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-16 19:23:42,946 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-16 19:23:42,957 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-16 19:23:42,957 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-16 19:23:42,959 - app - INFO - Found 1 existing super_admin users
+2025-07-16 19:23:42,963 - app - INFO - Super admin user already exists, skipping creation
+2025-07-16 19:23:42,963 - app - INFO - Application created successfully with all fixes applied
+2025-07-16 19:23:42,967 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-16 19:23:42,967 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-16 19:27:27,678 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-16 19:27:27,792 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-16 19:27:27,792 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-16 19:27:27,792 - __main__ - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-16 19:27:27,792 - __main__ - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-16 19:27:27,797 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-16 19:27:27,797 - __main__ - INFO - Creating application with deployment fixes...
+2025-07-16 19:27:27,798 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-16 19:27:27,798 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-16 19:27:27,798 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-16 19:27:27,799 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-16 19:27:27,799 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-16 19:27:27,809 - email_service - INFO - 📧 Email service DISABLED - notifications will be logged only
+2025-07-16 19:27:27,809 - email_service - INFO - 📧 To enable email, set EMAIL_ENABLED=true in environment variables
+2025-07-16 19:27:27,811 - static_middleware - INFO - Registered static file handler middleware
+2025-07-16 19:27:27,811 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-16 19:27:27,811 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-16 19:27:27,811 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-16 19:27:27,811 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-16 19:27:27,812 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-16 19:27:27,812 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-16 19:27:27,812 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-16 19:27:27,812 - static_middleware - INFO - Sample static files: []
+2025-07-16 19:27:28,214 - __main__ - INFO - Successfully registered all route blueprints
+2025-07-16 19:27:28,216 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-16 19:27:28,216 - __main__ - INFO - Registered React Data Formatter routes
+2025-07-16 19:27:28,220 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-16 19:27:28,220 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-16 19:27:28,220 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-16 19:27:28,220 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-16 19:27:28,220 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-16 19:27:28,220 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-16 19:27:28,220 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-16 19:27:28,220 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-16 19:27:28,220 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-16 19:27:28,220 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-16 19:27:28,233 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-16 19:27:28,233 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-16 19:27:28,236 - __main__ - INFO - Found 1 existing super_admin users
+2025-07-16 19:27:28,236 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-07-16 19:27:28,236 - __main__ - INFO - Application created successfully with all fixes applied
+2025-07-16 19:27:28,452 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5006
+ * Running on http://192.168.0.24:5006
+2025-07-16 19:27:28,454 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-07-16 19:27:28,455 - werkzeug - INFO -  * Restarting with stat
+2025-07-16 19:27:28,590 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-16 19:27:28,695 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-16 19:27:28,695 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-16 19:27:28,695 - __main__ - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-16 19:27:28,695 - __main__ - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-16 19:27:28,697 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-16 19:27:28,698 - __main__ - INFO - Creating application with deployment fixes...
+2025-07-16 19:27:28,698 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-16 19:27:28,698 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-16 19:27:28,698 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-16 19:27:28,699 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-16 19:27:28,699 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-16 19:27:28,705 - email_service - INFO - 📧 Email service DISABLED - notifications will be logged only
+2025-07-16 19:27:28,705 - email_service - INFO - 📧 To enable email, set EMAIL_ENABLED=true in environment variables
+2025-07-16 19:27:28,706 - static_middleware - INFO - Registered static file handler middleware
+2025-07-16 19:27:28,707 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-16 19:27:28,707 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-16 19:27:28,707 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-16 19:27:28,707 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-16 19:27:28,707 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-16 19:27:28,707 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-16 19:27:28,707 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-16 19:27:28,707 - static_middleware - INFO - Sample static files: []
+2025-07-16 19:27:28,965 - __main__ - INFO - Successfully registered all route blueprints
+2025-07-16 19:27:28,966 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-16 19:27:28,966 - __main__ - INFO - Registered React Data Formatter routes
+2025-07-16 19:27:28,967 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-16 19:27:28,967 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-16 19:27:28,967 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-16 19:27:28,967 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-16 19:27:28,967 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-16 19:27:28,968 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-16 19:27:28,968 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-16 19:27:28,968 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-16 19:27:28,968 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-16 19:27:28,968 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-16 19:27:28,979 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-16 19:27:28,979 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-16 19:27:28,981 - __main__ - INFO - Found 1 existing super_admin users
+2025-07-16 19:27:28,981 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-07-16 19:27:28,981 - __main__ - INFO - Application created successfully with all fixes applied
+2025-07-16 19:27:29,006 - werkzeug - WARNING -  * Debugger is active!
+2025-07-16 19:27:29,014 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-07-16 19:29:41,558 - app - INFO - SECURITY_AUDIT: GET /auth/status from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-16 19:29:41,559 - app - INFO - SECURITY_AUDIT: Response 404 for GET /auth/status
+2025-07-16 19:29:41,559 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-16 19:29:41,559 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-16 19:29:41,559 - werkzeug - INFO - 127.0.0.1 - - [16/Jul/2025 19:29:41] "[33mGET /auth/status HTTP/1.1[0m" 404 -
+2025-07-16 19:30:04,874 - app - INFO - SECURITY_AUDIT: GET /auth/api/status from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-16 19:30:04,874 - app - INFO - SECURITY_AUDIT: Response 404 for GET /auth/api/status
+2025-07-16 19:30:04,874 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-16 19:30:04,874 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-16 19:30:04,875 - werkzeug - INFO - 127.0.0.1 - - [16/Jul/2025 19:30:04] "[33mGET /auth/api/status HTTP/1.1[0m" 404 -

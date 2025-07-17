@@ -55,50 +55,13 @@ import {
 import { FieldMappingTemplate, TemplateSuggestion } from '@/types/formatter';
 import { TemplateSharingService, ShareableTemplate, TemplateExportData } from '@/services/templateSharingService';
 import { TemplateService } from '@/services/templateService';
-import { MappingTemplate } from './FieldMappingContainer';
 
-// Helper function to convert MappingTemplate to FieldMappingTemplate
-const convertMappingTemplateToFieldMappingTemplate = (template: MappingTemplate): FieldMappingTemplate => {
-  // Safely handle missing or undefined properties
-  const safeMappings = template.mappings || [];
-  const safeLastModified = template.lastModified || Date.now();
-  
-  return {
-    id: template.id || `template_${Date.now()}`,
-    name: template.name || 'Untitled Template',
-    description: template.description || '',
-    departmentName: undefined,
-    cadVendor: undefined,
-    targetTool: template.toolId || 'unknown',
-    fieldMappings: safeMappings,
-    sourceFieldPattern: {
-      fieldNames: safeMappings.map(m => m.sourceField || ''),
-      fieldCount: safeMappings.length,
-      hasHeaderRow: true,
-      commonPatterns: [],
-      cadVendorSignature: ''
-    },
-    metadata: {
-      version: '1.0.0',
-      compatibility: [],
-      qualityScore: 100,
-      successRate: 100,
-      dataTypes: {},
-      sampleValues: {},
-      tags: []
-    },
-    createdAt: new Date(safeLastModified).toISOString(),
-    lastUsed: new Date(safeLastModified).toISOString(),
-    useCount: 0,
-    isPublic: true
-  };
-};
 
 interface TemplateSharingProps {
   open: boolean;
   onClose: () => void;
-  currentTemplate?: MappingTemplate;
-  allTemplates: MappingTemplate[];
+  currentTemplate?: FieldMappingTemplate;
+  allTemplates: FieldMappingTemplate[];
   onTemplateImported: (templates: FieldMappingTemplate[]) => void;
   departmentName: string;
   contactEmail?: string;
@@ -172,10 +135,10 @@ const TemplateSharing: React.FC<TemplateSharingProps> = ({
         return;
       }
       
-      // Convert MappingTemplate to FieldMappingTemplate for export
+      // Convert FieldMappingTemplate to FieldMappingTemplate for export
       const convertedTemplates = templatesToExport.map(template => {
         try {
-          return convertMappingTemplateToFieldMappingTemplate(template);
+          return template;
         } catch (error) {
           console.error('Error converting template:', template.name, error);
           return null;
@@ -236,10 +199,10 @@ const TemplateSharing: React.FC<TemplateSharingProps> = ({
         return;
       }
       
-      // Convert MappingTemplate to FieldMappingTemplate for sharing
+      // Convert FieldMappingTemplate to FieldMappingTemplate for sharing
       const convertedTemplates = templatesToShare.map(template => {
         try {
-          return convertMappingTemplateToFieldMappingTemplate(template);
+          return template;
         } catch (error) {
           console.error('Error converting template for sharing:', template.name, error);
           return null;
@@ -322,10 +285,10 @@ const TemplateSharing: React.FC<TemplateSharingProps> = ({
     }
   };
 
-  const handleSubmitToCommunity = async (template: MappingTemplate) => {
+  const handleSubmitToCommunity = async (template: FieldMappingTemplate) => {
     try {
-      // Convert MappingTemplate to FieldMappingTemplate for submission
-      const convertedTemplate = convertMappingTemplateToFieldMappingTemplate(template);
+      // Convert FieldMappingTemplate to FieldMappingTemplate for submission
+      const convertedTemplate = template;
       
       const shareableTemplate = TemplateSharingService.submitToCommunity(
         convertedTemplate,

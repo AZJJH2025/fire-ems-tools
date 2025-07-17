@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
-import { MappingTemplate } from '@/components/formatter/FieldMapping/FieldMappingContainer';
-import { FieldMapping } from '@/types/formatter';
+import { FieldFieldMappingTemplate, FieldMapping } from '@/types/formatter';
 
 /**
  * Custom hook to synchronize mapping templates with localStorage and server
@@ -8,7 +7,7 @@ import { FieldMapping } from '@/types/formatter';
  * @param dirty Whether the template has unsaved changes
  * @returns Object with methods for template operations
  */
-const useTemplateSync = (template: MappingTemplate, dirty: boolean) => {
+const useTemplateSync = (template: FieldMappingTemplate, dirty: boolean) => {
   // Sync to localStorage whenever template changes and is dirty
   useEffect(() => {
     if (!dirty) return;
@@ -25,7 +24,7 @@ const useTemplateSync = (template: MappingTemplate, dirty: boolean) => {
   /**
    * Load templates from localStorage with enhanced filtering and sorting
    */
-  const loadTemplates = (toolId?: string): MappingTemplate[] => {
+  const loadTemplates = (toolId?: string): FieldMappingTemplate[] => {
     try {
       // Get all localStorage keys
       const keys = Object.keys(localStorage);
@@ -34,16 +33,16 @@ const useTemplateSync = (template: MappingTemplate, dirty: boolean) => {
       // Load each template
       let templates = templateKeys.map(key => {
         const templateJson = localStorage.getItem(key);
-        return templateJson ? JSON.parse(templateJson) as MappingTemplate : null;
-      }).filter(Boolean) as MappingTemplate[];
+        return templateJson ? JSON.parse(templateJson) as FieldMappingTemplate : null;
+      }).filter(Boolean) as FieldMappingTemplate[];
       
       // Filter by tool ID if specified
       if (toolId) {
-        templates = templates.filter(t => t.toolId === toolId);
+        templates = templates.filter(t => t.targetTool === toolId);
       }
       
-      // Sort by last modified date (newest first)
-      return templates.sort((a, b) => b.lastModified - a.lastModified);
+      // Sort by creation date (newest first)
+      return templates.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     } catch (error) {
       console.error('Failed to load templates from localStorage:', error);
       return [];
@@ -85,7 +84,7 @@ const useTemplateSync = (template: MappingTemplate, dirty: boolean) => {
    * Load templates from server
    * In a real app, this would make an API call
    */
-  const loadFromServer = async (): Promise<MappingTemplate[]> => {
+  const loadFromServer = async (): Promise<FieldMappingTemplate[]> => {
     // This is a placeholder for a real API call
     // In a real app, this would GET templates from a server endpoint
     
@@ -99,13 +98,42 @@ const useTemplateSync = (template: MappingTemplate, dirty: boolean) => {
   const autoSaveTemplate = (mappings: FieldMapping[], toolId: string) => {
     if (!mappings || mappings.length === 0) return;
     
-    const autoTemplate: MappingTemplate = {
+    const autoTemplate: FieldMappingTemplate = {
       id: `auto-${toolId}-${Date.now()}`,
       name: `Auto-saved ${toolId} mapping`,
       description: 'Automatically saved field mapping configuration',
-      toolId,
-      mappings,
-      lastModified: Date.now()
+      targetTool: toolId,
+      fieldMappings: mappings,
+      sourceFieldPattern: {
+        fieldNames: mappings.map(m => m.sourceField),
+        fieldCount: mappings.length,
+        hasHeaderRow: true,
+        commonPatterns: [],
+        cadVendorSignature: ''
+      },
+      metadata: {
+        qualityScore: 70,
+        tags: ['auto-saved'],
+        fieldAccuracy: 0.7,
+        completeness: mappings.length > 0 ? 1.0 : 0.0,
+        compatibility: { [toolId]: 1.0 },
+        usage: {
+          totalUses: 0,
+          successRate: 0.0,
+          lastUsed: undefined,
+          averageProcessingTime: 0,
+          errorRate: 0.0
+        },
+        validation: {
+          isValid: mappings.length > 0,
+          errors: [],
+          warnings: [],
+          lastValidated: new Date().toISOString()
+        }
+      },
+      createdAt: new Date().toISOString(),
+      useCount: 0,
+      isPublic: false
     };
     
     try {
@@ -124,12 +152,12 @@ const useTemplateSync = (template: MappingTemplate, dirty: boolean) => {
     const stats = {
       total: templates.length,
       byTool: {} as Record<string, number>,
-      mostRecent: templates[0]?.lastModified || 0,
-      totalMappings: templates.reduce((sum, t) => sum + (t.mappings?.length || 0), 0)
+      mostRecent: templates[0] ? new Date(templates[0].createdAt).getTime() : 0,
+      totalMappings: templates.reduce((sum, t) => sum + (t.fieldMappings?.length || 0), 0)
     };
     
     templates.forEach(template => {
-      const toolId = template.toolId || 'unknown';
+      const toolId = template.targetTool || 'unknown';
       stats.byTool[toolId] = (stats.byTool[toolId] || 0) + 1;
     });
     
@@ -139,7 +167,7 @@ const useTemplateSync = (template: MappingTemplate, dirty: boolean) => {
   /**
    * Find similar templates based on field patterns
    */
-  const findSimilarTemplates = (currentMappings: FieldMapping[], toolId?: string): MappingTemplate[] => {
+  const findSimilarTemplates = (currentMappings: FieldMapping[], toolId?: string): FieldMappingTemplate[] => {
     if (!currentMappings || currentMappings.length === 0) return [];
     
     const templates = loadTemplates(toolId);
@@ -147,7 +175,7 @@ const useTemplateSync = (template: MappingTemplate, dirty: boolean) => {
     
     return templates
       .map(template => {
-        const templateSourceFields = new Set(template.mappings.map(m => m.sourceField.toLowerCase()));
+        const templateSourceFields = new Set(template.fieldMappings.map(m => m.sourceField.toLowerCase()));
         const intersection = new Set([...currentSourceFields].filter(x => templateSourceFields.has(x)));
         const similarity = intersection.size / Math.max(currentSourceFields.size, templateSourceFields.size);
         return { template, similarity };
@@ -165,7 +193,7 @@ const useTemplateSync = (template: MappingTemplate, dirty: boolean) => {
       const templates = loadTemplates();
       const autoSaved = templates
         .filter(t => t.name.startsWith('Auto-saved'))
-        .sort((a, b) => b.lastModified - a.lastModified);
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       
       // Delete old auto-saved templates (keep only 5 most recent)
       autoSaved.slice(5).forEach(template => {
