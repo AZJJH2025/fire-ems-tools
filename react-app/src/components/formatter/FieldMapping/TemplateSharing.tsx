@@ -17,8 +17,6 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemIcon,
-  ListItemButton,
   Chip,
   Card,
   CardContent,
@@ -27,13 +25,9 @@ import {
   Tabs,
   Tab,
   Alert,
-  LinearProgress,
-  Stack,
   Checkbox,
   FormControlLabel,
   IconButton,
-  Tooltip,
-  Divider
 } from '@mui/material';
 import {
   Share,
@@ -41,15 +35,11 @@ import {
   Upload,
   People,
   ContentCopy,
-  Email,
   Star,
   Verified,
-  ThumbUp,
   Search,
-  FilterList,
   CloudUpload,
-  GetApp,
-  Info
+  GetApp
 } from '@mui/icons-material';
 
 import { FieldMappingTemplate, TemplateSuggestion } from '@/types/formatter';

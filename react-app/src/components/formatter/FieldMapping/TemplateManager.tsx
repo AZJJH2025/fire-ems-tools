@@ -33,7 +33,7 @@ import VerifiedIcon from '@mui/icons-material/Verified';
 import Share from '@mui/icons-material/Share';
 import useTemplateSync from '@/hooks/useTemplateSync';
 import { TemplateService } from '@/services/templateService';
-import { FieldFieldMappingTemplate, TemplateSuggestion, FieldMapping, SampleData } from '@/types/formatter';
+import { FieldMappingTemplate, TemplateSuggestion, FieldMapping, SampleData } from '@/types/formatter';
 import { seedVendorTemplates } from '@/services/vendorTemplates';
 import TemplateSharing from './TemplateSharing';
 

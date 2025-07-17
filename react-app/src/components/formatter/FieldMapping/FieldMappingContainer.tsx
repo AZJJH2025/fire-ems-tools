@@ -415,19 +415,36 @@ const FieldMappingContainer: React.FC = () => {
   }, [searchParams, dispatch]);
   
   // State for the current active template
-  const [currentTemplate, setCurrentTemplate] = useState<MappingTemplate>({
+  const [currentTemplate, setCurrentTemplate] = useState<FieldMappingTemplate>({
     id: `template-${Date.now()}`,
     name: 'Untitled Mapping',
-    toolId: selectedTool?.id || '',
-    mappings: mappings || [],
-    lastModified: Date.now()
+    description: '',
+    targetTool: selectedTool?.id || '',
+    fieldMappings: mappings || [],
+    sourceFieldPattern: {
+      fieldNames: [],
+      fieldCount: 0,
+      hasHeaderRow: true,
+      commonPatterns: [],
+      cadVendorSignature: ''
+    },
+    metadata: {
+      version: '1.0.0',
+      qualityScore: 0,
+      successRate: 0,
+      tags: [],
+      sampleValues: {}
+    },
+    createdAt: new Date().toISOString(),
+    useCount: 0,
+    isPublic: false
   });
   
   // Track if template has been modified (for sync)
   const [templateDirty, setTemplateDirty] = useState(false);
   
   // Template suggestions based on current mappings
-  const [suggestedTemplates, setSuggestedTemplates] = useState<MappingTemplate[]>([]);
+  const [suggestedTemplates, setSuggestedTemplates] = useState<FieldMappingTemplate[]>([]);
   
   // Auto-mapping in progress state
   const [autoMappingInProgress, setAutoMappingInProgress] = useState(false);
@@ -505,11 +522,11 @@ const FieldMappingContainer: React.FC = () => {
     console.log("Redux mappings changed:", mappings);
     
     // Update local template state with the Redux mappings
-    setCurrentTemplate(prev => {
+    setCurrentTemplate((prev: FieldMappingTemplate) => {
       const newTemplate = {
         ...prev,
-        mappings: [...mappings], // Create a copy to ensure proper reference change
-        lastModified: Date.now()
+        fieldMappings: [...mappings], // Create a copy to ensure proper reference change
+        lastUsed: new Date().toISOString()
       };
       console.log("Updated template with Redux mappings:", newTemplate);
       return newTemplate;
