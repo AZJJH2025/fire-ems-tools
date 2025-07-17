@@ -23,14 +23,26 @@ def register_react_routes(app):
     @app.route('/response-time-analyzer')
     def response_time_analyzer():
         """Serve the Response Time Analyzer tool"""
-        from flask import send_file
-        return send_file('static/alt-response-analyzer/index.html')
+        from flask import render_template
+        from utils.asset_utils import get_main_asset_file
+        
+        # Get the current main asset file dynamically
+        main_asset = get_main_asset_file()
+        
+        # Use template system with nonce injection and dynamic asset detection
+        return render_template('react_app.html', main_asset=main_asset)
         
     @app.route('/response-time-analyzer-new')
     def response_time_analyzer_new():
         """New route for Response Time Analyzer"""
-        from flask import send_file
-        return send_file('static/alt-response-analyzer/index.html')
+        from flask import render_template
+        from utils.asset_utils import get_main_asset_file
+        
+        # Get the current main asset file dynamically
+        main_asset = get_main_asset_file()
+        
+        # Use template system with nonce injection and dynamic asset detection
+        return render_template('react_app.html', main_asset=main_asset)
     
     # Temporarily disabled - using HTML template version instead
     # @app.route('/fire-map-pro')
