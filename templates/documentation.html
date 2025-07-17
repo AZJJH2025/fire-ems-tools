@@ -239,7 +239,8 @@
     {{ external_script("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js") }}
     {{ external_script("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js") }}
     
-    {{ secure_script("
+    <script nonce="{{ g.csp_nonce or '' }}">
+        {% raw %}
         // Search functionality
         let searchTimeout;
         const searchInput = document.getElementById('searchInput');
@@ -286,7 +287,9 @@
                 searchResults.style.display = 'none';
             }
         });
+        {% endraw %}
 
+        {% raw %}
         // Table of Contents
         function toggleTOC() {
             const tocContainer = document.getElementById('tocContainer');
@@ -301,7 +304,9 @@
         }
 
         function loadTOC() {
+            {% endraw %}
             const docPath = '{{ doc_path | default("README") }}';
+            {% raw %}
             fetch(`/docs/api/toc/${docPath}`)
                 .then(response => response.json())
                 .then(data => {
@@ -346,10 +351,12 @@
         // Share functionality
         function shareLink() {
             if (navigator.share) {
+                {% endraw %}
                 navigator.share({
                     title: '{{ title }}',
                     url: window.location.href
                 });
+                {% raw %}
             } else {
                 navigator.clipboard.writeText(window.location.href).then(function() {
                     alert('Link copied to clipboard!');
@@ -392,6 +399,7 @@
                 }
             });
         });
-    ") }}
+        {% endraw %}
+    </script>
 </body>
 </html>

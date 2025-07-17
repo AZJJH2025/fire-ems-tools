@@ -4,23 +4,23 @@ Use these macros to ensure all inline scripts and styles use proper nonces
 -->
 
 {% macro secure_script(content) %}
-<script nonce="{{ csp_nonce() }}">{{ content | safe }}</script>
+<script nonce="{{ g.csp_nonce or '' }}">{{ content | safe }}</script>
 {% endmacro %}
 
 {% macro secure_style(content) %}
-<style nonce="{{ csp_style_nonce() }}">{{ content | safe }}</style>
+<style nonce="{{ g.csp_style_nonce or '' }}">{{ content | safe }}</style>
 {% endmacro %}
 
 {% macro external_script(src, integrity=None, crossorigin="anonymous") %}
 <script src="{{ src }}"
         {% if integrity %}integrity="{{ integrity }}" crossorigin="{{ crossorigin }}"{% endif %}
-        nonce="{{ csp_nonce() }}"></script>
+        nonce="{{ g.csp_nonce or '' }}"></script>
 {% endmacro %}
 
 {% macro external_style(href, integrity=None, crossorigin="anonymous") %}
 <link rel="stylesheet" href="{{ href }}"
       {% if integrity %}integrity="{{ integrity }}" crossorigin="{{ crossorigin }}"{% endif %}
-      nonce="{{ csp_style_nonce() }}">
+      nonce="{{ g.csp_style_nonce or '' }}">
 {% endmacro %}
 
 <!-- Example usage in templates:
