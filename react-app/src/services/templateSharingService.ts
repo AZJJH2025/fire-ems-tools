@@ -4,7 +4,7 @@
  * Supports import/export, community sharing, and collaborative template development
  */
 
-import { FieldMappingTemplate, TemplateSuggestion } from '@/types/formatter';
+import { FieldMappingTemplate } from '@/types/formatter';
 import { TemplateService } from './templateService';
 
 export interface ShareableTemplate {
@@ -47,7 +47,7 @@ export interface TemplateExportData {
 export class TemplateSharingService {
   private static readonly EXPORT_VERSION = '1.0.0';
   private static readonly COMMUNITY_STORAGE_KEY = 'fireems_community_templates';
-  private static readonly SHARED_TEMPLATES_KEY = 'fireems_shared_templates';
+  // private static readonly SHARED_TEMPLATES_KEY = 'fireems_shared_templates'; // Reserved for future use
 
   /**
    * Export templates to shareable format
@@ -86,7 +86,7 @@ export class TemplateSharingService {
       }
     }));
 
-    const cadVendors = [...new Set(cleanedTemplates.map(t => t.cadVendor).filter(Boolean))];
+    const cadVendors = [...new Set(cleanedTemplates.map(t => t.cadVendor).filter(Boolean))] as string[];
     const tools = [...new Set(cleanedTemplates.map(t => t.targetTool).filter(Boolean))];
     const averageQuality = Math.round(
       cleanedTemplates.reduce((sum, t) => sum + (t.metadata?.qualityScore || 0), 0) / cleanedTemplates.length
@@ -169,9 +169,7 @@ export class TemplateSharingService {
           // Mark as imported
           metadata: {
             ...template.metadata,
-            tags: [...(template.metadata?.tags || []), 'imported'],
-            importedAt: new Date().toISOString(),
-            importedFrom: exportData.exportedBy
+            tags: [...(template.metadata?.tags || []), 'imported']
           }
         };
 
@@ -292,8 +290,7 @@ export class TemplateSharingService {
         isPublic: true,
         metadata: {
           ...template.metadata,
-          tags: [...(template.metadata?.tags || []), 'community', 'shared'],
-          sharedAt: new Date().toISOString()
+          tags: [...(template.metadata?.tags || []), 'community', 'shared']
         }
       },
       sharedBy: {
@@ -419,7 +416,7 @@ export class TemplateSharingService {
 
   private static resolveTemplateConflict(
     newTemplate: FieldMappingTemplate,
-    existingTemplate: FieldMappingTemplate
+    _existingTemplate: FieldMappingTemplate
   ): FieldMappingTemplate {
     // Create a merged template with conflict resolution
     return {
@@ -428,9 +425,7 @@ export class TemplateSharingService {
       name: `${newTemplate.name} (Imported)`,
       metadata: {
         ...newTemplate.metadata,
-        tags: [...(newTemplate.metadata?.tags || []), 'imported', 'conflict-resolved'],
-        originalName: newTemplate.name,
-        conflictResolvedAt: new Date().toISOString()
+        tags: [...(newTemplate.metadata?.tags || []), 'imported', 'conflict-resolved']
       }
     };
   }
