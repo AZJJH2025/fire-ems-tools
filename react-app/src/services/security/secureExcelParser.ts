@@ -102,6 +102,11 @@ export class SecureExcelParser {
             return;
           }
           
+          if (!(data instanceof ArrayBuffer)) {
+            reject(new Error('Invalid file format - expected binary data'));
+            return;
+          }
+          
           // Parse with security wrapper
           const result = await this.parseExcelData(data);
           
@@ -148,8 +153,8 @@ export class SecureExcelParser {
         bookVBA: false, // Disable VBA/macros
         bookSheets: false, // Disable sheet info
         bookProps: false, // Disable document properties
-        bookSST: false, // Disable shared strings
-        bookType: 'xlsx', // Force xlsx type
+        // bookSST: false, // Property not available in current xlsx version
+        // bookType: 'xlsx', // Property not available in current xlsx version
         WTF: false, // Disable "What's The Format" parsing
         raw: false // Disable raw values
       });
@@ -164,7 +169,7 @@ export class SecureExcelParser {
     const sheet = this.getTargetSheet(sanitizedWorkbook);
     
     // Convert to JSON with security limits
-    const jsonData = this.convertSheetToJson(sheet);
+    const jsonData = await this.convertSheetToJson(sheet);
     
     if (jsonData.length === 0) {
       throw new Error('Excel file is empty or contains no data');
@@ -213,7 +218,7 @@ export class SecureExcelParser {
   /**
    * Convert sheet to JSON with security limits
    */
-  private convertSheetToJson(sheet: any): any[] {
+  private convertSheetToJson(sheet: any): Promise<any[]> {
     // Use dynamic import for xlsx utils
     return import('xlsx').then(XLSX => {
       try {
@@ -221,10 +226,8 @@ export class SecureExcelParser {
         const jsonData = XLSX.utils.sheet_to_json(sheet, {
           header: 1,
           raw: false,
-          dateNF: 'yyyy-mm-dd',
-          cellDates: true,
           defval: '' // Default value for empty cells
-        });
+        }) as any[];
         
         // Apply row limit
         const limitedData = jsonData.slice(0, this.options.maxRows);
