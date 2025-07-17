@@ -239,6 +239,15 @@ def create_app(config_name='default'):
     # Initialize SOC 2 compliance logging
     compliance_logger = ComplianceLogger(app)
     
+    # CSP nonce helper functions
+    def csp_nonce():
+        """Get the current CSP nonce for scripts"""
+        return getattr(g, 'csp_nonce', '')
+    
+    def csp_style_nonce():
+        """Get the current CSP nonce for styles"""
+        return getattr(g, 'csp_style_nonce', '')
+    
     # Add CSP nonce functions to template context
     @app.context_processor
     def inject_security_context():

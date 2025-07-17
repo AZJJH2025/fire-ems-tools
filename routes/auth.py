@@ -20,6 +20,35 @@ email_service = EmailService()
 # Create blueprint
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
+# API status endpoint for React app
+@bp.route('/status', methods=['GET'])
+def auth_status():
+    """Check authentication status - API endpoint for React app"""
+    try:
+        if current_user.is_authenticated:
+            return jsonify({
+                'authenticated': True,
+                'user': {
+                    'id': current_user.id,
+                    'username': current_user.username,
+                    'email': current_user.email,
+                    'role': current_user.role,
+                    'department': current_user.department.name if current_user.department else None
+                }
+            })
+        else:
+            return jsonify({
+                'authenticated': False,
+                'user': None
+            })
+    except Exception as e:
+        logger.error(f"Auth status check failed: {str(e)}")
+        return jsonify({
+            'authenticated': False,
+            'user': None,
+            'error': 'Authentication check failed'
+        }), 500
+
 # Legacy redirect routes (for backward compatibility)
 @bp.route('/login')
 def login():

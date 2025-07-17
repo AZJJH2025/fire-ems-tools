@@ -90,7 +90,7 @@ class SecurityHeadersMiddleware:
             style_nonce = f"'nonce-{style_nonce}'" if style_nonce else ""
             # Allow 'unsafe-inline' for styles and Google Fonts for Material-UI
             # Add 'strict-dynamic' to allow dynamic imports for React lazy loading
-            script_src = f"script-src 'self' 'strict-dynamic' {script_nonce}"
+            script_src = f"script-src 'self' 'strict-dynamic' {script_nonce} 'unsafe-eval'"
             # Material-UI bundles styles at build time without nonces, so skip nonces for styles
             # Allow trusted CDNs for Bootstrap, Font Awesome, and Google Fonts
             style_src = f"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com data:"
