@@ -86,7 +86,12 @@ You should see the main tools dashboard with cards for:
 - **Left side**: Your CSV column names (e.g., "Call Receive Time", "Unit Dispatched")
 - **Right side**: Target fields (e.g., "Incident Time", "Dispatch Time")
 
-**How to Map Fields**:
+**🚀 NEW: Try Professional Templates First**:
+1. **Check Template Suggestions**: Look for auto-suggested templates based on your data
+2. **Load Vendor Templates**: Click "Load Vendor Templates" if this is your first time
+3. **Apply Template**: Click "Apply Template" if you see a good match (95%+ compatibility)
+
+**If No Templates Match - Manual Mapping**:
 1. **Drag** from your CSV columns to the appropriate target fields
 2. **Start with Required Fields** (red indicators):
    - **Incident ID** ← Drag your incident number/ID column
@@ -103,7 +108,10 @@ Your CSV Column          →    Target Field
 "Latitude", "Longitude"  →    Latitude, Longitude
 ```
 
-**🔧 Pro Tip**: Look for auto-suggested mappings (highlighted in blue)
+**🔧 Pro Tips**: 
+- Look for auto-suggested mappings (highlighted in blue)
+- Check template compatibility scores (>90% is excellent)
+- Browse community templates from similar departments
 
 ### **2.5 Validate Your Mapping**
 1. Check the **Live Preview** at the bottom
@@ -185,7 +193,13 @@ Your field mappings should still be active
 3. Name it: `[Department Name] - [CAD System] Monthly`
    - Example: "Houston FD - Tyler CAD Monthly"
 4. Add description: "Monthly incident export template"
-5. Click **"Save Template"**
+5. **NEW**: Check "Share with Community" if you want to help other departments
+6. Click **"Save Template"**
+
+**🚀 NEW: Share Your Success**:
+- High-quality templates (>95% compatibility) can be shared with other departments
+- Your template may help departments with similar CAD systems
+- Shared templates go through quality review before being made public
 
 **✅ Success Check**: Template appears in your saved templates list
 
@@ -260,9 +274,11 @@ Your field mappings should still be active
 - **Data export**: Export clean data for other systems
 
 ### **Share and Collaborate**
-- **Template sharing**: Share successful templates with other departments
-- **Best practices**: Learn from other departments' workflows
-- **Regional coordination**: Coordinate with mutual aid partners
+- **Template sharing**: Share successful templates with other departments through community features
+- **Vendor templates**: Access professional templates for Console One, Tyler, Hexagon, and TriTech CAD systems
+- **Community collaboration**: Rate and review templates, learn from other departments
+- **Best practices**: Learn from other departments' workflows and template configurations
+- **Regional coordination**: Coordinate with mutual aid partners using standardized templates
 
 ---
 

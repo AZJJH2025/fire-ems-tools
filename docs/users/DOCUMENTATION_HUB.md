@@ -26,14 +26,16 @@ Complete workflow from uploading CAD data to generating professional NFPA compli
 ### Data Processing & Preparation
 
 #### Data Formatter
-Transform any CAD export into standardized format for seamless tool integration.
+Transform any CAD export into standardized format with professional template library and collaboration features.
 
 [**📖 Read Data Formatter Guide →**](/docs/users/DATA_FORMATTER)
 
 **Key Features:**
 - Universal CAD vendor support (Console One, Tyler, Hexagon, TriTech)
 - Smart field mapping with 95% auto-detection
-- Professional certified templates
+- Professional certified vendor templates
+- Community template sharing and collaboration
+- Advanced template library with search and filtering
 - Quality validation and error prevention
 
 ---
@@ -192,8 +194,11 @@ Practice with realistic fire department data:
 Fire EMS Tools is designed specifically for fire departments by professionals who understand your needs. Our documentation is continuously updated based on feedback from fire chiefs and department personnel across the country.
 
 ### Community Resources
-- Share templates and best practices with other departments
-- Learn from successful implementations
-- Contribute to tool improvements through feedback
+- **Template Sharing**: Share field mapping templates with other departments
+- **Professional Vendor Templates**: Access certified templates for major CAD systems
+- **Collaboration Features**: Rate, review, and improve templates collaboratively
+- **Best Practices**: Learn from successful implementations nationwide
+- **Community Support**: Get help from other fire department professionals
+- **Continuous Improvement**: Contribute to tool improvements through feedback
 
 **Ready to get started? Begin with our [Quick Start Guide](/docs/users/QUICK_START) and transform your department's data into actionable insights today!**
