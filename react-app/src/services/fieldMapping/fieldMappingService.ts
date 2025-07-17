@@ -65,8 +65,11 @@ export function calculateFieldSimilarity(field1: string, field2: string): number
   const norm1 = normalizeFieldName(field1);
   const norm2 = normalizeFieldName(field2);
   
-  if (norm1 === norm2) return 100;
+  // Handle empty strings first
   if (!norm1 || !norm2) return 0;
+  
+  // Check for exact matches
+  if (norm1 === norm2) return 100;
   
   // Check for exact word matches
   const words1 = norm1.split(' ');
@@ -83,7 +86,9 @@ export function calculateFieldSimilarity(field1: string, field2: string): number
   const maxLength = Math.max(norm1.length, norm2.length);
   const similarity = ((maxLength - distance) / maxLength) * 100;
   
-  return Math.max(0, Math.round(similarity));
+  // Only return similarity if it's above a meaningful threshold
+  const roundedSimilarity = Math.round(similarity);
+  return roundedSimilarity >= 20 ? roundedSimilarity : 0;
 }
 
 /**
@@ -213,11 +218,13 @@ export function validateFieldMapping(
   
   // Check for low-confidence mappings
   const sourceFields = mapping.map(m => m.sourceField);
-  const suggestions = suggestFieldMapping(sourceFields, targetFields, 70);
+  const suggestions = suggestFieldMapping(sourceFields, targetFields, 0); // Get all suggestions, regardless of confidence
   
-  for (const suggestion of suggestions) {
-    if (suggestion.confidence < 70 && suggestion.targetField) {
-      warnings.push(`Low confidence mapping: ${suggestion.sourceField} → ${suggestion.targetField.name}`);
+  for (const mappingItem of mapping) {
+    const suggestion = suggestions.find(s => s.sourceField === mappingItem.sourceField);
+    if (suggestion && suggestion.confidence < 70) {
+      const targetField = targetFields.find(f => f.id === mappingItem.targetField);
+      warnings.push(`Low confidence mapping: ${mappingItem.sourceField} → ${targetField?.name || mappingItem.targetField}`);
     }
   }
   

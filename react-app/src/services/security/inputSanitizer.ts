@@ -81,7 +81,7 @@ export const sanitizeString = (input: unknown): string => {
   
   // Remove potentially dangerous characters
   const sanitized = str
-    .replace(/[<>]/g, '') // Remove HTML brackets
+    .replace(/<[^>]*>/g, '') // Remove HTML tags
     .replace(/javascript:/gi, '') // Remove javascript: protocol
     .replace(/data:/gi, '') // Remove data: protocol
     .replace(/vbscript:/gi, '') // Remove vbscript: protocol
@@ -103,8 +103,8 @@ export const sanitizeObject = (obj: any, depth = 0): any => {
     return obj;
   }
   
-  // Prevent prototype pollution
-  if (typeof obj === 'object' && obj.constructor !== Object && obj.constructor !== Array) {
+  // Only reject functions and complex objects, not regular objects with modified prototypes
+  if (typeof obj === 'function' || (typeof obj === 'object' && obj.constructor === RegExp)) {
     return {};
   }
   
@@ -119,7 +119,7 @@ export const sanitizeObject = (obj: any, depth = 0): any => {
   
   // Handle objects
   if (typeof obj === 'object') {
-    const sanitized: any = {};
+    const sanitized: any = Object.create(null);
     
     for (const key in obj) {
       // Skip prototype chain properties
@@ -142,7 +142,8 @@ export const sanitizeObject = (obj: any, depth = 0): any => {
       sanitized[sanitizedKey] = sanitizeObject(obj[key], depth + 1);
     }
     
-    return sanitized;
+    // Convert to regular object to maintain compatibility
+    return JSON.parse(JSON.stringify(sanitized));
   }
   
   // Handle primitive values
@@ -182,7 +183,7 @@ export const validateFile = (file: File): void => {
   
   // Check filename for suspicious patterns
   const filename = sanitizeString(file.name);
-  if (filename.length === 0) {
+  if (filename.length === 0 || filename !== file.name) {
     throw new Error('Invalid filename');
   }
   

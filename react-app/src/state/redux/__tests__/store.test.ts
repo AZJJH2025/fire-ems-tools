@@ -127,44 +127,40 @@ describe('Redux Store', () => {
   });
 
   it('should handle water supply coverage state', () => {
-    const hydrants = [
-      {
-        id: 'HYD-001',
-        latitude: 39.7392,
-        longitude: -104.9903,
-        flowRate: 1500,
-        operationalStatus: 'active'
-      }
-    ];
+    const hydrantData = {
+      latitude: 39.7392,
+      longitude: -104.9903,
+      flowRate: 1500,
+      operationalStatus: 'active' as const
+    };
     
     store.dispatch({
-      type: 'waterSupplyCoverage/setHydrants',
-      payload: hydrants
+      type: 'waterSupplyCoverage/addHydrant',
+      payload: hydrantData
     });
     
     const state = store.getState() as RootState;
-    expect(state.waterSupplyCoverage.hydrants).toEqual(hydrants);
+    expect(state.waterSupplyCoverage.hydrants).toHaveLength(1);
+    expect(state.waterSupplyCoverage.hydrants[0]).toMatchObject(hydrantData);
   });
 
   it('should handle tanks state', () => {
-    const tanks = [
-      {
-        id: 'TANK-001',
-        latitude: 39.7392,
-        longitude: -104.9903,
-        capacity: 50000,
-        currentLevel: 45000,
-        tankType: 'storage'
-      }
-    ];
+    const tankData = {
+      latitude: 39.7392,
+      longitude: -104.9903,
+      capacity: 50000,
+      currentLevel: 45000,
+      tankType: 'storage' as const
+    };
     
     store.dispatch({
-      type: 'waterSupplyCoverage/setTanks',
-      payload: tanks
+      type: 'waterSupplyCoverage/addTank',
+      payload: tankData
     });
     
     const state = store.getState() as RootState;
-    expect(state.waterSupplyCoverage.tanks).toEqual(tanks);
+    expect(state.waterSupplyCoverage.tanks).toHaveLength(1);
+    expect(state.waterSupplyCoverage.tanks[0]).toMatchObject(tankData);
   });
 
   it('should handle UI state updates', () => {
@@ -197,20 +193,20 @@ describe('Redux Store', () => {
 
   it('should handle loading states', () => {
     store.dispatch({
-      type: 'formatter/setLoading',
-      payload: true
+      type: 'formatter/setProcessingStatus',
+      payload: 'uploading'
     });
     
     let state = store.getState() as RootState;
-    expect(state.formatter.processingStatus).toBe(true);
+    expect(state.formatter.processingStatus).toBe('uploading');
     
     store.dispatch({
-      type: 'formatter/setLoading',
-      payload: false
+      type: 'formatter/setProcessingStatus',
+      payload: 'idle'
     });
     
     state = store.getState() as RootState;
-    expect(state.formatter.processingStatus).toBe(false);
+    expect(state.formatter.processingStatus).toBe('idle');
   });
 
   it('should handle complex state updates', () => {
@@ -276,10 +272,10 @@ describe('Redux Store', () => {
 
   it('should handle multiple dispatches correctly', () => {
     const actions = [
-      { type: 'formatter/setData', payload: [{ id: 1 }] },
-      { type: 'formatter/setLoading', payload: true },
-      { type: 'formatter/setError', payload: null },
-      { type: 'formatter/setLoading', payload: false }
+      { type: 'formatter/setTransformedData', payload: [{ id: 1 }] },
+      { type: 'formatter/setProcessingStatus', payload: 'transforming' as const },
+      { type: 'formatter/setValidationErrors', payload: [] },
+      { type: 'formatter/setProcessingStatus', payload: 'complete' as const }
     ];
     
     actions.forEach(action => {

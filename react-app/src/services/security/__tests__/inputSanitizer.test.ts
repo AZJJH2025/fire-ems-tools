@@ -20,11 +20,13 @@ vi.mock('dompurify', () => ({
 describe('Input Sanitizer', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.useFakeTimers();
     securityConfig.enable();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   describe('sanitizeHtml', () => {

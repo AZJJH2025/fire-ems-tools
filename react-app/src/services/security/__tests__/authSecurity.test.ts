@@ -27,7 +27,7 @@ describe('Authentication Security', () => {
 
   describe('validatePassword', () => {
     it('should validate strong passwords', () => {
-      const strongPassword = 'StrongPass123!';
+      const strongPassword = 'StrongPass456!';
       const result = validatePassword(strongPassword);
       
       expect(result.valid).toBe(true);
@@ -242,6 +242,7 @@ describe('Authentication Security', () => {
   });
 
   describe('hashPassword', () => {
+
     it('should hash password consistently', async () => {
       const password = 'testpassword';
       const salt = 'testsalt';
@@ -250,6 +251,8 @@ describe('Authentication Security', () => {
       const hash2 = await hashPassword(password, salt);
       
       expect(hash1).toBe(hash2);
+      expect(hash1).toHaveLength(64);
+      expect(hash1).toMatch(/^[a-f0-9]{64}$/);
     });
 
     it('should produce different hashes for different passwords', async () => {
@@ -257,6 +260,8 @@ describe('Authentication Security', () => {
       const hash2 = await hashPassword('password2', 'salt');
       
       expect(hash1).not.toBe(hash2);
+      expect(hash1).toHaveLength(64);
+      expect(hash2).toHaveLength(64);
     });
 
     it('should produce different hashes for different salts', async () => {
@@ -264,11 +269,14 @@ describe('Authentication Security', () => {
       const hash2 = await hashPassword('password', 'salt2');
       
       expect(hash1).not.toBe(hash2);
+      expect(hash1).toHaveLength(64);
+      expect(hash2).toHaveLength(64);
     });
 
     it('should work without salt', async () => {
       const hash = await hashPassword('password');
       expect(hash).toMatch(/^[a-f0-9]{64}$/);
+      expect(hash).toHaveLength(64);
     });
   });
 
