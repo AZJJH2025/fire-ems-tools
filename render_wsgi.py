@@ -2,6 +2,7 @@ import os
 import sys
 import traceback
 import logging
+import secrets
 from logging.handlers import RotatingFileHandler
 
 # Configure logging
@@ -205,7 +206,7 @@ fallback_templates = {
             <div class="login-footer">
                 <p>Don't have an account? Please contact your department administrator.</p>
                 <p><a href="/">Return to Home</a></p>
-                <p><small>Default admin: admin@fireems.ai / FireEMS2025!</small></p>
+                <p><small>Contact your administrator for login credentials</small></p>
             </div>
         </div>
     </div>
@@ -542,7 +543,7 @@ except Exception as e:
                     
                     # Create super admin user
                     admin_email = 'admin@fireems.ai'
-                    admin_password = 'FireEMS2025!'
+                    admin_password = os.environ.get('SUPER_ADMIN_PASSWORD', 'temp_' + secrets.token_urlsafe(12))
                     preferences = '{}'
                     cursor.execute('''
                         INSERT INTO users
@@ -559,15 +560,15 @@ except Exception as e:
                 conn.commit()
                 conn.close()
                 
-                return render_template_string('''
+                return render_template_string(f'''
 <!DOCTYPE html>
 <html>
 <head>
     <title>Fire-EMS Tools Recovery</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        .success { background-color: #d4edda; padding: 15px; border-radius: 5px; }
+        body {{ font-family: Arial, sans-serif; padding: 20px; }}
+        .container {{ max-width: 800px; margin: 0 auto; }}
+        .success {{ background-color: #d4edda; padding: 15px; border-radius: 5px; }}
     </style>
 </head>
 <body>
@@ -575,10 +576,10 @@ except Exception as e:
         <h1>Database Initialized</h1>
         <div class="success">
             <p>The database has been successfully initialized.</p>
-            <p>Admin credentials:</p>
+            <p>Admin credentials are set via environment variables:</p>
             <ul>
                 <li>Email: admin@fireems.ai</li>
-                <li>Password: FireEMS2025!</li>
+                <li>Password: Set via SUPER_ADMIN_PASSWORD environment variable</li>
             </ul>
             <p><a href="/login">Go to login page</a></p>
         </div>

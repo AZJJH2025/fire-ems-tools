@@ -12,6 +12,7 @@ python init_db.py --recreate
 
 import os
 import sys
+import secrets
 from app import create_app
 from database import db, Department, User, Station, Incident
 
@@ -88,8 +89,15 @@ def init_database(recreate=False):
                 email='admin@demo.example.com',
                 role='admin'
             )
-            admin_user.set_password('password123')  # Never do this in production!
+            # Use environment variable for password, generate secure random password if not provided
+            demo_admin_password = os.environ.get('DEMO_ADMIN_PASSWORD', secrets.token_urlsafe(16))
+            admin_user.set_password(demo_admin_password)
             db.session.add(admin_user)
+            
+            # Log the generated password for development use
+            if not os.environ.get('DEMO_ADMIN_PASSWORD'):
+                print(f"Generated demo admin password: {demo_admin_password}")
+                print("Set DEMO_ADMIN_PASSWORD environment variable to use a specific password")
             
             # Add some stations for the demo department
             stations = [
@@ -171,8 +179,15 @@ def init_database(recreate=False):
                 email='admin@fireems.ai',
                 role='super_admin'
             )
-            super_admin.set_password('adminpassword')  # Never do this in production!
+            # Use environment variable for password, generate secure random password if not provided
+            super_admin_password = os.environ.get('SUPER_ADMIN_PASSWORD', secrets.token_urlsafe(16))
+            super_admin.set_password(super_admin_password)
             db.session.add(super_admin)
+            
+            # Log the generated password for development use
+            if not os.environ.get('SUPER_ADMIN_PASSWORD'):
+                print(f"Generated super admin password: {super_admin_password}")
+                print("Set SUPER_ADMIN_PASSWORD environment variable to use a specific password")
             
             db.session.commit()
             print("Added demo departments and users successfully")
