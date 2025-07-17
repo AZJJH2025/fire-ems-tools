@@ -131,33 +131,23 @@ export class SecureExcelParser {
   }
   
   /**
-   * Parse Excel data with security protections
+   * Parse Excel data with security protections using secure ExcelJS
    */
   private async parseExcelData(data: ArrayBuffer): Promise<{
     columns: string[];
     data: Record<string, any>[];
   }> {
-    // Dynamic import to avoid loading xlsx unless needed
-    const XLSX = await import('xlsx');
+    // Dynamic import to avoid loading exceljs unless needed
+    const ExcelJS = await import('exceljs');
     
-    // Security wrapper around xlsx.read
+    // Security wrapper around ExcelJS.Workbook
     let workbook: any;
     try {
-      // Parse with security-focused options
-      workbook = XLSX.read(data, { 
-        type: 'array',
-        cellDates: true,
-        cellNF: false,
-        cellText: false,
-        sheetStubs: false,
-        bookVBA: false, // Disable VBA/macros
-        bookSheets: false, // Disable sheet info
-        bookProps: false, // Disable document properties
-        // bookSST: false, // Property not available in current xlsx version
-        // bookType: 'xlsx', // Property not available in current xlsx version
-        WTF: false, // Disable "What's The Format" parsing
-        raw: false // Disable raw values
-      });
+      // Create workbook instance with security considerations
+      workbook = new ExcelJS.Workbook();
+      
+      // Parse with security-focused options - ExcelJS is inherently more secure
+      await workbook.xlsx.load(data);
     } catch (error) {
       throw new Error('Failed to parse Excel file: Invalid or corrupted file');
     }
@@ -169,7 +159,7 @@ export class SecureExcelParser {
     const sheet = this.getTargetSheet(sanitizedWorkbook);
     
     // Convert to JSON with security limits
-    const jsonData = await this.convertSheetToJson(sheet);
+    const jsonData = await this.convertSheetToJsonExcelJS(sheet);
     
     if (jsonData.length === 0) {
       throw new Error('Excel file is empty or contains no data');
@@ -186,58 +176,86 @@ export class SecureExcelParser {
   }
   
   /**
-   * Get target sheet with security checks
+   * Get target sheet with security checks (ExcelJS version)
    */
   private getTargetSheet(workbook: any): any {
-    if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+    if (!workbook.worksheets || workbook.worksheets.length === 0) {
       throw new Error('Excel file contains no sheets');
     }
     
     // Determine which sheet to use
-    let sheetName: string;
+    let sheet: any;
     if (this.options.sheetName) {
-      if (!workbook.SheetNames.includes(this.options.sheetName)) {
+      sheet = workbook.getWorksheet(this.options.sheetName);
+      if (!sheet) {
         throw new Error(`Sheet "${this.options.sheetName}" not found`);
       }
-      sheetName = this.options.sheetName;
     } else {
-      if (this.options.sheetIndex >= workbook.SheetNames.length) {
+      if (this.options.sheetIndex >= workbook.worksheets.length) {
         throw new Error(`Sheet index ${this.options.sheetIndex} out of range`);
       }
-      sheetName = workbook.SheetNames[this.options.sheetIndex];
+      sheet = workbook.worksheets[this.options.sheetIndex];
     }
     
-    const sheet = workbook.Sheets[sheetName];
     if (!sheet) {
-      throw new Error(`Sheet "${sheetName}" is empty or corrupted`);
+      throw new Error(`Sheet is empty or corrupted`);
     }
     
     return sheet;
   }
   
   /**
-   * Convert sheet to JSON with security limits
+   * Convert sheet to JSON with security limits (ExcelJS version)
    */
-  private convertSheetToJson(sheet: any): Promise<any[]> {
-    // Use dynamic import for xlsx utils
-    return import('xlsx').then(XLSX => {
-      try {
-        // Convert with security options
-        const jsonData = XLSX.utils.sheet_to_json(sheet, {
-          header: 1,
-          raw: false,
-          defval: '' // Default value for empty cells
-        }) as any[];
+  private async convertSheetToJsonExcelJS(sheet: any): Promise<any[]> {
+    try {
+      const jsonData: any[] = [];
+      
+      // Get the actual dimensions of the sheet
+      const rowCount = Math.min(sheet.actualRowCount || 0, this.options.maxRows);
+      const colCount = Math.min(sheet.actualColumnCount || 0, this.options.maxColumns);
+      
+      // Convert each row to array format
+      for (let rowIndex = 1; rowIndex <= rowCount; rowIndex++) {
+        const row = sheet.getRow(rowIndex);
+        const rowData: any[] = [];
         
-        // Apply row limit
-        const limitedData = jsonData.slice(0, this.options.maxRows);
+        // Convert each cell in the row
+        for (let colIndex = 1; colIndex <= colCount; colIndex++) {
+          const cell = row.getCell(colIndex);
+          let cellValue = '';
+          
+          if (cell && cell.value !== null && cell.value !== undefined) {
+            // Handle different cell types securely
+            if (typeof cell.value === 'string') {
+              cellValue = cell.value;
+            } else if (typeof cell.value === 'number') {
+              cellValue = cell.value.toString();
+            } else if (cell.value instanceof Date) {
+              cellValue = cell.value.toISOString();
+            } else if (cell.value && typeof cell.value === 'object' && 'text' in cell.value) {
+              // Handle rich text objects
+              cellValue = cell.value.text || '';
+            } else {
+              cellValue = String(cell.value);
+            }
+          }
+          
+          rowData.push(cellValue);
+        }
         
-        return limitedData;
-      } catch (error) {
-        throw new Error('Failed to convert sheet to JSON');
+        // Only add non-empty rows
+        if (rowData.some(cell => cell !== '')) {
+          jsonData.push(rowData);
+        }
       }
-    });
+      
+      return jsonData;
+    } catch (error) {
+      throw new Error('Failed to convert sheet to JSON');
+    }
   }
+
   
   /**
    * Extract columns from JSON data

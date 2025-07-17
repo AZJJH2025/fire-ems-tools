@@ -6,7 +6,11 @@ Test email functionality with current environment variables
 
 import os
 import sys
+from dotenv import load_dotenv
 from email_service import EmailService
+
+# Load environment variables from .env file
+load_dotenv()
 
 def test_email_service():
     """Test email service configuration and functionality"""

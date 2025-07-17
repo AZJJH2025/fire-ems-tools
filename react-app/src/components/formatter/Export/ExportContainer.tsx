@@ -355,15 +355,24 @@ const ExportContainer: React.FC = () => {
 
       // Handle Excel export separately due to its special binary processing
       if (exportFormat === 'excel') {
-        // Dynamic import for XLSX (bundle optimization)
-        const XLSX = await import('xlsx');
+        // Dynamic import for ExcelJS (bundle optimization)
+        const ExcelJS = await import('exceljs');
         
-        // Create a worksheet from the JSON data
-        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+        // Create a workbook and worksheet
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Data Export');
+        
+        // Add headers
+        const headers = Object.keys(dataToExport[0] || {});
+        worksheet.addRow(headers);
+        
+        // Add data rows
+        dataToExport.forEach(row => {
+          worksheet.addRow(Object.values(row));
+        });
+        
+        // Calculate column widths
         const columnWidths: { [key: string]: number } = {};
-
-        // Get all column headers
-        const headers = Object.keys(transformedData[0]);
 
         // First determine column widths from headers
         headers.forEach(header => {
@@ -380,24 +389,32 @@ const ExportContainer: React.FC = () => {
         });
 
         // Apply column widths to worksheet
-        worksheet['!cols'] = headers.map(header => ({ wch: columnWidths[header] }));
+        worksheet.columns = headers.map(header => ({ width: columnWidths[header] }));
 
         // Add metadata to the workbook
-        const workbook = XLSX.utils.book_new();
-        workbook.Props = {
-          Title: "FireEMS Formatted Data",
-          Subject: "Incident Data",
-          Author: "FireEMS Data Formatter",
-          CreatedDate: new Date()
-        };
+        workbook.creator = "FireEMS Data Formatter";
+        workbook.title = "FireEMS Formatted Data";
+        workbook.subject = "Incident Data";
+        workbook.created = new Date();
 
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Formatted Data');
+        // Style the header row
+        worksheet.getRow(1).font = { bold: true };
 
         // Set the file name with timestamp
         fileName = `formatted_data_${Date.now()}.xlsx`;
 
         // Generate Excel file and trigger download
-        XLSX.writeFile(workbook, fileName);
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.click();
+        
+        // Clean up
+        URL.revokeObjectURL(url);
 
         // Add to export history
         addToExportHistory('Excel', dataToExport.length, true, 'File Download', fileName);

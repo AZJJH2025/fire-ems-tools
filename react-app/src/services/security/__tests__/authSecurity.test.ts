@@ -302,7 +302,15 @@ describe('Authentication Security', () => {
     });
 
     it('should respect custom max age', () => {
-      const customConfig = { maxAge: 30 };
+      const customConfig = { 
+        maxAge: 30,
+        minLength: 8,
+        requireUppercase: true,
+        requireLowercase: true,
+        requireNumbers: true,
+        requireSpecialChars: true,
+        preventCommonPasswords: true
+      };
       const oldDate = new Date(Date.now() - 45 * 24 * 60 * 60 * 1000); // 45 days ago
       const result = passwordNeedsChange(oldDate, customConfig);
       

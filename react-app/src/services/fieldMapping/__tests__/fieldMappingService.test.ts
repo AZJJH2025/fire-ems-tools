@@ -23,15 +23,15 @@ const mockSourceFields = [
 ];
 
 const mockTargetFields = [
-  { id: 'incident_id', name: 'Incident ID', type: 'string', required: true },
-  { id: 'incident_time', name: 'Call Received Date/Time', type: 'datetime', required: true },
-  { id: 'dispatch_time', name: 'Dispatch Time', type: 'time', required: false },
-  { id: 'incident_type', name: 'Incident Type', type: 'string', required: false },
-  { id: 'latitude', name: 'Latitude', type: 'number', required: false },
-  { id: 'longitude', name: 'Longitude', type: 'number', required: false },
-  { id: 'address', name: 'Address', type: 'string', required: false },
-  { id: 'city', name: 'City', type: 'string', required: false },
-  { id: 'state', name: 'State', type: 'string', required: false }
+  { id: 'incident_id', name: 'Incident ID', description: 'Unique incident identifier', type: 'string' as const, required: true },
+  { id: 'incident_time', name: 'Call Received Date/Time', description: 'Date and time call was received', type: 'datetime' as const, required: true },
+  { id: 'dispatch_time', name: 'Dispatch Time', description: 'Time units were dispatched', type: 'time' as const, required: false },
+  { id: 'incident_type', name: 'Incident Type', description: 'Type of incident', type: 'string' as const, required: false },
+  { id: 'latitude', name: 'Latitude', description: 'Geographic latitude', type: 'number' as const, required: false },
+  { id: 'longitude', name: 'Longitude', description: 'Geographic longitude', type: 'number' as const, required: false },
+  { id: 'address', name: 'Address', description: 'Street address', type: 'string' as const, required: false },
+  { id: 'city', name: 'City', description: 'City name', type: 'string' as const, required: false },
+  { id: 'state', name: 'State', description: 'State abbreviation', type: 'string' as const, required: false }
 ];
 
 const mockDataRow = {

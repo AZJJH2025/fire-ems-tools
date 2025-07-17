@@ -118,21 +118,21 @@ const ReportExport: React.FC = () => {
     setSelectedSections(currentSelectedSections);
   };
   
-  // Generate Excel export
+  // Generate Excel export using secure ExcelJS
   const generateExcelExport = async () => {
-    // Dynamic import for XLSX (bundle optimization)
-    const XLSX = await import('xlsx');
+    // Dynamic import for ExcelJS (bundle optimization)
+    const ExcelJS = await import('exceljs');
     
     // Create a new workbook
-    const workbook = XLSX.utils.book_new();
+    const workbook = new ExcelJS.Workbook();
     
     // Add metadata
-    workbook.Props = {
-      Title: "Response Time Analysis Report",
-      Subject: "Incident Response Times",
-      Author: "FireEMS Response Time Analyzer",
-      CreatedDate: new Date()
-    };
+    workbook.creator = "FireEMS Response Time Analyzer";
+    workbook.lastModifiedBy = "FireEMS Response Time Analyzer";
+    workbook.created = new Date();
+    workbook.modified = new Date();
+    workbook.title = "Response Time Analysis Report";
+    workbook.subject = "Incident Response Times";
     
     // If summary statistics are selected
     if (selectedSections.includes('summary') && responseTimeStats) {
@@ -207,19 +207,23 @@ const ReportExport: React.FC = () => {
         }
       }
       
-      const summaryWorksheet = XLSX.utils.aoa_to_sheet(statsData);
+      const summaryWorksheet = workbook.addWorksheet('Summary Statistics');
+      
+      // Add data to worksheet
+      summaryWorksheet.addRows(statsData);
       
       // Set column widths
-      const summaryColWidths = [
-        { wch: 20 }, // A
-        { wch: 20 }, // B
-        { wch: 20 }, // C
-        { wch: 20 }, // D
-        { wch: 20 }, // E
+      summaryWorksheet.columns = [
+        { width: 20 }, // A
+        { width: 20 }, // B
+        { width: 20 }, // C
+        { width: 20 }, // D
+        { width: 20 }, // E
       ];
-      summaryWorksheet['!cols'] = summaryColWidths;
       
-      XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Summary Statistics');
+      // Style the header rows
+      summaryWorksheet.getRow(1).font = { bold: true, size: 14 };
+      summaryWorksheet.getRow(2).font = { bold: true };
     }
     
     // If incident details are selected
@@ -247,32 +251,53 @@ const ReportExport: React.FC = () => {
       });
       
       // Create incidents worksheet
-      const incidentsWorksheet = XLSX.utils.json_to_sheet(incidentsWithMetrics);
+      const incidentsWorksheet = workbook.addWorksheet('Incident Details');
+      
+      // Add headers
+      const headers = Object.keys(incidentsWithMetrics[0] || {});
+      incidentsWorksheet.addRow(headers);
+      
+      // Add data rows
+      incidentsWithMetrics.forEach(incident => {
+        incidentsWorksheet.addRow(Object.values(incident));
+      });
       
       // Set column widths
-      const incidentColWidths = [
-        { wch: 15 }, // A - Incident ID
-        { wch: 12 }, // B - Date
-        { wch: 10 }, // C - Time
-        { wch: 15 }, // D - Type
-        { wch: 15 }, // E - Responding Unit
-        { wch: 25 }, // F - Address
-        { wch: 20 }, // G - Location
-        { wch: 15 }, // H - Dispatch Time
-        { wch: 15 }, // I - Turnout Time
-        { wch: 15 }, // J - Travel Time
-        { wch: 20 }, // K - Total Response Time
-        { wch: 15 }, // L - Scene Time
-        { wch: 20 }, // M - Total Incident Time
+      incidentsWorksheet.columns = [
+        { width: 15 }, // A - Incident ID
+        { width: 12 }, // B - Date
+        { width: 10 }, // C - Time
+        { width: 15 }, // D - Type
+        { width: 15 }, // E - Responding Unit
+        { width: 25 }, // F - Address
+        { width: 20 }, // G - Location
+        { width: 15 }, // H - Dispatch Time
+        { width: 15 }, // I - Turnout Time
+        { width: 15 }, // J - Travel Time
+        { width: 20 }, // K - Total Response Time
+        { width: 15 }, // L - Scene Time
+        { width: 20 }, // M - Total Incident Time
       ];
-      incidentsWorksheet['!cols'] = incidentColWidths;
       
-      XLSX.utils.book_append_sheet(workbook, incidentsWorksheet, 'Incident Details');
+      // Style the header row
+      incidentsWorksheet.getRow(1).font = { bold: true };
     }
     
     // Generate the file
     const filename = `response_time_analysis_${Date.now()}.xlsx`;
-    XLSX.writeFile(workbook, filename);
+    
+    // Write file to buffer and download
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    
+    // Clean up
+    URL.revokeObjectURL(url);
     
     return { success: true, filename };
   };
@@ -301,10 +326,22 @@ const ReportExport: React.FC = () => {
       };
     });
     
-    // Convert to CSV (dynamic import for bundle optimization)
-    const XLSX = await import('xlsx');
-    const worksheet = XLSX.utils.json_to_sheet(incidentsWithMetrics);
-    const csvOutput = XLSX.utils.sheet_to_csv(worksheet);
+    // Convert to CSV using ExcelJS
+    const ExcelJS = await import('exceljs');
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Incident Details');
+    
+    // Add headers
+    const headers = Object.keys(incidentsWithMetrics[0] || {});
+    worksheet.addRow(headers);
+    
+    // Add data rows
+    incidentsWithMetrics.forEach(incident => {
+      worksheet.addRow(Object.values(incident));
+    });
+    
+    // Write to CSV format
+    const csvOutput = await workbook.csv.writeBuffer();
     
     // Create a download link
     const blob = new Blob([csvOutput], { type: 'text/csv;charset=utf-8;' });

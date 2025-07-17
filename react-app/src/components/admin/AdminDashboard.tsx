@@ -190,14 +190,14 @@ const AdminDashboard: React.FC = () => {
                 type="email"
                 name="email"
                 placeholder="Email"
-                defaultValue="admin@fireems.ai"
+                required
                 style={{ padding: '12px', border: '1px solid #ccc', borderRadius: '4px' }}
               />
               <input
                 type="password"
                 name="password"
                 placeholder="Password"
-                defaultValue="admin123"
+                required
                 style={{ padding: '12px', border: '1px solid #ccc', borderRadius: '4px' }}
               />
               <Button type="submit" variant="contained" color="primary">
