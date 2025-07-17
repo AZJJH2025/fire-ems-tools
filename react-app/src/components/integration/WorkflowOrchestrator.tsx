@@ -28,17 +28,12 @@ import {
   ListItem,
   ListItemText,
   ListItemIcon,
-  IconButton,
-  Tooltip,
   Stack,
   Tabs,
   Tab
 } from '@mui/material';
 import {
   PlayArrow,
-  Stop,
-  Pause,
-  Refresh,
   Settings,
   Info,
   CheckCircle,

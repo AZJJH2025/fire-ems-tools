@@ -42,7 +42,7 @@ import {
   GetApp
 } from '@mui/icons-material';
 
-import { FieldMappingTemplate, TemplateSuggestion } from '@/types/formatter';
+import { FieldMappingTemplate } from '@/types/formatter';
 import { TemplateSharingService, ShareableTemplate, TemplateExportData } from '@/services/templateSharingService';
 import { TemplateService } from '@/services/templateService';
 
@@ -50,11 +50,9 @@ import { TemplateService } from '@/services/templateService';
 interface TemplateSharingProps {
   open: boolean;
   onClose: () => void;
-  currentTemplate?: FieldMappingTemplate;
   allTemplates: FieldMappingTemplate[];
   onTemplateImported: (templates: FieldMappingTemplate[]) => void;
   departmentName: string;
-  contactEmail?: string;
 }
 
 interface TabPanelProps {
@@ -72,11 +70,9 @@ const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => (
 const TemplateSharing: React.FC<TemplateSharingProps> = ({
   open,
   onClose,
-  currentTemplate,
   allTemplates,
   onTemplateImported,
-  departmentName,
-  contactEmail
+  departmentName
 }) => {
   const [currentTab, setCurrentTab] = useState(0);
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
@@ -275,24 +271,8 @@ const TemplateSharing: React.FC<TemplateSharingProps> = ({
     }
   };
 
-  const handleSubmitToCommunity = async (template: FieldMappingTemplate) => {
-    try {
-      // Convert FieldMappingTemplate to FieldMappingTemplate for submission
-      const convertedTemplate = template;
-      
-      const shareableTemplate = TemplateSharingService.submitToCommunity(
-        convertedTemplate,
-        departmentName,
-        contactEmail
-      );
-      
-      setCommunityTemplates(prev => [...prev, shareableTemplate]);
-      alert(`Template "${template.name}" submitted to community!`);
-    } catch (error) {
-      console.error('Failed to submit to community:', error);
-      alert('Failed to submit template to community');
-    }
-  };
+  // Community submission functionality can be implemented when needed
+  // const handleSubmitToCommunity = async (template: FieldMappingTemplate) => { ... };
 
   const handleDownloadCommunityTemplate = (shareableTemplate: ShareableTemplate) => {
     try {

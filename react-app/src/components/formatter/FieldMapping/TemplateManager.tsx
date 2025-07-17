@@ -192,7 +192,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
           ...currentTemplate,
           name: templateName,
           description: templateDescription,
-          lastModified: Date.now()
+          lastUsed: new Date().toISOString()
         };
         
         setCurrentTemplate(updatedTemplate);
@@ -237,7 +237,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
   };
   
   // Apply field mapping template from TemplateService
-  const handleApplyFieldFieldMappingTemplate = (template: FieldFieldMappingTemplate) => {
+  const handleApplyFieldMappingTemplate = (template: FieldMappingTemplate) => {
     try {
       const appliedMappings = TemplateService.applyTemplate(template, sourceFields);
       if (onApplyFieldMappings) {
@@ -266,7 +266,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
       ...template,
       id: `template-${Date.now()}`,
       name: `${template.name} (Copy)`,
-      lastModified: Date.now()
+      lastUsed: new Date().toISOString()
     };
     
     // Save the duplicated template
@@ -344,7 +344,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
 
   // Group filtered templates by tool and category
   const groupedTemplates = filteredTemplates.reduce((groups, template) => {
-    const key = template.toolId || 'unknown';
+    const key = template.targetTool || 'unknown';
     if (!groups[key]) groups[key] = [];
     groups[key].push(template);
     return groups;
@@ -363,13 +363,13 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
   
   // Generate smart template name suggestions
   const getSmartTemplateName = (): string => {
-    const toolName = currentTemplate.toolId || 'Tool';
+    const toolName = currentTemplate.targetTool || 'Tool';
     const currentDate = new Date();
     const month = currentDate.toLocaleDateString('en-US', { month: 'long' });
     
-    if (currentTemplate.mappings.length > 0) {
+    if (currentTemplate.fieldMappings.length > 0) {
       // Look for patterns in source field names
-      const sourceFields = currentTemplate.mappings.map(m => m.sourceField.toLowerCase());
+      const sourceFields = currentTemplate.fieldMappings.map(m => m.sourceField.toLowerCase());
       if (sourceFields.some(f => f.includes('tyler'))) {
         return `Tyler CAD Export - ${month} ${currentDate.getFullYear()}`;
       }
@@ -382,7 +382,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
   };
 
   // Handle template import from sharing
-  const handleTemplateImported = (importedTemplates: FieldFieldMappingTemplate[]) => {
+  const handleTemplateImported = (importedTemplates: FieldMappingTemplate[]) => {
     // Refresh templates list to include imported templates
     const storedTemplates = loadTemplates();
     setTemplates(storedTemplates);
@@ -529,16 +529,16 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
                 Template Preview
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Tool: {currentTemplate.toolId || 'Unknown'}
+                Tool: {currentTemplate.targetTool || 'Unknown'}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Mappings: {currentTemplate.mappings.length} field mappings
+                Mappings: {currentTemplate.fieldMappings.length} field mappings
               </Typography>
-              {currentTemplate.mappings.length > 0 && (
+              {currentTemplate.fieldMappings.length > 0 && (
                 <Box sx={{ mt: 1 }}>
                   <Typography variant="caption" color="text.secondary">
-                    Sample mappings: {currentTemplate.mappings.slice(0, 3).map(m => `${m.sourceField} → ${m.targetField}`).join(', ')}
-                    {currentTemplate.mappings.length > 3 && ` +${currentTemplate.mappings.length - 3} more`}
+                    Sample mappings: {currentTemplate.fieldMappings.slice(0, 3).map(m => `${m.sourceField} → ${m.targetField}`).join(', ')}
+                    {currentTemplate.fieldMappings.length > 3 && ` +${currentTemplate.fieldMappings.length - 3} more`}
                   </Typography>
                 </Box>
               )}
@@ -650,7 +650,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
                   <ListItem
                     key={suggestion.template.id}
                     component="button"
-                    onClick={() => handleApplyFieldFieldMappingTemplate(suggestion.template)}
+                    onClick={() => handleApplyFieldMappingTemplate(suggestion.template)}
                     sx={{ 
                       py: 2, 
                       borderRadius: 1, 
@@ -821,16 +821,16 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
                                 <Stack direction="row" spacing={2} alignItems="center">
                                   <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
                                     <HistoryIcon sx={{ fontSize: 12, mr: 0.5 }} />
-                                    {formatDate(template.lastModified)}
+                                    {template.lastUsed ? formatDate(new Date(template.lastUsed).getTime()) : 'Never used'}
                                   </Typography>
                                   <Typography variant="caption" color="text.secondary">
-                                    {template.mappings?.length || 0} field mappings
+                                    {template.fieldMappings?.length || 0} field mappings
                                   </Typography>
                                 </Stack>
-                                {template.mappings && template.mappings.length > 0 && (
+                                {template.fieldMappings && template.fieldMappings.length > 0 && (
                                   <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-                                    Fields: {template.mappings.slice(0, 2).map(m => m.sourceField).join(', ')}
-                                    {template.mappings.length > 2 && ` +${template.mappings.length - 2} more`}
+                                    Fields: {template.fieldMappings.slice(0, 2).map(m => m.sourceField).join(', ')}
+                                    {template.fieldMappings.length > 2 && ` +${template.fieldMappings.length - 2} more`}
                                   </Typography>
                                 )}
                               </Box>
@@ -881,11 +881,9 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
       <TemplateSharing
         open={sharingDialogOpen}
         onClose={() => setSharingDialogOpen(false)}
-        currentTemplate={currentTemplate}
         allTemplates={templates}
         onTemplateImported={handleTemplateImported}
         departmentName={departmentName || 'Unknown Department'}
-        contactEmail={undefined}
       />
     </>
   );

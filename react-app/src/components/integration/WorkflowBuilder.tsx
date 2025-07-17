@@ -16,7 +16,6 @@ import {
   InputLabel,
   Card,
   CardContent,
-  CardActions,
   IconButton,
   List,
   ListItem,
@@ -36,7 +35,6 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Divider,
   Grid
 } from '@mui/material';
 import {
@@ -51,18 +49,12 @@ import {
   Speed,
   Map,
   Water,
-  TrendingUp,
-  Assessment,
-  Insights,
-  PlayArrow,
-  Stop,
-  Info
+  TrendingUp
 } from '@mui/icons-material';
 
 import { 
   ToolWorkflowService, 
-  ToolWorkflow, 
-  WorkflowStep 
+  ToolWorkflow
 } from '@/services/integration/toolWorkflowService';
 import { toolConfigs } from '@/utils/mockToolConfigs';
 import { ToolConfig } from '@/types/formatter';
@@ -597,7 +589,7 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({
           </Card>
 
           <Stepper orientation="vertical">
-            {workflowSteps.map((step, index) => (
+            {workflowSteps.map((step) => (
               <Step key={step.id} active>
                 <StepLabel icon={getToolIcon(step.toolId)}>
                   {step.name}

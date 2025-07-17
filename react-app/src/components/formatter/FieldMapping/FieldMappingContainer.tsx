@@ -1466,10 +1466,10 @@ const FieldMappingContainer: React.FC = () => {
             setCurrentTemplate={(template) => {
               setCurrentTemplate(template);
               // Apply template mappings to Redux state
-              if (template.mappings && template.mappings.length > 0) {
-                dispatch(setMappings(template.mappings));
+              if (template.fieldMappings && template.fieldMappings.length > 0) {
+                dispatch(setMappings(template.fieldMappings));
                 setStatusMessage({
-                  message: `Applied template "${template.name}" with ${template.mappings.length} field mappings`,
+                  message: `Applied template "${template.name}" with ${template.fieldMappings.length} field mappings`,
                   severity: 'success',
                   open: true
                 });
