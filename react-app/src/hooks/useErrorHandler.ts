@@ -128,7 +128,7 @@ export function useErrorHandler(options: ErrorHandlerOptions = {}) {
   /**
    * Report error to external service
    */
-  const reportToService = useCallback((errorInfo: ErrorInfo) => {
+  const reportToService = useCallback((_errorInfo: ErrorInfo) => {
     if (!defaultOptions.reportToService) return;
 
     // Example integration with error tracking service

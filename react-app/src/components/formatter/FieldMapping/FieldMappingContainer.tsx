@@ -23,7 +23,7 @@ import {
   setProcessingStatus,
   setSampleData
 } from '@/state/redux/formatterSlice';
-import { FieldMapping } from '@/types/formatter';
+import { FieldMapping, FieldMappingTemplate } from '@/types/formatter';
 import { transformData } from '../../../services/transformation/dataTransformer';
 import { detectDateTimePattern } from '../../../utils/dateTimeDetection';
 import SourceFieldsList from './SourceFieldsList';
@@ -430,10 +430,12 @@ const FieldMappingContainer: React.FC = () => {
     },
     metadata: {
       version: '1.0.0',
+      compatibility: [],
       qualityScore: 0,
       successRate: 0,
-      tags: [],
-      sampleValues: {}
+      dataTypes: {},
+      sampleValues: {},
+      tags: []
     },
     createdAt: new Date().toISOString(),
     useCount: 0,
@@ -1525,7 +1527,7 @@ const FieldMappingContainer: React.FC = () => {
               >
                 {template.name}
                 <Typography component="span" variant="caption" sx={{ ml: 1, opacity: 0.7 }}>
-                  ({template.mappings.length} mappings)
+                  ({template.fieldMappings.length} mappings)
                 </Typography>
               </Button>
             ))}

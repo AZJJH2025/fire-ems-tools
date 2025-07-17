@@ -34,11 +34,8 @@ import {
 } from '@mui/material';
 import {
   PlayArrow,
-  Settings,
   Info,
   CheckCircle,
-  Error,
-  Warning,
   Schedule,
   Timeline,
   AutoAwesome,
@@ -56,8 +53,7 @@ import {
   ToolWorkflowService, 
   ToolWorkflow, 
   WorkflowExecution, 
-  WorkflowTemplate,
-  WorkflowStep
+  WorkflowTemplate
 } from '@/services/integration/toolWorkflowService';
 
 interface WorkflowOrchestratorProps {
@@ -87,7 +83,7 @@ const WorkflowOrchestrator: React.FC<WorkflowOrchestratorProps> = ({
   const [workflows, setWorkflows] = useState<ToolWorkflow[]>([]);
   const [templates, setTemplates] = useState<WorkflowTemplate[]>([]);
   const [suggestedWorkflows, setSuggestedWorkflows] = useState<ToolWorkflow[]>([]);
-  const [selectedWorkflow, setSelectedWorkflow] = useState<ToolWorkflow | null>(null);
+  const [_selectedWorkflow, setSelectedWorkflow] = useState<ToolWorkflow | null>(null);
   const [execution, setExecution] = useState<WorkflowExecution | null>(null);
   const [detailsDialog, setDetailsDialog] = useState<WorkflowTemplate | null>(null);
   const [isExecuting, setIsExecuting] = useState(false);

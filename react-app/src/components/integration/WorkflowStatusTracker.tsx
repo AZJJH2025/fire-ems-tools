@@ -10,7 +10,6 @@ import {
   Typography,
   Card,
   CardContent,
-  CardActions,
   Button,
   LinearProgress,
   Chip,
@@ -25,24 +24,14 @@ import {
   DialogActions,
   Alert,
   Stack,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Grid,
-  Tooltip,
-  Badge
+  Tooltip
 } from '@mui/material';
 import {
-  PlayArrow,
   Pause,
-  Stop,
-  Refresh,
   Delete,
   Visibility,
-  ExpandMore,
   CheckCircle,
-  Error,
-  Warning,
   Schedule,
   Timeline,
   Speed,
@@ -50,9 +39,7 @@ import {
   Water,
   TrendingUp,
   Build,
-  Assessment,
-  CloudDownload,
-  Share
+  CloudDownload
 } from '@mui/icons-material';
 
 import { 
@@ -74,7 +61,7 @@ const WorkflowStatusTracker: React.FC<WorkflowStatusTrackerProps> = ({
   const [workflows, setWorkflows] = useState<ToolWorkflow[]>([]);
   const [selectedExecution, setSelectedExecution] = useState<WorkflowExecution | null>(null);
   const [detailsDialog, setDetailsDialog] = useState(false);
-  const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
+  const [_refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
 
   // Load executions and workflows
   useEffect(() => {
@@ -152,17 +139,17 @@ const WorkflowStatusTracker: React.FC<WorkflowStatusTrackerProps> = ({
     return `${seconds}s`;
   };
 
-  const handlePauseExecution = (executionId: string) => {
+  const _handlePauseExecution = (executionId: string) => {
     // In a real implementation, this would call the service
     console.log('Pausing execution:', executionId);
   };
 
-  const handleResumeExecution = (executionId: string) => {
+  const _handleResumeExecution = (executionId: string) => {
     // In a real implementation, this would call the service
     console.log('Resuming execution:', executionId);
   };
 
-  const handleStopExecution = (executionId: string) => {
+  const _handleStopExecution = (executionId: string) => {
     // In a real implementation, this would call the service
     console.log('Stopping execution:', executionId);
   };
