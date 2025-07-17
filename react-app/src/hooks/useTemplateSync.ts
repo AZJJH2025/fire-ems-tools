@@ -112,24 +112,13 @@ const useTemplateSync = (template: FieldMappingTemplate, dirty: boolean) => {
         cadVendorSignature: ''
       },
       metadata: {
+        version: '1.0.0',
         qualityScore: 70,
+        successRate: 0.0,
+        dataTypes: {},
+        sampleValues: {},
         tags: ['auto-saved'],
-        fieldAccuracy: 0.7,
-        completeness: mappings.length > 0 ? 1.0 : 0.0,
-        compatibility: { [toolId]: 1.0 },
-        usage: {
-          totalUses: 0,
-          successRate: 0.0,
-          lastUsed: undefined,
-          averageProcessingTime: 0,
-          errorRate: 0.0
-        },
-        validation: {
-          isValid: mappings.length > 0,
-          errors: [],
-          warnings: [],
-          lastValidated: new Date().toISOString()
-        }
+        compatibility: [toolId]
       },
       createdAt: new Date().toISOString(),
       useCount: 0,

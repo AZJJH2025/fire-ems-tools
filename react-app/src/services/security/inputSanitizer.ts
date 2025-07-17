@@ -229,7 +229,7 @@ export const sanitizeWorkbookData = (workbook: any): any => {
   if (workbook.Sheets && typeof workbook.Sheets === 'object') {
     for (const sheetName of sanitized.SheetNames) {
       if (workbook.Sheets[sheetName]) {
-        sanitized.Sheets[sheetName] = sanitizeObject(workbook.Sheets[sheetName], 0);
+        (sanitized.Sheets as any)[sheetName] = sanitizeObject(workbook.Sheets[sheetName], 0);
       }
     }
   }

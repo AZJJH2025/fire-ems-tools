@@ -207,7 +207,7 @@ export const applySecurityHeaders = (): void => {
   // Prevent page from being embedded in frames
   try {
     if (window.top !== window.self) {
-      window.top!.location = window.self.location;
+      window.top!.location.href = window.self.location.href;
     }
   } catch (e) {
     // Ignore errors - likely means we're already in a frame

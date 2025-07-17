@@ -3,7 +3,6 @@
  * Orchestrates seamless workflows between multiple FireEMS tools
  */
 
-import { ToolConfig } from '@/types/formatter';
 import DataTransformer from './dataTransformer';
 import { toolConfigs } from '@/utils/mockToolConfigs';
 

@@ -1,4 +1,4 @@
-import { FieldMappingTemplate, SourceFieldPattern, TemplateMetadata, TemplateSuggestion, FieldMapping, SampleData } from '@/types/formatter';
+import { FieldMappingTemplate, SourceFieldPattern, TemplateMetadata, TemplateSuggestion, FieldMapping, SampleData, FieldDataType } from '@/types/formatter';
 import { getCertifiedTemplates, seedVendorTemplates } from './vendorTemplates';
 
 /**
@@ -363,7 +363,7 @@ export class TemplateService {
       compatibility: ['1.0.0'], // Compatible versions
       qualityScore: Math.max(20, qualityScore), // Minimum 20% quality score
       successRate: 100, // Start with 100%, adjust based on usage
-      dataTypes,
+      dataTypes: dataTypes as Record<string, FieldDataType>,
       sampleValues,
       tags
     };

@@ -353,7 +353,7 @@ export function detectFieldTypes(data: Record<string, any>[]): Record<string, st
 export function generateFieldMappingReport(
   mapping: FieldMapping[],
   targetFields: TargetField[],
-  sampleData: Record<string, any>[]
+  _sampleData: Record<string, any>[]
 ): MappingReport {
   const mappedFieldIds = mapping.map(m => m.targetField);
   const requiredFields = targetFields.filter(f => f.required);
