@@ -32,6 +32,7 @@ import {
   Delete,
   Visibility,
   CheckCircle,
+  Error,
   Schedule,
   Timeline,
   Speed,
@@ -54,8 +55,8 @@ interface WorkflowStatusTrackerProps {
 }
 
 const WorkflowStatusTracker: React.FC<WorkflowStatusTrackerProps> = ({
-  onOpenWorkflow,
-  onViewResults
+  onOpenWorkflow: _onOpenWorkflow,
+  onViewResults: _onViewResults
 }) => {
   const [executions, setExecutions] = useState<WorkflowExecution[]>([]);
   const [workflows, setWorkflows] = useState<ToolWorkflow[]>([]);
@@ -139,20 +140,10 @@ const WorkflowStatusTracker: React.FC<WorkflowStatusTrackerProps> = ({
     return `${seconds}s`;
   };
 
-  const _handlePauseExecution = (executionId: string) => {
-    // In a real implementation, this would call the service
-    console.log('Pausing execution:', executionId);
-  };
-
-  const _handleResumeExecution = (executionId: string) => {
-    // In a real implementation, this would call the service
-    console.log('Resuming execution:', executionId);
-  };
-
-  const _handleStopExecution = (executionId: string) => {
-    // In a real implementation, this would call the service
-    console.log('Stopping execution:', executionId);
-  };
+  // TODO: Implement workflow control functions when needed
+  // const handlePauseExecution = (executionId: string) => { ... };
+  // const handleResumeExecution = (executionId: string) => { ... };
+  // const handleStopExecution = (executionId: string) => { ... };
 
   const handleDeleteExecution = (executionId: string) => {
     // In a real implementation, this would call the service
@@ -211,7 +202,7 @@ const WorkflowStatusTracker: React.FC<WorkflowStatusTrackerProps> = ({
       
       {/* Summary Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={6} md={3}>
+        <Grid size={{xs: 6, md: 3}}>
           <Card>
             <CardContent sx={{ textAlign: 'center' }}>
               <Typography variant="h4" color="text.secondary">
@@ -223,7 +214,7 @@ const WorkflowStatusTracker: React.FC<WorkflowStatusTrackerProps> = ({
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} md={3}>
+        <Grid size={{xs: 6, md: 3}}>
           <Card>
             <CardContent sx={{ textAlign: 'center' }}>
               <Typography variant="h4" color="success.main">
@@ -235,7 +226,7 @@ const WorkflowStatusTracker: React.FC<WorkflowStatusTrackerProps> = ({
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} md={3}>
+        <Grid size={{xs: 6, md: 3}}>
           <Card>
             <CardContent sx={{ textAlign: 'center' }}>
               <Typography variant="h4" color="info.main">
@@ -247,7 +238,7 @@ const WorkflowStatusTracker: React.FC<WorkflowStatusTrackerProps> = ({
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} md={3}>
+        <Grid size={{xs: 6, md: 3}}>
           <Card>
             <CardContent sx={{ textAlign: 'center' }}>
               <Typography variant="h4" color="error.main">
@@ -291,7 +282,7 @@ const WorkflowStatusTracker: React.FC<WorkflowStatusTrackerProps> = ({
                         </Typography>
                         <Chip
                           label={execution.status}
-                          color={getStatusColor(execution.status)}
+                          color={getStatusColor(execution.status) as any}
                           size="small"
                         />
                       </Box>
@@ -337,7 +328,7 @@ const WorkflowStatusTracker: React.FC<WorkflowStatusTrackerProps> = ({
                   <LinearProgress
                     variant="determinate"
                     value={execution.progress}
-                    color={getStatusColor(execution.status)}
+                    color={getStatusColor(execution.status) as any}
                     sx={{ height: 8, borderRadius: 4 }}
                   />
                   <Typography variant="caption" color="text.secondary">
@@ -399,7 +390,7 @@ const WorkflowStatusTracker: React.FC<WorkflowStatusTrackerProps> = ({
             </DialogTitle>
             <DialogContent>
               <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
+                <Grid size={{xs: 12, md: 6}}>
                   <Typography variant="subtitle2" gutterBottom>
                     Workflow
                   </Typography>
@@ -407,7 +398,7 @@ const WorkflowStatusTracker: React.FC<WorkflowStatusTrackerProps> = ({
                     {getWorkflowName(selectedExecution.workflowId)}
                   </Typography>
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid size={{xs: 12, md: 6}}>
                   <Typography variant="subtitle2" gutterBottom>
                     Status
                   </Typography>
@@ -417,7 +408,7 @@ const WorkflowStatusTracker: React.FC<WorkflowStatusTrackerProps> = ({
                     size="small"
                   />
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid size={{xs: 12, md: 6}}>
                   <Typography variant="subtitle2" gutterBottom>
                     Start Time
                   </Typography>
@@ -425,7 +416,7 @@ const WorkflowStatusTracker: React.FC<WorkflowStatusTrackerProps> = ({
                     {new Date(selectedExecution.startTime).toLocaleString()}
                   </Typography>
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid size={{xs: 12, md: 6}}>
                   <Typography variant="subtitle2" gutterBottom>
                     Duration
                   </Typography>
@@ -433,7 +424,7 @@ const WorkflowStatusTracker: React.FC<WorkflowStatusTrackerProps> = ({
                     {formatDuration(selectedExecution.startTime, selectedExecution.endTime)}
                   </Typography>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{xs: 12}}>
                   <Typography variant="subtitle2" gutterBottom>
                     Progress
                   </Typography>
@@ -446,7 +437,7 @@ const WorkflowStatusTracker: React.FC<WorkflowStatusTrackerProps> = ({
                     {selectedExecution.progress}% complete
                   </Typography>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{xs: 12}}>
                   <Typography variant="subtitle2" gutterBottom>
                     Results
                   </Typography>

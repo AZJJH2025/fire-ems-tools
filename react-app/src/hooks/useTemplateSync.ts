@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { FieldFieldMappingTemplate, FieldMapping } from '@/types/formatter';
+import { FieldMappingTemplate, FieldMapping } from '@/types/formatter';
 
 /**
  * Custom hook to synchronize mapping templates with localStorage and server

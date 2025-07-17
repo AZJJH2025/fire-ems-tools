@@ -175,7 +175,7 @@ export function useErrorHandler(options: ErrorHandlerOptions = {}) {
   /**
    * Show user notification
    */
-  const showUserNotification = useCallback((errorInfo: ErrorInfo) => {
+  const showUserNotification = useCallback((_errorInfo: ErrorInfo) => {
     if (!defaultOptions.showUserNotification) return;
 
     // Dispatch Redux action to show notification

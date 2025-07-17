@@ -756,7 +756,7 @@ const FieldMappingContainer: React.FC = () => {
       console.log('🔧 AUTO-MAPPING - Starting with systematic fix approach');
       
       // Migrate existing mappings to use field IDs
-      const migratedExistingMappings = migrateFieldMappings(currentTemplate.mappings, toolConfig);
+      const migratedExistingMappings = migrateFieldMappings(currentTemplate.fieldMappings, toolConfig);
       const newMappings: FieldMapping[] = [...migratedExistingMappings];
       
       // Helper function to find if a field is already mapped (using field IDs)
@@ -1279,10 +1279,10 @@ const FieldMappingContainer: React.FC = () => {
       
       console.log("🔧 TRANSFORMATION DEBUG: Using Redux mappings directly for transformation");
       console.log("Redux mappings:", mappings);
-      console.log("currentTemplate.mappings:", currentTemplate.mappings);
+      console.log("currentTemplate.fieldMappings:", currentTemplate.fieldMappings);
       console.log("Sample data:", sampleData);
 
-      // CRITICAL FIX: Use Redux mappings directly instead of currentTemplate.mappings
+      // CRITICAL FIX: Use Redux mappings directly instead of currentTemplate.fieldMappings
       // This ensures we always use the latest transformations including those just configured
       
       // 🔍 COMPREHENSIVE DEBUG: Log everything before transformation
@@ -1514,7 +1514,7 @@ const FieldMappingContainer: React.FC = () => {
                 size="small"
                 onClick={() => {
                   setCurrentTemplate(template);
-                  dispatch(setMappings(template.mappings));
+                  dispatch(setMappings(template.fieldMappings));
                   setTemplateDirty(false);
                   setSuggestedTemplates([]); // Clear suggestions after applying
                   setStatusMessage({
