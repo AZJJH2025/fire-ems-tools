@@ -26,6 +26,7 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import SecurityIcon from '@mui/icons-material/Security';
 import TuneIcon from '@mui/icons-material/Tune';
 
+// Note: Keep static import to avoid build conflicts with dynamic imports in other components
 import { generateResponseTimeReport, ReportConfig } from '@/services/pdfReportGenerator';
 import { IncidentRecord, ResponseTimeStatistics } from '@/types/analyzer';
 
