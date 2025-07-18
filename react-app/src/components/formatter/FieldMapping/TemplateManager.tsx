@@ -55,7 +55,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
   currentTemplate,
   setCurrentTemplate,
   setTemplateDirty,
-  onTemplateApplied,
+  onTemplateApplied: _onTemplateApplied,
   disabled = false,
   currentMappings = [],
   sourceFields = [],
@@ -219,22 +219,6 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
     }
   };
   
-  // Load template
-  const handleLoadTemplate = (template: FieldMappingTemplate) => {
-    // Update current template
-    setCurrentTemplate(template);
-    
-    // Reset dirty flag
-    setTemplateDirty(false);
-    
-    // Notify parent component
-    if (onTemplateApplied) {
-      onTemplateApplied(template);
-    }
-    
-    // Close dialog
-    setLoadDialogOpen(false);
-  };
   
   // Apply field mapping template from TemplateService
   const handleApplyFieldMappingTemplate = (template: FieldMappingTemplate) => {

@@ -7748,3 +7748,216 @@ ModuleNotFoundError: No module named 'psutil'
 2025-07-17 12:10:07,751 - werkzeug - WARNING -  * Debugger is active!
 2025-07-17 12:10:07,753 - werkzeug - INFO -  * Debugger PIN: 110-174-263
 2025-07-17 12:10:07,757 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-07-18 09:01:29,178 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-18 09:01:29,321 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-18 09:01:29,321 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-18 09:01:29,321 - __main__ - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-18 09:01:29,321 - __main__ - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-18 09:01:29,325 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-18 09:01:29,325 - __main__ - INFO - Creating application with deployment fixes...
+2025-07-18 09:01:29,326 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-18 09:01:29,326 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-18 09:01:29,326 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-18 09:01:29,327 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-18 09:01:29,327 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-18 09:01:29,337 - email_service - INFO - 📧 Email service ENABLED - SMTP: smtp.gmail.com:587
+2025-07-18 09:01:29,337 - email_service - INFO - 📧 Email from: FireEMS.ai <noreply@fireems.ai>
+2025-07-18 09:01:29,339 - static_middleware - INFO - Registered static file handler middleware
+2025-07-18 09:01:29,340 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-18 09:01:29,340 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-18 09:01:29,340 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-18 09:01:29,340 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-18 09:01:29,340 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-18 09:01:29,340 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-18 09:01:29,340 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-18 09:01:29,340 - static_middleware - INFO - Sample static files: []
+2025-07-18 09:01:29,801 - __main__ - INFO - Successfully registered all route blueprints
+2025-07-18 09:01:29,803 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-18 09:01:29,803 - __main__ - INFO - Registered React Data Formatter routes
+2025-07-18 09:01:29,807 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-18 09:01:29,807 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-18 09:01:29,807 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-18 09:01:29,807 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-18 09:01:29,807 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-18 09:01:29,807 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-18 09:01:29,807 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-18 09:01:29,807 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-18 09:01:29,807 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-18 09:01:29,807 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-18 09:01:29,826 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-18 09:01:29,826 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-18 09:01:29,830 - __main__ - INFO - Found 1 existing super_admin users
+2025-07-18 09:01:29,830 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-07-18 09:01:29,830 - __main__ - INFO - Application created successfully with all fixes applied
+2025-07-18 09:03:17,291 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-18 09:03:17,435 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-18 09:03:17,435 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-18 09:03:17,435 - __main__ - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-18 09:03:17,435 - __main__ - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-18 09:03:17,439 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-18 09:03:17,439 - __main__ - INFO - Creating application with deployment fixes...
+2025-07-18 09:03:17,440 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-18 09:03:17,440 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-18 09:03:17,440 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-18 09:03:17,441 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-18 09:03:17,441 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-18 09:03:17,450 - email_service - INFO - 📧 Email service ENABLED - SMTP: smtp.gmail.com:587
+2025-07-18 09:03:17,450 - email_service - INFO - 📧 Email from: FireEMS.ai <noreply@fireems.ai>
+2025-07-18 09:03:17,454 - static_middleware - INFO - Registered static file handler middleware
+2025-07-18 09:03:17,454 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-18 09:03:17,454 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-18 09:03:17,454 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-18 09:03:17,454 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-18 09:03:17,455 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-18 09:03:17,455 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-18 09:03:17,455 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-18 09:03:17,455 - static_middleware - INFO - Sample static files: []
+2025-07-18 09:03:17,840 - __main__ - INFO - Successfully registered all route blueprints
+2025-07-18 09:03:17,842 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-18 09:03:17,842 - __main__ - INFO - Registered React Data Formatter routes
+2025-07-18 09:03:17,844 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-18 09:03:17,844 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-18 09:03:17,844 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-18 09:03:17,844 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-18 09:03:17,844 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-18 09:03:17,845 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-18 09:03:17,845 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-18 09:03:17,845 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-18 09:03:17,845 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-18 09:03:17,845 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-18 09:03:17,857 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-18 09:03:17,857 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-18 09:03:17,860 - __main__ - INFO - Found 1 existing super_admin users
+2025-07-18 09:03:17,860 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-07-18 09:03:17,861 - __main__ - INFO - Application created successfully with all fixes applied
+2025-07-18 09:03:40,195 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-18 09:03:40,312 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-18 09:03:40,313 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-18 09:03:40,313 - app - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-18 09:03:40,313 - app - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-18 09:03:40,316 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-18 09:03:40,316 - app - INFO - Creating application with deployment fixes...
+2025-07-18 09:03:40,317 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-18 09:03:40,317 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-18 09:03:40,317 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-18 09:03:40,317 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-18 09:03:40,317 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-18 09:03:40,324 - email_service - INFO - 📧 Email service ENABLED - SMTP: smtp.gmail.com:587
+2025-07-18 09:03:40,324 - email_service - INFO - 📧 Email from: FireEMS.ai <noreply@fireems.ai>
+2025-07-18 09:03:40,326 - static_middleware - INFO - Registered static file handler middleware
+2025-07-18 09:03:40,326 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-18 09:03:40,326 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-18 09:03:40,326 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-18 09:03:40,326 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-18 09:03:40,326 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-18 09:03:40,326 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-18 09:03:40,326 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-18 09:03:40,326 - static_middleware - INFO - Sample static files: []
+2025-07-18 09:03:40,608 - app - INFO - Successfully registered all route blueprints
+2025-07-18 09:03:40,610 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-18 09:03:40,610 - app - INFO - Registered React Data Formatter routes
+2025-07-18 09:03:40,611 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-18 09:03:40,611 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-18 09:03:40,611 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-18 09:03:40,611 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-18 09:03:40,611 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-18 09:03:40,611 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-18 09:03:40,612 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-18 09:03:40,612 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-18 09:03:40,612 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-18 09:03:40,612 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-18 09:03:40,622 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-18 09:03:40,623 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-18 09:03:40,625 - app - INFO - Found 1 existing super_admin users
+2025-07-18 09:03:40,626 - app - INFO - Super admin user already exists, skipping creation
+2025-07-18 09:03:40,626 - app - INFO - Application created successfully with all fixes applied
+2025-07-18 09:03:40,633 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5007
+2025-07-18 09:03:40,633 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-07-18 09:05:52,201 - routes.react_app - INFO - Serving React app with asset: index-CsDlCSGK.js
+2025-07-18 09:05:52,204 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 09:05:52,204 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 09:05:52,205 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:05:52] "HEAD /app/data-formatter HTTP/1.1" 200 -
+2025-07-18 09:06:41,249 - routes.react_app - INFO - Serving React app with asset: index-CsDlCSGK.js
+2025-07-18 09:06:41,250 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 09:06:41,250 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 09:06:41,250 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:06:41] "HEAD /app/response-time-analyzer HTTP/1.1" 200 -
+2025-07-18 09:08:55,906 - routes.react_app - INFO - Serving React app with asset: index-CsDlCSGK.js
+2025-07-18 09:08:55,906 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 09:08:55,906 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 09:08:55,907 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:08:55] "HEAD /app/fire-map-pro HTTP/1.1" 200 -
+2025-07-18 09:09:51,851 - routes.react_app - INFO - Serving React asset: index-w4SowVFL.js
+2025-07-18 09:09:51,851 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:09:51] "HEAD /app/assets/index-w4SowVFL.js HTTP/1.1" 200 -
+2025-07-18 09:10:13,328 - routes.react_app - INFO - Serving React asset: index-w4SowVFL.js
+2025-07-18 09:10:13,328 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:10:13] "GET /app/assets/index-w4SowVFL.js HTTP/1.1" 200 -
+2025-07-18 09:10:20,500 - routes.react_app - INFO - Serving React asset: index-w4SowVFL.js
+2025-07-18 09:10:20,500 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:10:20] "GET /app/assets/index-w4SowVFL.js HTTP/1.1" 200 -
+2025-07-18 09:10:28,130 - routes.react_app - INFO - Serving React asset: index-w4SowVFL.js
+2025-07-18 09:10:28,131 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:10:28] "GET /app/assets/index-w4SowVFL.js HTTP/1.1" 200 -
+2025-07-18 09:10:35,443 - routes.react_app - INFO - Serving React asset: index-w4SowVFL.js
+2025-07-18 09:10:35,443 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:10:35] "GET /app/assets/index-w4SowVFL.js HTTP/1.1" 200 -
+2025-07-18 09:10:54,757 - routes.react_app - INFO - Serving React asset: index-w4SowVFL.js
+2025-07-18 09:10:54,758 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:10:54] "GET /app/assets/index-w4SowVFL.js HTTP/1.1" 200 -
+2025-07-18 09:11:11,219 - routes.react_app - INFO - Serving React app with asset: index-CsDlCSGK.js
+2025-07-18 09:11:11,219 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 09:11:11,219 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 09:11:11,219 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:11:11] "HEAD /app/data-formatter HTTP/1.1" 200 -
+2025-07-18 09:11:27,272 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 09:11:27,272 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 09:11:27,272 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:11:27] "GET /api/health HTTP/1.1" 200 -
+2025-07-18 09:11:47,982 - app - INFO - SECURITY_AUDIT: POST /auth/api/login from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-18 09:11:47,982 - database_utils - DEBUG - 🔄 Database operation attempt 1/3: find_user_by_email
+2025-07-18 09:11:47,983 - routes.auth - INFO - ✅ LOGIN DEBUG: User found - ID: 2, Email: admin@fireems.ai, Active: True
+2025-07-18 09:11:47,984 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password hash exists: True
+2025-07-18 09:11:47,984 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password hash length: 162
+2025-07-18 09:11:48,056 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password check result: False
+2025-07-18 09:11:48,056 - routes.auth - INFO - 🔐 LOGIN DEBUG: Attempted password: 'secure_super_admin_password_456'
+2025-07-18 09:11:48,056 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password length: 31
+2025-07-18 09:11:48,124 - app - INFO - SECURITY_AUDIT: Response 401 for POST /auth/api/login
+2025-07-18 09:11:48,125 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 09:11:48,125 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 09:11:48,125 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:11:48] "[31m[1mPOST /auth/api/login HTTP/1.1[0m" 401 -
+2025-07-18 09:12:25,876 - routes.react_app - INFO - Serving React asset: index-w4SowVFL.js
+2025-07-18 09:12:25,877 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:12:25] "GET /app/assets/index-w4SowVFL.js HTTP/1.1" 200 -
+2025-07-18 09:12:57,974 - routes.react_app - INFO - Serving React asset: index-w4SowVFL.js
+2025-07-18 09:12:57,975 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:12:57] "GET /app/assets/index-w4SowVFL.js HTTP/1.1" 200 -
+2025-07-18 09:13:09,141 - routes.react_app - INFO - Serving React asset: index-w4SowVFL.js
+2025-07-18 09:13:09,142 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:13:09] "GET /app/assets/index-w4SowVFL.js HTTP/1.1" 200 -
+2025-07-18 09:13:18,025 - routes.react_app - INFO - Serving React asset: index-w4SowVFL.js
+2025-07-18 09:13:18,026 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:13:18] "GET /app/assets/index-w4SowVFL.js HTTP/1.1" 200 -
+2025-07-18 09:13:37,973 - MARKDOWN - DEBUG - Successfully loaded extension "markdown.extensions.tables.TableExtension".
+2025-07-18 09:13:37,982 - MARKDOWN - DEBUG - Successfully loaded extension "markdown.extensions.fenced_code.FencedCodeExtension".
+2025-07-18 09:13:37,982 - MARKDOWN - DEBUG - Successfully loaded extension "markdown.extensions.toc.TocExtension".
+2025-07-18 09:13:38,026 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 09:13:38,026 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 09:13:38,026 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:13:38] "HEAD /docs/users/DATA_FORMATTER.md HTTP/1.1" 200 -
+2025-07-18 09:13:44,327 - MARKDOWN - DEBUG - Successfully loaded extension "markdown.extensions.tables.TableExtension".
+2025-07-18 09:13:44,327 - MARKDOWN - DEBUG - Successfully loaded extension "markdown.extensions.fenced_code.FencedCodeExtension".
+2025-07-18 09:13:44,327 - MARKDOWN - DEBUG - Successfully loaded extension "markdown.extensions.toc.TocExtension".
+2025-07-18 09:13:44,359 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 09:13:44,359 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 09:13:44,359 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:13:44] "GET /docs/users/DATA_FORMATTER.md HTTP/1.1" 200 -
+2025-07-18 09:13:49,959 - MARKDOWN - DEBUG - Successfully loaded extension "markdown.extensions.tables.TableExtension".
+2025-07-18 09:13:49,959 - MARKDOWN - DEBUG - Successfully loaded extension "markdown.extensions.fenced_code.FencedCodeExtension".
+2025-07-18 09:13:49,959 - MARKDOWN - DEBUG - Successfully loaded extension "markdown.extensions.toc.TocExtension".
+2025-07-18 09:13:49,990 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 09:13:49,990 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 09:13:49,991 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:13:49] "GET /docs/users/DATA_FORMATTER.md HTTP/1.1" 200 -
+2025-07-18 09:13:55,087 - MARKDOWN - DEBUG - Successfully loaded extension "markdown.extensions.tables.TableExtension".
+2025-07-18 09:13:55,087 - MARKDOWN - DEBUG - Successfully loaded extension "markdown.extensions.fenced_code.FencedCodeExtension".
+2025-07-18 09:13:55,087 - MARKDOWN - DEBUG - Successfully loaded extension "markdown.extensions.toc.TocExtension".
+2025-07-18 09:13:55,119 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 09:13:55,119 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 09:13:55,119 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:13:55] "GET /docs/users/DATA_FORMATTER.md HTTP/1.1" 200 -
+2025-07-18 09:14:00,645 - MARKDOWN - DEBUG - Successfully loaded extension "markdown.extensions.tables.TableExtension".
+2025-07-18 09:14:00,645 - MARKDOWN - DEBUG - Successfully loaded extension "markdown.extensions.fenced_code.FencedCodeExtension".
+2025-07-18 09:14:00,645 - MARKDOWN - DEBUG - Successfully loaded extension "markdown.extensions.toc.TocExtension".
+2025-07-18 09:14:00,676 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 09:14:00,677 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 09:14:00,677 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:14:00] "GET /docs/users/DATA_FORMATTER.md HTTP/1.1" 200 -
+2025-07-18 09:14:17,594 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 09:14:17,595 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 09:14:17,595 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:14:17] "GET /api/metrics HTTP/1.1" 200 -
+2025-07-18 09:14:23,202 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 09:14:23,202 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 09:14:23,202 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:14:23] "GET /api/docs HTTP/1.1" 200 -

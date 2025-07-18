@@ -938,7 +938,7 @@ export const getTemplatesByCategory = (category: string): FieldMappingTemplate[]
  * Get available CAD vendors
  */
 export const getAvailableVendors = (): string[] => {
-  const vendors = vendorTemplates.map(template => template.cadVendor);
+  const vendors = vendorTemplates.map(template => template.cadVendor).filter(vendor => vendor !== undefined) as string[];
   return Array.from(new Set(vendors)).sort();
 };
 

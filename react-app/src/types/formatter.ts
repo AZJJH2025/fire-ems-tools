@@ -35,7 +35,7 @@ export interface FieldMappingTemplate {
   name: string;
   description: string;
   departmentName?: string;
-  cadVendor?: 'Console One' | 'Tyler' | 'Hexagon' | 'TriTech' | 'Other';
+  cadVendor?: 'Console One' | 'Tyler' | 'Hexagon' | 'TriTech' | 'Motorola' | 'Zuercher' | 'Locution' | 'ESRI' | 'AWWA' | 'Municipal' | 'Water Utility' | 'Fire Department' | 'Universal' | 'Other';
   targetTool: string; // Tool ID this template is designed for
   fieldMappings: FieldMapping[];
   sourceFieldPattern: SourceFieldPattern;
