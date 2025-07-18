@@ -298,6 +298,11 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
     const desc = (template.description || '').toLowerCase();
     const text = `${name} ${desc}`;
     
+    // Check if it's a vendor template (starts with vendor_ or has certified tag)
+    if (template.id.startsWith('vendor_') || template.metadata?.tags?.includes('certified')) {
+      return 'Vendor';
+    }
+    
     if (text.includes('tyler') || text.includes('cad')) return 'CAD System';
     if (text.includes('monthly') || text.includes('export')) return 'Monthly Report';
     if (text.includes('response') || text.includes('time')) return 'Response Time';
@@ -309,6 +314,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
   // Get category color
   const getCategoryColor = (category: string): 'primary' | 'secondary' | 'success' | 'warning' | 'info' => {
     switch (category) {
+      case 'Vendor': return 'primary';
       case 'CAD System': return 'primary';
       case 'Monthly Report': return 'success';
       case 'Response Time': return 'info';
@@ -424,7 +430,11 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
           seedVendorTemplates();
           const storedTemplates = loadTemplates();
           setTemplates(storedTemplates);
-          console.log('🌱 Vendor templates seeded manually');
+          // Filter to show only vendor templates
+          setTemplateFilter('vendor');
+          setLoadDialogOpen(true);
+          handleMenuClose();
+          console.log('🌱 Vendor templates seeded and filtered');
         }}>
           <BusinessIcon fontSize="small" sx={{ mr: 1 }} />
           Load Vendor Templates
@@ -789,7 +799,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({
                       <React.Fragment key={template.id}>
                         <ListItem
                           component="button"
-                          onClick={() => handleLoadTemplate(template)}
+                          onClick={() => handleApplyFieldMappingTemplate(template)}
                           sx={{ 
                             py: 2, 
                             borderRadius: 1, 
