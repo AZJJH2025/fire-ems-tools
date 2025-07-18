@@ -7961,3 +7961,670 @@ ModuleNotFoundError: No module named 'psutil'
 2025-07-18 09:14:23,202 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
 2025-07-18 09:14:23,202 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
 2025-07-18 09:14:23,202 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 09:14:23] "GET /api/docs HTTP/1.1" 200 -
+2025-07-18 10:33:53,257 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-18 10:33:53,410 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-18 10:33:53,411 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-18 10:33:53,411 - app - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-18 10:33:53,411 - app - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-18 10:33:53,415 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-18 10:33:53,415 - app - INFO - Creating application with deployment fixes...
+2025-07-18 10:33:53,416 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-18 10:33:53,416 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-18 10:33:53,416 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-18 10:33:53,417 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-18 10:33:53,417 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-18 10:33:53,425 - email_service - INFO - 📧 Email service ENABLED - SMTP: smtp.gmail.com:587
+2025-07-18 10:33:53,425 - email_service - INFO - 📧 Email from: FireEMS.ai <noreply@fireems.ai>
+2025-07-18 10:33:53,428 - static_middleware - INFO - Registered static file handler middleware
+2025-07-18 10:33:53,429 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-18 10:33:53,429 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-18 10:33:53,429 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-18 10:33:53,429 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-18 10:33:53,429 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-18 10:33:53,429 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-18 10:33:53,429 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-18 10:33:53,429 - static_middleware - INFO - Sample static files: []
+2025-07-18 10:33:53,864 - app - INFO - Successfully registered all route blueprints
+2025-07-18 10:33:53,866 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-18 10:33:53,867 - app - INFO - Registered React Data Formatter routes
+2025-07-18 10:33:53,868 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-18 10:33:53,868 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-18 10:33:53,868 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-18 10:33:53,868 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-18 10:33:53,868 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-18 10:33:53,868 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-18 10:33:53,869 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-18 10:33:53,869 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-18 10:33:53,869 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-18 10:33:53,869 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-18 10:33:53,881 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-18 10:33:53,881 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-18 10:33:53,884 - app - INFO - Found 1 existing super_admin users
+2025-07-18 10:33:53,884 - app - INFO - Super admin user already exists, skipping creation
+2025-07-18 10:33:53,884 - app - INFO - Application created successfully with all fixes applied
+2025-07-18 10:33:53,890 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5008
+2025-07-18 10:33:53,890 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-07-18 10:35:59,909 - app - INFO - SECURITY_AUDIT: HEAD /admin from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-18 10:35:59,911 - app - INFO - SECURITY_AUDIT: Response 308 for HEAD /admin
+2025-07-18 10:35:59,911 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 10:35:59,911 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 10:35:59,912 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 10:35:59] "[32mHEAD /admin HTTP/1.1[0m" 308 -
+2025-07-18 10:36:06,343 - app - INFO - SECURITY_AUDIT: HEAD /admin/ from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-18 10:36:06,344 - app - INFO - SECURITY_AUDIT: Response 302 for HEAD /admin/
+2025-07-18 10:36:06,344 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 10:36:06,344 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 10:36:06,344 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 10:36:06] "[32mHEAD /admin/ HTTP/1.1[0m" 302 -
+2025-07-18 10:37:17,499 - app - INFO - SECURITY_AUDIT: POST /auth/api/login from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-18 10:37:17,501 - database_utils - DEBUG - 🔄 Database operation attempt 1/3: find_user_by_email
+2025-07-18 10:37:17,509 - routes.auth - INFO - ✅ LOGIN DEBUG: User found - ID: 2, Email: admin@fireems.ai, Active: True
+2025-07-18 10:37:17,509 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password hash exists: True
+2025-07-18 10:37:17,509 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password hash length: 162
+2025-07-18 10:37:17,582 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password check result: False
+2025-07-18 10:37:17,582 - routes.auth - INFO - 🔐 LOGIN DEBUG: Attempted password: 'secure_super_admin_password_456'
+2025-07-18 10:37:17,582 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password length: 31
+2025-07-18 10:37:17,653 - app - INFO - SECURITY_AUDIT: Response 401 for POST /auth/api/login
+2025-07-18 10:37:17,653 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 10:37:17,653 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 10:37:17,653 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 10:37:17] "[31m[1mPOST /auth/api/login HTTP/1.1[0m" 401 -
+2025-07-18 10:41:26,298 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-18 10:41:26,452 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-18 10:41:26,453 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-18 10:41:26,453 - app - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-18 10:41:26,453 - app - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-18 10:41:26,458 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-18 10:41:26,458 - app - INFO - Creating application with deployment fixes...
+2025-07-18 10:41:26,459 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-18 10:41:26,459 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-18 10:41:26,459 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-18 10:41:26,460 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-18 10:41:26,460 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-18 10:41:26,469 - email_service - INFO - 📧 Email service ENABLED - SMTP: smtp.gmail.com:587
+2025-07-18 10:41:26,469 - email_service - INFO - 📧 Email from: FireEMS.ai <noreply@fireems.ai>
+2025-07-18 10:41:26,472 - static_middleware - INFO - Registered static file handler middleware
+2025-07-18 10:41:26,473 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-18 10:41:26,473 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-18 10:41:26,473 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-18 10:41:26,473 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-18 10:41:26,473 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-18 10:41:26,473 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-18 10:41:26,473 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-18 10:41:26,473 - static_middleware - INFO - Sample static files: []
+2025-07-18 10:41:26,858 - app - INFO - Successfully registered all route blueprints
+2025-07-18 10:41:26,860 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-18 10:41:26,860 - app - INFO - Registered React Data Formatter routes
+2025-07-18 10:41:26,862 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-18 10:41:26,862 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-18 10:41:26,862 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-18 10:41:26,862 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-18 10:41:26,862 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-18 10:41:26,862 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-18 10:41:26,862 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-18 10:41:26,862 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-18 10:41:26,863 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-18 10:41:26,863 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-18 10:41:26,875 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-18 10:41:26,875 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-18 10:41:26,878 - app - INFO - Found 1 existing super_admin users
+2025-07-18 10:41:26,878 - app - INFO - Super admin user already exists, skipping creation
+2025-07-18 10:41:26,878 - app - INFO - Application created successfully with all fixes applied
+2025-07-18 10:41:26,879 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-18 10:41:26,879 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-18 10:41:26,879 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-18 10:41:26,879 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-18 10:41:26,879 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-18 10:41:26,880 - email_service - INFO - 📧 Email service ENABLED - SMTP: smtp.gmail.com:587
+2025-07-18 10:41:26,880 - email_service - INFO - 📧 Email from: FireEMS.ai <noreply@fireems.ai>
+2025-07-18 10:41:26,881 - static_middleware - INFO - Registered static file handler middleware
+2025-07-18 10:41:26,881 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-18 10:41:26,881 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-18 10:41:26,881 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-18 10:41:26,881 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-18 10:41:26,881 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-18 10:41:26,881 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-18 10:41:26,881 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-18 10:41:26,881 - static_middleware - INFO - Sample static files: []
+2025-07-18 10:41:26,902 - app - INFO - Successfully registered all route blueprints
+2025-07-18 10:41:26,903 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-18 10:41:26,903 - app - INFO - Registered React Data Formatter routes
+2025-07-18 10:41:55,403 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-18 10:41:55,548 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-18 10:41:55,548 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-18 10:41:55,548 - app - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-18 10:41:55,548 - app - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-18 10:41:55,552 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-18 10:41:55,552 - app - INFO - Creating application with deployment fixes...
+2025-07-18 10:41:55,552 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-18 10:41:55,552 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-18 10:41:55,552 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-18 10:41:55,553 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-18 10:41:55,553 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-18 10:41:55,561 - email_service - INFO - 📧 Email service ENABLED - SMTP: smtp.gmail.com:587
+2025-07-18 10:41:55,561 - email_service - INFO - 📧 Email from: FireEMS.ai <noreply@fireems.ai>
+2025-07-18 10:41:55,563 - static_middleware - INFO - Registered static file handler middleware
+2025-07-18 10:41:55,563 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-18 10:41:55,564 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-18 10:41:55,564 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-18 10:41:55,564 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-18 10:41:55,564 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-18 10:41:55,564 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-18 10:41:55,564 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-18 10:41:55,564 - static_middleware - INFO - Sample static files: []
+2025-07-18 10:41:55,905 - app - INFO - Successfully registered all route blueprints
+2025-07-18 10:41:55,907 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-18 10:41:55,907 - app - INFO - Registered React Data Formatter routes
+2025-07-18 10:41:55,908 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-18 10:41:55,908 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-18 10:41:55,909 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-18 10:41:55,909 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-18 10:41:55,909 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-18 10:41:55,909 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-18 10:41:55,909 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-18 10:41:55,909 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-18 10:41:55,909 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-18 10:41:55,909 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-18 10:41:55,920 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-18 10:41:55,920 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-18 10:41:55,922 - app - INFO - Found 1 existing super_admin users
+2025-07-18 10:41:55,923 - app - INFO - Super admin user already exists, skipping creation
+2025-07-18 10:41:55,923 - app - INFO - Application created successfully with all fixes applied
+2025-07-18 10:42:03,534 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-18 10:42:03,643 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-18 10:42:03,643 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-18 10:42:03,643 - __main__ - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-18 10:42:03,643 - __main__ - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-18 10:42:03,646 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-18 10:42:03,646 - __main__ - INFO - Creating application with deployment fixes...
+2025-07-18 10:42:03,646 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-18 10:42:03,647 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-18 10:42:03,647 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-18 10:42:03,647 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-18 10:42:03,647 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-18 10:42:03,653 - email_service - INFO - 📧 Email service ENABLED - SMTP: smtp.gmail.com:587
+2025-07-18 10:42:03,653 - email_service - INFO - 📧 Email from: FireEMS.ai <noreply@fireems.ai>
+2025-07-18 10:42:03,655 - static_middleware - INFO - Registered static file handler middleware
+2025-07-18 10:42:03,655 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-18 10:42:03,655 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-18 10:42:03,655 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-18 10:42:03,655 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-18 10:42:03,655 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-18 10:42:03,655 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-18 10:42:03,655 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-18 10:42:03,655 - static_middleware - INFO - Sample static files: []
+2025-07-18 10:42:03,904 - __main__ - INFO - Successfully registered all route blueprints
+2025-07-18 10:42:03,906 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-18 10:42:03,906 - __main__ - INFO - Registered React Data Formatter routes
+2025-07-18 10:42:03,907 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-18 10:42:03,907 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-18 10:42:03,907 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-18 10:42:03,907 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-18 10:42:03,907 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-18 10:42:03,907 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-18 10:42:03,907 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-18 10:42:03,907 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-18 10:42:03,907 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-18 10:42:03,907 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-18 10:42:03,918 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-18 10:42:03,918 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-18 10:42:03,920 - __main__ - INFO - Found 1 existing super_admin users
+2025-07-18 10:42:03,920 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-07-18 10:42:03,921 - __main__ - INFO - Application created successfully with all fixes applied
+2025-07-18 10:42:59,933 - app - INFO - SECURITY_AUDIT: POST /auth/api/login from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-18 10:42:59,933 - database_utils - DEBUG - 🔄 Database operation attempt 1/3: find_user_by_email
+2025-07-18 10:42:59,938 - routes.auth - INFO - ✅ LOGIN DEBUG: User found - ID: 2, Email: admin@fireems.ai, Active: True
+2025-07-18 10:42:59,938 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password hash exists: True
+2025-07-18 10:42:59,938 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password hash length: 162
+2025-07-18 10:43:00,006 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password check result: True
+2025-07-18 10:43:00,006 - routes.auth - INFO - 🔐 LOGIN DEBUG: Attempted password: 'admin123'
+2025-07-18 10:43:00,006 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password length: 8
+2025-07-18 10:43:00,076 - database_utils - DEBUG - 🔄 Database operation attempt 1/5: update_user_login
+2025-07-18 10:43:00,080 - routes.auth - INFO - User admin@fireems.ai logged in successfully
+2025-07-18 10:43:00,082 - app - INFO - SECURITY_AUDIT: Response 200 for POST /auth/api/login
+2025-07-18 10:43:00,082 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-18 10:43:00,082 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 10:43:00,083 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 10:43:00] "POST /auth/api/login HTTP/1.1" 200 -
+2025-07-18 10:43:12,170 - app - INFO - SECURITY_AUDIT: GET /admin/api/users from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-18 10:43:12,174 - app - INFO - SECURITY_AUDIT: Response 200 for GET /admin/api/users
+2025-07-18 10:43:12,174 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-18 10:43:12,174 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 10:43:12,175 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 10:43:12] "GET /admin/api/users HTTP/1.1" 200 -
+2025-07-18 10:43:26,589 - app - INFO - SECURITY_AUDIT: GET /admin/api/departments from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-18 10:43:26,593 - app - INFO - SECURITY_AUDIT: Response 200 for GET /admin/api/departments
+2025-07-18 10:43:26,594 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-18 10:43:26,594 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 10:43:26,594 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 10:43:26] "GET /admin/api/departments HTTP/1.1" 200 -
+2025-07-18 10:43:57,059 - app - INFO - SECURITY_AUDIT: POST /admin/api/users from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-18 10:43:57,133 - routes.admin - INFO - User testuser@demo.example.com created by super admin admin@fireems.ai
+2025-07-18 10:43:57,549 - email_service - ERROR - Failed to send email to testuser@demo.example.com: (535, b'5.7.8 Username and Password not accepted. For more information, go to\n5.7.8  https://support.google.com/mail/?p=BadCredentials d9443c01a7336-23e3b5e2d20sm16316175ad.32 - gsmtp')
+2025-07-18 10:43:57,549 - routes.admin - ERROR - Failed to send welcome email to testuser@demo.example.com
+2025-07-18 10:43:57,549 - app - INFO - SECURITY_AUDIT: Response 200 for POST /admin/api/users
+2025-07-18 10:43:57,549 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-18 10:43:57,549 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 10:43:57,549 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 10:43:57] "POST /admin/api/users HTTP/1.1" 200 -
+2025-07-18 10:44:26,971 - app - INFO - SECURITY_AUDIT: POST /admin/api/departments from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-18 10:44:26,976 - routes.admin - INFO - Department Test Valley Fire District created by super admin admin@fireems.ai
+2025-07-18 10:44:26,976 - app - INFO - SECURITY_AUDIT: Response 200 for POST /admin/api/departments
+2025-07-18 10:44:26,976 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-18 10:44:26,976 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 10:44:26,976 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 10:44:26] "POST /admin/api/departments HTTP/1.1" 200 -
+2025-07-18 10:44:41,944 - app - INFO - SECURITY_AUDIT: POST /auth/api/login from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-18 10:44:41,944 - database_utils - DEBUG - 🔄 Database operation attempt 1/3: find_user_by_email
+2025-07-18 10:44:41,945 - routes.auth - INFO - ✅ LOGIN DEBUG: User found - ID: 5, Email: ff1@pinecrestfire.org, Active: True
+2025-07-18 10:44:41,945 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password hash exists: True
+2025-07-18 10:44:41,945 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password hash length: 162
+2025-07-18 10:44:42,012 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password check result: False
+2025-07-18 10:44:42,012 - routes.auth - INFO - 🔐 LOGIN DEBUG: Attempted password: 'password123'
+2025-07-18 10:44:42,012 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password length: 11
+2025-07-18 10:44:42,080 - app - INFO - SECURITY_AUDIT: Response 401 for POST /auth/api/login
+2025-07-18 10:44:42,080 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-18 10:44:42,080 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 10:44:42,081 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 10:44:42] "[31m[1mPOST /auth/api/login HTTP/1.1[0m" 401 -
+2025-07-18 10:45:24,692 - app - INFO - SECURITY_AUDIT: GET /admin/api/dashboard from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-18 10:45:24,692 - app - INFO - SECURITY_AUDIT: Response 404 for GET /admin/api/dashboard
+2025-07-18 10:45:24,692 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-18 10:45:24,692 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 10:45:24,692 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 10:45:24] "[33mGET /admin/api/dashboard HTTP/1.1[0m" 404 -
+2025-07-18 10:45:35,776 - app - INFO - SECURITY_AUDIT: GET /admin/api/stats from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-18 10:45:35,776 - app - INFO - SECURITY_AUDIT: Response 404 for GET /admin/api/stats
+2025-07-18 10:45:35,776 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-18 10:45:35,777 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 10:45:35,777 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 10:45:35] "[33mGET /admin/api/stats HTTP/1.1[0m" 404 -
+2025-07-18 10:45:58,734 - app - INFO - SECURITY_AUDIT: POST /admin/api/users from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-18 10:45:58,806 - routes.admin - INFO - User regular@test.com created by super admin admin@fireems.ai
+2025-07-18 10:45:59,589 - email_service - ERROR - Failed to send email to regular@test.com: (535, b'5.7.8 Username and Password not accepted. For more information, go to\n5.7.8  https://support.google.com/mail/?p=BadCredentials d2e1a72fcca58-759cbc6af82sm1474399b3a.154 - gsmtp')
+2025-07-18 10:45:59,590 - routes.admin - ERROR - Failed to send welcome email to regular@test.com
+2025-07-18 10:45:59,590 - app - INFO - SECURITY_AUDIT: Response 200 for POST /admin/api/users
+2025-07-18 10:45:59,590 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-18 10:45:59,590 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 10:45:59,590 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 10:45:59] "POST /admin/api/users HTTP/1.1" 200 -
+2025-07-18 10:46:31,642 - app - INFO - SECURITY_AUDIT: POST /auth/api/login from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-18 10:46:31,642 - database_utils - DEBUG - 🔄 Database operation attempt 1/3: find_user_by_email
+2025-07-18 10:46:31,643 - routes.auth - INFO - ✅ LOGIN DEBUG: User found - ID: 25, Email: regular@test.com, Active: True
+2025-07-18 10:46:31,643 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password hash exists: True
+2025-07-18 10:46:31,643 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password hash length: 162
+2025-07-18 10:46:31,712 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password check result: False
+2025-07-18 10:46:31,712 - routes.auth - INFO - 🔐 LOGIN DEBUG: Attempted password: 'testpass123'
+2025-07-18 10:46:31,712 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password length: 11
+2025-07-18 10:46:31,779 - app - INFO - SECURITY_AUDIT: Response 401 for POST /auth/api/login
+2025-07-18 10:46:31,779 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-18 10:46:31,779 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 10:46:31,780 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 10:46:31] "[31m[1mPOST /auth/api/login HTTP/1.1[0m" 401 -
+2025-07-18 10:47:30,418 - app - INFO - SECURITY_AUDIT: GET /admin/api/users from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-18 10:47:30,419 - app - INFO - SECURITY_AUDIT: Response 302 for GET /admin/api/users
+2025-07-18 10:47:30,419 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-18 10:47:30,419 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 10:47:30,419 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 10:47:30] "[32mGET /admin/api/users HTTP/1.1[0m" 302 -
+2025-07-18 10:47:58,887 - app - INFO - SECURITY_AUDIT: GET /admin/api/users from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-18 10:47:58,890 - app - INFO - SECURITY_AUDIT: Response 200 for GET /admin/api/users
+2025-07-18 10:47:58,890 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-18 10:47:58,890 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 10:47:58,890 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 10:47:58] "GET /admin/api/users?department_id=3 HTTP/1.1" 200 -
+2025-07-18 13:12:25,547 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 13:12:25,548 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 13:12:25,548 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 13:12:25] "GET / HTTP/1.1" 200 -
+2025-07-18 13:12:25,559 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 13:12:25,559 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 13:12:25,559 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 13:12:25] "GET / HTTP/1.1" 200 -
+2025-07-18 13:12:32,721 - app - INFO - SECURITY_AUDIT: POST /auth/api/login from 127.0.0.1 User-Agent: python-requests/2.32.3
+2025-07-18 13:12:32,722 - database_utils - DEBUG - 🔄 Database operation attempt 1/3: find_user_by_email
+2025-07-18 13:12:32,726 - routes.auth - INFO - ✅ LOGIN DEBUG: User found - ID: 2, Email: admin@fireems.ai, Active: True
+2025-07-18 13:12:32,727 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password hash exists: True
+2025-07-18 13:12:32,727 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password hash length: 162
+2025-07-18 13:12:32,792 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password check result: True
+2025-07-18 13:12:32,792 - routes.auth - INFO - 🔐 LOGIN DEBUG: Attempted password: 'admin123'
+2025-07-18 13:12:32,792 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password length: 8
+2025-07-18 13:12:32,856 - database_utils - DEBUG - 🔄 Database operation attempt 1/5: update_user_login
+2025-07-18 13:12:32,861 - routes.auth - INFO - User admin@fireems.ai logged in successfully
+2025-07-18 13:12:32,862 - app - INFO - SECURITY_AUDIT: Response 200 for POST /auth/api/login
+2025-07-18 13:12:32,862 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 13:12:32,862 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 13:12:32,862 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 13:12:32] "POST /auth/api/login HTTP/1.1" 200 -
+2025-07-18 13:12:32,865 - app - INFO - SECURITY_AUDIT: POST /admin/api/users from 127.0.0.1 User-Agent: python-requests/2.32.3
+2025-07-18 13:12:32,935 - routes.admin - INFO - User debug@test.com created by super admin admin@fireems.ai
+2025-07-18 13:12:33,338 - email_service - ERROR - Failed to send email to debug@test.com: (535, b'5.7.8 Username and Password not accepted. For more information, go to\n5.7.8  https://support.google.com/mail/?p=BadCredentials d9443c01a7336-23e3b6ef68dsm17381895ad.205 - gsmtp')
+2025-07-18 13:12:33,338 - routes.admin - ERROR - Failed to send welcome email to debug@test.com
+2025-07-18 13:12:33,338 - app - INFO - SECURITY_AUDIT: Response 200 for POST /admin/api/users
+2025-07-18 13:12:33,339 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 13:12:33,339 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 13:12:33,339 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 13:12:33] "POST /admin/api/users HTTP/1.1" 200 -
+2025-07-18 13:12:33,343 - app - INFO - SECURITY_AUDIT: POST /auth/api/login from 127.0.0.1 User-Agent: python-requests/2.32.3
+2025-07-18 13:12:33,343 - database_utils - DEBUG - 🔄 Database operation attempt 1/3: find_user_by_email
+2025-07-18 13:12:33,348 - routes.auth - INFO - ✅ LOGIN DEBUG: User found - ID: 2, Email: admin@fireems.ai, Active: True
+2025-07-18 13:12:33,348 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password hash exists: True
+2025-07-18 13:12:33,348 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password hash length: 162
+2025-07-18 13:12:33,426 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password check result: True
+2025-07-18 13:12:33,426 - routes.auth - INFO - 🔐 LOGIN DEBUG: Attempted password: 'admin123'
+2025-07-18 13:12:33,426 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password length: 8
+2025-07-18 13:12:33,489 - database_utils - DEBUG - 🔄 Database operation attempt 1/5: update_user_login
+2025-07-18 13:12:33,493 - routes.auth - INFO - User admin@fireems.ai logged in successfully
+2025-07-18 13:12:33,495 - app - INFO - SECURITY_AUDIT: Response 200 for POST /auth/api/login
+2025-07-18 13:12:33,495 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 13:12:33,495 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 13:12:33,495 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 13:12:33] "POST /auth/api/login HTTP/1.1" 200 -
+2025-07-18 13:12:33,497 - app - INFO - SECURITY_AUDIT: POST /admin/api/users from 127.0.0.1 User-Agent: python-requests/2.32.3
+2025-07-18 13:12:33,499 - app - INFO - SECURITY_AUDIT: Response 400 for POST /admin/api/users
+2025-07-18 13:12:33,499 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 13:12:33,499 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 13:12:33,499 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 13:12:33] "[31m[1mPOST /admin/api/users HTTP/1.1[0m" 400 -
+2025-07-18 13:34:38,793 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-18 13:34:38,920 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-18 13:34:38,920 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-18 13:34:38,920 - app - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-18 13:34:38,920 - app - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-18 13:34:38,924 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-18 13:34:38,924 - app - INFO - Creating application with deployment fixes...
+2025-07-18 13:34:38,925 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-18 13:34:38,925 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-18 13:34:38,925 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-18 13:34:38,926 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-18 13:34:38,926 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-18 13:34:38,934 - email_service - INFO - 📧 Email service ENABLED - SMTP: smtp.gmail.com:587
+2025-07-18 13:34:38,934 - email_service - INFO - 📧 Email from: FireEMS.ai <noreply@fireems.ai>
+2025-07-18 13:34:38,936 - static_middleware - INFO - Registered static file handler middleware
+2025-07-18 13:34:38,937 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-18 13:34:38,937 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-18 13:34:38,937 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-18 13:34:38,937 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-18 13:34:38,937 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-18 13:34:38,937 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-18 13:34:38,937 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-18 13:34:38,937 - static_middleware - INFO - Sample static files: []
+2025-07-18 13:34:39,276 - app - INFO - Successfully registered all route blueprints
+2025-07-18 13:34:39,278 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-18 13:34:39,278 - app - INFO - Registered React Data Formatter routes
+2025-07-18 13:34:39,279 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-18 13:34:39,279 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-18 13:34:39,279 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-18 13:34:39,280 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-18 13:34:39,280 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-18 13:34:39,280 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-18 13:34:39,280 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-18 13:34:39,280 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-18 13:34:39,280 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-18 13:34:39,280 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-18 13:34:39,290 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-18 13:34:39,290 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-18 13:34:39,293 - app - INFO - Found 1 existing super_admin users
+2025-07-18 13:34:39,293 - app - INFO - Super admin user already exists, skipping creation
+2025-07-18 13:34:39,293 - app - INFO - Application created successfully with all fixes applied
+2025-07-18 13:45:39,209 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/app.py', reloading
+2025-07-18 13:45:39,211 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/app.py', reloading
+2025-07-18 13:45:39,211 - werkzeug - INFO -  * Detected change in '/Users/josephhester/fire-ems-tools/app.py', reloading
+2025-07-18 13:46:24,688 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-18 13:46:24,814 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-18 13:46:24,814 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-18 13:46:24,814 - app - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-18 13:46:24,814 - app - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-18 13:46:24,818 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-18 13:46:24,818 - app - INFO - Creating application with deployment fixes...
+2025-07-18 13:46:24,819 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-18 13:46:24,819 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-18 13:46:24,819 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-18 13:46:24,820 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-18 13:46:24,820 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-18 13:46:24,827 - email_service - INFO - 📧 Email service ENABLED - SMTP: smtp.gmail.com:587
+2025-07-18 13:46:24,827 - email_service - INFO - 📧 Email from: FireEMS.ai <noreply@fireems.ai>
+2025-07-18 13:46:24,830 - static_middleware - INFO - Registered static file handler middleware
+2025-07-18 13:46:24,830 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-18 13:46:24,830 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-18 13:46:24,830 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-18 13:46:24,830 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-18 13:46:24,830 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-18 13:46:24,830 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-18 13:46:24,830 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-18 13:46:24,830 - static_middleware - INFO - Sample static files: []
+2025-07-18 13:46:25,149 - ai_service - INFO - OpenAI API key not found. AI features will be disabled.
+2025-07-18 13:46:25,149 - app - INFO - AI blueprint imported successfully
+2025-07-18 13:46:25,164 - app - INFO - AI blueprint registered successfully
+2025-07-18 13:46:25,164 - app - INFO - Successfully registered all route blueprints
+2025-07-18 13:46:25,166 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-18 13:46:25,166 - app - INFO - Registered React Data Formatter routes
+2025-07-18 13:46:25,167 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-18 13:46:25,167 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-18 13:46:25,167 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-18 13:46:25,167 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-18 13:46:25,167 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-18 13:46:25,167 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-18 13:46:25,167 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-18 13:46:25,167 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-18 13:46:25,167 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-18 13:46:25,167 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-18 13:46:25,178 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-18 13:46:25,178 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-18 13:46:25,180 - app - INFO - Found 1 existing super_admin users
+2025-07-18 13:46:25,180 - app - INFO - Super admin user already exists, skipping creation
+2025-07-18 13:46:25,181 - app - INFO - Application created successfully with all fixes applied
+2025-07-18 13:46:39,292 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 13:46:39,292 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 13:46:39,293 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 13:46:39] "[33mGET /ai/status HTTP/1.1[0m" 404 -
+2025-07-18 13:46:54,130 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-18 13:46:54,234 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-18 13:46:54,234 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-18 13:46:54,234 - app - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-18 13:46:54,234 - app - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-18 13:46:54,236 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-18 13:46:54,236 - app - INFO - Creating application with deployment fixes...
+2025-07-18 13:46:54,237 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-18 13:46:54,237 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-18 13:46:54,237 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-18 13:46:54,238 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-18 13:46:54,238 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-18 13:46:54,243 - email_service - INFO - 📧 Email service ENABLED - SMTP: smtp.gmail.com:587
+2025-07-18 13:46:54,244 - email_service - INFO - 📧 Email from: FireEMS.ai <noreply@fireems.ai>
+2025-07-18 13:46:54,245 - static_middleware - INFO - Registered static file handler middleware
+2025-07-18 13:46:54,246 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-18 13:46:54,246 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-18 13:46:54,246 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-18 13:46:54,246 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-18 13:46:54,246 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-18 13:46:54,246 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-18 13:46:54,246 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-18 13:46:54,246 - static_middleware - INFO - Sample static files: []
+2025-07-18 13:46:54,484 - ai_service - INFO - OpenAI API key not found. AI features will be disabled.
+2025-07-18 13:46:54,484 - app - INFO - AI blueprint imported successfully
+2025-07-18 13:46:54,498 - app - INFO - AI blueprint registered successfully
+2025-07-18 13:46:54,498 - app - INFO - Successfully registered all route blueprints
+2025-07-18 13:46:54,500 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-18 13:46:54,500 - app - INFO - Registered React Data Formatter routes
+2025-07-18 13:46:54,501 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-18 13:46:54,501 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-18 13:46:54,501 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-18 13:46:54,501 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-18 13:46:54,501 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-18 13:46:54,501 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-18 13:46:54,501 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-18 13:46:54,501 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-18 13:46:54,501 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-18 13:46:54,502 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-18 13:46:54,512 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-18 13:46:54,512 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-18 13:46:54,515 - app - INFO - Found 1 existing super_admin users
+2025-07-18 13:46:54,515 - app - INFO - Super admin user already exists, skipping creation
+2025-07-18 13:46:54,515 - app - INFO - Application created successfully with all fixes applied
+2025-07-18 13:46:54,522 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5009
+2025-07-18 13:46:54,522 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-07-18 13:46:56,999 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=False, is_production=True, is_dev=False
+2025-07-18 13:46:56,999 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 13:46:57,000 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 13:46:57] "[32mGET /ai/status HTTP/1.1[0m" 302 -
+2025-07-18 14:03:30,263 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-18 14:03:30,395 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-18 14:03:30,395 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-18 14:03:30,396 - __main__ - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-18 14:03:30,396 - __main__ - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-18 14:03:30,398 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-18 14:03:30,399 - __main__ - INFO - Creating application with deployment fixes...
+2025-07-18 14:03:30,399 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-18 14:03:30,399 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-18 14:03:30,399 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-18 14:03:30,400 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-18 14:03:30,400 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-18 14:03:30,408 - email_service - INFO - 📧 Email service ENABLED - SMTP: smtp.gmail.com:587
+2025-07-18 14:03:30,408 - email_service - INFO - 📧 Email from: FireEMS.ai <noreply@fireems.ai>
+2025-07-18 14:03:30,410 - static_middleware - INFO - Registered static file handler middleware
+2025-07-18 14:03:30,410 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-18 14:03:30,410 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-18 14:03:30,410 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-18 14:03:30,411 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-18 14:03:30,411 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-18 14:03:30,411 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-18 14:03:30,411 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-18 14:03:30,411 - static_middleware - INFO - Sample static files: []
+2025-07-18 14:03:30,973 - ai_service - INFO - ✅ AI Service initialized successfully
+2025-07-18 14:03:30,973 - __main__ - INFO - AI blueprint imported successfully
+2025-07-18 14:03:31,015 - __main__ - INFO - AI blueprint registered successfully
+2025-07-18 14:03:31,015 - __main__ - INFO - Successfully registered all route blueprints
+2025-07-18 14:03:31,018 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-18 14:03:31,018 - __main__ - INFO - Registered React Data Formatter routes
+2025-07-18 14:03:31,019 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-18 14:03:31,019 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-18 14:03:31,019 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-18 14:03:31,020 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-18 14:03:31,020 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-18 14:03:31,020 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-18 14:03:31,020 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-18 14:03:31,020 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-18 14:03:31,020 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-18 14:03:31,020 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-18 14:03:31,031 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-18 14:03:31,031 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-18 14:03:31,034 - __main__ - INFO - Found 1 existing super_admin users
+2025-07-18 14:03:31,034 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-07-18 14:03:31,034 - __main__ - INFO - Application created successfully with all fixes applied
+2025-07-18 14:03:31,063 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5006
+ * Running on http://192.168.0.24:5006
+2025-07-18 14:03:31,063 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-07-18 14:03:31,065 - werkzeug - INFO -  * Restarting with stat
+2025-07-18 14:03:31,202 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-18 14:03:31,309 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-18 14:03:31,309 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-18 14:03:31,309 - __main__ - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-18 14:03:31,309 - __main__ - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-18 14:03:31,312 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-18 14:03:31,312 - __main__ - INFO - Creating application with deployment fixes...
+2025-07-18 14:03:31,313 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-18 14:03:31,313 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-18 14:03:31,313 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-18 14:03:31,313 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-18 14:03:31,313 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-18 14:03:31,319 - email_service - INFO - 📧 Email service ENABLED - SMTP: smtp.gmail.com:587
+2025-07-18 14:03:31,319 - email_service - INFO - 📧 Email from: FireEMS.ai <noreply@fireems.ai>
+2025-07-18 14:03:31,321 - static_middleware - INFO - Registered static file handler middleware
+2025-07-18 14:03:31,321 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-18 14:03:31,321 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-18 14:03:31,321 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-18 14:03:31,321 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-18 14:03:31,321 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-18 14:03:31,321 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-18 14:03:31,321 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-18 14:03:31,321 - static_middleware - INFO - Sample static files: []
+2025-07-18 14:03:31,799 - ai_service - INFO - ✅ AI Service initialized successfully
+2025-07-18 14:03:31,799 - __main__ - INFO - AI blueprint imported successfully
+2025-07-18 14:03:31,840 - __main__ - INFO - AI blueprint registered successfully
+2025-07-18 14:03:31,840 - __main__ - INFO - Successfully registered all route blueprints
+2025-07-18 14:03:31,842 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-18 14:03:31,842 - __main__ - INFO - Registered React Data Formatter routes
+2025-07-18 14:03:31,843 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-18 14:03:31,843 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-18 14:03:31,843 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-18 14:03:31,843 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-18 14:03:31,843 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-18 14:03:31,843 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-18 14:03:31,843 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-18 14:03:31,843 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-18 14:03:31,843 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-18 14:03:31,843 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-18 14:03:31,854 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-18 14:03:31,854 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-18 14:03:31,857 - __main__ - INFO - Found 1 existing super_admin users
+2025-07-18 14:03:31,857 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-07-18 14:03:31,857 - __main__ - INFO - Application created successfully with all fixes applied
+2025-07-18 14:03:31,873 - werkzeug - WARNING -  * Debugger is active!
+2025-07-18 14:03:31,880 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-07-18 14:05:36,714 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-18 14:05:36,714 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 14:05:36,715 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 14:05:36] "[32mGET /ai/status HTTP/1.1[0m" 302 -
+2025-07-18 14:05:45,753 - app - INFO - SECURITY_AUDIT: POST /auth/api/login from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-18 14:05:45,753 - database_utils - DEBUG - 🔄 Database operation attempt 1/3: find_user_by_email
+2025-07-18 14:05:45,755 - routes.auth - INFO - ✅ LOGIN DEBUG: User found - ID: 2, Email: admin@fireems.ai, Active: True
+2025-07-18 14:05:45,755 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password hash exists: True
+2025-07-18 14:05:45,755 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password hash length: 162
+2025-07-18 14:05:45,826 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password check result: True
+2025-07-18 14:05:45,827 - routes.auth - INFO - 🔐 LOGIN DEBUG: Attempted password: 'admin123'
+2025-07-18 14:05:45,827 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password length: 8
+2025-07-18 14:05:45,897 - database_utils - DEBUG - 🔄 Database operation attempt 1/5: update_user_login
+2025-07-18 14:05:45,900 - routes.auth - INFO - User admin@fireems.ai logged in successfully
+2025-07-18 14:05:45,901 - app - INFO - SECURITY_AUDIT: Response 200 for POST /auth/api/login
+2025-07-18 14:05:45,901 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-18 14:05:45,901 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 14:05:45,902 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 14:05:45] "POST /auth/api/login HTTP/1.1" 200 -
+2025-07-18 14:05:48,871 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-18 14:05:48,871 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 14:05:48,872 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 14:05:48] "GET /ai/status HTTP/1.1" 200 -
+2025-07-18 14:06:02,308 - app - INFO - SECURITY_AUDIT: POST /ai/api/analyze from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-18 14:06:02,309 - routes.ai - INFO - AI analysis requested by user 2 (admin@fireems.ai)
+2025-07-18 14:06:02,309 - routes.ai - DEBUG - Data summary length: 109 characters
+2025-07-18 14:06:02,423 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-a4248fc4-ad92-49f7-939e-21a81263865c', 'json_data': {'messages': [{'role': 'system', 'content': 'You are a fire department compliance expert specializing in NFPA 1710 standards. \n                        Focus on:\n                        - Response time performance (dispatch <60s, turnout <80s, total <8min)\n                        - Staffing adequacy and deployment\n                        - Coverage gaps and improvement opportunities\n                        - ISO rating considerations\n                        \n                        Provide specific, actionable recommendations. Keep responses concise and professional.'}, {'role': 'user', 'content': 'CAD data summary: Fire department with 150 incidents last month, average response time 4.8 minutes, NFPA 1710 compliance at 82%\n\nSpecific query: What improvements should we focus on?'}], 'model': 'gpt-4o-mini', 'max_tokens': 300, 'temperature': 0.7}}
+2025-07-18 14:06:02,437 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2025-07-18 14:06:02,438 - httpcore.connection - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=5.0 socket_options=None
+2025-07-18 14:06:02,513 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10fd5a660>
+2025-07-18 14:06:02,513 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x10a4113d0> server_hostname='api.openai.com' timeout=5.0
+2025-07-18 14:06:02,538 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10fc8cb60>
+2025-07-18 14:06:02,538 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-07-18 14:06:02,539 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-18 14:06:02,539 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-07-18 14:06:02,539 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-18 14:06:02,539 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-07-18 14:06:08,498 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Fri, 18 Jul 2025 21:06:08 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'access-control-expose-headers', b'X-Request-ID'), (b'openai-organization', b'user-p8mrlqtg99umsjlnffrknwtb'), (b'openai-processing-ms', b'5608'), (b'openai-project', b'proj_Ux6a5EvBgJRABGd9KrmuXQqd'), (b'openai-version', b'2020-10-01'), (b'x-envoy-upstream-service-time', b'5620'), (b'x-ratelimit-limit-requests', b'5000'), (b'x-ratelimit-limit-tokens', b'4000000'), (b'x-ratelimit-remaining-requests', b'4999'), (b'x-ratelimit-remaining-tokens', b'3999818'), (b'x-ratelimit-reset-requests', b'12ms'), (b'x-ratelimit-reset-tokens', b'2ms'), (b'x-request-id', b'req_447efd0c4443638682166bfdbb3bce6b'), (b'strict-transport-security', b'max-age=31536000; includeSubDomains; preload'), (b'cf-cache-status', b'DYNAMIC'), (b'Set-Cookie', b'__cf_bm=U3wWYV8S66Nd_IEfoPO52ohupi4WOfpwsVCoN4VTFq0-1752872768-1.0.1.1-CDTRnDepH7v2G9hdHAHEg6FhDe8pbiPxgK1YuiVh0ENdTVU_BvB6gL79Z00dxfKdejdgrIoZKQ4QmOwM49s2nNLTXOPng2WQFeoFHoW6iAI; path=/; expires=Fri, 18-Jul-25 21:36:08 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), (b'X-Content-Type-Options', b'nosniff'), (b'Set-Cookie', b'_cfuvid=9E6AER3UTGlRtS5nJiyPN8..YyVapfttY6M21IrgQXk-1752872768505-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), (b'Server', b'cloudflare'), (b'CF-RAY', b'9614f0ce1e0308f0-LAX'), (b'Content-Encoding', b'gzip'), (b'alt-svc', b'h3=":443"; ma=86400')])
+2025-07-18 14:06:08,502 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-18 14:06:08,502 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-07-18 14:06:08,514 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-18 14:06:08,515 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-18 14:06:08,515 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-18 14:06:08,515 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "200 OK" Headers([('date', 'Fri, 18 Jul 2025 21:06:08 GMT'), ('content-type', 'application/json'), ('transfer-encoding', 'chunked'), ('connection', 'keep-alive'), ('access-control-expose-headers', 'X-Request-ID'), ('openai-organization', 'user-p8mrlqtg99umsjlnffrknwtb'), ('openai-processing-ms', '5608'), ('openai-project', 'proj_Ux6a5EvBgJRABGd9KrmuXQqd'), ('openai-version', '2020-10-01'), ('x-envoy-upstream-service-time', '5620'), ('x-ratelimit-limit-requests', '5000'), ('x-ratelimit-limit-tokens', '4000000'), ('x-ratelimit-remaining-requests', '4999'), ('x-ratelimit-remaining-tokens', '3999818'), ('x-ratelimit-reset-requests', '12ms'), ('x-ratelimit-reset-tokens', '2ms'), ('x-request-id', 'req_447efd0c4443638682166bfdbb3bce6b'), ('strict-transport-security', 'max-age=31536000; includeSubDomains; preload'), ('cf-cache-status', 'DYNAMIC'), ('set-cookie', '__cf_bm=U3wWYV8S66Nd_IEfoPO52ohupi4WOfpwsVCoN4VTFq0-1752872768-1.0.1.1-CDTRnDepH7v2G9hdHAHEg6FhDe8pbiPxgK1YuiVh0ENdTVU_BvB6gL79Z00dxfKdejdgrIoZKQ4QmOwM49s2nNLTXOPng2WQFeoFHoW6iAI; path=/; expires=Fri, 18-Jul-25 21:36:08 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('x-content-type-options', 'nosniff'), ('set-cookie', '_cfuvid=9E6AER3UTGlRtS5nJiyPN8..YyVapfttY6M21IrgQXk-1752872768505-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('server', 'cloudflare'), ('cf-ray', '9614f0ce1e0308f0-LAX'), ('content-encoding', 'gzip'), ('alt-svc', 'h3=":443"; ma=86400')])
+2025-07-18 14:06:08,516 - openai._base_client - DEBUG - request_id: req_447efd0c4443638682166bfdbb3bce6b
+2025-07-18 14:06:08,520 - ai_service - INFO - AI analysis completed. Tokens used: ~1906
+2025-07-18 14:06:08,523 - routes.ai - INFO - AI analysis completed. Source: ai
+2025-07-18 14:06:08,523 - app - INFO - SECURITY_AUDIT: Response 200 for POST /ai/api/analyze
+2025-07-18 14:06:08,523 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-18 14:06:08,523 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 14:06:08,524 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 14:06:08] "POST /ai/api/analyze HTTP/1.1" 200 -
+2025-07-18 14:06:16,565 - app - INFO - SECURITY_AUDIT: POST /ai/api/compliance-check from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-18 14:06:16,566 - app - INFO - SECURITY_AUDIT: Response 400 for POST /ai/api/compliance-check
+2025-07-18 14:06:16,566 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-18 14:06:16,566 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 14:06:16,566 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 14:06:16] "[31m[1mPOST /ai/api/compliance-check HTTP/1.1[0m" 400 -
+2025-07-18 14:06:23,389 - app - INFO - SECURITY_AUDIT: POST /ai/api/compliance-check from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-18 14:06:23,390 - app - INFO - SECURITY_AUDIT: Response 400 for POST /ai/api/compliance-check
+2025-07-18 14:06:23,390 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-18 14:06:23,390 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 14:06:23,390 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 14:06:23] "[31m[1mPOST /ai/api/compliance-check HTTP/1.1[0m" 400 -
+2025-07-18 14:06:43,632 - app - INFO - SECURITY_AUDIT: POST /ai/api/compliance-check from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-18 14:06:43,633 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-4972afd6-4636-4bdc-be94-650f00e122bc', 'json_data': {'messages': [{'role': 'system', 'content': 'You are a fire department compliance expert specializing in NFPA 1710 standards. \n                        Focus on:\n                        - Response time performance (dispatch <60s, turnout <80s, total <8min)\n                        - Staffing adequacy and deployment\n                        - Coverage gaps and improvement opportunities\n                        - ISO rating considerations\n                        \n                        Provide specific, actionable recommendations. Keep responses concise and professional.'}, {'role': 'user', 'content': 'CAD data summary: Fire department performance metrics: Total incidents: 150, Average response time: 5.2 minutes, 90th percentile dispatch time: 45 seconds, 90th percentile turnout time: 85 seconds, 90th percentile total response: 480 seconds\n\nSpecific query: Analyze NFPA 1710 compliance and provide specific recommendations'}], 'model': 'gpt-4o-mini', 'max_tokens': 300, 'temperature': 0.7}}
+2025-07-18 14:06:43,634 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2025-07-18 14:06:43,634 - httpcore.connection - DEBUG - close.started
+2025-07-18 14:06:43,634 - httpcore.connection - DEBUG - close.complete
+2025-07-18 14:06:43,634 - httpcore.connection - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=5.0 socket_options=None
+2025-07-18 14:06:43,737 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10fd7e0c0>
+2025-07-18 14:06:43,737 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x10a4113d0> server_hostname='api.openai.com' timeout=5.0
+2025-07-18 14:06:43,839 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10fd7d700>
+2025-07-18 14:06:43,840 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-07-18 14:06:43,840 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-18 14:06:43,840 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-07-18 14:06:43,840 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-18 14:06:43,840 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-07-18 14:06:51,222 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Fri, 18 Jul 2025 21:06:51 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'access-control-expose-headers', b'X-Request-ID'), (b'openai-organization', b'user-p8mrlqtg99umsjlnffrknwtb'), (b'openai-processing-ms', b'6330'), (b'openai-project', b'proj_Ux6a5EvBgJRABGd9KrmuXQqd'), (b'openai-version', b'2020-10-01'), (b'x-envoy-upstream-service-time', b'6334'), (b'x-ratelimit-limit-requests', b'5000'), (b'x-ratelimit-limit-tokens', b'4000000'), (b'x-ratelimit-remaining-requests', b'4999'), (b'x-ratelimit-remaining-tokens', b'3999784'), (b'x-ratelimit-reset-requests', b'12ms'), (b'x-ratelimit-reset-tokens', b'3ms'), (b'x-request-id', b'req_be811f9b26c4cde08bb0021196af4203'), (b'strict-transport-security', b'max-age=31536000; includeSubDomains; preload'), (b'cf-cache-status', b'DYNAMIC'), (b'X-Content-Type-Options', b'nosniff'), (b'Server', b'cloudflare'), (b'CF-RAY', b'9614f1d0bdaa14fc-LAX'), (b'Content-Encoding', b'gzip'), (b'alt-svc', b'h3=":443"; ma=86400')])
+2025-07-18 14:06:51,224 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-18 14:06:51,224 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-07-18 14:06:51,225 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-18 14:06:51,225 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-18 14:06:51,225 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-18 14:06:51,225 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "200 OK" Headers({'date': 'Fri, 18 Jul 2025 21:06:51 GMT', 'content-type': 'application/json', 'transfer-encoding': 'chunked', 'connection': 'keep-alive', 'access-control-expose-headers': 'X-Request-ID', 'openai-organization': 'user-p8mrlqtg99umsjlnffrknwtb', 'openai-processing-ms': '6330', 'openai-project': 'proj_Ux6a5EvBgJRABGd9KrmuXQqd', 'openai-version': '2020-10-01', 'x-envoy-upstream-service-time': '6334', 'x-ratelimit-limit-requests': '5000', 'x-ratelimit-limit-tokens': '4000000', 'x-ratelimit-remaining-requests': '4999', 'x-ratelimit-remaining-tokens': '3999784', 'x-ratelimit-reset-requests': '12ms', 'x-ratelimit-reset-tokens': '3ms', 'x-request-id': 'req_be811f9b26c4cde08bb0021196af4203', 'strict-transport-security': 'max-age=31536000; includeSubDomains; preload', 'cf-cache-status': 'DYNAMIC', 'x-content-type-options': 'nosniff', 'server': 'cloudflare', 'cf-ray': '9614f1d0bdaa14fc-LAX', 'content-encoding': 'gzip', 'alt-svc': 'h3=":443"; ma=86400'})
+2025-07-18 14:06:51,226 - openai._base_client - DEBUG - request_id: req_be811f9b26c4cde08bb0021196af4203
+2025-07-18 14:06:51,226 - ai_service - INFO - AI analysis completed. Tokens used: ~1657
+2025-07-18 14:06:51,226 - app - INFO - SECURITY_AUDIT: Response 200 for POST /ai/api/compliance-check
+2025-07-18 14:06:51,227 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-18 14:06:51,227 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-18 14:06:51,227 - werkzeug - INFO - 127.0.0.1 - - [18/Jul/2025 14:06:51] "POST /ai/api/compliance-check HTTP/1.1" 200 -

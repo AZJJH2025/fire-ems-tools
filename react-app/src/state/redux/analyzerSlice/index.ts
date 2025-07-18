@@ -35,7 +35,8 @@ const initialState: AnalyzerState = {
       'response-time-summary', 
       'incident-map', 
       'time-distribution',
-      'incident-table'
+      'incident-table',
+      'ai-insights'
     ],
     expandedPanels: [],
     isLoading: false,

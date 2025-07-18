@@ -22,6 +22,7 @@ import StatisticsSummary from '../Statistics/StatisticsSummary';
 import ResponseTimeDistribution from '../TimeAnalysis/ResponseTimeDistribution';
 import IncidentMap from '../GeospatialAnalysis/IncidentMap';
 import IncidentTable from '../IncidentData/IncidentTable';
+import AIInsightsPanel from '../AIInsightsPanel';
 
 // Dashboard panel component
 interface DashboardPanelProps {
@@ -167,6 +168,13 @@ const AnalyzerDashboard: React.FC = () => {
                 <IncidentTable />
               </Box>
             </DashboardPanel>
+          </Grid>
+        )}
+        
+        {/* AI Insights Panel */}
+        {activeDashboardPanels.includes('ai-insights') && (
+          <Grid size={{ xs: 12, md: 6 }}>
+            <AIInsightsPanel />
           </Grid>
         )}
       </Grid>

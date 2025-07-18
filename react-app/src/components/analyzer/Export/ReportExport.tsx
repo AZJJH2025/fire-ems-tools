@@ -23,11 +23,13 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import MapIcon from '@mui/icons-material/Map';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import PsychologyIcon from '@mui/icons-material/Psychology';
 // XLSX will be dynamically imported only when needed for Excel/CSV export
 
 import { RootState } from '@/state/redux/store';
 import { calculateIncidentMetrics } from '@/utils/responseTimeCalculator';
 import ReportGenerator from '../Reports/ReportGenerator';
+import AIEnhancedReportGenerator from '../AIEnhancedReportGenerator';
 
 interface ExportFormatOption {
   id: string;
@@ -55,6 +57,12 @@ const exportFormats: ExportFormatOption[] = [
     name: 'PDF Report (.pdf)',
     description: 'Formatted report with tables, charts and statistics',
     icon: <PictureAsPdfIcon sx={{ color: '#D32F2F' }} />
+  },
+  {
+    id: 'ai-enhanced',
+    name: 'AI-Enhanced Report (.pdf)',
+    description: 'Professional report with AI-powered insights and recommendations',
+    icon: <PsychologyIcon sx={{ color: '#9C27B0' }} />
   }
 ];
 
@@ -102,6 +110,9 @@ const ReportExport: React.FC = () => {
   
   // PDF Report Generator state
   const [showReportGenerator, setShowReportGenerator] = useState(false);
+  
+  // AI-Enhanced Report Generator state
+  const [showAIReportGenerator, setShowAIReportGenerator] = useState(false);
   
   
   // Handle section selection change
@@ -389,6 +400,10 @@ const ReportExport: React.FC = () => {
           // Open the professional report generator instead of inline generation
           generatePdfExport();
           return; // Exit early for PDF since we're opening a dialog
+        case 'ai-enhanced':
+          // Open the AI-enhanced report generator
+          setShowAIReportGenerator(true);
+          return; // Exit early for AI-enhanced since we're opening a dialog
         default:
           throw new Error('Unsupported export format');
       }
@@ -570,6 +585,26 @@ const ReportExport: React.FC = () => {
       <ReportGenerator
         open={showReportGenerator}
         onClose={() => setShowReportGenerator(false)}
+        incidents={incidents || []}
+        statistics={responseTimeStats || {
+          mean: { dispatchTime: null, turnoutTime: null, travelTime: null, totalResponseTime: null, sceneTime: null, totalIncidentTime: null },
+          median: { dispatchTime: null, turnoutTime: null, travelTime: null, totalResponseTime: null, sceneTime: null, totalIncidentTime: null },
+          ninetiethPercentile: { dispatchTime: null, turnoutTime: null, travelTime: null, totalResponseTime: null, sceneTime: null, totalIncidentTime: null },
+          standardDeviation: { dispatchTime: null, turnoutTime: null, travelTime: null, totalResponseTime: null, sceneTime: null, totalIncidentTime: null },
+          min: { dispatchTime: null, turnoutTime: null, travelTime: null, totalResponseTime: null, sceneTime: null, totalIncidentTime: null },
+          max: { dispatchTime: null, turnoutTime: null, travelTime: null, totalResponseTime: null, sceneTime: null, totalIncidentTime: null },
+          count: 0
+        }}
+        dateRange={filters?.dateRange ? {
+          start: filters.dateRange[0].toISOString().split('T')[0],
+          end: filters.dateRange[1].toISOString().split('T')[0]
+        } : undefined}
+      />
+      
+      {/* AI-Enhanced Report Generator */}
+      <AIEnhancedReportGenerator
+        open={showAIReportGenerator}
+        onClose={() => setShowAIReportGenerator(false)}
         incidents={incidents || []}
         statistics={responseTimeStats || {
           mean: { dispatchTime: null, turnoutTime: null, travelTime: null, totalResponseTime: null, sceneTime: null, totalIncidentTime: null },

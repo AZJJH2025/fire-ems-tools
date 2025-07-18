@@ -21,7 +21,8 @@ import {
   HowToReg,
   Notifications,
   Description,
-  Security
+  Security,
+  Psychology
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -32,6 +33,7 @@ import DepartmentSettings from './DepartmentSettings';
 import PendingApprovals from './PendingApprovals';
 import NotificationPanel from './NotificationPanel';
 import SecurityDashboard from './SecurityDashboard';
+import AIAnalysisDashboard from '../ai/AIAnalysisDashboard';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -278,9 +280,16 @@ const AdminDashboard: React.FC = () => {
           )}
           {userRole === 'super_admin' && (
             <Tab 
+              icon={<Psychology />} 
+              label="AI Analysis" 
+              {...a11yProps(6)} 
+            />
+          )}
+          {userRole === 'super_admin' && (
+            <Tab 
               icon={<Description />} 
               label="System Documentation" 
-              {...a11yProps(6)} 
+              {...a11yProps(7)} 
             />
           )}
         </Tabs>
@@ -317,6 +326,12 @@ const AdminDashboard: React.FC = () => {
       
       {userRole === 'super_admin' && (
         <TabPanel value={currentTab} index={6}>
+          <AIAnalysisDashboard />
+        </TabPanel>
+      )}
+      
+      {userRole === 'super_admin' && (
+        <TabPanel value={currentTab} index={7}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
               <Description />
