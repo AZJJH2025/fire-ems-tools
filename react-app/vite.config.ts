@@ -66,6 +66,14 @@ export default defineConfig({
     port: 7777,
     open: true,
     strictPort: false, // Allow fallback to another port if 7777 is taken
+    proxy: {
+      // Proxy all API calls to Flask server
+      '/api': 'http://127.0.0.1:5007',
+      '/admin': 'http://127.0.0.1:5007',
+      '/auth': 'http://127.0.0.1:5007',
+      '/tools': 'http://127.0.0.1:5007',
+      '/dashboards': 'http://127.0.0.1:5007',
+    },
   },
   build: {
     assetsDir: 'assets',
