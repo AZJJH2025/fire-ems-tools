@@ -26,23 +26,40 @@ const useTemplateSync = (template: FieldMappingTemplate, dirty: boolean) => {
    */
   const loadTemplates = (toolId?: string): FieldMappingTemplate[] => {
     try {
-      // Get all localStorage keys
+      let templates: FieldMappingTemplate[] = [];
+      
+      // Load user-created templates (stored with 'tmpl:' prefix)
       const keys = Object.keys(localStorage);
-      // Filter for template keys
       const templateKeys = keys.filter(key => key.startsWith('tmpl:'));
-      // Load each template
-      let templates = templateKeys.map(key => {
+      const userTemplates = templateKeys.map(key => {
         const templateJson = localStorage.getItem(key);
         return templateJson ? JSON.parse(templateJson) as FieldMappingTemplate : null;
       }).filter(Boolean) as FieldMappingTemplate[];
+      
+      // Load vendor templates (stored in 'fireems_field_mapping_templates')
+      const vendorTemplatesJson = localStorage.getItem('fireems_field_mapping_templates');
+      const vendorTemplates = vendorTemplatesJson ? JSON.parse(vendorTemplatesJson) as FieldMappingTemplate[] : [];
+      
+      // Combine all templates
+      templates = [...userTemplates, ...vendorTemplates];
       
       // Filter by tool ID if specified
       if (toolId) {
         templates = templates.filter(t => t.targetTool === toolId);
       }
       
-      // Sort by creation date (newest first)
-      return templates.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      // Sort by creation date (newest first), but prioritize vendor templates (certified ones)
+      return templates.sort((a, b) => {
+        // Prioritize certified templates (vendor templates)
+        const aCertified = a.metadata?.tags?.includes('certified') || false;
+        const bCertified = b.metadata?.tags?.includes('certified') || false;
+        
+        if (aCertified && !bCertified) return -1;
+        if (!aCertified && bCertified) return 1;
+        
+        // Then sort by creation date
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
     } catch (error) {
       console.error('Failed to load templates from localStorage:', error);
       return [];
