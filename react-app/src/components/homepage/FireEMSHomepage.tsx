@@ -36,7 +36,8 @@ import {
   Person,
   Logout,
   Settings,
-  Dashboard
+  Dashboard,
+  Psychology
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
@@ -50,6 +51,7 @@ interface ToolCardProps {
   features: string[];
   audience: string;
   requiresAuth?: boolean;
+  aiEnhanced?: boolean;
 }
 
 const ToolCard: React.FC<ToolCardProps & { isAuthenticated: boolean }> = ({ 
@@ -180,6 +182,26 @@ const ToolCard: React.FC<ToolCardProps & { isAuthenticated: boolean }> = ({
         
         {/* Feature Tags */}
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2.5 }}>
+          {/* AI Enhanced Badge */}
+          {title === 'Response Time Analyzer' && (
+            <Box 
+              sx={{
+                bgcolor: '#FFD700',
+                color: '#1565c0',
+                px: 1.25,
+                py: 0.5,
+                fontSize: '0.8rem',
+                borderRadius: 15,
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5
+              }}
+            >
+              <Psychology sx={{ fontSize: 12 }} />
+              AI-Enhanced
+            </Box>
+          )}
           {features.slice(0, 3).map((feature, index) => (
             <Box 
               key={index}
@@ -305,17 +327,20 @@ const FireEMSHomepage: React.FC = () => {
     },
     {
       title: 'Response Time Analyzer',
-      description: 'Professional NFPA 1710 compliance analysis with executive-ready reports. Generate regulatory documentation and grant application materials.',
+      description: 'Professional NFPA 1710 compliance analysis with AI-powered insights and executive-ready reports. Generate regulatory documentation and grant application materials with intelligent recommendations.',
       icon: <Assessment />,
       status: 'available',
       path: '/response-time-analyzer',
       audience: 'Fire Chiefs, City Managers, Grant Writers',
       requiresAuth: true,
+      aiEnhanced: true,
       features: [
         'NFPA 1710 compliance reporting',
+        'AI-powered performance insights',
         'Professional PDF templates',
         'Executive summary generation',
-        'City council presentation materials'
+        'City council presentation materials',
+        'Intelligent recommendations'
       ]
     },
     {
@@ -434,9 +459,36 @@ const FireEMSHomepage: React.FC = () => {
           <Typography variant="h5" sx={{ mb: 3, opacity: 0.95, fontWeight: 400, fontSize: { xs: '1.2rem', md: '1.5rem' } }}>
             Complete Enterprise Analytics Suite for Fire Departments
           </Typography>
+          
+          {/* AI Capabilities Highlight */}
+          <Box sx={{ 
+            bgcolor: 'rgba(255,255,255,0.15)', 
+            backdropFilter: 'blur(10px)',
+            px: 4, 
+            py: 2, 
+            borderRadius: 3,
+            mb: 4,
+            border: '1px solid rgba(255,255,255,0.2)',
+            maxWidth: '600px',
+            mx: 'auto'
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, mb: 1 }}>
+              <Psychology sx={{ fontSize: 32, color: '#FFD700' }} />
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>
+                Now with AI-Powered Analytics
+              </Typography>
+            </Box>
+            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)', textAlign: 'center' }}>
+              Intelligent insights, automated recommendations, and AI-enhanced reporting for smarter fire department decisions
+            </Typography>
+          </Box>
+
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap', mt: 4 }}>
             <Box sx={{ bgcolor: 'rgba(255,255,255,0.2)', px: 3, py: 1, borderRadius: 20, fontSize: '0.95rem', fontWeight: 500 }}>
               6 Professional Tools
+            </Box>
+            <Box sx={{ bgcolor: 'rgba(255,215,0,0.3)', px: 3, py: 1, borderRadius: 20, fontSize: '0.95rem', fontWeight: 500, border: '1px solid rgba(255,215,0,0.5)' }}>
+              🧠 AI-Enhanced
             </Box>
             <Box sx={{ bgcolor: 'rgba(255,255,255,0.2)', px: 3, py: 1, borderRadius: 20, fontSize: '0.95rem', fontWeight: 500 }}>
               NFPA Compliant
@@ -624,12 +676,16 @@ const FireEMSHomepage: React.FC = () => {
             }}
           >
             Six professional-grade analytics tools providing comprehensive fire department operations support. 
-            From NFPA compliance analysis to ISO credit optimization, transform your CAD data into actionable 
+            From AI-powered NFPA compliance analysis to ISO credit optimization, transform your CAD data into actionable 
             insights for executive reporting, regulatory compliance, and strategic planning.
           </Typography>
           
           {/* Key Benefits */}
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 4, flexWrap: 'wrap', mb: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Psychology sx={{ color: '#FFD700', fontSize: 20 }} />
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>AI-Powered Analytics</Typography>
+            </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <CheckCircle sx={{ color: '#4caf50', fontSize: 20 }} />
               <Typography variant="body2" sx={{ fontWeight: 500 }}>Universal CAD Support</Typography>
@@ -662,6 +718,198 @@ const FireEMSHomepage: React.FC = () => {
             <ToolCard key={index} {...tool} isAuthenticated={isAuthenticated} />
           ))}
         </Box>
+
+        {/* AI Features Section */}
+        <Paper 
+          elevation={0} 
+          sx={{ 
+            bgcolor: 'linear-gradient(135deg, #f0f4ff 0%, #e3f2fd 100%)', 
+            borderRadius: 3, 
+            p: 6, 
+            mb: 8,
+            border: '2px solid #FFD700',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+        >
+          {/* AI Background Pattern */}
+          <Box sx={{ 
+            position: 'absolute', 
+            top: 0, 
+            right: 0, 
+            opacity: 0.1, 
+            fontSize: '200px',
+            color: '#1565c0',
+            pointerEvents: 'none'
+          }}>
+            <Psychology />
+          </Box>
+          
+          <Box sx={{ textAlign: 'center', mb: 6 }}>
+            <Typography 
+              variant="h3" 
+              component="h2" 
+              gutterBottom 
+              sx={{ 
+                fontWeight: 'bold',
+                color: '#1565c0',
+                mb: 2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 2
+              }}
+            >
+              <Psychology sx={{ fontSize: 40, color: '#FFD700' }} />
+              AI-Powered Fire Analytics
+            </Typography>
+            <Typography 
+              variant="body1" 
+              color="text.secondary" 
+              sx={{ 
+                maxWidth: '800px', 
+                mx: 'auto', 
+                fontSize: '1.1rem',
+                lineHeight: 1.6,
+                mb: 4
+              }}
+            >
+              Leverage artificial intelligence to transform your fire department data into actionable insights. 
+              Our AI analyzes patterns, predicts trends, and provides intelligent recommendations to optimize operations and improve response times.
+            </Typography>
+          </Box>
+
+          <Grid container spacing={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Card elevation={3} sx={{ height: '100%' }}>
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                    <Avatar sx={{ bgcolor: '#FFD700', color: '#1565c0' }}>
+                      <Psychology />
+                    </Avatar>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                      Intelligent Analysis
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                    AI automatically analyzes response time patterns, identifies performance bottlenecks, 
+                    and provides data-driven recommendations for improvement.
+                  </Typography>
+                  <List dense>
+                    <ListItem>
+                      <ListItemIcon><CheckCircle color="success" fontSize="small" /></ListItemIcon>
+                      <ListItemText primary="Automated pattern recognition" />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon><CheckCircle color="success" fontSize="small" /></ListItemIcon>
+                      <ListItemText primary="Performance trend analysis" />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon><CheckCircle color="success" fontSize="small" /></ListItemIcon>
+                      <ListItemText primary="Predictive insights" />
+                    </ListItem>
+                  </List>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Card elevation={3} sx={{ height: '100%' }}>
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                    <Avatar sx={{ bgcolor: '#4caf50', color: 'white' }}>
+                      <CheckCircle />
+                    </Avatar>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                      NFPA Compliance AI
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                    AI-powered NFPA 1710 compliance analysis with intelligent recommendations 
+                    for achieving and maintaining regulatory standards.
+                  </Typography>
+                  <List dense>
+                    <ListItem>
+                      <ListItemIcon><CheckCircle color="success" fontSize="small" /></ListItemIcon>
+                      <ListItemText primary="Automated compliance checking" />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon><CheckCircle color="success" fontSize="small" /></ListItemIcon>
+                      <ListItemText primary="Gap analysis and recommendations" />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon><CheckCircle color="success" fontSize="small" /></ListItemIcon>
+                      <ListItemText primary="Improvement strategy planning" />
+                    </ListItem>
+                  </List>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Card elevation={3} sx={{ height: '100%' }}>
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                    <Avatar sx={{ bgcolor: '#2196f3', color: 'white' }}>
+                      <Assessment />
+                    </Avatar>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                      Smart Reporting
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                    AI-enhanced reports with intelligent insights, automated recommendations, 
+                    and executive-ready presentations for city leadership.
+                  </Typography>
+                  <List dense>
+                    <ListItem>
+                      <ListItemIcon><CheckCircle color="success" fontSize="small" /></ListItemIcon>
+                      <ListItemText primary="Intelligent report generation" />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon><CheckCircle color="success" fontSize="small" /></ListItemIcon>
+                      <ListItemText primary="Automated recommendations" />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon><CheckCircle color="success" fontSize="small" /></ListItemIcon>
+                      <ListItemText primary="Executive-ready insights" />
+                    </ListItem>
+                  </List>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+
+          <Box sx={{ textAlign: 'center', mt: 6 }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1565c0' }}>
+              Available in Response Time Analyzer
+            </Typography>
+            <Button 
+              variant="contained" 
+              size="large"
+              startIcon={<Psychology />}
+              onClick={() => isAuthenticated ? navigate('/response-time-analyzer') : navigate('/login')}
+              sx={{
+                bgcolor: '#FFD700',
+                color: '#1565c0',
+                fontWeight: 'bold',
+                fontSize: '1.1rem',
+                px: 4,
+                py: 1.5,
+                borderRadius: 2,
+                boxShadow: '0 4px 12px rgba(255,215,0,0.3)',
+                '&:hover': {
+                  bgcolor: '#FFC107',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 6px 20px rgba(255,215,0,0.4)'
+                },
+                transition: 'all 0.3s ease'
+              }}
+            >
+              Try AI Analytics {!isAuthenticated && '(Sign In Required)'}
+            </Button>
+          </Box>
+        </Paper>
 
         {/* Documentation & Getting Started Section */}
         <Paper 
