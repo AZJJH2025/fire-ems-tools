@@ -1657,6 +1657,16 @@ def create_app(config_name='default'):
         from routes.documentation import bp as documentation_bp
         from routes.security_dashboard import bp as security_dashboard_bp
         
+        # AI Service Blueprint (Optional - only if available)
+        ai_bp = None
+        try:
+            from routes.ai import bp as ai_bp
+            logger.info("AI blueprint imported successfully")
+        except ImportError as e:
+            logger.info(f"AI blueprint not available: {e}")
+        except Exception as e:
+            logger.warning(f"Error importing AI blueprint: {e}")
+        
         # Assets fallback route now registered earlier to take priority
         
         # Register blueprints
@@ -1672,6 +1682,11 @@ def create_app(config_name='default'):
         app.register_blueprint(notifications_bp)
         app.register_blueprint(documentation_bp)
         app.register_blueprint(security_dashboard_bp)
+        
+        # Register AI blueprint if available
+        if ai_bp:
+            app.register_blueprint(ai_bp)
+            logger.info("AI blueprint registered successfully")
         
         logger.info("Successfully registered all route blueprints")
         
