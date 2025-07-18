@@ -303,6 +303,14 @@ Examples:
 
 ### **Using Saved Templates**
 
+#### **Quick Start - New Users**:
+If you're new to the system, the fastest way to get started is:
+1. **Upload your CAD export** from your monthly incident data
+2. **Click "Load Vendor Templates"** in Template Manager (top right)
+3. **Browse vendor templates** and select the one matching your CAD system
+4. **Click the template name** - all field mappings are automatically applied
+5. **Validation should show all green** - your data is ready for analysis!
+
 #### **Template Suggestions**:
 When you upload a file, the system automatically suggests templates based on:
 - **Field name patterns**: Matching column headers
@@ -311,10 +319,11 @@ When you upload a file, the system automatically suggests templates based on:
 
 #### **Applying Templates**:
 1. **Upload your CAD export** as usual
-2. **Review suggested templates** in the sidebar
-3. **Click "Apply Template"** for the best match
-4. **Verify mappings** are correct (usually 95%+ accuracy)
-5. **Make minor adjustments** if needed
+2. **Review suggested templates** in the sidebar or use "Load Vendor Templates"
+3. **Click the template name** to immediately apply all field mappings
+4. **Field mappings are automatically applied** to your current data
+5. **Verify mappings** are correct (usually 95%+ accuracy)
+6. **Make minor adjustments** if needed
 
 #### **Template Compatibility**:
 Templates show compatibility percentages:
@@ -328,47 +337,77 @@ Templates show compatibility percentages:
 #### **Professional CAD System Templates**:
 The system includes certified templates for major CAD vendors, created by fire department professionals and validated for accuracy:
 
-**Available Vendor Templates**:
+**Available CAD Vendor Templates**:
 - **Console One CAD Standard Template** - Optimized for Console One field patterns
 - **Tyler Technologies CAD Standard Template** - For Tyler/New World CAD systems
 - **Hexagon/Intergraph CAD Standard Template** - For Hexagon CAD systems
 - **TriTech/CentralSquare CAD Standard Template** - For TriTech and CentralSquare systems
-- **Console One Fire Map Pro Template** - Geographic analysis variant
+- **Motorola/Spillman CAD Standard Template** - For Motorola and Spillman systems
+- **Zuercher CAD Standard Template** - For Zuercher dispatch systems
+- **Locution CAD Standard Template** - For Locution communication systems
+
+**Water Infrastructure Templates**:
+- **ESRI/ArcGIS Hydrant Management Template** - For GIS-based hydrant data
+- **AWWA Standard Hydrant Template** - Following AWWA M17 guidelines
+- **Municipal Public Works Hydrant Template** - For city/county water departments
+- **Water Tank & Storage Template** - For water storage infrastructure
+- **Fire Department Water Supply Template** - For fire suppression water analysis
 
 **Loading Vendor Templates**:
 1. **Click "Load Vendor Templates"** in Template Manager
-2. **System automatically seeds** your template library with certified templates
-3. **Templates appear** in "My Templates" with quality certification badges
-4. **Ready for immediate use** with high compatibility scores
+2. **Dialog opens** showing only professional vendor templates
+3. **System automatically filters** to "Vendor" category and seeds vendor template library
+4. **Templates appear** with quality certification badges and high compatibility scores
+5. **Click any template name** to immediately apply all field mappings to your data
 
 **Vendor Template Benefits**:
-- **Certified Quality**: Professionally validated field mappings
+- **Certified Quality**: Professionally validated field mappings (90-99% quality scores)
 - **Automatic CAD Detection**: System recognizes your CAD vendor and suggests appropriate templates
 - **High Compatibility**: 95%+ accuracy with standard CAD exports
+- **Immediate Application**: Clicking a template automatically applies all field mappings
 - **Regular Updates**: Templates updated as CAD systems evolve
+
+**Important Notes**:
+- **First Time Use**: The system automatically seeds vendor templates to your library when you first click "Load Vendor Templates"
+- **Template Application**: Clicking a template name applies the field mappings immediately - no additional steps needed
+- **Vendor Category Filter**: "Load Vendor Templates" automatically filters to show only certified vendor templates
+- **Persistent Storage**: Once loaded, vendor templates remain available in your personal template library
 
 ### **Browse Template Library**
 
 #### **Enhanced Template Discovery**:
-The template library provides intelligent template browsing with advanced search and filtering:
+The template library provides intelligent template browsing with advanced search and filtering capabilities:
+
+**Access Methods**:
+- **"Browse Template Library"** in Template Manager - Opens comprehensive template browser
+- **"Load Template"** dropdown - Quick access to all your saved templates
+- **"Load Vendor Templates"** - Filtered view of certified vendor templates only
 
 **Search & Filter Features**:
 - **Smart Search**: Search across template names, descriptions, tags, and departments
-- **Category Filtering**: Filter by CAD System, Monthly Report, Response Time, Fire Map, Test Data, General
+- **Category Filtering**: Filter by CAD System, Monthly Report, Response Time, Fire Map, Test Data, General, Vendor
 - **Tool Grouping**: View templates grouped by target tool (Response Time Analyzer, Fire Map Pro, etc.)
 - **Quality Filtering**: Sort by quality score, certification status, and compatibility
+- **Real-time Results**: Filter count updates as you type and change filters
 
 **Template Statistics Dashboard**:
-- **Total Templates**: See total available templates
-- **Certified Templates**: Count of professionally validated templates
-- **My Templates**: Your personal template collection
-- **Filtered Count**: Real-time count of search results
+- **Total Templates**: See total available templates in your library
+- **Certified Templates**: Count of professionally validated templates with verification badges
+- **My Templates**: Your personal template collection (excludes vendor templates)
+- **Filtered Count**: Real-time count of search results matching your criteria
 
 **Template Preview & Details**:
-- **Field Mapping Preview**: See exactly which fields are mapped
+- **Field Mapping Preview**: See exactly which fields are mapped (source → target)
 - **Quality Indicators**: Visual quality scores and certification badges
-- **Usage Statistics**: See how often templates are used
-- **Compatibility Scores**: Match percentage with your current data
+- **Usage Statistics**: See how often templates are used and when last used
+- **Compatibility Scores**: Match percentage with your current data structure
+- **Template Categories**: Visual category chips (CAD System, Vendor, etc.)
+
+**Template Interaction**:
+- **Single Click Application**: Click any template name to immediately apply all field mappings
+- **Duplicate Templates**: Create copies of templates for customization
+- **Delete Templates**: Remove templates from your library
+- **Template Details**: View complete field mapping configuration before applying
 
 ### **Share & Collaborate**
 
@@ -376,79 +415,114 @@ The template library provides intelligent template browsing with advanced search
 Share templates with other departments or backup your configurations:
 
 **Export Templates**:
-1. **Select templates** for export in Template Manager
-2. **Click "Export Templates"** to download JSON package
-3. **Package includes**: Template metadata, field mappings, and quality scores
-4. **Share file** with other departments via email or file sharing
+1. **Click "Share & Collaborate"** in Template Manager
+2. **Select "Export Templates" tab** in sharing dialog
+3. **Choose templates** to export from your library
+4. **Click "Export Selected"** to download JSON package
+5. **Package includes**: Template metadata, field mappings, quality scores, and compatibility information
+6. **Share file** with other departments via email or file sharing
 
 **Import Templates**:
-1. **Click "Import Templates"** in Template Manager
-2. **Select JSON file** from another department
-3. **Review import summary** showing new templates and conflicts
-4. **Resolve conflicts** by choosing to keep existing or import new versions
-5. **Templates added** to your library for immediate use
+1. **Click "Share & Collaborate"** in Template Manager
+2. **Select "Import Templates" tab** in sharing dialog
+3. **Choose JSON file** from another department or drag-and-drop
+4. **Review import summary** showing new templates and potential conflicts
+5. **Resolve conflicts** by choosing to keep existing, import new versions, or rename
+6. **Templates automatically added** to your library for immediate use
 
 **Shareable Links**:
-- **Generate Share Link**: Create secure URL for template sharing
-- **Send to Colleagues**: Share link via email or messaging
-- **Automatic Import**: Recipients click link to automatically import templates
-- **Cross-Platform**: Works across different Fire EMS Tools installations
+- **Generate Share Link**: Create secure URL for template sharing via Base64 encoding
+- **Send to Colleagues**: Share link via email, messaging, or department communication systems
+- **Automatic Import**: Recipients click link to automatically import templates to their library
+- **Cross-Platform**: Works across different Fire EMS Tools installations and deployments
+- **URL-based Sharing**: No file downloads required - templates embedded in URL
 
 #### **Department-to-Department Sharing**:
 Advanced collaboration features enable seamless sharing between fire departments:
 
 **Community Template System**:
-1. **Browse Community Templates** in Template Manager
+1. **Browse Community Templates** in "Share & Collaborate" dialog
 2. **Filter by Department Type**: Find templates from similar departments (urban/rural/volunteer)
-3. **Preview Template Details**: See field mappings, quality scores, and user reviews
-4. **Download Templates**: One-click download of community-shared templates
-5. **Rate & Review**: Provide feedback to help other departments
+3. **Preview Template Details**: See complete field mappings, quality scores, and user reviews
+4. **One-click Download**: Import community-shared templates directly to your library
+5. **Rate & Review**: Provide feedback to help other departments assess template quality
 
 **Template Submission**:
-1. **Create High-Quality Template** with comprehensive field mapping
-2. **Submit to Community** via Template Manager
-3. **Include Description**: Detailed description of CAD system and department type
-4. **Template Review**: Community verification process ensures quality
-5. **Public Availability**: Approved templates become available to all departments
+1. **Create High-Quality Template** with comprehensive field mapping and validation
+2. **Submit to Community** via "Share & Collaborate" dialog
+3. **Include Description**: Detailed description of CAD system, department type, and use case
+4. **Template Review**: Community verification process ensures quality and accuracy
+5. **Public Availability**: Approved templates become available to all departments nationwide
 
 **Collaborative Features**:
-- **Department Attribution**: See which departments created and use templates
+- **Department Attribution**: See which departments created and actively use templates
 - **Usage Statistics**: Track how many departments use your shared templates
-- **Quality Ratings**: 1-5 star rating system with review comments
-- **Version Control**: Track template versions and updates over time
-- **Conflict Resolution**: Smart handling of duplicate template names
+- **Quality Ratings**: 1-5 star rating system with detailed review comments
+- **Version Control**: Track template versions and updates over time with conflict resolution
+- **Conflict Resolution**: Smart handling of duplicate template names with automatic versioning
+- **Cross-Department Learning**: Learn from other departments' field mapping approaches
 
 ### **Template Management Interface**
 
-#### **My Templates Tab**:
-- **Personal templates** you've created and vendor templates you've loaded
-- **Edit/Delete controls** for your templates
-- **Usage statistics** (how often you use each template)
-- **Last used dates** for easy identification
-- **Quality scores** and certification badges
-- **Template versioning** and conflict resolution
+#### **Template Manager Dropdown Menu**:
+The Template Manager provides four main actions accessible from the Templates dropdown:
 
-#### **Suggested Templates Tab**:  
-- **AI-powered template suggestions** based on current data analysis
-- **Compatibility scores** with detailed matching explanations
-- **Quick apply buttons** for immediate use
-- **Smart CAD detection** and automatic vendor template recommendations
-- **Quality ranking** with certified templates prioritized
+**"Save Template As..."**:
+- **Save Current Mapping**: Saves your current field mappings as a reusable template
+- **Template Details**: Enter name, description, CAD vendor, and department information
+- **Smart Naming**: System suggests intelligent template names based on your data
+- **Quality Assessment**: Automatic quality scoring and metadata generation
 
-#### **Community Templates Tab**:
-- **Public templates** shared by other departments nationwide
-- **Advanced filtering** by CAD vendor, department type, region, and quality score
-- **Rating and usage statistics** from other users
-- **Template reviews** and comments from fire department professionals
-- **Download and customize** options with automatic conflict resolution
-- **Template submission** interface for sharing your templates
+**"Load Template"**:
+- **Quick Access**: Dropdown showing all your saved templates
+- **Immediate Application**: Click any template name to instantly apply all field mappings
+- **Template Preview**: See template details, field mappings, and quality scores
+- **Usage Tracking**: Shows when templates were last used and how often
 
-#### **Vendor Templates Tab**:
-- **Certified professional templates** for major CAD systems
-- **One-click template seeding** for your template library
-- **Template update notifications** when new versions are available
-- **CAD system compatibility** information and field mapping details
-- **Quality guarantees** and professional validation status
+**"Load Vendor Templates"**:
+- **Certified Templates Only**: Filtered view showing only professional vendor templates
+- **Automatic Seeding**: First use automatically adds vendor templates to your library
+- **Quality Guaranteed**: All vendor templates have 90-99% quality scores
+- **CAD System Specific**: Templates optimized for specific CAD vendors
+
+**"Browse Template Library"**:
+- **Comprehensive View**: Full template browser with search and filtering
+- **All Categories**: View templates by CAD System, Monthly Report, Response Time, Fire Map, etc.
+- **Advanced Search**: Search by name, description, tags, or department
+- **Quality Filtering**: Sort by quality score, certification status, and compatibility
+
+**"Share & Collaborate"**:
+- **Template Sharing**: Export/import templates with other departments
+- **Community Access**: Browse and contribute to community template library
+- **URL Sharing**: Generate shareable links for instant template distribution
+- **Department Collaboration**: Connect with other fire departments for template exchange
+
+#### **Template Dialog Features**:
+
+**Search and Filter Controls**:
+- **Smart Search Bar**: Search across template names, descriptions, tags, and departments
+- **Category Dropdown**: Filter by template type (All, CAD System, Vendor, Monthly Report, etc.)
+- **Real-time Results**: Filter count updates instantly as you type and change filters
+- **Quality Sorting**: Templates sorted by quality score and certification status
+
+**Template Statistics Dashboard**:
+- **Total Templates**: Complete count of templates in your library
+- **Certified Templates**: Count of professionally validated templates with verification badges
+- **My Templates**: Your personal template collection (excludes vendor templates)
+- **Filtered Count**: Real-time count of search results matching your criteria
+
+**Template Information Display**:
+- **Template Categories**: Visual category chips (CAD System, Vendor, Monthly Report, etc.)
+- **Quality Indicators**: Visual quality scores and certification badges
+- **Usage Statistics**: Last used dates and frequency of use
+- **Field Mapping Preview**: See exactly which fields are mapped (source → target)
+- **Compatibility Scores**: Match percentage with your current data structure
+
+**Template Actions**:
+- **Single Click Application**: Click any template name to immediately apply all field mappings
+- **Duplicate Templates**: Create copies of templates for customization
+- **Delete Templates**: Remove templates from your library (not available for vendor templates)
+- **Template Management**: Edit, rename, or modify existing templates
 
 ---
 
@@ -789,6 +863,30 @@ ARRIVAL_TIME → Arrival Time
 - **Manual template creation**: Create custom template
 - **Community templates**: Check if others have shared templates
 
+#### **"Load Vendor Templates shows empty"**
+- **First Time Use**: Click "Load Vendor Templates" to automatically seed your library
+- **Template Filtering**: System filters to show only vendor templates
+- **Refresh Browser**: Clear browser cache and refresh page
+- **Check Network**: Ensure stable internet connection for template loading
+
+#### **"Template not applying field mappings"**
+- **Wrong Action**: Use "Load Template" or "Browse Template Library" to apply mappings
+- **Template vs Template Manager**: "Load Vendor Templates" only shows templates for selection
+- **Click Template Name**: Click the template name/title to apply mappings
+- **Verify Data**: Ensure uploaded data matches template field expectations
+
+#### **"Shared template link not working"**
+- **URL Integrity**: Ensure complete URL was copied (URLs are very long)
+- **Browser Compatibility**: Try different browser or incognito mode
+- **Link Expiration**: Some shared links may have expiration dates
+- **Network Issues**: Check internet connection and firewall settings
+
+#### **"Template import failed"**
+- **File Format**: Ensure importing correct JSON template file
+- **File Corruption**: Try re-downloading or re-generating template file
+- **Version Compatibility**: Older templates may need updating
+- **Conflict Resolution**: Choose appropriate action for duplicate template names
+
 ### **Performance Issues**
 
 #### **"Slow upload/processing"**
@@ -810,12 +908,22 @@ ARRIVAL_TIME → Arrival Time
 2. **Live Preview**: Use Live Preview to diagnose issues
 3. **Template library**: Look for similar department templates
 4. **Error messages**: Read error messages carefully for specific solutions
+5. **Template Library Help**: Browse community templates for similar use cases
+6. **Quality Scores**: Use template quality indicators to identify best options
 
-#### **Contact Support**:
+#### **Community Support**:
+1. **Template Sharing**: Share your successful templates with other departments
+2. **Template Reviews**: Rate and review templates you've used
+3. **Community Forums**: Connect with other fire departments using the system
+4. **Best Practices**: Learn from other departments' field mapping strategies
+
+#### **Technical Support**:
 1. **Department Admin**: For user account and permission issues
 2. **IT Support**: For technical/system issues
 3. **Email Support**: Include error messages and file details
 4. **Emergency Contact**: For urgent operational issues
+5. **Template Support**: For help with complex template creation
+6. **Integration Support**: For CAD system integration assistance
 
 #### **When Contacting Support, Include**:
 - **Error message** (exact text)
@@ -823,6 +931,15 @@ ARRIVAL_TIME → Arrival Time
 - **Steps taken** (what you tried)
 - **Browser information** (Chrome, Firefox, etc.)
 - **Screenshot** (if helpful for visual issues)
+- **Template Information** (template name, source, quality score)
+- **Department Context** (department size, CAD system, special requirements)
+
+#### **Advanced Support Options**:
+1. **Custom Template Creation**: Professional template development services
+2. **CAD Integration Consulting**: Help with direct CAD system connections
+3. **Training Sessions**: Department-wide training on template management
+4. **Template Optimization**: Review and enhance existing templates
+5. **Workflow Consulting**: Optimize your monthly data processing workflow
 
 ---
 
