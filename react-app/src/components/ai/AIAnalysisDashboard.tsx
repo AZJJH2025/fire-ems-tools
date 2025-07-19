@@ -429,8 +429,8 @@ const AIAnalysisDashboard: React.FC = () => {
 
         {/* Analysis Results */}
         <Grid size={{ xs: 12 }}>
-          <Card>
-            <CardContent>
+          <Card sx={{ height: 'fit-content' }}>
+            <CardContent sx={{ height: 'fit-content', '&:last-child': { pb: 2 } }}>
               <Typography variant="h6" gutterBottom>
                 Analysis Results
               </Typography>
@@ -471,9 +471,30 @@ const AIAnalysisDashboard: React.FC = () => {
                       minHeight: 500,
                       maxHeight: '80vh', 
                       overflow: 'auto',
-                      border: '1px solid rgba(0, 0, 0, 0.12)'
+                      border: '1px solid rgba(0, 0, 0, 0.12)',
+                      wordWrap: 'break-word',
+                      whiteSpace: 'pre-wrap'
                     }}>
-                      {formatInsightText(analysisResult.insight)}
+                      {(() => {
+                        console.log('🔍 AI INSIGHT DEBUG:', {
+                          length: analysisResult.insight.length,
+                          lastChars: analysisResult.insight.slice(-100),
+                          fullText: analysisResult.insight
+                        });
+                        return formatInsightText(analysisResult.insight);
+                      })()}
+                      
+                      {/* Fallback raw text display for debugging */}
+                      {process.env.NODE_ENV === 'development' && (
+                        <Box sx={{ mt: 2, p: 1, bgcolor: 'yellow', fontSize: '0.75rem' }}>
+                          <strong>DEBUG - Raw text length:</strong> {analysisResult.insight.length}
+                          <br />
+                          <strong>Raw text (last 200 chars):</strong>
+                          <div style={{ fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
+                            {analysisResult.insight.slice(-200)}
+                          </div>
+                        </Box>
+                      )}
                     </Paper>
                   )}
                   
