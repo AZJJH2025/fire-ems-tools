@@ -21,6 +21,7 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import DataPreviewTable from './DataPreviewTable';
 import ValidationErrorsPanel from '../Validation/ValidationErrorsPanel';
 import ValidationActionPanel from '../Validation/ValidationActionPanel';
+import AIDataQualityPanel from './AIDataQualityPanel';
 import { RootState } from '../../../state/redux/store';
 import {
   setValidationErrors,
@@ -290,6 +291,7 @@ const PreviewValidationContainer: React.FC = () => {
             aria-controls="preview-tabpanel-1"
             sx={{ color: validationErrors.length > 0 ? 'error.main' : 'inherit' }}
           />
+          <Tab label="AI Data Quality" id="preview-tab-2" aria-controls="preview-tabpanel-2" />
         </Tabs>
       </Box>
       
@@ -319,6 +321,14 @@ const PreviewValidationContainer: React.FC = () => {
         <ValidationErrorsPanel
           errors={validationErrors}
           onJumpToError={handleJumpToError}
+        />
+      </TabPanel>
+
+      <TabPanel value={tabValue} index={2}>
+        <AIDataQualityPanel 
+          data={transformedData}
+          sourceFile={sourceFile}
+          mappings={mappings}
         />
       </TabPanel>
       
