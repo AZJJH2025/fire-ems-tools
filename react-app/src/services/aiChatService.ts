@@ -75,13 +75,17 @@ export class AIChatService {
       // Enhanced AI response (optional, with fallback)
       if (this.config.enableAI) {
         try {
+          console.log('🤖 [DEBUG] Attempting backend AI chat with message:', userMessage.substring(0, 50) + '...');
+          console.log('🤖 [DEBUG] Context:', context);
           const aiResponse = await this.performAIChat(userMessage, context, conversationHistory);
+          console.log('🤖 [DEBUG] Backend AI succeeded, response length:', aiResponse.message.length);
           return {
             ...aiResponse,
             success: true
           };
         } catch (aiError) {
-          console.warn('[AIChatService] AI chat failed, using basic response:', aiError);
+          console.warn('🤖 [DEBUG] AI chat failed, using basic response:', aiError);
+          console.log('🤖 [DEBUG] Basic response preview:', basicResponse.message.substring(0, 100) + '...');
           // Return basic response without AI enhancement
           return {
             ...basicResponse,
@@ -89,6 +93,8 @@ export class AIChatService {
           };
         }
       }
+
+      console.log('🤖 [DEBUG] AI disabled, using basic response:', basicResponse.message.substring(0, 100) + '...');
 
       return {
         ...basicResponse,
@@ -108,12 +114,14 @@ export class AIChatService {
    */
   private generateBasicResponse(userMessage: string, context?: string): ChatResponse {
     const lowerMessage = userMessage.toLowerCase();
+    console.log('🤖 [DEBUG] generateBasicResponse called with:', { userMessage: userMessage.substring(0, 50) + '...', context, lowerMessage: lowerMessage.substring(0, 50) + '...' });
     
     // Context-aware responses based on current tool
     if (context === 'data-formatter') {
       
       // Step-by-step usage guide
       if (lowerMessage.includes('step') || lowerMessage.includes('how to use') || lowerMessage.includes('guide') || lowerMessage.includes('start')) {
+        console.log('🤖 [DEBUG] Matched step-by-step guide condition for data-formatter');
         return {
           message: `**Complete Data Formatter Workflow:**
 
