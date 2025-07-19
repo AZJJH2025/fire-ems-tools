@@ -245,9 +245,9 @@ const AIChatWidget: React.FC<AIChatWidgetProps> = ({
             sx={{
               position: 'fixed',
               ...positionStyles[position],
-              width: { xs: '90vw', sm: 400 },
-              height: isMinimized ? 60 : { xs: '70vh', sm: 500 },
-              maxHeight: '90vh',
+              width: { xs: '90vw', sm: 420 },
+              height: isMinimized ? 60 : { xs: '80vh', sm: 600 },
+              maxHeight: '85vh',
               borderRadius: 2,
               display: 'flex',
               flexDirection: 'column',
@@ -301,9 +301,25 @@ const AIChatWidget: React.FC<AIChatWidgetProps> = ({
                 sx={{ 
                   flexGrow: 1,
                   overflowY: 'auto',
+                  overflowX: 'hidden',
                   p: 1,
                   bgcolor: '#fafafa',
-                  minHeight: 300
+                  minHeight: 400,
+                  maxHeight: { xs: 'calc(80vh - 140px)', sm: 'calc(600px - 140px)' },
+                  '&::-webkit-scrollbar': {
+                    width: '8px',
+                  },
+                  '&::-webkit-scrollbar-track': {
+                    background: '#f1f1f1',
+                    borderRadius: '4px',
+                  },
+                  '&::-webkit-scrollbar-thumb': {
+                    background: '#c1c1c1',
+                    borderRadius: '4px',
+                    '&:hover': {
+                      background: '#a8a8a8',
+                    },
+                  },
                 }}
               >
                 <List dense>
