@@ -312,7 +312,7 @@ const FireEMSHomepage: React.FC = () => {
   const tools: ToolCardProps[] = [
     {
       title: 'Data Formatter',
-      description: 'Transform any CAD export into standardized format for seamless tool integration. Features AI-powered field detection and smart address parsing for Console One, Tyler, Hexagon, and TriTech CAD systems.',
+      description: 'Transform any CAD export into standardized format for seamless tool integration. Features intelligent field mapping with auto-detection and smart address parsing for Console One, Tyler, Hexagon, and TriTech CAD systems.',
       icon: <TableChart />,
       status: 'available',
       path: '/data-formatter',
@@ -320,7 +320,7 @@ const FireEMSHomepage: React.FC = () => {
       requiresAuth: true,
       features: [
         'Universal CAD vendor support',
-        'AI-powered field mapping with 95% auto-detection',
+        'Intelligent field mapping with 95% auto-detection',
         'Smart address parsing and geocoding',
         'Professional certified templates',
         'Quality validation and error prevention'
@@ -328,7 +328,7 @@ const FireEMSHomepage: React.FC = () => {
     },
     {
       title: 'Response Time Analyzer',
-      description: 'Professional NFPA 1710 compliance analysis with AI-powered insights and executive-ready reports. Generate regulatory documentation and grant application materials with intelligent recommendations.',
+      description: 'Professional NFPA 1710 compliance analysis with AI-powered insights and executive-ready reports. AI analyzes response patterns, identifies performance gaps, and generates intelligent recommendations for operational improvements.',
       icon: <Assessment />,
       status: 'available',
       path: '/response-time-analyzer',
@@ -337,7 +337,7 @@ const FireEMSHomepage: React.FC = () => {
       aiEnhanced: true,
       features: [
         'NFPA 1710 compliance reporting',
-        'AI-powered performance insights',
+        'AI-powered performance insights and gap analysis',
         'Professional PDF templates',
         'Executive summary generation',
         'City council presentation materials',
@@ -376,7 +376,7 @@ const FireEMSHomepage: React.FC = () => {
     },
     {
       title: 'ISO Credit Calculator',
-      description: 'Calculate your fire department\'s ISO classification (1-10 scale) and identify improvement opportunities that reduce community insurance costs. AI-enhanced analysis provides intelligent recommendations for rating improvements.',
+      description: 'Calculate your fire department\'s ISO classification (1-10 scale) and identify improvement opportunities that reduce community insurance costs. AI analyzes current performance, calculates potential rating improvements, and provides actionable recommendations.',
       icon: <Security />,
       status: 'available',
       path: '/iso-credit-calculator',
@@ -778,7 +778,7 @@ const FireEMSHomepage: React.FC = () => {
               }}
             >
               Leverage artificial intelligence to transform your fire department data into actionable insights. 
-              Our AI analyzes patterns, predicts trends, and provides intelligent recommendations to optimize operations and improve response times.
+              Our AI analyzes patterns, predicts trends, and provides intelligent recommendations to optimize operations and improve response times. Access AI features through dedicated panels in Response Time Analyzer and ISO Credit Calculator, or use the comprehensive AI Analysis Dashboard in the Admin Console.
             </Typography>
           </Box>
 
@@ -909,7 +909,7 @@ const FireEMSHomepage: React.FC = () => {
                 transition: 'all 0.3s ease'
               }}
             >
-              Try AI Analytics {!isAuthenticated && '(Sign In Required)'}
+              Try AI Analysis Tools {!isAuthenticated && '(Sign In Required)'}
             </Button>
           </Box>
         </Paper>
