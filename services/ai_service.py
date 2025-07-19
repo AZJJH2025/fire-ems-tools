@@ -156,8 +156,10 @@ class AIService:
             
         except Exception as e:
             logger.error(f"AI analysis failed: {str(e)}")
-            # Fall back to rule-based analysis
-            return self._fallback_compliance_analysis(data_summary)
+            # Fall back to rule-based analysis but include the error for debugging
+            fallback_result = self._fallback_compliance_analysis(data_summary)
+            fallback_result['openai_error'] = str(e)  # Include actual error for debugging
+            return fallback_result
     
     def _fallback_compliance_analysis(self, data_summary: str) -> Dict[str, Any]:
         """

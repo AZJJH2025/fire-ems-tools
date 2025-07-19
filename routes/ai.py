@@ -71,6 +71,29 @@ def ai_debug():
     import sys
     try:
         status = ai_service.get_service_status()
+        
+        # Test actual OpenAI API call to get real error
+        openai_test_result = None
+        openai_test_error = None
+        
+        if status.get('enabled') and status.get('has_api_key'):
+            try:
+                # Try a minimal API call to test connectivity
+                test_result = ai_service.analyze_compliance(
+                    "Test fire department with 100 incidents, average 5 minute response time",
+                    "Brief test analysis"
+                )
+                openai_test_result = {
+                    "success": test_result.get('success'),
+                    "source": test_result.get('source'),
+                    "model": test_result.get('model'),
+                    "has_insight": bool(test_result.get('insight'))
+                }
+                if not test_result.get('success'):
+                    openai_test_error = test_result.get('error', 'Unknown API error')
+            except Exception as e:
+                openai_test_error = f"OpenAI API test failed: {str(e)}"
+        
         return jsonify({
             "success": True,
             "ai_service_status": status,
@@ -78,7 +101,9 @@ def ai_debug():
             "python_path": sys.path[:5],  # First 5 entries
             "openai_api_key_configured": bool(os.getenv('OPENAI_API_KEY')),
             "services_dir_exists": os.path.exists(os.path.join(os.path.dirname(__file__), '..', 'services')),
-            "ai_service_file_exists": os.path.exists(os.path.join(os.path.dirname(__file__), '..', 'services', 'ai_service.py'))
+            "ai_service_file_exists": os.path.exists(os.path.join(os.path.dirname(__file__), '..', 'services', 'ai_service.py')),
+            "openai_test_result": openai_test_result,
+            "openai_test_error": openai_test_error
         })
     except Exception as e:
         return jsonify({
