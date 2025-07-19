@@ -45,7 +45,7 @@ export class AIChatService {
 
   private constructor() {
     this.config = {
-      enableAI: true, // Can be disabled for stability
+      enableAI: false, // Temporarily disabled to use enhanced frontend responses instead of generic backend AI
       includeDocumentationLinks: true,
       timeoutMs: 10000, // 10 second timeout
       maxConversationHistory: 10 // Keep last 10 messages for context
