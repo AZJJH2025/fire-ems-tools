@@ -195,6 +195,53 @@ const AIAnalysisDashboard: React.FC = () => {
     });
   };
 
+  const formatInsightText = (text: string) => {
+    // Split into sections and format for better readability
+    const sections = text.split('\n\n');
+    return sections.map((section, index) => {
+      const lines = section.split('\n');
+      
+      return (
+        <Box key={index} sx={{ mb: 2 }}>
+          {lines.map((line, lineIndex) => {
+            if (line.startsWith('###')) {
+              return (
+                <Typography key={lineIndex} variant="h6" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>
+                  {line.replace('###', '').trim()}
+                </Typography>
+              );
+            } else if (line.startsWith('##')) {
+              return (
+                <Typography key={lineIndex} variant="h5" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>
+                  {line.replace('##', '').trim()}
+                </Typography>
+              );
+            } else if (line.startsWith('- ')) {
+              return (
+                <Typography key={lineIndex} variant="body2" sx={{ ml: 2, mb: 0.5 }}>
+                  • {line.replace('- ', '')}
+                </Typography>
+              );
+            } else if (line.startsWith('**') && line.endsWith('**')) {
+              return (
+                <Typography key={lineIndex} variant="body2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                  {line.replace(/\*\*/g, '')}
+                </Typography>
+              );
+            } else if (line.trim()) {
+              return (
+                <Typography key={lineIndex} variant="body2" sx={{ mb: 0.5 }}>
+                  {line}
+                </Typography>
+              );
+            }
+            return null;
+          })}
+        </Box>
+      );
+    });
+  };
+
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -418,10 +465,15 @@ const AIAnalysisDashboard: React.FC = () => {
                   
                   {/* Result Content */}
                   {analysisResult.success && analysisResult.insight && (
-                    <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
-                      <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-                        {analysisResult.insight}
-                      </Typography>
+                    <Paper sx={{ 
+                      p: 2, 
+                      bgcolor: 'grey.50', 
+                      minHeight: 500,
+                      maxHeight: '80vh', 
+                      overflow: 'auto',
+                      border: '1px solid rgba(0, 0, 0, 0.12)'
+                    }}>
+                      {formatInsightText(analysisResult.insight)}
                     </Paper>
                   )}
                   

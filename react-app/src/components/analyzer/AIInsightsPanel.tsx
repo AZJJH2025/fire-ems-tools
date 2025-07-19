@@ -265,7 +265,14 @@ const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ className }) => {
                 </Box>
 
                 {insights.success && insights.insight && (
-                  <Paper sx={{ p: 2, bgcolor: 'grey.50', maxHeight: 600, overflow: 'auto' }}>
+                  <Paper sx={{ 
+                    p: 2, 
+                    bgcolor: 'grey.50', 
+                    minHeight: 500,
+                    maxHeight: '80vh', 
+                    overflow: 'auto',
+                    border: '1px solid rgba(0, 0, 0, 0.12)'
+                  }}>
                     {formatInsightText(insights.insight)}
                   </Paper>
                 )}

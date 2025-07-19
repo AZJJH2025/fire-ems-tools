@@ -302,7 +302,14 @@ Focus on practical, actionable recommendations that a fire chief can implement.
                 </Box>
 
                 {insights.success && insights.insight && (
-                  <Paper sx={{ p: 2, bgcolor: 'grey.50', maxHeight: 600, overflow: 'auto' }}>
+                  <Paper sx={{ 
+                    p: 2, 
+                    bgcolor: 'grey.50', 
+                    minHeight: 500,
+                    maxHeight: '80vh', 
+                    overflow: 'auto',
+                    border: '1px solid rgba(0, 0, 0, 0.12)'
+                  }}>
                     {formatInsightText(insights.insight)}
                   </Paper>
                 )}
