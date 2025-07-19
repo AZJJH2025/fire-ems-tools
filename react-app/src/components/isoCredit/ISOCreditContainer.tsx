@@ -30,7 +30,8 @@ import {
   FileDownload as ExportIcon,
   Security as ISOIcon,
   Assessment as ScoreIcon,
-  TrendingUp as ImprovementIcon
+  TrendingUp as ImprovementIcon,
+  Psychology as AIIcon
 } from '@mui/icons-material';
 
 // Import Fire Map Pro components for reuse
@@ -41,6 +42,7 @@ import ISOSidebar from './ISOSidebar';
 import ISOScoreCalculator from './ISOScoreCalculator';
 import ISOImprovementPlanner from './ISOImprovementPlanner';
 import ISOReportGenerator from './ISOReportGenerator';
+import ISOAIInsightsPanel from './ISOAIInsightsPanel';
 
 const SIDEBAR_WIDTH = 320;
 
@@ -330,6 +332,13 @@ const ISOCreditContainer: React.FC<ISOCreditContainerProps> = ({
                 aria-controls="iso-tabpanel-1"
                 disabled={!currentAssessment}
               />
+              <Tab 
+                icon={<AIIcon />} 
+                label="AI Insights" 
+                id="iso-tab-2"
+                aria-controls="iso-tabpanel-2"
+                disabled={!currentAssessment}
+              />
             </Tabs>
           </Paper>
 
@@ -385,6 +394,26 @@ const ISOCreditContainer: React.FC<ISOCreditContainerProps> = ({
                   currentScore={currentScore}
                   classification={classification}
                   communityProfile={communityProfile}
+                />
+              </Box>
+            )}
+
+            {/* AI Insights Tab */}
+            {activeTab === 2 && (
+              <Box
+                sx={{
+                  height: '100%',
+                  overflow: 'auto',
+                  p: 2,
+                }}
+                role="tabpanel"
+                id="iso-tabpanel-2"
+                aria-labelledby="iso-tab-2"
+              >
+                <ISOAIInsightsPanel
+                  assessment={currentAssessment}
+                  currentScore={currentScore}
+                  classification={classification}
                 />
               </Box>
             )}

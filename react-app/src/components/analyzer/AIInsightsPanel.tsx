@@ -33,7 +33,7 @@ interface AIInsightsPanelProps {
 }
 
 const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ className }) => {
-  const { loading, error, generateInsights, checkCompliance } = useAIService();
+  const { loading, error, checkCompliance } = useAIService();
   const [insights, setInsights] = useState<AIAnalysisResult | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [lastAnalyzed, setLastAnalyzed] = useState<string | null>(null);
