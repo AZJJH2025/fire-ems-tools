@@ -37,7 +37,7 @@ export const useAIService = () => {
   const checkStatus = useCallback(async (): Promise<AIServiceStatus | null> => {
     try {
       setError(null);
-      const response = await fetch('/ai/status', {
+      const response = await fetch('/ai/debug', {
         method: 'GET',
         credentials: 'include'
       });
@@ -47,7 +47,7 @@ export const useAIService = () => {
       }
       
       const data = await response.json();
-      return data.status;
+      return data.ai_service_status;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       setError(errorMessage);
