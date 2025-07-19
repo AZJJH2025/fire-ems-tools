@@ -74,14 +74,14 @@ const AIAnalysisDashboard: React.FC = () => {
   const checkAIStatus = async () => {
     try {
       setStatusLoading(true);
-      const response = await fetch('/ai/status', {
+      const response = await fetch('/ai/debug', {
         method: 'GET',
         credentials: 'include'
       });
       
       if (response.ok) {
         const data = await response.json();
-        setAiStatus(data.status);
+        setAiStatus(data.ai_service_status);
       } else {
         throw new Error('Failed to check AI status');
       }
