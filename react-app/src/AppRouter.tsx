@@ -1,11 +1,14 @@
 import React, { Suspense } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { Container, CssBaseline, CircularProgress, Box } from '@mui/material';
 
 // Error boundary components
 import ErrorBoundaryProvider from './components/common/ErrorBoundaryProvider';
 import RouteErrorBoundary from './components/common/RouteErrorBoundary';
 import { AsyncErrorBoundary } from './components/common/AsyncErrorBoundary';
+
+// AI Chat Widget
+import AIChatWidget from './components/common/AIChatWidget';
 
 // Authentication route guards
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -34,6 +37,31 @@ const LoadingSpinner = () => (
     <CircularProgress />
   </Box>
 );
+
+// Context-aware AI Chat Wrapper
+const ContextAwareAIChat: React.FC = () => {
+  const location = useLocation();
+  
+  // Determine context based on current route
+  const getContextFromPath = (pathname: string): string | undefined => {
+    if (pathname.includes('data-formatter')) return 'data-formatter';
+    if (pathname.includes('response-time-analyzer')) return 'response-time-analyzer';
+    if (pathname.includes('fire-map-pro')) return 'fire-map-pro';
+    if (pathname.includes('water-supply-coverage')) return 'water-supply-coverage';
+    if (pathname.includes('iso-credit-calculator')) return 'iso-credit-calculator';
+    if (pathname.includes('station-coverage-optimizer')) return 'station-coverage-optimizer';
+    return undefined;
+  };
+  
+  const context = getContextFromPath(location.pathname);
+  
+  // Only show AI chat widget on tool routes (not on auth/admin pages)
+  if (!context) {
+    return null;
+  }
+  
+  return <AIChatWidget context={context} position="bottom-right" />;
+};
 
 /**
  * Main router component that handles routing between different tools
@@ -172,6 +200,8 @@ const AppRouter: React.FC = () => {
               </PublicRoute>
             } />
             </Routes>
+            {/* AI Chat Widget - appears on all tool pages */}
+            <ContextAwareAIChat />
           </Suspense>
         </RouteErrorBoundary>
       </ErrorBoundaryProvider>

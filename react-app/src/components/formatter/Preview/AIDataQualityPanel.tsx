@@ -212,7 +212,7 @@ const AIDataQualityPanel: React.FC<AIDataQualityPanelProps> = ({
         <Box sx={{ p: 2 }}>
           {/* Overview Cards */}
           <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <Card variant="outlined">
                 <CardContent sx={{ textAlign: 'center', py: 2 }}>
                   <Typography variant="h4" color={getScoreColor(analysis.overallScore)}>
@@ -224,7 +224,7 @@ const AIDataQualityPanel: React.FC<AIDataQualityPanelProps> = ({
                 </CardContent>
               </Card>
             </Grid>
-            <Grid xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <Card variant="outlined">
                 <CardContent sx={{ textAlign: 'center', py: 2 }}>
                   <Typography variant="h4" color="primary">
@@ -236,7 +236,7 @@ const AIDataQualityPanel: React.FC<AIDataQualityPanelProps> = ({
                 </CardContent>
               </Card>
             </Grid>
-            <Grid xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <Card variant="outlined">
                 <CardContent sx={{ textAlign: 'center', py: 2 }}>
                   <Typography variant="h4" color="primary">
@@ -264,7 +264,7 @@ const AIDataQualityPanel: React.FC<AIDataQualityPanelProps> = ({
             <AccordionDetails>
               <Grid container spacing={3}>
                 {/* Field Completeness */}
-                <Grid xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600 }}>
                     Required Fields
                   </Typography>
@@ -321,7 +321,7 @@ const AIDataQualityPanel: React.FC<AIDataQualityPanelProps> = ({
                 </Grid>
 
                 {/* Tool Compatibility */}
-                <Grid xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600 }}>
                     Tool Compatibility
                   </Typography>
@@ -366,7 +366,7 @@ const AIDataQualityPanel: React.FC<AIDataQualityPanelProps> = ({
 
                 {/* AI Insights (if available) */}
                 {analysis.aiInsights && (
-                  <Grid xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     <Divider sx={{ my: 2 }} />
                     <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600 }}>
                       AI Insights & Recommendations

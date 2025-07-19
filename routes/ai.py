@@ -295,6 +295,177 @@ def _calculate_compliance_score(metrics: dict) -> dict:
         "compliant": score >= 80
     }
 
+@bp.route('/api/chat', methods=['POST'])
+@login_required
+def ai_chat():
+    """
+    AI Chat endpoint for Fire EMS Tools assistant
+    
+    Expected JSON payload:
+    {
+        "message": "How do I improve field mapping?",
+        "context": "data-formatter" (optional),
+        "documentation_context": "Data Formatter Guide Context...",
+        "conversation_history": "Recent conversation...",
+        "system_prompt": "You are a helpful assistant..."
+    }
+    """
+    try:
+        # Validate request
+        if not request.is_json:
+            return jsonify({
+                "success": False,
+                "error": "Request must be JSON"
+            }), 400
+        
+        data = request.get_json()
+        
+        # Validate required fields
+        if not data or not data.get('message'):
+            return jsonify({
+                "success": False,
+                "error": "message is required"
+            }), 400
+        
+        user_message = data['message'].strip()
+        context = data.get('context', 'general')
+        documentation_context = data.get('documentation_context', '')
+        conversation_history = data.get('conversation_history', '')
+        system_prompt = data.get('system_prompt', '')
+        
+        # Validate message length
+        if len(user_message) > 1000:  # 1KB limit for chat messages
+            return jsonify({
+                "success": False,
+                "error": "Message too long (max 1KB)"
+            }), 400
+        
+        # Build enhanced query for AI service
+        enhanced_query = f"""Context: {context}
+System Prompt: {system_prompt}
+
+Documentation Context:
+{documentation_context}
+
+Conversation History:
+{conversation_history}
+
+User Question: {user_message}
+
+Please provide a helpful response based on the context and documentation."""
+        
+        # Log the request (without sensitive data)
+        logger.info(f"AI chat requested by user {current_user.id} ({current_user.email}) for context: {context}")
+        logger.debug(f"Chat message length: {len(user_message)} characters")
+        
+        # Use existing analyze_compliance method with chat-specific query
+        result = ai_service.analyze_compliance(enhanced_query, user_message)
+        
+        # Transform result for chat response format
+        chat_response = {
+            "success": result.get('success', False),
+            "response": result.get('insight', 'I apologize, but I\'m having trouble responding right now. Please check our user guides for detailed assistance.'),
+            "suggestions": _extract_suggestions_from_insight(result.get('insight', '')),
+            "documentation_links": _extract_doc_links_for_context(context),
+            "user": {
+                'id': current_user.id,
+                'department': current_user.department.name if current_user.department else None
+            },
+            "source": result.get('source', 'unknown')
+        }
+        
+        # Log the result
+        logger.info(f"AI chat completed. Source: {result.get('source', 'unknown')}")
+        
+        return jsonify(chat_response)
+        
+    except Exception as e:
+        logger.error(f"Error in AI chat: {str(e)}")
+        return jsonify({
+            "success": False,
+            "error": "Chat failed",
+            "response": "I'm having trouble responding right now. Please check our user guides for assistance, or try asking again in a moment.",
+            "details": str(e) if os.getenv('FLASK_ENV') == 'development' else None
+        }), 500
+
+def _extract_suggestions_from_insight(insight: str) -> list:
+    """Extract suggested follow-up questions from AI insight"""
+    if not insight:
+        return []
+    
+    # Simple extraction of questions from AI response
+    suggestions = []
+    lines = insight.split('\n')
+    
+    for line in lines:
+        line = line.strip()
+        if line.endswith('?') and len(line) < 100:
+            suggestions.append(line)
+        elif 'suggest' in line.lower() or 'recommend' in line.lower():
+            # Extract suggestion text
+            if ':' in line:
+                suggestion_text = line.split(':', 1)[1].strip()
+                if suggestion_text and len(suggestion_text) < 100:
+                    suggestions.append(suggestion_text)
+    
+    # Limit to 3 suggestions
+    return suggestions[:3]
+
+def _extract_doc_links_for_context(context: str) -> list:
+    """Generate relevant documentation links based on context"""
+    doc_links = {
+        'data-formatter': [
+            {
+                "title": "Data Formatter User Guide",
+                "url": "/docs/users/DATA_FORMATTER.md",
+                "section": "Complete Guide"
+            }
+        ],
+        'response-time-analyzer': [
+            {
+                "title": "Response Time Analyzer Guide",
+                "url": "/docs/users/RESPONSE_TIME_ANALYZER.md",
+                "section": "NFPA 1710 Analysis"
+            }
+        ],
+        'fire-map-pro': [
+            {
+                "title": "Fire Map Pro User Guide",
+                "url": "/docs/users/FIRE_MAP_PRO.md",
+                "section": "Mapping and Analysis"
+            }
+        ],
+        'water-supply-coverage': [
+            {
+                "title": "Water Supply Coverage Guide",
+                "url": "/docs/users/WATER_SUPPLY_COVERAGE.md",
+                "section": "Tank and Hydrant Analysis"
+            }
+        ],
+        'iso-credit-calculator': [
+            {
+                "title": "ISO Credit Calculator Guide",
+                "url": "/docs/users/ISO_CREDIT_CALCULATOR.md",
+                "section": "ISO Rating Improvement"
+            }
+        ],
+        'station-coverage-optimizer': [
+            {
+                "title": "Station Coverage Optimizer Guide",
+                "url": "/docs/users/STATION_COVERAGE_OPTIMIZER.md",
+                "section": "Station Placement Analysis"
+            }
+        ]
+    }
+    
+    return doc_links.get(context, [
+        {
+            "title": "Documentation Hub",
+            "url": "/docs/users/DOCUMENTATION_HUB.md",
+            "section": "All User Guides"
+        }
+    ])
+
 # Error handlers for this blueprint
 @bp.errorhandler(429)
 def ratelimit_handler(e):
