@@ -52,9 +52,18 @@ const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ className }) => {
   }, [hasData, insights, loading]);
 
   const handleGenerateInsights = async () => {
-    if (!hasData) return;
+    if (!hasData || !responseTimeStats) return;
 
-    const result = await generateInsights(responseTimeData);
+    // Use pre-calculated statistics instead of raw data
+    const metrics = {
+      incident_count: responseTimeData.length,
+      avg_response_time: responseTimeStats.mean?.totalResponseTime ? responseTimeStats.mean.totalResponseTime / 60 : 0,
+      dispatch_time_90th: responseTimeStats.ninetiethPercentile?.dispatchTime || 0,
+      turnout_time_90th: responseTimeStats.ninetiethPercentile?.turnoutTime || 0,
+      total_response_90th: responseTimeStats.ninetiethPercentile?.totalResponseTime || 0
+    };
+
+    const result = await checkCompliance(metrics);
     if (result) {
       setInsights(result);
       setLastAnalyzed(new Date().toLocaleString());
@@ -256,7 +265,7 @@ const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ className }) => {
                 </Box>
 
                 {insights.success && insights.insight && (
-                  <Paper sx={{ p: 2, bgcolor: 'grey.50', maxHeight: 400, overflow: 'auto' }}>
+                  <Paper sx={{ p: 2, bgcolor: 'grey.50', maxHeight: 600, overflow: 'auto' }}>
                     {formatInsightText(insights.insight)}
                   </Paper>
                 )}

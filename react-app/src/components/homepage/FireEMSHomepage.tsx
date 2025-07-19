@@ -183,7 +183,7 @@ const ToolCard: React.FC<ToolCardProps & { isAuthenticated: boolean }> = ({
         {/* Feature Tags */}
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2.5 }}>
           {/* AI Enhanced Badge */}
-          {title === 'Response Time Analyzer' && (
+          {(title === 'Response Time Analyzer' || title === 'ISO Credit Calculator' || title === 'Station Coverage Optimizer') && (
             <Box 
               sx={{
                 bgcolor: '#FFD700',
