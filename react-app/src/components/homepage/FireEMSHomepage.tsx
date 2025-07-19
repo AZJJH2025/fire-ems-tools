@@ -62,6 +62,7 @@ const ToolCard: React.FC<ToolCardProps & { isAuthenticated: boolean }> = ({
   path, 
   features, 
   audience: _audience,
+  aiEnhanced,
   requiresAuth = false,
   isAuthenticated
 }) => {
@@ -183,7 +184,7 @@ const ToolCard: React.FC<ToolCardProps & { isAuthenticated: boolean }> = ({
         {/* Feature Tags */}
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2.5 }}>
           {/* AI Enhanced Badge */}
-          {(title === 'Data Formatter' || title === 'Response Time Analyzer' || title === 'ISO Credit Calculator' || title === 'Station Coverage Optimizer') && (
+          {aiEnhanced && (
             <Box 
               sx={{
                 bgcolor: '#FFD700',
@@ -384,6 +385,7 @@ const FireEMSHomepage: React.FC = () => {
       path: '/iso-credit-calculator',
       audience: 'Fire Chiefs, Community Leaders, Insurance Coordinators',
       requiresAuth: true,
+      aiEnhanced: true,
       features: [
         'Complete 105.5-point ISO scoring',
         'AI-powered improvement recommendations',
@@ -400,6 +402,7 @@ const FireEMSHomepage: React.FC = () => {
       path: '/station-coverage-optimizer',
       audience: 'Fire Chiefs, Operations Commanders, City Planners',
       requiresAuth: true,
+      aiEnhanced: true,
       features: [
         'NFPA 1710/1720 coverage analysis',
         'AI-optimized station placement',
