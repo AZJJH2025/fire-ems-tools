@@ -21,6 +21,26 @@ Complete workflow from uploading CAD data to generating professional NFPA compli
 
 ---
 
+## 🤖 AI-Powered Features
+
+### AI Features User Guide
+Transform your fire department data into actionable insights with artificial intelligence-enhanced analytics and recommendations.
+
+[**📖 Read AI Features Guide →**](/docs/users/AI_FEATURES_GUIDE)
+
+**Key AI Capabilities:**
+- **NFPA 1710 Compliance Analysis**: Automated assessment of response time performance against national standards
+- **Performance Insights**: Identify trends, patterns, and improvement opportunities in your data
+- **Intelligent Recommendations**: Get specific, actionable advice for improving department operations
+- **AI-Enhanced Reports**: Generate professional reports with AI-powered insights for city councils and leadership
+
+**Available in:**
+- Response Time Analyzer (AI Insights Panel)
+- Admin Dashboard (AI Analysis Tab - Super Admin only)
+- AI-Enhanced Report Generation
+
+---
+
 ## 🛠️ Tool-Specific User Guides
 
 ### Data Processing & Preparation
@@ -32,7 +52,8 @@ Transform any CAD export into standardized format with professional template lib
 
 **Key Features:**
 - Universal CAD vendor support (Console One, Tyler, Hexagon, TriTech)
-- Smart field mapping with 95% auto-detection
+- AI-powered field mapping with 95% auto-detection
+- Smart address parsing and geocoding
 - Professional certified vendor templates
 - Community template sharing and collaboration
 - Advanced template library with search and filtering
@@ -48,10 +69,12 @@ Professional NFPA 1710 compliance analysis with executive-ready reports.
 [**📖 Read Response Time Analyzer Guide →**](/docs/users/RESPONSE_TIME_ANALYZER)
 
 **Key Features:**
-- NFPA 1710 compliance reporting
-- Professional PDF templates
+- NFPA 1710 compliance reporting with AI insights
+- AI-powered performance analysis and recommendations
+- Professional PDF templates with intelligent insights
 - Executive summary generation
 - City council presentation materials
+- AI-enhanced report generation
 
 #### Fire Map Pro
 Advanced mapping and spatial analysis for incident visualization and coverage planning.
@@ -86,8 +109,9 @@ Enterprise station placement and coverage analysis with NFPA compliance assessme
 
 **Key Features:**
 - NFPA 1710/1720 coverage analysis
-- Interactive station placement
-- Coverage gap identification
+- AI-optimized station placement algorithms
+- Intelligent coverage gap identification
+- Smart optimization recommendations
 - Professional optimization reports
 
 #### ISO Credit Calculator
@@ -97,6 +121,7 @@ Calculate your fire department's ISO classification and identify improvement opp
 
 **Key Features:**
 - Complete 105.5-point ISO scoring
+- AI-powered improvement recommendations
 - Fire department assessment tools
 - Water supply scoring calculator
 - Professional improvement reports

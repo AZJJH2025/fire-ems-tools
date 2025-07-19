@@ -312,7 +312,7 @@ const FireEMSHomepage: React.FC = () => {
   const tools: ToolCardProps[] = [
     {
       title: 'Data Formatter',
-      description: 'Transform any CAD export into standardized format for seamless tool integration. Handles Console One, Tyler, Hexagon, and TriTech CAD systems with professional templates.',
+      description: 'Transform any CAD export into standardized format for seamless tool integration. Features AI-powered field detection and smart address parsing for Console One, Tyler, Hexagon, and TriTech CAD systems.',
       icon: <TableChart />,
       status: 'available',
       path: '/data-formatter',
@@ -320,7 +320,8 @@ const FireEMSHomepage: React.FC = () => {
       requiresAuth: true,
       features: [
         'Universal CAD vendor support',
-        'Smart field mapping with 95% auto-detection',
+        'AI-powered field mapping with 95% auto-detection',
+        'Smart address parsing and geocoding',
         'Professional certified templates',
         'Quality validation and error prevention'
       ]
@@ -375,7 +376,7 @@ const FireEMSHomepage: React.FC = () => {
     },
     {
       title: 'ISO Credit Calculator',
-      description: 'Calculate your fire department\'s ISO classification (1-10 scale) and identify improvement opportunities that reduce community insurance costs.',
+      description: 'Calculate your fire department\'s ISO classification (1-10 scale) and identify improvement opportunities that reduce community insurance costs. AI-enhanced analysis provides intelligent recommendations for rating improvements.',
       icon: <Security />,
       status: 'available',
       path: '/iso-credit-calculator',
@@ -383,6 +384,7 @@ const FireEMSHomepage: React.FC = () => {
       requiresAuth: true,
       features: [
         'Complete 105.5-point ISO scoring',
+        'AI-powered improvement recommendations',
         'Fire department assessment tools',
         'Water supply scoring calculator',
         'Professional improvement reports'
@@ -390,7 +392,7 @@ const FireEMSHomepage: React.FC = () => {
     },
     {
       title: 'Station Coverage Optimizer',
-      description: 'Enterprise station placement and coverage analysis with NFPA compliance assessment. Identify gaps, optimize placement, and generate professional reports.',
+      description: 'Enterprise station placement and coverage analysis with NFPA compliance assessment. AI-powered optimization algorithms identify gaps, optimize placement, and generate intelligent placement recommendations.',
       icon: <Timeline />,
       status: 'available',
       path: '/station-coverage-optimizer',
@@ -398,8 +400,9 @@ const FireEMSHomepage: React.FC = () => {
       requiresAuth: true,
       features: [
         'NFPA 1710/1720 coverage analysis',
-        'Interactive station placement',
-        'Coverage gap identification',
+        'AI-optimized station placement',
+        'Intelligent coverage gap identification',
+        'Smart optimization algorithms',
         'Professional optimization reports'
       ]
     },

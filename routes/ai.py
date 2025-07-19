@@ -8,12 +8,19 @@ from flask_login import login_required, current_user
 import sys
 import os
 
+# Setup logger first
+logger = logging.getLogger(__name__)
+
 # Add services directory to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'services'))
 
 try:
     from ai_service import ai_service
-except ImportError:
+    import_error = None
+    logger.info("✅ AI service imported successfully")
+except ImportError as e:
+    import_error = str(e)
+    logger.error(f"❌ AI service import failed: {e}")
     # Create a dummy service if import fails
     class DummyAIService:
         def is_enabled(self):
@@ -21,19 +28,64 @@ except ImportError:
         def analyze_compliance(self, data, query=None):
             return {
                 "success": False,
-                "error": "AI service not available",
-                "source": "error"
+                "error": f"AI service import failed: {import_error}",
+                "source": "import_error"
             }
         def get_service_status(self):
-            return {"enabled": False, "status": "service_not_available"}
+            return {
+                "enabled": False, 
+                "status": "import_failed",
+                "error": import_error,
+                "has_openai_in_requirements": "openai==1.97.0" in str(open("../requirements.txt", "r").read()) if os.path.exists("../requirements.txt") else "unknown"
+            }
+    
+    ai_service = DummyAIService()
+except Exception as e:
+    import_error = str(e)
+    logger.error(f"❌ AI service other error: {e}")
+    # Create a dummy service if import fails
+    class DummyAIService:
+        def is_enabled(self):
+            return False
+        def analyze_compliance(self, data, query=None):
+            return {
+                "success": False,
+                "error": f"AI service error: {import_error}",
+                "source": "other_error"
+            }
+        def get_service_status(self):
+            return {
+                "enabled": False, 
+                "status": "other_error",
+                "error": import_error
+            }
     
     ai_service = DummyAIService()
 
-# Setup logger
-logger = logging.getLogger(__name__)
-
 # Create blueprint
 bp = Blueprint('ai', __name__, url_prefix='/ai')
+
+@bp.route('/debug', methods=['GET'])
+def ai_debug():
+    """Debug endpoint - no auth required for troubleshooting"""
+    import sys
+    try:
+        status = ai_service.get_service_status()
+        return jsonify({
+            "success": True,
+            "ai_service_status": status,
+            "import_error": import_error,
+            "python_path": sys.path[:5],  # First 5 entries
+            "openai_api_key_configured": bool(os.getenv('OPENAI_API_KEY')),
+            "services_dir_exists": os.path.exists(os.path.join(os.path.dirname(__file__), '..', 'services')),
+            "ai_service_file_exists": os.path.exists(os.path.join(os.path.dirname(__file__), '..', 'services', 'ai_service.py'))
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "import_error": import_error if 'import_error' in globals() else None
+        }), 500
 
 @bp.route('/status', methods=['GET'])
 @login_required
