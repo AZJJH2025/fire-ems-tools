@@ -47,6 +47,8 @@ const AIChatWidget: React.FC<AIChatWidgetProps> = ({
   position = 'bottom-right',
   className
 }) => {
+  console.log('🤖 AIChatWidget rendering with props:', { context, position, className });
+  
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);

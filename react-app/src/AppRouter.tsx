@@ -55,11 +55,20 @@ const ContextAwareAIChat: React.FC = () => {
   
   const context = getContextFromPath(location.pathname);
   
+  // Debug logging
+  console.log('🤖 AI Chat Debug:', {
+    pathname: location.pathname,
+    context: context,
+    shouldShow: !!context
+  });
+  
   // Only show AI chat widget on tool routes (not on auth/admin pages)
   if (!context) {
+    console.log('🤖 AI Chat: Not showing (no context for route:', location.pathname, ')');
     return null;
   }
   
+  console.log('🤖 AI Chat: Showing widget with context:', context);
   return <AIChatWidget context={context} position="bottom-right" />;
 };
 
