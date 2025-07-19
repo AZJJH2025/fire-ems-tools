@@ -326,9 +326,9 @@ const PreviewValidationContainer: React.FC = () => {
 
       <TabPanel value={tabValue} index={2}>
         <AIDataQualityPanel 
-          data={transformedData}
-          sourceFile={sourceFile}
-          mappings={mappings}
+          transformedData={transformedData}
+          fieldMappings={mappings}
+          targetTool={selectedTool?.name}
         />
       </TabPanel>
       

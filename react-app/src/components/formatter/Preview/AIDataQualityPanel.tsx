@@ -67,6 +67,14 @@ const AIDataQualityPanel: React.FC<AIDataQualityPanelProps> = ({
 
   // Auto-analyze when data changes
   useEffect(() => {
+    console.log('[AIDataQuality] Effect triggered:', {
+      hasData: !!(transformedData && transformedData.length > 0),
+      visible,
+      dataLength: transformedData?.length || 0,
+      mappingsLength: fieldMappings?.length || 0,
+      targetTool
+    });
+    
     if (transformedData && transformedData.length > 0 && visible) {
       performAnalysis();
     }
@@ -101,11 +109,17 @@ const AIDataQualityPanel: React.FC<AIDataQualityPanelProps> = ({
 
   // Don't render if hidden or no data
   if (!visible || !transformedData || transformedData.length === 0) {
+    console.log('[AIDataQuality] Early return - no data or not visible:', {
+      visible,
+      hasData: !!(transformedData && transformedData.length > 0),
+      dataLength: transformedData?.length || 0
+    });
     return null;
   }
 
   // Don't render if error occurred (fail silently)
   if (error && !analysis) {
+    console.log('[AIDataQuality] Early return - error without analysis:', error);
     return null;
   }
 
@@ -126,6 +140,14 @@ const AIDataQualityPanel: React.FC<AIDataQualityPanelProps> = ({
     if (completeness >= 70) return 'warning';
     return 'error';
   };
+
+  console.log('[AIDataQuality] Rendering component:', {
+    visible,
+    hasAnalysis: !!analysis,
+    loading,
+    error,
+    hasData: !!(transformedData && transformedData.length > 0)
+  });
 
   return (
     <Paper 
@@ -190,7 +212,7 @@ const AIDataQualityPanel: React.FC<AIDataQualityPanelProps> = ({
         <Box sx={{ p: 2 }}>
           {/* Overview Cards */}
           <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid size={{ xs: 12, sm: 4 }}>
+            <Grid xs={12} sm={4}>
               <Card variant="outlined">
                 <CardContent sx={{ textAlign: 'center', py: 2 }}>
                   <Typography variant="h4" color={getScoreColor(analysis.overallScore)}>
@@ -202,7 +224,7 @@ const AIDataQualityPanel: React.FC<AIDataQualityPanelProps> = ({
                 </CardContent>
               </Card>
             </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}>
+            <Grid xs={12} sm={4}>
               <Card variant="outlined">
                 <CardContent sx={{ textAlign: 'center', py: 2 }}>
                   <Typography variant="h4" color="primary">
@@ -214,7 +236,7 @@ const AIDataQualityPanel: React.FC<AIDataQualityPanelProps> = ({
                 </CardContent>
               </Card>
             </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}>
+            <Grid xs={12} sm={4}>
               <Card variant="outlined">
                 <CardContent sx={{ textAlign: 'center', py: 2 }}>
                   <Typography variant="h4" color="primary">
@@ -242,7 +264,7 @@ const AIDataQualityPanel: React.FC<AIDataQualityPanelProps> = ({
             <AccordionDetails>
               <Grid container spacing={3}>
                 {/* Field Completeness */}
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid xs={12} md={6}>
                   <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600 }}>
                     Required Fields
                   </Typography>
@@ -299,7 +321,7 @@ const AIDataQualityPanel: React.FC<AIDataQualityPanelProps> = ({
                 </Grid>
 
                 {/* Tool Compatibility */}
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid xs={12} md={6}>
                   <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600 }}>
                     Tool Compatibility
                   </Typography>
@@ -344,7 +366,7 @@ const AIDataQualityPanel: React.FC<AIDataQualityPanelProps> = ({
 
                 {/* AI Insights (if available) */}
                 {analysis.aiInsights && (
-                  <Grid size={{ xs: 12 }}>
+                  <Grid xs={12}>
                     <Divider sx={{ my: 2 }} />
                     <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600 }}>
                       AI Insights & Recommendations
