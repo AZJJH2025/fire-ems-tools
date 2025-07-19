@@ -312,18 +312,20 @@ const FireEMSHomepage: React.FC = () => {
   const tools: ToolCardProps[] = [
     {
       title: 'Data Formatter',
-      description: 'Transform any CAD export into standardized format for seamless tool integration. Features intelligent field mapping with auto-detection and smart address parsing for Console One, Tyler, Hexagon, and TriTech CAD systems.',
+      description: 'Transform any CAD export into standardized format with AI-powered data quality analysis. Features intelligent field mapping, auto-detection, smart address parsing, and AI quality scoring for Console One, Tyler, Hexagon, and TriTech CAD systems.',
       icon: <TableChart />,
       status: 'available',
       path: '/data-formatter',
       audience: 'Fire Chiefs, IT Staff, Analysts',
       requiresAuth: true,
+      aiEnhanced: true,
       features: [
         'Universal CAD vendor support',
         'Intelligent field mapping with 95% auto-detection',
+        'AI-powered data quality analysis (0-100% scoring)',
         'Smart address parsing and geocoding',
         'Professional certified templates',
-        'Quality validation and error prevention'
+        'Tool compatibility assessment with AI insights'
       ]
     },
     {
