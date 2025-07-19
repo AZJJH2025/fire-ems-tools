@@ -603,6 +603,85 @@ The Live Preview shows exactly how your data will appear after transformation:
 - **Solution**: Review data export for duplicates
 - **Impact**: Analysis may show incorrect incident counts
 
+### **🤖 AI Data Quality Analysis**
+
+The Data Formatter now includes intelligent AI-powered analysis that automatically assesses your data quality and provides actionable recommendations.
+
+#### **Accessing AI Analysis**:
+1. **Upload your data** and complete field mapping
+2. **Navigate** to "Preview & Validate" step
+3. **Click "AI Data Quality"** tab (appears automatically when data is processed)
+4. **View real-time analysis** with quality scores and recommendations
+
+#### **AI Quality Features**:
+
+**🎯 Overall Quality Score (0-100%)**:
+- **Comprehensive Assessment**: AI analyzes all aspects of your data quality
+- **Real-time Scoring**: Updates automatically as you improve field mappings
+- **Color-coded Results**: Green (90-100%), Yellow (70-89%), Red (<70%)
+
+**📊 Field Completeness Analysis**:
+- **Visual Progress Bars**: See completion percentage for each field
+- **Required vs Optional**: Clear distinction between critical and optional fields
+- **Missing Data Identification**: Instantly see which fields need attention
+
+**🔧 Tool Compatibility Assessment**:
+- **Smart Recommendations**: AI suggests which tools work best with your current data
+- **Compatibility Scores**: See percentage compatibility with each analysis tool
+- **Gap Analysis**: Identify exactly what's needed for full tool compatibility
+
+**🧠 AI-Powered Insights** (when AI service available):
+- **Intelligent Recommendations**: AI analyzes your data patterns and suggests improvements
+- **Data Pattern Recognition**: AI identifies common issues and optimization opportunities
+- **Professional Guidance**: Get expert-level advice on data quality enhancement
+
+#### **How to Use AI Recommendations**:
+
+**1. Review Overall Score**:
+- **90-100%**: Excellent quality, proceed with confidence
+- **70-89%**: Good quality, minor improvements recommended
+- **<70%**: Review recommendations before proceeding
+
+**2. Check Field Completeness**:
+- **Red fields**: Critical missing data that impacts analysis
+- **Yellow fields**: Recommended data for enhanced analysis
+- **Green fields**: Well-populated, ready for analysis
+
+**3. Tool Compatibility**:
+- **Green checkmarks**: Tool ready to use with current data
+- **Yellow warnings**: Tool will work but may have limited functionality
+- **Red X**: Additional data required for this tool
+
+**4. AI Insights** (Optional Enhancement):
+- **Review recommendations**: AI-generated advice for data improvement
+- **Apply suggestions**: Use AI guidance to enhance data quality
+- **Professional analysis**: Get insights from AI trained on fire department best practices
+
+#### **Benefits for Fire Departments**:
+
+**⏰ Time Savings**:
+- **Instant Analysis**: Get comprehensive data assessment in seconds
+- **Smart Recommendations**: No need to manually check data quality
+- **Proactive Issue Detection**: Find problems before they affect analysis
+
+**📈 Better Decisions**:
+- **Data-Driven Confidence**: Know your data quality score before presenting to leadership
+- **Tool Selection Guidance**: Choose the right analysis tools for your data
+- **Professional Standards**: AI ensures your analysis meets industry standards
+
+**🎯 Quality Assurance**:
+- **Consistent Standards**: AI applies the same quality criteria every time
+- **Best Practice Guidance**: AI recommendations based on fire department expertise
+- **Error Prevention**: Catch issues before they impact critical analysis
+
+#### **AI Privacy & Safety**:
+- **Optional Enhancement**: AI analysis is completely optional - never blocks your workflow
+- **No Data Storage**: Your data is never stored by AI services
+- **Secure Processing**: All AI analysis happens securely with enterprise-grade protection
+- **Graceful Fallback**: If AI is unavailable, all standard functionality continues working
+
+**Note**: The AI Data Quality panel enhances but never replaces standard data validation. All core Data Formatter functionality works perfectly whether you use AI features or not.
+
 ---
 
 ## 🔧 **Advanced Features**
