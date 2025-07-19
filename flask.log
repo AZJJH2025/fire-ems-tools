@@ -9427,3 +9427,214 @@ ModuleNotFoundError: No module named 'markdown'
 2025-07-18 19:23:56,006 - __main__ - INFO - Application created successfully with all fixes applied
 2025-07-18 19:23:56,027 - werkzeug - WARNING -  * Debugger is active!
 2025-07-18 19:23:56,035 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-07-19 08:34:33,969 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-e751228c-79e6-4a56-8004-bf7b1c5ef578', 'json_data': {'messages': [{'role': 'system', 'content': 'You are a fire department compliance expert specializing in NFPA 1710 standards. \n                        Focus on:\n                        - Response time performance (dispatch <60s, turnout <80s, total <8min)\n                        - Staffing adequacy and deployment\n                        - Coverage gaps and improvement opportunities\n                        - ISO rating considerations\n                        \n                        Provide specific, actionable recommendations. Keep responses concise and professional.'}, {'role': 'user', 'content': 'CAD data summary: Test fire department with 100 incidents, average 5 minute response time\n\nSpecific query: Brief test analysis'}], 'model': 'gpt-4o-mini', 'max_tokens': 300, 'temperature': 0.7}}
+2025-07-19 08:34:33,987 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2025-07-19 08:34:33,988 - httpcore.connection - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=5.0 socket_options=None
+2025-07-19 08:34:34,024 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10fc43ad0>
+2025-07-19 08:34:34,024 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x10a4b14d0> server_hostname='api.openai.com' timeout=5.0
+2025-07-19 08:34:34,050 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10fa2b140>
+2025-07-19 08:34:34,050 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-07-19 08:34:34,051 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-19 08:34:34,051 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-07-19 08:34:34,051 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-19 08:34:34,051 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-07-19 08:34:34,168 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 401, b'Unauthorized', [(b'Date', b'Sat, 19 Jul 2025 15:34:34 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'416'), (b'Connection', b'keep-alive'), (b'vary', b'Origin'), (b'x-request-id', b'req_a60480cd433f3dc4d0687ef6f5bcc6d5'), (b'strict-transport-security', b'max-age=31536000; includeSubDomains; preload'), (b'cf-cache-status', b'DYNAMIC'), (b'Set-Cookie', b'__cf_bm=IqEReKuhFqLOq6j.Uu1VuW3nYTF4NIKvhpfmZYog2rE-1752939274-1.0.1.1-8zPQbswPE8Q2wH4Do4bEJGbtiU_1FVjU5_7BkFJOc5AP_RnekbrhWOqMzFQ3YFPt46lJBuKjH76dvkNwNji2_JaNjrCHXAoG7xbxUmSNCtQ; path=/; expires=Sat, 19-Jul-25 16:04:34 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), (b'X-Content-Type-Options', b'nosniff'), (b'Set-Cookie', b'_cfuvid=pWUG_W8abFupkVEW1wl3NzakgtpJ2fD.BMvMVUAaQlY-1752939274209-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), (b'Server', b'cloudflare'), (b'CF-RAY', b'961b489f3ca72a91-LAX'), (b'alt-svc', b'h3=":443"; ma=86400')])
+2025-07-19 08:34:34,170 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-07-19 08:34:34,170 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-07-19 08:34:34,170 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-19 08:34:34,170 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-19 08:34:34,170 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-19 08:34:34,170 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "401 Unauthorized" Headers([('date', 'Sat, 19 Jul 2025 15:34:34 GMT'), ('content-type', 'application/json; charset=utf-8'), ('content-length', '416'), ('connection', 'keep-alive'), ('vary', 'Origin'), ('x-request-id', 'req_a60480cd433f3dc4d0687ef6f5bcc6d5'), ('strict-transport-security', 'max-age=31536000; includeSubDomains; preload'), ('cf-cache-status', 'DYNAMIC'), ('set-cookie', '__cf_bm=IqEReKuhFqLOq6j.Uu1VuW3nYTF4NIKvhpfmZYog2rE-1752939274-1.0.1.1-8zPQbswPE8Q2wH4Do4bEJGbtiU_1FVjU5_7BkFJOc5AP_RnekbrhWOqMzFQ3YFPt46lJBuKjH76dvkNwNji2_JaNjrCHXAoG7xbxUmSNCtQ; path=/; expires=Sat, 19-Jul-25 16:04:34 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('x-content-type-options', 'nosniff'), ('set-cookie', '_cfuvid=pWUG_W8abFupkVEW1wl3NzakgtpJ2fD.BMvMVUAaQlY-1752939274209-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('server', 'cloudflare'), ('cf-ray', '961b489f3ca72a91-LAX'), ('alt-svc', 'h3=":443"; ma=86400')])
+2025-07-19 08:34:34,170 - openai._base_client - DEBUG - request_id: req_a60480cd433f3dc4d0687ef6f5bcc6d5
+2025-07-19 08:34:34,171 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/openai/_base_client.py", line 1024, in request
+    response.raise_for_status()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '401 Unauthorized' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-07-19 08:34:34,174 - openai._base_client - DEBUG - Not retrying
+2025-07-19 08:34:34,175 - openai._base_client - DEBUG - Re-raising status error
+2025-07-19 08:34:34,176 - ai_service - ERROR - AI analysis failed: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-**********************************************************************************************************************************************************R3uM. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+2025-07-19 08:34:34,176 - ai_service - INFO - Using fallback compliance analysis
+2025-07-19 08:34:34,177 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 08:34:34,177 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 08:34:34,178 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 08:34:34] "GET /ai/debug HTTP/1.1" 200 -
+2025-07-19 08:35:03,158 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-19 08:35:03,315 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-19 08:35:03,315 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-19 08:35:03,315 - __main__ - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-19 08:35:03,315 - __main__ - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-19 08:35:03,319 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-19 08:35:03,319 - __main__ - INFO - Creating application with deployment fixes...
+2025-07-19 08:35:03,320 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-19 08:35:03,320 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-19 08:35:03,320 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-19 08:35:03,321 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-19 08:35:03,321 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-19 08:35:03,329 - email_service - INFO - 📧 Email service ENABLED - SMTP: smtp.gmail.com:587
+2025-07-19 08:35:03,329 - email_service - INFO - 📧 Email from: FireEMS.ai <noreply@fireems.ai>
+2025-07-19 08:35:03,332 - static_middleware - INFO - Registered static file handler middleware
+2025-07-19 08:35:03,333 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-19 08:35:03,333 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-19 08:35:03,333 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-19 08:35:03,333 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-19 08:35:03,333 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-19 08:35:03,333 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-19 08:35:03,333 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-19 08:35:03,333 - static_middleware - INFO - Sample static files: []
+2025-07-19 08:35:04,059 - ai_service - INFO - ✅ AI Service initialized successfully
+2025-07-19 08:35:04,059 - routes.ai - INFO - ✅ AI service imported successfully
+2025-07-19 08:35:04,059 - __main__ - INFO - AI blueprint imported successfully
+2025-07-19 08:35:04,101 - __main__ - INFO - AI blueprint registered successfully
+2025-07-19 08:35:04,101 - __main__ - INFO - Successfully registered all route blueprints
+2025-07-19 08:35:04,103 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-19 08:35:04,103 - __main__ - INFO - Registered React Data Formatter routes
+2025-07-19 08:35:04,104 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-19 08:35:04,104 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-19 08:35:04,105 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-19 08:35:04,105 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-19 08:35:04,105 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-19 08:35:04,105 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-19 08:35:04,105 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-19 08:35:04,105 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-19 08:35:04,105 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-19 08:35:04,105 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-19 08:35:04,116 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-19 08:35:04,117 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-19 08:35:04,119 - __main__ - INFO - Found 1 existing super_admin users
+2025-07-19 08:35:04,119 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-07-19 08:35:04,119 - __main__ - INFO - Application created successfully with all fixes applied
+2025-07-19 10:12:44,300 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-19 10:12:44,449 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-19 10:12:44,449 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-19 10:12:44,449 - __main__ - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-19 10:12:44,449 - __main__ - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-19 10:12:44,453 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-19 10:12:44,454 - __main__ - INFO - Creating application with deployment fixes...
+2025-07-19 10:12:44,454 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-19 10:12:44,454 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-19 10:12:44,455 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-19 10:12:44,456 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-19 10:12:44,456 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-19 10:12:44,464 - email_service - INFO - 📧 Email service ENABLED - SMTP: smtp.gmail.com:587
+2025-07-19 10:12:44,464 - email_service - INFO - 📧 Email from: FireEMS.ai <noreply@fireems.ai>
+2025-07-19 10:12:44,467 - static_middleware - INFO - Registered static file handler middleware
+2025-07-19 10:12:44,468 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-19 10:12:44,468 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-19 10:12:44,468 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-19 10:12:44,468 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-19 10:12:44,468 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-19 10:12:44,468 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-19 10:12:44,468 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-19 10:12:44,468 - static_middleware - INFO - Sample static files: []
+2025-07-19 10:12:45,280 - ai_service - INFO - ✅ AI Service initialized successfully
+2025-07-19 10:12:45,280 - routes.ai - INFO - ✅ AI service imported successfully
+2025-07-19 10:12:45,280 - __main__ - INFO - AI blueprint imported successfully
+2025-07-19 10:12:45,324 - __main__ - INFO - AI blueprint registered successfully
+2025-07-19 10:12:45,324 - __main__ - INFO - Successfully registered all route blueprints
+2025-07-19 10:12:45,326 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-19 10:12:45,326 - __main__ - INFO - Registered React Data Formatter routes
+2025-07-19 10:12:45,328 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-19 10:12:45,328 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-19 10:12:45,328 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-19 10:12:45,328 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-19 10:12:45,328 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-19 10:12:45,328 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-19 10:12:45,328 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-19 10:12:45,328 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-19 10:12:45,328 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-19 10:12:45,329 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-19 10:12:45,340 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-19 10:12:45,340 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-19 10:12:45,342 - __main__ - INFO - Found 1 existing super_admin users
+2025-07-19 10:12:45,342 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-07-19 10:12:45,342 - __main__ - INFO - Application created successfully with all fixes applied
+2025-07-19 10:12:45,383 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5006
+ * Running on http://192.168.0.24:5006
+2025-07-19 10:12:45,383 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-07-19 10:12:45,384 - werkzeug - INFO -  * Restarting with stat
+2025-07-19 10:12:45,720 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-19 10:12:45,828 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-19 10:12:45,829 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-19 10:12:45,829 - __main__ - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-19 10:12:45,829 - __main__ - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-19 10:12:45,832 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-19 10:12:45,832 - __main__ - INFO - Creating application with deployment fixes...
+2025-07-19 10:12:45,832 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-19 10:12:45,833 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-19 10:12:45,833 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-19 10:12:45,833 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-19 10:12:45,833 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-19 10:12:45,839 - email_service - INFO - 📧 Email service ENABLED - SMTP: smtp.gmail.com:587
+2025-07-19 10:12:45,839 - email_service - INFO - 📧 Email from: FireEMS.ai <noreply@fireems.ai>
+2025-07-19 10:12:45,841 - static_middleware - INFO - Registered static file handler middleware
+2025-07-19 10:12:45,841 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-19 10:12:45,841 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-19 10:12:45,841 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-19 10:12:45,841 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-19 10:12:45,841 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-19 10:12:45,841 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-19 10:12:45,841 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-19 10:12:45,842 - static_middleware - INFO - Sample static files: []
+2025-07-19 10:12:46,353 - ai_service - INFO - ✅ AI Service initialized successfully
+2025-07-19 10:12:46,353 - routes.ai - INFO - ✅ AI service imported successfully
+2025-07-19 10:12:46,353 - __main__ - INFO - AI blueprint imported successfully
+2025-07-19 10:12:46,395 - __main__ - INFO - AI blueprint registered successfully
+2025-07-19 10:12:46,396 - __main__ - INFO - Successfully registered all route blueprints
+2025-07-19 10:12:46,397 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-19 10:12:46,397 - __main__ - INFO - Registered React Data Formatter routes
+2025-07-19 10:12:46,398 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-19 10:12:46,398 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-19 10:12:46,398 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-19 10:12:46,398 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-19 10:12:46,399 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-19 10:12:46,399 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-19 10:12:46,399 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-19 10:12:46,399 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-19 10:12:46,399 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-19 10:12:46,399 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-19 10:12:46,410 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-19 10:12:46,410 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-19 10:12:46,413 - __main__ - INFO - Found 1 existing super_admin users
+2025-07-19 10:12:46,413 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-07-19 10:12:46,413 - __main__ - INFO - Application created successfully with all fixes applied
+2025-07-19 10:12:46,433 - werkzeug - WARNING -  * Debugger is active!
+2025-07-19 10:12:46,441 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-07-19 10:14:48,704 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-c2b85344-cfa4-45cc-9ea3-777e7e4ebfad', 'json_data': {'messages': [{'role': 'system', 'content': 'You are a fire department compliance expert specializing in NFPA 1710 standards. \n                        Focus on:\n                        - Response time performance (dispatch <60s, turnout <80s, total <8min)\n                        - Staffing adequacy and deployment\n                        - Coverage gaps and improvement opportunities\n                        - ISO rating considerations\n                        \n                        Provide specific, actionable recommendations. Keep responses concise and professional.'}, {'role': 'user', 'content': 'CAD data summary: Test fire department with 100 incidents, average 5 minute response time\n\nSpecific query: Brief test analysis'}], 'model': 'gpt-4o-mini', 'max_tokens': 2000, 'temperature': 0.7}}
+2025-07-19 10:14:48,719 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2025-07-19 10:14:48,719 - httpcore.connection - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=5.0 socket_options=None
+2025-07-19 10:14:48,795 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x110e40590>
+2025-07-19 10:14:48,795 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1109c55d0> server_hostname='api.openai.com' timeout=5.0
+2025-07-19 10:14:48,820 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x111147950>
+2025-07-19 10:14:48,820 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-07-19 10:14:48,821 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-19 10:14:48,821 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-07-19 10:14:48,821 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-19 10:14:48,821 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-07-19 10:14:48,925 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 401, b'Unauthorized', [(b'Date', b'Sat, 19 Jul 2025 17:14:48 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'274'), (b'Connection', b'keep-alive'), (b'vary', b'Origin'), (b'x-request-id', b'req_c5e21e171650f9972a5c59cc533c2973'), (b'strict-transport-security', b'max-age=31536000; includeSubDomains; preload'), (b'cf-cache-status', b'DYNAMIC'), (b'Set-Cookie', b'__cf_bm=lCaggz_8s6_O9s77ZGuZBpcDFe7Qbnm8rHZYLV4zmp0-1752945288-1.0.1.1-_bQDK7FnaU9AiAyNYH3mJSv31GogyjwhTlAg_GNcBzr1QUFuBOXP1JMJESmD2ZCGr35m_p_7pyAIrvklDXjtgUDAQ8hjP5b._dTqLUKOb_U; path=/; expires=Sat, 19-Jul-25 17:44:48 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), (b'X-Content-Type-Options', b'nosniff'), (b'Set-Cookie', b'_cfuvid=gjHvcDEl0LRTA1UHJnKQNFdEddSsTKq186hE_fBGzS0-1752945288928-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), (b'Server', b'cloudflare'), (b'CF-RAY', b'961bdb774b150fcd-LAX'), (b'alt-svc', b'h3=":443"; ma=86400')])
+2025-07-19 10:14:48,927 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-07-19 10:14:48,928 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-07-19 10:14:48,928 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-19 10:14:48,928 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-19 10:14:48,929 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-19 10:14:48,929 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "401 Unauthorized" Headers([('date', 'Sat, 19 Jul 2025 17:14:48 GMT'), ('content-type', 'application/json; charset=utf-8'), ('content-length', '274'), ('connection', 'keep-alive'), ('vary', 'Origin'), ('x-request-id', 'req_c5e21e171650f9972a5c59cc533c2973'), ('strict-transport-security', 'max-age=31536000; includeSubDomains; preload'), ('cf-cache-status', 'DYNAMIC'), ('set-cookie', '__cf_bm=lCaggz_8s6_O9s77ZGuZBpcDFe7Qbnm8rHZYLV4zmp0-1752945288-1.0.1.1-_bQDK7FnaU9AiAyNYH3mJSv31GogyjwhTlAg_GNcBzr1QUFuBOXP1JMJESmD2ZCGr35m_p_7pyAIrvklDXjtgUDAQ8hjP5b._dTqLUKOb_U; path=/; expires=Sat, 19-Jul-25 17:44:48 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('x-content-type-options', 'nosniff'), ('set-cookie', '_cfuvid=gjHvcDEl0LRTA1UHJnKQNFdEddSsTKq186hE_fBGzS0-1752945288928-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('server', 'cloudflare'), ('cf-ray', '961bdb774b150fcd-LAX'), ('alt-svc', 'h3=":443"; ma=86400')])
+2025-07-19 10:14:48,929 - openai._base_client - DEBUG - request_id: req_c5e21e171650f9972a5c59cc533c2973
+2025-07-19 10:14:48,929 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/openai/_base_client.py", line 1024, in request
+    response.raise_for_status()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '401 Unauthorized' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-07-19 10:14:48,933 - openai._base_client - DEBUG - Not retrying
+2025-07-19 10:14:48,933 - openai._base_client - DEBUG - Re-raising status error
+2025-07-19 10:14:48,935 - ai_service - ERROR - AI analysis failed: Error code: 401 - {'error': {'message': 'Incorrect API key provided: your_ope************here. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+2025-07-19 10:14:48,935 - ai_service - INFO - Using fallback compliance analysis
+2025-07-19 10:14:48,937 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 10:14:48,937 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 10:14:48,938 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 10:14:48] "GET /ai/debug HTTP/1.1" 200 -

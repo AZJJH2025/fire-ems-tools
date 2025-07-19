@@ -21,7 +21,7 @@ class AIService:
         self.enabled = False
         self.client = None
         self.model = "gpt-4o-mini"  # Cost-effective model
-        self.max_tokens = 300
+        self.max_tokens = int(os.getenv('OPENAI_MAX_TOKENS', 2000))  # Configurable, default 2000
         self.temperature = 0.7
         self.rate_limit_delay = 1.0  # Seconds between API calls
         self.last_api_call = 0

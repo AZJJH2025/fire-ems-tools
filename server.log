@@ -317,3 +317,39 @@ Try new analyzer route: http://127.0.0.1:5006/response-time-analyzer-new
 2025-07-18 19:23:56,006 - __main__ - INFO - Application created successfully with all fixes applied
 2025-07-18 19:23:56,027 - werkzeug - WARNING -  * Debugger is active!
 2025-07-18 19:23:56,035 - werkzeug - INFO -  * Debugger PIN: 110-174-263
+2025-07-19 08:34:33,969 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-e751228c-79e6-4a56-8004-bf7b1c5ef578', 'json_data': {'messages': [{'role': 'system', 'content': 'You are a fire department compliance expert specializing in NFPA 1710 standards. \n                        Focus on:\n                        - Response time performance (dispatch <60s, turnout <80s, total <8min)\n                        - Staffing adequacy and deployment\n                        - Coverage gaps and improvement opportunities\n                        - ISO rating considerations\n                        \n                        Provide specific, actionable recommendations. Keep responses concise and professional.'}, {'role': 'user', 'content': 'CAD data summary: Test fire department with 100 incidents, average 5 minute response time\n\nSpecific query: Brief test analysis'}], 'model': 'gpt-4o-mini', 'max_tokens': 300, 'temperature': 0.7}}
+2025-07-19 08:34:33,987 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2025-07-19 08:34:33,988 - httpcore.connection - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=5.0 socket_options=None
+2025-07-19 08:34:34,024 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10fc43ad0>
+2025-07-19 08:34:34,024 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x10a4b14d0> server_hostname='api.openai.com' timeout=5.0
+2025-07-19 08:34:34,050 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10fa2b140>
+2025-07-19 08:34:34,050 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-07-19 08:34:34,051 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-19 08:34:34,051 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-07-19 08:34:34,051 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-19 08:34:34,051 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-07-19 08:34:34,168 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 401, b'Unauthorized', [(b'Date', b'Sat, 19 Jul 2025 15:34:34 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'416'), (b'Connection', b'keep-alive'), (b'vary', b'Origin'), (b'x-request-id', b'req_a60480cd433f3dc4d0687ef6f5bcc6d5'), (b'strict-transport-security', b'max-age=31536000; includeSubDomains; preload'), (b'cf-cache-status', b'DYNAMIC'), (b'Set-Cookie', b'__cf_bm=IqEReKuhFqLOq6j.Uu1VuW3nYTF4NIKvhpfmZYog2rE-1752939274-1.0.1.1-8zPQbswPE8Q2wH4Do4bEJGbtiU_1FVjU5_7BkFJOc5AP_RnekbrhWOqMzFQ3YFPt46lJBuKjH76dvkNwNji2_JaNjrCHXAoG7xbxUmSNCtQ; path=/; expires=Sat, 19-Jul-25 16:04:34 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), (b'X-Content-Type-Options', b'nosniff'), (b'Set-Cookie', b'_cfuvid=pWUG_W8abFupkVEW1wl3NzakgtpJ2fD.BMvMVUAaQlY-1752939274209-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), (b'Server', b'cloudflare'), (b'CF-RAY', b'961b489f3ca72a91-LAX'), (b'alt-svc', b'h3=":443"; ma=86400')])
+2025-07-19 08:34:34,170 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-07-19 08:34:34,170 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-07-19 08:34:34,170 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-19 08:34:34,170 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-19 08:34:34,170 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-19 08:34:34,170 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "401 Unauthorized" Headers([('date', 'Sat, 19 Jul 2025 15:34:34 GMT'), ('content-type', 'application/json; charset=utf-8'), ('content-length', '416'), ('connection', 'keep-alive'), ('vary', 'Origin'), ('x-request-id', 'req_a60480cd433f3dc4d0687ef6f5bcc6d5'), ('strict-transport-security', 'max-age=31536000; includeSubDomains; preload'), ('cf-cache-status', 'DYNAMIC'), ('set-cookie', '__cf_bm=IqEReKuhFqLOq6j.Uu1VuW3nYTF4NIKvhpfmZYog2rE-1752939274-1.0.1.1-8zPQbswPE8Q2wH4Do4bEJGbtiU_1FVjU5_7BkFJOc5AP_RnekbrhWOqMzFQ3YFPt46lJBuKjH76dvkNwNji2_JaNjrCHXAoG7xbxUmSNCtQ; path=/; expires=Sat, 19-Jul-25 16:04:34 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('x-content-type-options', 'nosniff'), ('set-cookie', '_cfuvid=pWUG_W8abFupkVEW1wl3NzakgtpJ2fD.BMvMVUAaQlY-1752939274209-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('server', 'cloudflare'), ('cf-ray', '961b489f3ca72a91-LAX'), ('alt-svc', 'h3=":443"; ma=86400')])
+2025-07-19 08:34:34,170 - openai._base_client - DEBUG - request_id: req_a60480cd433f3dc4d0687ef6f5bcc6d5
+2025-07-19 08:34:34,171 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/openai/_base_client.py", line 1024, in request
+    response.raise_for_status()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '401 Unauthorized' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-07-19 08:34:34,174 - openai._base_client - DEBUG - Not retrying
+2025-07-19 08:34:34,175 - openai._base_client - DEBUG - Re-raising status error
+2025-07-19 08:34:34,176 - ai_service - ERROR - AI analysis failed: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-**********************************************************************************************************************************************************R3uM. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+2025-07-19 08:34:34,176 - ai_service - INFO - Using fallback compliance analysis
+2025-07-19 08:34:34,177 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 08:34:34,177 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 08:34:34,178 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 08:34:34] "GET /ai/debug HTTP/1.1" 200 -
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
