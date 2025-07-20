@@ -1906,3 +1906,111 @@
 2025-07-19 16:53:19,208 - static_middleware - INFO - MIME type for .jsx: application/javascript
 2025-07-19 16:53:19,208 - static_middleware - INFO - MIME type for .json: application/json
 2025-07-19 16:53:19,208 - static_middleware - INFO - Sample static files: []
+2025-07-20 08:06:43,121 - static_middleware - INFO - Registered static file handler middleware
+2025-07-20 08:06:43,122 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-20 08:06:43,122 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-20 08:06:43,122 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-20 08:06:43,122 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-20 08:06:43,122 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-20 08:06:43,122 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-20 08:06:43,122 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-20 08:06:43,122 - static_middleware - INFO - Sample static files: []
+2025-07-20 08:06:59,261 - static_middleware - INFO - Registered static file handler middleware
+2025-07-20 08:06:59,261 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-20 08:06:59,261 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-20 08:06:59,261 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-20 08:06:59,261 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-20 08:06:59,261 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-20 08:06:59,261 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-20 08:06:59,261 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-20 08:06:59,261 - static_middleware - INFO - Sample static files: []
+2025-07-20 08:06:59,838 - static_middleware - INFO - Registered static file handler middleware
+2025-07-20 08:06:59,838 - static_middleware - INFO - Registered static file handler middleware
+2025-07-20 08:06:59,838 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-20 08:06:59,838 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-20 08:06:59,838 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-20 08:06:59,838 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-20 08:06:59,838 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-20 08:06:59,838 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-20 08:06:59,838 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-20 08:06:59,838 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-20 08:06:59,838 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-20 08:06:59,838 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-20 08:06:59,838 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-20 08:06:59,838 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-20 08:06:59,838 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-20 08:06:59,838 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-20 08:06:59,838 - static_middleware - INFO - Sample static files: []
+2025-07-20 08:06:59,838 - static_middleware - INFO - Sample static files: []
+2025-07-20 08:43:36,839 - static_middleware - INFO - Registered static file handler middleware
+2025-07-20 08:43:36,840 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-20 08:43:36,840 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-20 08:43:36,840 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-20 08:43:36,840 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-20 08:43:36,840 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-20 08:43:36,840 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-20 08:43:36,840 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-20 08:43:36,840 - static_middleware - INFO - Sample static files: []
+2025-07-20 08:43:48,521 - static_middleware - INFO - Registered static file handler middleware
+2025-07-20 08:43:48,521 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-20 08:43:48,521 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-20 08:43:48,521 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-20 08:43:48,521 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-20 08:43:48,521 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-20 08:43:48,521 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-20 08:43:48,521 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-20 08:43:48,521 - static_middleware - INFO - Sample static files: []
+2025-07-20 08:44:05,965 - static_middleware - INFO - Registered static file handler middleware
+2025-07-20 08:44:05,965 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-20 08:44:05,965 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-20 08:44:05,965 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-20 08:44:05,965 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-20 08:44:05,965 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-20 08:44:05,965 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-20 08:44:05,965 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-20 08:44:05,965 - static_middleware - INFO - Sample static files: []
+2025-07-20 08:44:17,507 - static_middleware - INFO - Registered static file handler middleware
+2025-07-20 08:44:17,507 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-20 08:44:17,507 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-20 08:44:17,507 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-20 08:44:17,507 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-20 08:44:17,507 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-20 08:44:17,507 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-20 08:44:17,507 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-20 08:44:17,507 - static_middleware - INFO - Sample static files: []
+2025-07-20 08:44:29,856 - static_middleware - INFO - Registered static file handler middleware
+2025-07-20 08:44:29,856 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-20 08:44:29,857 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-20 08:44:29,857 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-20 08:44:29,857 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-20 08:44:29,857 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-20 08:44:29,857 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-20 08:44:29,857 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-20 08:44:29,857 - static_middleware - INFO - Sample static files: []
+2025-07-20 08:44:55,455 - static_middleware - INFO - Registered static file handler middleware
+2025-07-20 08:44:55,455 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-20 08:44:55,455 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-20 08:44:55,455 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-20 08:44:55,455 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-20 08:44:55,455 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-20 08:44:55,455 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-20 08:44:55,455 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-20 08:44:55,455 - static_middleware - INFO - Sample static files: []
+2025-07-20 08:46:11,277 - static_middleware - INFO - Registered static file handler middleware
+2025-07-20 08:46:11,277 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-20 08:46:11,277 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-20 08:46:11,277 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-20 08:46:11,277 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-20 08:46:11,277 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-20 08:46:11,277 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-20 08:46:11,277 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-20 08:46:11,277 - static_middleware - INFO - Sample static files: []
+2025-07-20 08:47:10,577 - static_middleware - INFO - Registered static file handler middleware
+2025-07-20 08:47:10,578 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-20 08:47:10,578 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-20 08:47:10,578 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-20 08:47:10,578 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-20 08:47:10,578 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-20 08:47:10,578 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-20 08:47:10,578 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-20 08:47:10,578 - static_middleware - INFO - Sample static files: []

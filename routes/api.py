@@ -33,11 +33,25 @@ bp = Blueprint('api', __name__, url_prefix='/api')
 @bp.route('/health-check')
 def health_check():
     """API health check endpoint for resilience monitoring"""
-    return jsonify({
+    health_status = {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
-        "environment": current_app.config.get('ENV', 'development')
-    })
+        "environment": current_app.config.get('ENV', 'development'),
+        "database": "unknown"
+    }
+    
+    # Safe database connectivity check (additive only, no risk)
+    try:
+        # Simple database ping to verify connectivity
+        db.session.execute(db.text('SELECT 1'))
+        health_status["database"] = "connected"
+    except Exception as e:
+        # Log database issue but don't fail health check
+        logger.warning(f"Database connectivity check failed: {str(e)}")
+        health_status["database"] = "disconnected"
+        # Keep status as "healthy" because app can still serve static content
+    
+    return jsonify(health_status)
 
 # Import utility functions from app_utils module
 from app_utils import safe_limit, require_api_key

@@ -3,6 +3,8 @@ Static file middleware for FireEMS.ai application.
 
 This module provides proper static file handling to ensure correct MIME types
 and other optimizations for static file serving.
+
+Enhanced with CDN caching optimization for improved performance.
 """
 
 import os
@@ -10,6 +12,14 @@ import mimetypes
 import traceback
 import logging
 from flask import send_from_directory, Blueprint, request, Response, current_app
+
+# Import CDN caching optimization
+try:
+    from utils.cdn_caching import apply_cdn_optimization
+    CDN_OPTIMIZATION_AVAILABLE = True
+except ImportError as e:
+    logging.warning(f"CDN optimization not available: {e}")
+    CDN_OPTIMIZATION_AVAILABLE = False
 
 # Set up specific logger for this module
 logger = logging.getLogger('static_middleware')
@@ -71,9 +81,10 @@ def serve_static(filename):
             mimetype = 'text/css'
             logger.debug(f"Forcing text/css mimetype for {filename}")
         
-        # Add cache control headers for non-HTML files
+        # Enhanced caching will be applied after response creation
+        # Basic cache control as fallback
         if ext.lower() not in ['.html', '.htm']:
-            # Cache for 1 hour (3600 seconds)
+            # Cache for 1 hour (3600 seconds) - will be enhanced by CDN optimization
             headers['Cache-Control'] = 'public, max-age=3600'
         
         # Log this request for debugging
@@ -130,6 +141,12 @@ def serve_static(filename):
                 response = Response(content, mimetype=mimetype)
                 for key, value in headers.items():
                     response.headers[key] = value
+                
+                # Apply CDN caching optimization
+                if CDN_OPTIMIZATION_AVAILABLE:
+                    response = apply_cdn_optimization(response, filename, full_path)
+                    logger.debug(f"Applied CDN optimization to {filename}")
+                
                 return response
             else:
                 # Get response from send_from_directory without passing headers
@@ -145,6 +162,11 @@ def serve_static(filename):
                 # Add our custom headers to the response after it's created
                 for key, value in headers.items():
                     response.headers[key] = value
+                
+                # Apply CDN caching optimization
+                if CDN_OPTIMIZATION_AVAILABLE:
+                    response = apply_cdn_optimization(response, filename, full_path)
+                    logger.debug(f"Applied CDN optimization to {filename}")
                     
                 return response
         except Exception as e:
@@ -159,6 +181,12 @@ def serve_static(filename):
             response = Response(content, mimetype=mimetype)
             for key, value in headers.items():
                 response.headers[key] = value
+            
+            # Apply CDN caching optimization
+            if CDN_OPTIMIZATION_AVAILABLE:
+                response = apply_cdn_optimization(response, filename, full_path)
+                logger.debug(f"Applied CDN optimization to {filename} (fallback)")
+            
             return response
             
     except Exception as e:
@@ -261,6 +289,12 @@ def register_static_handler(app):
             response = Response(content, mimetype=mimetype)
             response.headers['X-Served-By'] = 'direct-static fallback route'
             response.headers['Content-Length'] = str(len(content))
+            
+            # Apply CDN caching optimization
+            if CDN_OPTIMIZATION_AVAILABLE:
+                response = apply_cdn_optimization(response, filename, full_path)
+                logger.debug(f"Applied CDN optimization to {filename} (direct-static)")
+            
             return response
             
         except Exception as e:

@@ -184,7 +184,15 @@ def create_app(config_name='default'):
     def serve_react_assets_fallback(filename):
         """Serve React assets from /assets/ by serving from deployment React build"""
         import os
-        from flask import send_from_directory, abort
+        from flask import send_from_directory, abort, Response
+        
+        # Import CDN optimization
+        try:
+            from utils.cdn_caching import apply_cdn_optimization
+            cdn_available = True
+        except ImportError:
+            cdn_available = False
+        
         try:
             # Get the React build directory - try deployment location first, then development
             project_root = os.path.dirname(app.static_folder)
@@ -195,7 +203,14 @@ def create_app(config_name='default'):
             
             if os.path.exists(deployment_asset_path):
                 logger.info(f"ASSETS_FALLBACK: Serving {filename} from deployment build")
-                return send_from_directory(deployment_assets_dir, filename)
+                response = send_from_directory(deployment_assets_dir, filename)
+                
+                # Apply CDN caching optimization
+                if cdn_available and isinstance(response, Response):
+                    response = apply_cdn_optimization(response, filename, deployment_asset_path)
+                    logger.debug(f"Applied CDN optimization to React asset: {filename}")
+                
+                return response
             
             # Fallback to development location (react-app/dist/assets/)
             react_build_dir = os.path.join(project_root, 'react-app', 'dist')
@@ -204,7 +219,14 @@ def create_app(config_name='default'):
             
             if os.path.exists(dev_asset_path):
                 logger.info(f"ASSETS_FALLBACK: Serving {filename} from React build")
-                return send_from_directory(dev_assets_dir, filename)
+                response = send_from_directory(dev_assets_dir, filename)
+                
+                # Apply CDN caching optimization
+                if cdn_available and isinstance(response, Response):
+                    response = apply_cdn_optimization(response, filename, dev_asset_path)
+                    logger.debug(f"Applied CDN optimization to React asset: {filename}")
+                
+                return response
             else:
                 logger.error(f"ASSETS_FALLBACK: Not found {filename}")
                 abort(404)
