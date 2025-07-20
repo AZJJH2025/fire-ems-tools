@@ -10063,3 +10063,47 @@ For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/St
 2025-07-19 16:53:27,054 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
 2025-07-19 16:53:27,054 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
 2025-07-19 16:53:27,054 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:53:27] "GET /app/data-formatter HTTP/1.1" 200 -
+2025-07-19 20:25:01,339 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 20:25:01,339 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 20:25:01,340 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 20:25:01] "HEAD / HTTP/1.1" 200 -
+2025-07-19 20:25:06,306 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 20:25:06,307 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 20:25:06,307 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 20:25:06] "HEAD /app/ HTTP/1.1" 200 -
+2025-07-19 20:25:10,280 - routes.react_app - INFO - Serving React app with asset: index-CsDlCSGK.js
+2025-07-19 20:25:10,280 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 20:25:10,280 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 20:25:10,280 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 20:25:10] "HEAD /app/data-formatter HTTP/1.1" 200 -
+2025-07-19 20:25:15,742 - routes.react_app - INFO - Serving React app with asset: index-CsDlCSGK.js
+2025-07-19 20:25:15,742 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 20:25:15,742 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 20:25:15,742 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 20:25:15] "HEAD /app/response-time-analyzer HTTP/1.1" 200 -
+2025-07-19 20:25:15,751 - routes.react_app - INFO - Serving React app with asset: index-CsDlCSGK.js
+2025-07-19 20:25:15,751 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 20:25:15,752 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 20:25:15,752 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 20:25:15] "HEAD /app/fire-map-pro HTTP/1.1" 200 -
+2025-07-19 20:25:20,420 - app - INFO - SECURITY_AUDIT: HEAD /auth/api/me from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-19 20:25:20,421 - app - INFO - SECURITY_AUDIT: Response 302 for HEAD /auth/api/me
+2025-07-19 20:25:20,421 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 20:25:20,421 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 20:25:20,421 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 20:25:20] "[32mHEAD /auth/api/me HTTP/1.1[0m" 302 -
+2025-07-19 20:25:24,773 - app - INFO - SECURITY_AUDIT: HEAD /admin/ from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-19 20:25:24,773 - app - INFO - SECURITY_AUDIT: Response 302 for HEAD /admin/
+2025-07-19 20:25:24,774 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 20:25:24,774 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 20:25:24,774 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 20:25:24] "[32mHEAD /admin/ HTTP/1.1[0m" 302 -
+2025-07-19 20:25:29,608 - routes.react_app - INFO - Serving React asset: index-Cz3mN1HS.js
+2025-07-19 20:25:29,608 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 20:25:29] "HEAD /app/assets/index-Cz3mN1HS.js HTTP/1.1" 200 -
+2025-07-19 20:26:13,779 - app - INFO - SECURITY_AUDIT: POST /auth/api/login from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-19 20:26:13,783 - database_utils - DEBUG - 🔄 Database operation attempt 1/3: find_user_by_email
+2025-07-19 20:26:13,803 - routes.auth - INFO - ✅ LOGIN DEBUG: User found - ID: 2, Email: admin@fireems.ai, Active: True
+2025-07-19 20:26:13,803 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password hash exists: True
+2025-07-19 20:26:13,803 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password hash length: 162
+2025-07-19 20:26:13,880 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password check result: True
+2025-07-19 20:26:13,880 - routes.auth - INFO - 🔐 LOGIN DEBUG: Attempted password: 'admin123'
+2025-07-19 20:26:13,880 - routes.auth - INFO - 🔐 LOGIN DEBUG: Password length: 8
+2025-07-19 20:26:13,953 - database_utils - DEBUG - 🔄 Database operation attempt 1/5: update_user_login
+2025-07-19 20:26:13,958 - routes.auth - INFO - User admin@fireems.ai logged in successfully
+2025-07-19 20:26:13,960 - app - INFO - SECURITY_AUDIT: Response 200 for POST /auth/api/login
+2025-07-19 20:26:13,960 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 20:26:13,960 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 20:26:13,961 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 20:26:13] "POST /auth/api/login HTTP/1.1" 200 -
