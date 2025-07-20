@@ -9781,3 +9781,285 @@ For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/St
 2025-07-19 15:29:48,373 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 15:29:48] "[31m[1m\x16\x03\x01\x01X\x01\x00\x01T\x03\x036\x0eºbÝÎ\x07XK\x97\x0f1Î.\x9f4Æ\x90\x1f×ü\x0f0\x10g8lÛzx°* êüæ\x83¸\x7fµ'\x0fùÔ´\x91º¸~\x95\x87<¥\x8f\x1chÞ¯\x94\x10²Ã\x9eÔç\x00v\x13\x02\x13\x03\x13\x01À/À+À0À,\x00\x9eÀ'\x00gÀ(\x00k\x00£\x00\x9fÌ©Ì¨ÌªÀ¯À­À£À\x9fÀ]ÀaÀWÀS\x00¢À®À¬À¢À\x9eÀ\\À`ÀVÀRÀ$\x00jÀ#\x00@À[0m" 400 -
 2025-07-19 15:30:32,343 - werkzeug - ERROR - 127.0.0.1 - - [19/Jul/2025 15:30:32] code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x01X\x01\x00\x01T\x03\x03âmú\x1am\x8f\x11épeã>rå·\x14iJìAÿ¨XmRM/KªaÛ\x11')
 2025-07-19 15:30:32,344 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 15:30:32] "[31m[1m\x16\x03\x01\x01X\x01\x00\x01T\x03\x03âmú\x1am\x8f\x11épeã>rå·\x14iJìAÿ¨XmRM/KªaÛ\x11 \x97h¨\x17\x93.Wb61s\x95@\x06+CßhÃíÀ\x8a&\x02ùgS&³bá&\x00v\x13\x02\x13\x03\x13\x01À/À+À0À,\x00\x9eÀ'\x00gÀ(\x00k\x00£\x00\x9fÌ©Ì¨ÌªÀ¯À­À£À\x9fÀ]ÀaÀWÀS\x00¢À®À¬À¢À\x9eÀ\\À`ÀVÀRÀ$\x00jÀ#\x00@À[0m" 400 -
+2025-07-19 16:09:45,729 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-19 16:09:45,859 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-19 16:09:45,859 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-19 16:09:45,859 - __main__ - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-19 16:09:45,859 - __main__ - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-19 16:09:45,864 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-19 16:09:45,864 - __main__ - INFO - Creating application with deployment fixes...
+2025-07-19 16:09:45,864 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-19 16:09:45,864 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-19 16:09:45,865 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-19 16:09:45,865 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-19 16:09:45,866 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-19 16:09:45,874 - email_service - INFO - 📧 Email service ENABLED - SMTP: smtp.gmail.com:587
+2025-07-19 16:09:45,874 - email_service - INFO - 📧 Email from: FireEMS.ai <noreply@fireems.ai>
+2025-07-19 16:09:45,877 - static_middleware - INFO - Registered static file handler middleware
+2025-07-19 16:09:45,877 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-19 16:09:45,877 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-19 16:09:45,877 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-19 16:09:45,877 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-19 16:09:45,877 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-19 16:09:45,877 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-19 16:09:45,877 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-19 16:09:45,877 - static_middleware - INFO - Sample static files: []
+2025-07-19 16:09:46,597 - ai_service - INFO - ✅ AI Service initialized successfully
+2025-07-19 16:09:46,597 - routes.ai - INFO - ✅ AI service imported successfully
+2025-07-19 16:09:46,598 - __main__ - INFO - AI blueprint imported successfully
+2025-07-19 16:09:46,642 - __main__ - INFO - AI blueprint registered successfully
+2025-07-19 16:09:46,642 - __main__ - INFO - Successfully registered all route blueprints
+2025-07-19 16:09:46,644 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-19 16:09:46,644 - __main__ - INFO - Registered React Data Formatter routes
+2025-07-19 16:09:46,645 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-19 16:09:46,645 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-19 16:09:46,645 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-19 16:09:46,645 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-19 16:09:46,645 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-19 16:09:46,646 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-19 16:09:46,646 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-19 16:09:46,646 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-19 16:09:46,646 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-19 16:09:46,646 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-19 16:09:46,659 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-19 16:09:46,659 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-19 16:09:46,661 - __main__ - INFO - Found 1 existing super_admin users
+2025-07-19 16:09:46,662 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-07-19 16:09:46,662 - __main__ - INFO - Application created successfully with all fixes applied
+2025-07-19 16:09:58,040 - app - INFO - SECURITY_AUDIT: POST /ai/api/chat from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-19 16:09:58,041 - app - INFO - SECURITY_AUDIT: Response 302 for POST /ai/api/chat
+2025-07-19 16:09:58,041 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 16:09:58,041 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 16:09:58,042 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:09:58] "[32mPOST /ai/api/chat HTTP/1.1[0m" 302 -
+2025-07-19 16:14:04,583 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-19 16:14:04,709 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-19 16:14:04,709 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-19 16:14:04,709 - __main__ - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-19 16:14:04,709 - __main__ - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-19 16:14:04,713 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-19 16:14:04,713 - __main__ - INFO - Creating application with deployment fixes...
+2025-07-19 16:14:04,714 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-19 16:14:04,714 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-19 16:14:04,714 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-19 16:14:04,715 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-19 16:14:04,715 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-19 16:14:04,723 - email_service - INFO - 📧 Email service ENABLED - SMTP: smtp.gmail.com:587
+2025-07-19 16:14:04,723 - email_service - INFO - 📧 Email from: FireEMS.ai <noreply@fireems.ai>
+2025-07-19 16:14:04,725 - static_middleware - INFO - Registered static file handler middleware
+2025-07-19 16:14:04,725 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-19 16:14:04,725 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-19 16:14:04,725 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-19 16:14:04,725 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-19 16:14:04,726 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-19 16:14:04,726 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-19 16:14:04,726 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-19 16:14:04,726 - static_middleware - INFO - Sample static files: []
+2025-07-19 16:14:05,407 - ai_service - INFO - ✅ AI Service initialized successfully
+2025-07-19 16:14:05,407 - routes.ai - INFO - ✅ AI service imported successfully
+2025-07-19 16:14:05,407 - __main__ - INFO - AI blueprint imported successfully
+2025-07-19 16:14:05,452 - __main__ - INFO - AI blueprint registered successfully
+2025-07-19 16:14:05,452 - __main__ - INFO - Successfully registered all route blueprints
+2025-07-19 16:14:05,454 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-19 16:14:05,454 - __main__ - INFO - Registered React Data Formatter routes
+2025-07-19 16:14:05,456 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-19 16:14:05,456 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-19 16:14:05,456 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-19 16:14:05,456 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-19 16:14:05,456 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-19 16:14:05,456 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-19 16:14:05,456 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-19 16:14:05,456 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-19 16:14:05,456 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-19 16:14:05,456 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-19 16:14:05,468 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-19 16:14:05,468 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-19 16:14:05,470 - __main__ - INFO - Found 1 existing super_admin users
+2025-07-19 16:14:05,470 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-07-19 16:14:05,471 - __main__ - INFO - Application created successfully with all fixes applied
+2025-07-19 16:14:10,978 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 16:14:10,978 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 16:14:10,979 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:14:10] "[33mGET /ai/api/health HTTP/1.1[0m" 404 -
+2025-07-19 16:14:26,612 - routes.react_app - INFO - Serving React app with asset: index-CsDlCSGK.js
+2025-07-19 16:14:26,616 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 16:14:26,616 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 16:14:26,616 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:14:26] "GET /app/data-formatter HTTP/1.1" 200 -
+2025-07-19 16:14:26,686 - werkzeug - ERROR - 127.0.0.1 - - [19/Jul/2025 16:14:26] code 400, message Bad request version ('²É(½´¸\x91\x04ÙOÔ\x9a\x93´\x90\x0e\x88À@\x14Ù\x11ç½\x84\x9a\x00*jj\x13\x01\x13\x02\x13\x03À,À+Ì©À0À/Ì¨À')
+2025-07-19 16:14:26,686 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:14:26] "[31m[1m\x16\x03\x01\x02\x00\x01\x00\x01ü\x03\x03¥àÌ\x09û\x08|£6\x00fÞ»\x89\x13Ý8O`\x0b\x8fÿY\x81\x89iyª\x15§_Ì \x890\x0fm\x17\x1d²É(½´¸\x91\x04ÙOÔ\x9a\x93´\x90\x0e\x88À@\x14Ù\x11ç½\x84\x9a\x00*jj\x13\x01\x13\x02\x13\x03À,À+Ì©À0À/Ì¨À[0m" 400 -
+2025-07-19 16:14:26,694 - werkzeug - ERROR - 127.0.0.1 - - [19/Jul/2025 16:14:26] code 400, message Bad request syntax ('\x16\x03\x01\x02\x00\x01\x00\x01ü\x03\x03e')
+2025-07-19 16:14:26,694 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:14:26] "[31m[1m\x16\x03\x01\x02\x00\x01\x00\x01ü\x03\x03e[0m" 400 -
+2025-07-19 16:14:26,697 - werkzeug - ERROR - 127.0.0.1 - - [19/Jul/2025 16:14:26] code 400, message Bad request version ('.U¢AÅ@ziÞ\x01\x87@¥igíùã¾Üç¿\x00*ªª\x13\x01\x13\x02\x13\x03À,À+Ì©À0À/Ì¨À')
+2025-07-19 16:14:26,698 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:14:26] "[31m[1m\x16\x03\x01\x02\x00\x01\x00\x01ü\x03\x03<ÎµI¦Üv?<àïXv\x07\x8d\x00\x01U\x14Öb´\x0cÜG\x1eAø*räÍ àÌøí,\x97k\x8e`\x85.U¢AÅ@ziÞ\x01\x87@¥igíùã¾Üç¿\x00*ªª\x13\x01\x13\x02\x13\x03À,À+Ì©À0À/Ì¨À[0m" 400 -
+2025-07-19 16:14:26,699 - werkzeug - ERROR - 127.0.0.1 - - [19/Jul/2025 16:14:26] code 400, message Bad request version ('0è\x04W·Å\x03jL\x89<aK\x94úÂXFÞ`_0d£N-g*\x01\x93ìt\x00*ÊÊ\x13\x01\x13\x02\x13\x03À,À+Ì©À0À/Ì¨À')
+2025-07-19 16:14:26,699 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:14:26] "[31m[1m\x16\x03\x01\x02\x00\x01\x00\x01ü\x03\x03\x85xÈî¬"ðm±vöÄ£8$à¡Y\x9eêV$\x96J`%9U\x8eÂÅû 0è\x04W·Å\x03jL\x89<aK\x94úÂXFÞ`_0d£N-g*\x01\x93ìt\x00*ÊÊ\x13\x01\x13\x02\x13\x03À,À+Ì©À0À/Ì¨À[0m" 400 -
+2025-07-19 16:14:26,806 - werkzeug - ERROR - 127.0.0.1 - - [19/Jul/2025 16:14:26] code 400, message Bad request version ('¬6<J\x88\x98\x13Y\x99ß\x00*úú\x13\x01\x13\x02\x13\x03À,À+Ì©À0À/Ì¨À')
+2025-07-19 16:14:26,806 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:14:26] "[31m[1m\x16\x03\x01\x02\x00\x01\x00\x01ü\x03\x03#[ÛÀÂ=8\x16ÃóZv\x1eI\x19Å¦ó)\x88\x95@\x99\x04Ñ\x10"ü,\x13\x8b6 ¤ÒI\x01þ-\x11Ìùñ\x06\x18\x10¾PÅ\x11hË\x85ü ¬6<J\x88\x98\x13Y\x99ß\x00*úú\x13\x01\x13\x02\x13\x03À,À+Ì©À0À/Ì¨À[0m" 400 -
+2025-07-19 16:14:26,808 - werkzeug - ERROR - 127.0.0.1 - - [19/Jul/2025 16:14:26] code 400, message Bad request syntax ('\x16\x03\x01\x02\x00\x01\x00\x01ü\x03\x03#ÜãÍ(\x9a')
+2025-07-19 16:14:26,808 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:14:26] "[31m[1m\x16\x03\x01\x02\x00\x01\x00\x01ü\x03\x03#ÜãÍ(\x9a[0m" 400 -
+2025-07-19 16:14:26,809 - werkzeug - ERROR - 127.0.0.1 - - [19/Jul/2025 16:14:26] code 400, message Bad request version ('EîhÌ}\x00*jj\x13\x01\x13\x02\x13\x03À,À+Ì©À0À/Ì¨À')
+2025-07-19 16:14:26,809 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:14:26] "[31m[1m\x16\x03\x01\x02\x00\x01\x00\x01ü\x03\x03F>Ë\x90<Ó5iüXum6Æl\x1e;\x87¹`\x87±g\x00îÞ\x15¾Û$\x80\x80 p3Éåç\x01çûÌ3·(¥\x0ew>ì]eK´¨ç\x0b¸º\x1fEîhÌ}\x00*jj\x13\x01\x13\x02\x13\x03À,À+Ì©À0À/Ì¨À[0m" 400 -
+2025-07-19 16:14:26,810 - werkzeug - ERROR - 127.0.0.1 - - [19/Jul/2025 16:14:26] code 400, message Bad request version ('\x9ds¤\x04·¹w¤ÿ\x98M\x80]á×&\x04Þ\x04\x00*êê\x13\x01\x13\x02\x13\x03À,À+Ì©À0À/Ì¨À')
+2025-07-19 16:14:26,810 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:14:26] "[31m[1m\x16\x03\x01\x02\x00\x01\x00\x01ü\x03\x03¯\x81´\x89\x9a^¿\x12\x81\x0eX\x84\x1c-\x0b6ß\x88y\x13£BáÐ<\x1bø\x8ft\x16\\Ò \x84[§Ë\x0bGç®*Ì7]\x09\x9ds¤\x04·¹w¤ÿ\x98M\x80]á×&\x04Þ\x04\x00*êê\x13\x01\x13\x02\x13\x03À,À+Ì©À0À/Ì¨À[0m" 400 -
+2025-07-19 16:14:43,385 - routes.react_app - INFO - Serving React app with asset: index-CsDlCSGK.js
+2025-07-19 16:14:43,385 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 16:14:43,385 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 16:14:43,385 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:14:43] "GET /app/data-formatter HTTP/1.1" 200 -
+2025-07-19 16:14:57,525 - routes.react_app - INFO - Serving React app with asset: index-CsDlCSGK.js
+2025-07-19 16:14:57,525 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 16:14:57,525 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 16:14:57,526 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:14:57] "GET /app/data-formatter HTTP/1.1" 200 -
+2025-07-19 16:14:57,722 - routes.react_app - INFO - Serving React asset: index-CsDlCSGK.js
+2025-07-19 16:14:57,724 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:14:57] "GET /app/assets/index-CsDlCSGK.js HTTP/1.1" 200 -
+2025-07-19 16:14:58,231 - app - INFO - SECURITY_AUDIT: POST /api/csp-report from 127.0.0.1 User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36
+2025-07-19 16:14:58,234 - app.csp_reports - WARNING - CSP Violation (raw data): {"csp-report":{"document-uri":"http://127.0.0.1:5006/app/data-formatter","referrer":"","violated-directive":"style-src-elem","effective-directive":"style-src-elem","original-policy":"default-src 'self'; script-src 'self' 'strict-dynamic' 'nonce-9lcAeiENN7IeCrXo06HRrg' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'nonce-f6y1bky2SZUL_mlNw3l5kA' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.github.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests; report-uri /api/csp-report","disposition":"enforce","blocked-uri":"inline","line-number":58,"column-number":5296,"source-file":"http://127.0.0.1:5006/app/assets/index-CsDlCSGK.js","status-code":200,"script-sample":""}}
+2025-07-19 16:14:58,236 - app - INFO - SECURITY_AUDIT: Response 204 for POST /api/csp-report
+2025-07-19 16:14:58,236 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 16:14:58,236 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 16:14:58,236 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:14:58] "[35m[1mPOST /api/csp-report HTTP/1.1[0m" 204 -
+2025-07-19 16:14:58,242 - app - INFO - SECURITY_AUDIT: GET /auth/api/me from 127.0.0.1 User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36
+2025-07-19 16:14:58,243 - app - INFO - SECURITY_AUDIT: Response 302 for GET /auth/api/me
+2025-07-19 16:14:58,243 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 16:14:58,243 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 16:14:58,244 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:14:58] "[32mGET /auth/api/me HTTP/1.1[0m" 302 -
+2025-07-19 16:14:58,247 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:14:58] "GET /favicon.svg HTTP/1.1" 200 -
+2025-07-19 16:14:58,248 - werkzeug - ERROR - 127.0.0.1 - - [19/Jul/2025 16:14:58] code 400, message Bad request version ('\x02h2\x08http/1.1\x00')
+2025-07-19 16:14:58,248 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:14:58] "[31m[1m\x16\x03\x01\x06à\x01\x00\x06Ü\x03\x03×\x8fß=lÌQ\x0c÷pF\x07\x18z¤qå\x8f¨>h\x15};\x0bíÿµW&f\x17 @00%\x9c\x05Ø\x92z·*Ç¬ÎÃ\x90*:µª0ô\x86\x87Ï\x0bõà\x86\x9d\x1fe\x00 ºº\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06sºº\x00\x00\x00#\x00\x00\x00\x05\x00\x05\x01\x00\x00\x00\x00\x00\x10\x00\x0e\x00\x0c\x02h2\x08http/1.1\x00[0m" 400 -
+2025-07-19 16:14:58,249 - werkzeug - ERROR - 127.0.0.1 - - [19/Jul/2025 16:14:58] code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x06')
+2025-07-19 16:14:58,249 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:14:58] "[31m[1m\x16\x03\x01\x06 \x01\x00\x06\x9c\x03\x037s\x8d¨ê"\x00å\x87ZT°\x97y'\x12ûH50\x99»»\x03o"/¢`\x14%[0m" 400 -
+2025-07-19 16:15:05,719 - routes.react_app - INFO - Serving React app with asset: index-CsDlCSGK.js
+2025-07-19 16:15:05,720 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 16:15:05,720 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 16:15:05,720 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:15:05] "GET /app/data-formatter HTTP/1.1" 200 -
+2025-07-19 16:15:09,017 - routes.react_app - INFO - Serving React app with asset: index-CsDlCSGK.js
+2025-07-19 16:15:09,018 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 16:15:09,018 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 16:15:09,018 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:15:09] "GET /app/data-formatter HTTP/1.1" 200 -
+2025-07-19 16:15:17,349 - app - INFO - SECURITY_AUDIT: POST /api/ai-chat from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-19 16:15:17,349 - app - INFO - SECURITY_AUDIT: Response 404 for POST /api/ai-chat
+2025-07-19 16:15:17,349 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 16:15:17,349 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 16:15:17,349 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:15:17] "[33mPOST /api/ai-chat HTTP/1.1[0m" 404 -
+2025-07-19 16:15:25,324 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 16:15:25,325 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 16:15:25,325 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:15:25] "OPTIONS / HTTP/1.1" 200 -
+2025-07-19 16:16:08,315 - app - INFO - SECURITY_AUDIT: POST /ai/api/chat from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-19 16:16:08,315 - app - INFO - SECURITY_AUDIT: Response 302 for POST /ai/api/chat
+2025-07-19 16:16:08,315 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 16:16:08,315 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 16:16:08,315 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:16:08] "[32mPOST /ai/api/chat HTTP/1.1[0m" 302 -
+2025-07-19 16:17:15,069 - routes.react_app - INFO - Serving React app with asset: index-CsDlCSGK.js
+2025-07-19 16:17:15,069 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 16:17:15,069 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 16:17:15,069 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:17:15] "HEAD /app/data-formatter HTTP/1.1" 200 -
+2025-07-19 16:17:18,272 - routes.react_app - INFO - Serving React app with asset: index-CsDlCSGK.js
+2025-07-19 16:17:18,272 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 16:17:18,272 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 16:17:18,273 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:17:18] "GET /app/data-formatter HTTP/1.1" 200 -
+2025-07-19 16:18:26,890 - openai._base_client - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'files': None, 'idempotency_key': 'stainless-python-retry-72cb6e91-4b8b-4459-8776-c5bb57b0c96d', 'json_data': {'messages': [{'role': 'system', 'content': 'You are a fire department compliance expert specializing in NFPA 1710 standards. \n                        Focus on:\n                        - Response time performance (dispatch <60s, turnout <80s, total <8min)\n                        - Staffing adequacy and deployment\n                        - Coverage gaps and improvement opportunities\n                        - ISO rating considerations\n                        \n                        Provide specific, actionable recommendations. Keep responses concise and professional.'}, {'role': 'user', 'content': 'CAD data summary: Test fire department with 100 incidents, average 5 minute response time\n\nSpecific query: Brief test analysis'}], 'model': 'gpt-4o-mini', 'max_tokens': 2000, 'temperature': 0.7}}
+2025-07-19 16:18:26,906 - openai._base_client - DEBUG - Sending HTTP Request: POST https://api.openai.com/v1/chat/completions
+2025-07-19 16:18:26,907 - httpcore.connection - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=5.0 socket_options=None
+2025-07-19 16:18:26,979 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10dd2daf0>
+2025-07-19 16:18:26,979 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1083f1750> server_hostname='api.openai.com' timeout=5.0
+2025-07-19 16:18:27,023 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10866f260>
+2025-07-19 16:18:27,024 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-07-19 16:18:27,024 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-19 16:18:27,024 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-07-19 16:18:27,024 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-19 16:18:27,024 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-07-19 16:18:27,084 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 401, b'Unauthorized', [(b'Date', b'Sat, 19 Jul 2025 23:18:27 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'274'), (b'Connection', b'keep-alive'), (b'vary', b'Origin'), (b'x-request-id', b'req_284ef510a3aa074b200f9a38665c7237'), (b'strict-transport-security', b'max-age=31536000; includeSubDomains; preload'), (b'cf-cache-status', b'DYNAMIC'), (b'Set-Cookie', b'__cf_bm=hh0l2YJV5nAIxyyT1_uPovURVWbX7CUciQFRkeOtTrI-1752967107-1.0.1.1-eGgXfl45_b1getNW4Z_DDi2WGmVwtzE4QX9e4Hq0y2P61ea7xuYPnpzMOrGSOxehbLPxD9XRKlrv8VbYrLZqARknBVaDYuMXccsv7pY_NsQ; path=/; expires=Sat, 19-Jul-25 23:48:27 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), (b'X-Content-Type-Options', b'nosniff'), (b'Set-Cookie', b'_cfuvid=jBjIuwwAqlGuRRP4gXg8yitGQJH7h6DPgMGnfInGmZI-1752967107089-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), (b'Server', b'cloudflare'), (b'CF-RAY', b'961df0231c3b2f34-LAX'), (b'alt-svc', b'h3=":443"; ma=86400')])
+2025-07-19 16:18:27,085 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-07-19 16:18:27,085 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-07-19 16:18:27,085 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-19 16:18:27,085 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-19 16:18:27,085 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-19 16:18:27,085 - openai._base_client - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions "401 Unauthorized" Headers([('date', 'Sat, 19 Jul 2025 23:18:27 GMT'), ('content-type', 'application/json; charset=utf-8'), ('content-length', '274'), ('connection', 'keep-alive'), ('vary', 'Origin'), ('x-request-id', 'req_284ef510a3aa074b200f9a38665c7237'), ('strict-transport-security', 'max-age=31536000; includeSubDomains; preload'), ('cf-cache-status', 'DYNAMIC'), ('set-cookie', '__cf_bm=hh0l2YJV5nAIxyyT1_uPovURVWbX7CUciQFRkeOtTrI-1752967107-1.0.1.1-eGgXfl45_b1getNW4Z_DDi2WGmVwtzE4QX9e4Hq0y2P61ea7xuYPnpzMOrGSOxehbLPxD9XRKlrv8VbYrLZqARknBVaDYuMXccsv7pY_NsQ; path=/; expires=Sat, 19-Jul-25 23:48:27 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('x-content-type-options', 'nosniff'), ('set-cookie', '_cfuvid=jBjIuwwAqlGuRRP4gXg8yitGQJH7h6DPgMGnfInGmZI-1752967107089-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None'), ('server', 'cloudflare'), ('cf-ray', '961df0231c3b2f34-LAX'), ('alt-svc', 'h3=":443"; ma=86400')])
+2025-07-19 16:18:27,085 - openai._base_client - DEBUG - request_id: req_284ef510a3aa074b200f9a38665c7237
+2025-07-19 16:18:27,085 - openai._base_client - DEBUG - Encountered httpx.HTTPStatusError
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/openai/_base_client.py", line 1024, in request
+    response.raise_for_status()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Client error '401 Unauthorized' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+2025-07-19 16:18:27,087 - openai._base_client - DEBUG - Not retrying
+2025-07-19 16:18:27,087 - openai._base_client - DEBUG - Re-raising status error
+2025-07-19 16:18:27,088 - ai_service - ERROR - AI analysis failed: Error code: 401 - {'error': {'message': 'Incorrect API key provided: your_ope************here. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+2025-07-19 16:18:27,088 - ai_service - INFO - Using fallback compliance analysis
+2025-07-19 16:18:27,088 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 16:18:27,088 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 16:18:27,089 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:18:27] "GET /ai/debug HTTP/1.1" 200 -
+2025-07-19 16:18:41,868 - routes.react_app - INFO - Serving React app with asset: index-CsDlCSGK.js
+2025-07-19 16:18:41,869 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 16:18:41,869 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 16:18:41,869 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:18:41] "GET /app/data-formatter HTTP/1.1" 200 -
+2025-07-19 16:18:41,886 - routes.react_app - INFO - Serving React asset: index-CsDlCSGK.js
+2025-07-19 16:18:41,886 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:18:41] "[36mGET /app/assets/index-CsDlCSGK.js HTTP/1.1[0m" 304 -
+2025-07-19 16:18:41,970 - app - INFO - SECURITY_AUDIT: POST /api/csp-report from 127.0.0.1 User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36
+2025-07-19 16:18:41,971 - app.csp_reports - WARNING - CSP Violation (raw data): {"csp-report":{"document-uri":"http://127.0.0.1:5006/app/data-formatter","referrer":"","violated-directive":"style-src-elem","effective-directive":"style-src-elem","original-policy":"default-src 'self'; script-src 'self' 'strict-dynamic' 'nonce-mxpi_Q67bAnVf5YfAUezNA' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'nonce-SBgjpG2eaaDUyaX4HFPN4Q' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.github.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests; report-uri /api/csp-report","disposition":"enforce","blocked-uri":"inline","line-number":58,"column-number":5296,"source-file":"http://127.0.0.1:5006/app/assets/index-CsDlCSGK.js","status-code":200,"script-sample":""}}
+2025-07-19 16:18:41,971 - app - INFO - SECURITY_AUDIT: Response 204 for POST /api/csp-report
+2025-07-19 16:18:41,971 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 16:18:41,971 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 16:18:41,972 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:18:41] "[35m[1mPOST /api/csp-report HTTP/1.1[0m" 204 -
+2025-07-19 16:18:41,978 - app - INFO - SECURITY_AUDIT: GET /auth/api/me from 127.0.0.1 User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36
+2025-07-19 16:18:41,978 - app - INFO - SECURITY_AUDIT: Response 302 for GET /auth/api/me
+2025-07-19 16:18:41,979 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 16:18:41,979 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 16:18:41,979 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:18:41] "[32mGET /auth/api/me HTTP/1.1[0m" 302 -
+2025-07-19 16:18:41,985 - werkzeug - ERROR - 127.0.0.1 - - [19/Jul/2025 16:18:41] code 400, message Bad request version ('\x02h2\x08http/1.1\x00\x05\x00\x05\x01\x00\x00\x00\x00DÍ\x00\x05\x00\x03\x02h2ÿ\x01\x00\x01\x00\x00\x17\x00\x00\x00#\x00\x00\x00')
+2025-07-19 16:18:41,986 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:18:41] "[31m[1m\x16\x03\x01\x07\x00\x01\x00\x06ü\x03\x03®Mråò7Q-õ\x1cFØZ©"\x1d%X\x86\x02P`õÍ\x11æèK\x8b\x15Xu kú\x10©ìÊÐ\x07{æ¯\x10EØ£ë\x974ö§\x0cs©ÅÆ¨¦\x1dü§¤\x9f\x00 ºº\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x06\x93**\x00\x00\x00\x10\x00\x0e\x00\x0c\x02h2\x08http/1.1\x00\x05\x00\x05\x01\x00\x00\x00\x00DÍ\x00\x05\x00\x03\x02h2ÿ\x01\x00\x01\x00\x00\x17\x00\x00\x00#\x00\x00\x00[0m" 400 -
+2025-07-19 16:18:41,987 - werkzeug - ERROR - 127.0.0.1 - - [19/Jul/2025 16:18:41] code 400, message Bad request version ('\x02h2\x08http/1.1\x00\x1b\x00\x03\x02\x00\x02\x00')
+2025-07-19 16:18:41,987 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:18:41] "[31m[1m\x16\x03\x01\x06 \x01\x00\x06\x9c\x03\x03×\x9bvÚ]ùÞOÎ*HH^P\x96ú´á\x9cí²j1«\x7foVOÏNW® enI\x9dÉ|\x01ÿ\x0dEX-M¥\x90vÚ\x10\x143úôR\x8fà\x8eµF»¡\x8cm\x00 jj\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x13À\x14\x00\x9c\x00\x9d\x00/\x005\x01\x00\x063zz\x00\x00\x00\x0d\x00\x12\x00\x10\x04\x03\x08\x04\x04\x01\x05\x03\x08\x05\x05\x01\x08\x06\x06\x01þ\x0d\x00º\x00\x00\x01\x00\x01Ä\x00 s%uÂ\x0eÜî\x927\x8e`\x87q¥\x89;ÀOk\x9b\x05²Õã\x8eýý%}òôM\x00\x90\x10Y\x7fÊÍ½êzaW\x15D7ÍÄx7àJ\x8câ\x09¢G\x8e\x16'µ¹ûfX~5\x91«Z\x86{ü\x0bD\x91ñ­\x95£>Å¸P,!®\x90qoR\x8f\x86\x9c\x94r&úØØ\x91y&\x95\x1câ\x91B²\x08\x04¶»\x03½¾\x19\x8b\x94\x9f*Cê#Od\x11ëbfu³¦×Á5#\x1d£ÒÚ]A¹Zdû\x04X¨\x0b\x9ck\x1c\x01q\x0du\x8eeÌ«m¢ÀÿÐ\x846}\x7fÙ\x84\x8bøÛ\x87DÍ\x00\x05\x00\x03\x02h2\x00\x05\x00\x05\x01\x00\x00\x00\x00\x00\x10\x00\x0e\x00\x0c\x02h2\x08http/1.1\x00\x1b\x00\x03\x02\x00\x02\x00[0m" 400 -
+2025-07-19 16:19:06,178 - app - INFO - SECURITY_AUDIT: GET /auth/api/me from 127.0.0.1 User-Agent: curl/8.7.1
+2025-07-19 16:19:06,179 - app - INFO - SECURITY_AUDIT: Response 302 for GET /auth/api/me
+2025-07-19 16:19:06,179 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 16:19:06,179 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 16:19:06,179 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:19:06] "[32mGET /auth/api/me HTTP/1.1[0m" 302 -
+2025-07-19 16:53:19,061 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-19 16:53:19,192 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-19 16:53:19,192 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-19 16:53:19,192 - __main__ - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-19 16:53:19,192 - __main__ - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-19 16:53:19,195 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-19 16:53:19,195 - __main__ - INFO - Creating application with deployment fixes...
+2025-07-19 16:53:19,196 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-19 16:53:19,196 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-19 16:53:19,196 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+2025-07-19 16:53:19,197 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-19 16:53:19,197 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-19 16:53:19,205 - email_service - INFO - 📧 Email service ENABLED - SMTP: smtp.gmail.com:587
+2025-07-19 16:53:19,205 - email_service - INFO - 📧 Email from: FireEMS.ai <noreply@fireems.ai>
+2025-07-19 16:53:19,208 - static_middleware - INFO - Registered static file handler middleware
+2025-07-19 16:53:19,208 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-19 16:53:19,208 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-19 16:53:19,208 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-19 16:53:19,208 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-19 16:53:19,208 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-19 16:53:19,208 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-19 16:53:19,208 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-19 16:53:19,208 - static_middleware - INFO - Sample static files: []
+2025-07-19 16:53:19,852 - ai_service - INFO - ✅ AI Service initialized successfully
+2025-07-19 16:53:19,852 - routes.ai - INFO - ✅ AI service imported successfully
+2025-07-19 16:53:19,853 - __main__ - INFO - AI blueprint imported successfully
+2025-07-19 16:53:19,895 - __main__ - INFO - AI blueprint registered successfully
+2025-07-19 16:53:19,895 - __main__ - INFO - Successfully registered all route blueprints
+2025-07-19 16:53:19,897 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-19 16:53:19,897 - __main__ - INFO - Registered React Data Formatter routes
+2025-07-19 16:53:19,898 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-19 16:53:19,898 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-19 16:53:19,898 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-19 16:53:19,899 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-19 16:53:19,899 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-19 16:53:19,899 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-19 16:53:19,899 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-19 16:53:19,899 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-19 16:53:19,899 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-19 16:53:19,899 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-19 16:53:19,910 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-19 16:53:19,910 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-19 16:53:19,912 - __main__ - INFO - Found 1 existing super_admin users
+2025-07-19 16:53:19,912 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-07-19 16:53:19,912 - __main__ - INFO - Application created successfully with all fixes applied
+2025-07-19 16:53:27,053 - routes.react_app - INFO - Serving React app with asset: index-CsDlCSGK.js
+2025-07-19 16:53:27,054 - app - INFO - CSP Environment Detection: RENDER=None, FLASK_ENV=development, CONFIG_ENV=None, DEBUG=True, is_production=False, is_dev=True
+2025-07-19 16:53:27,054 - app - INFO - HSTS Header Always Set: max-age=31536000; includeSubDomains; preload
+2025-07-19 16:53:27,054 - werkzeug - INFO - 127.0.0.1 - - [19/Jul/2025 16:53:27] "GET /app/data-formatter HTTP/1.1" 200 -

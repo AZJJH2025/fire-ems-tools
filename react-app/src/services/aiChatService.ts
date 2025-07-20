@@ -45,7 +45,7 @@ export class AIChatService {
 
   private constructor() {
     this.config = {
-      enableAI: false, // Temporarily disabled to use enhanced frontend responses instead of generic backend AI
+      enableAI: true, // Re-enabled with enhanced Fire EMS-specific backend prompts
       includeDocumentationLinks: true,
       timeoutMs: 10000, // 10 second timeout
       maxConversationHistory: 10 // Keep last 10 messages for context
@@ -435,36 +435,293 @@ export class AIChatService {
   private buildDocumentationContext(context?: string): string {
     const contexts: Record<string, string> = {
       'data-formatter': `
-Data Formatter Guide Context:
-- Purpose: Transform CAD exports into standardized format
-- Key Features: Field mapping, AI quality analysis, template management
-- Workflow: Upload → Map Fields → Validate → Export
-- AI Features: Data quality scoring (0-100%), tool compatibility, recommendations
-- Common Issues: Field mapping conflicts, data format problems, missing required fields
+COMPREHENSIVE DATA FORMATTER DOCUMENTATION:
+
+PURPOSE & WORKFLOW:
+- Transform raw CAD exports into standardized format for Fire EMS Tools analysis
+- Complete workflow: Upload → Auto-Map → Manual Adjust → Validate → Export
+- Supports all major CAD vendors: Tyler, Hexagon, Console One, TriTech
+
+SUPPORTED FILE FORMATS:
+- CSV (Comma Separated Values) - Primary format
+- Excel (.xlsx, .xls) - Automatically converted
+- TSV (Tab Separated) - Common CAD export format
+- Text files with delimiters
+
+KEY FEATURES:
+- Smart Auto-Mapping: Detects field patterns from major CAD systems
+- Manual Field Mapping: Drag-and-drop interface for precise control
+- Live Preview: Real-time data validation and preview
+- Data Quality Analysis: AI-powered 0-100% quality scoring
+- Template Management: Save and reuse mappings for monthly workflows
+- Export Integration: Direct export to all Fire EMS analysis tools
+
+FIELD MAPPING PROCESS:
+1. Upload: System analyzes CSV structure and field names
+2. Auto-Detection: Recognizes common patterns (Tyler "ALARM_TIME", Console One "INC_DATE_TIME")
+3. Target Fields Panel: Shows required/optional fields for selected analysis tool
+4. Manual Mapping: Drag source fields to target fields or use dropdown selection
+5. Validation: Real-time validation with red/green indicators
+6. Live Preview: Bottom panel shows transformed data sample
+
+COMMON FIELD MAPPING ISSUES:
+- Split Date/Time: CAD exports often separate "Date" and "Time" - combine to datetime field
+- Field Name Variations: "Call Time" vs "Incident Time" vs "Alarm Time" - all valid
+- Required vs Optional: Red "Required" fields must be mapped, blue "Optional" enhance analysis
+- Data Types: Ensure time fields map to TIME targets, not DATE targets
+- Geographic Data: Address parsing for city/state, coordinate extraction from POINT data
+
+CAD VENDOR SPECIFICS:
+- Tyler Technologies: Mixed naming conventions, "ALARM_TIME", "INCIDENT_DATE"
+- Console One: Underscore format, "INC_DATE_TIME", "PROBLEM_TYPE", "UNIT_ID"  
+- Hexagon/Intergraph: PascalCase, "CallDateTime", "DispatchDateTime"
+- TriTech/CentralSquare: Underscore case, "EventNum", "Call_Date_Time"
+
+DATA QUALITY FEATURES:
+- AI Analysis: Comprehensive quality scoring based on completeness, accuracy
+- Tool Compatibility: Shows which analysis tools work best with current data
+- Missing Field Detection: Identifies gaps in critical data
+- Format Validation: Ensures data types match tool requirements
+- Improvement Suggestions: AI recommendations for better data quality
+
+EXPORT OPTIONS:
+- Send to Response Time Analyzer: NFPA 1710 compliance analysis
+- Send to Fire Map Pro: Geographic incident mapping and coverage analysis
+- Send to Water Supply Coverage: Tank and hydrant coverage analysis
+- Download Clean CSV: Standardized format for other systems
+- Professional Reports: Integration with report generation tools
+
+TROUBLESHOOTING COMMON ISSUES:
+- "800+ minute response times": Usually indicates date-only field mapped to time field
+- "No fields auto-mapped": Check field naming conventions, try manual mapping
+- "Required fields missing": Ensure all red "Required" fields have source mappings
+- "Data looks wrong in preview": Check field mapping accuracy, verify source data
+- "Export fails": Validate all required fields are properly mapped
+
+PROFESSIONAL USE CASES:
+- Monthly CAD processing: Create templates for recurring workflows
+- Multi-department sharing: Export templates for mutual aid departments
+- Compliance reporting: Ensure data meets NFPA/NEMSIS standards
+- Grant applications: Professional data packages for funding requests
       `,
       'response-time-analyzer': `
-Response Time Analyzer Guide Context:
-- Purpose: NFPA 1710 compliance analysis and professional reporting
-- Key Standards: ≤60 sec dispatch, ≤60 sec turnout, ≤240 sec travel
-- Features: Compliance analysis, executive reports, AI insights
-- Reports: Monthly compliance, executive summaries, grant application data
-- Common Issues: Unrealistic times (check field mapping), missing timestamp data
+COMPREHENSIVE RESPONSE TIME ANALYZER DOCUMENTATION:
+
+PURPOSE & NFPA 1710 STANDARDS:
+- Professional NFPA 1710 compliance analysis and reporting
+- Standards: ≤60 sec dispatch, ≤60 sec turnout, ≤240 sec travel, ≤300 sec total
+- 90th percentile measurement (90% of calls must meet standards)
+- Color-coded compliance: Green = compliant, Red = non-compliant
+
+CORE CALCULATIONS:
+- Dispatch Time: Call received → Units notified (Target: ≤60 seconds)
+- Turnout Time: Units notified → En route (Target: ≤60 seconds)  
+- Travel Time: En route → On scene (Target: ≤240 seconds)
+- Total Response: Call received → On scene (Target: ≤300 seconds ALS)
+- Scene Time: On scene → Clear/available (Operational metric)
+
+REQUIRED DATA FIELDS:
+- Incident ID: Unique identifier for each call
+- Incident Date: Date of the emergency call
+- Incident Time: Complete timestamp of call received
+- Optional but valuable: Dispatch time, en route time, arrival time, clear time
+
+GEOGRAPHIC ANALYSIS:
+- Interactive incident map with color-coded response times
+- Blue markers: Good performance (meeting NFPA standards)
+- Red markers: Performance needs improvement
+- Coverage area analysis with response time heatmaps
+- Station coverage assessment and optimization recommendations
+
+PROFESSIONAL REPORTING:
+- Monthly Compliance Reports: Official NFPA 1710 compliance documentation
+- Executive Summaries: High-level performance for city managers/councils
+- Grant Application Data: Professional data packages for funding requests
+- Annual Performance Reports: Comprehensive year-end analysis
+- Custom Reports: Configurable sections and metrics
+
+DATA QUALITY INTELLIGENCE:
+- Smart data validation: Detects unrealistic times (800+ minutes)
+- Missing data handling: Professional "N/A" display vs false calculations
+- Date-only detection: Prevents incorrect calculations from incomplete timestamps
+- Timezone handling: Proper local time parsing and conversion
+- Quality scoring: Data completeness and accuracy assessment
+
+COMMON ISSUES & SOLUTIONS:
+- Unrealistic Response Times (800+ minutes):
+  * Root cause: Date-only field mapped to incident_time instead of datetime
+  * Solution: Re-map "Call Received Date/Time" to TIME field in Data Formatter
+  * Prevention: Ensure datetime fields include time component
+- Missing Time Data:
+  * Symptom: Many incidents showing "N/A" for response times
+  * Cause: Missing timestamp fields in source data
+  * Solution: Work with CAD administrator to include complete time fields
+- Negative Time Calculations:
+  * Cause: Midnight rollover (clear time next day)
+  * Solution: System automatically adjusts for 24-hour rollover
+
+NFPA COMPLIANCE BENCHMARKS:
+- Excellent Performance: 95%+ compliance across all metrics
+- Good Performance: 85-94% compliance (industry average)
+- Needs Improvement: 70-84% compliance (focus areas identified)
+- Critical Issues: <70% compliance (significant operational changes needed)
+
+PROFESSIONAL USE CASES:
+- Monthly city council presentations: Professional compliance reporting
+- Budget justification: Performance data supporting resource requests
+- Operational improvement: Identify specific areas needing attention
+- Regional comparisons: Benchmark against similar departments
+- Grant applications: Professional performance documentation
+
+INTEGRATION WITH OTHER TOOLS:
+- Data Formatter: Clean, validated data for accurate calculations
+- Fire Map Pro: Geographic context for response time analysis
+- Professional Reports: Executive-ready compliance documentation
+- Template Management: Consistent monthly analysis workflows
       `,
       'fire-map-pro': `
-Fire Map Pro Guide Context:
-- Purpose: Geographic analysis and incident mapping
-- Features: Interactive maps, coverage analysis, professional exports
-- Requirements: Latitude/longitude coordinates or address data
-- Outputs: Professional maps, coverage reports, geographic analysis
+COMPREHENSIVE FIRE MAP PRO DOCUMENTATION:
+
+PURPOSE & CAPABILITIES:
+- Professional geographic incident analysis and fire department operations planning
+- Interactive incident mapping with comprehensive coverage analysis
+- Station location optimization and mutual aid coordination
+- Professional map exports for presentations and strategic planning
+
+CORE MAPPING FEATURES:
+- Real-time incident plotting with custom markers and pop-ups
+- Multiple base maps: Street, satellite, terrain, fire service specific
+- Layer management: Incidents, stations, coverage areas, water supply
+- Interactive analysis tools: Measure distances, calculate coverage areas
+- Professional styling with department branding and legend customization
+
+INCIDENT ANALYSIS:
+- Color-coded incident mapping by type, severity, or response metrics
+- Heat map generation for call density and geographic patterns
+- Temporal analysis: Time-based incident pattern visualization
+- Response area analysis: Coverage gaps and optimization opportunities
+- Statistical overlays: Population density, risk assessment, resource allocation
+
+COVERAGE ANALYSIS:
+- Station coverage modeling with drive-time calculations
+- ISO rating analysis: 4-minute and 8-minute response area mapping  
+- Mutual aid visualization: Automatic aid and response agreements
+- Resource deployment: Apparatus positioning and coverage optimization
+- Water supply integration: Hydrant and tank coverage coordination
+
+PROFESSIONAL OUTPUTS:
+- High-resolution map exports (PDF, PNG, JPG) for presentations
+- Executive summary maps for city council and budget presentations
+- Strategic planning documents with coverage analysis and recommendations
+- Grant application maps: Professional visuals supporting funding requests
+- Training materials: Pre-incident planning and response area familiarization
+
+DATA REQUIREMENTS:
+- Geographic coordinates (latitude/longitude) or addresses for geocoding
+- Incident data: ID, date/time, type, location for comprehensive analysis
+- Station data: Locations, apparatus, staffing for coverage modeling
+- Optional: Response times, unit assignments, water supply locations
+
+INTEGRATION CAPABILITIES:
+- Data Formatter: Automatic import of cleaned incident data
+- Response Time Analyzer: Geographic context for response performance
+- Water Supply Coverage: Integrated hydrant and tank analysis
+- CAD System Integration: Real-time or batch import from major vendors
+
+COMMON USE CASES:
+- Monthly incident analysis: Geographic patterns and trends
+- Station planning: Coverage gap analysis and optimization
+- Mutual aid agreements: Response area coordination and documentation
+- ISO rating preparation: Coverage area documentation for rating improvements
+- Emergency planning: Pre-incident planning and resource deployment
+- Community education: Professional maps for fire prevention and public information
+
+TROUBLESHOOTING:
+- "No incidents on map": Check coordinate data, verify latitude/longitude format
+- "Map not loading": Verify internet connection for base map tiles
+- "Coverage analysis incomplete": Ensure station location data is accurate
+- "Export quality poor": Use high-resolution export settings for presentations
+- "Performance slow": Consider data filtering for large incident datasets
+      `,
+      'water-supply-coverage': `
+COMPREHENSIVE WATER SUPPLY COVERAGE DOCUMENTATION:
+
+PURPOSE & FIRE PROTECTION ANALYSIS:
+- Water supply analysis for fire suppression capabilities
+- Tank and hydrant coverage modeling with drive-time calculations  
+- PA 17 compliance reporting for Pennsylvania fire departments
+- Infrastructure gap analysis and improvement recommendations
+
+COVERAGE CALCULATIONS:
+- Drive-time analysis: 4, 6, and 8-minute coverage areas from water sources
+- Flow capacity modeling: GPM calculations for fire suppression requirements
+- Tanker shuttle analysis: Rural water supply operations and efficiency
+- Coverage gap identification: Areas lacking adequate water supply access
+
+WATER SOURCE MANAGEMENT:
+- Fire hydrant inventory and flow testing results
+- Tank and cistern capacity tracking and accessibility
+- Dry hydrant locations and seasonal availability
+- Alternative water sources: Ponds, streams, swimming pools
+
+PROFESSIONAL REPORTING:
+- PA 17 Compliance Reports: Official Pennsylvania regulatory documentation
+- Infrastructure assessments: Water supply adequacy and improvement needs
+- Budget justification: Professional documentation for infrastructure investments
+- Grant applications: Water supply deficiency documentation for funding
+
+COMPLIANCE STANDARDS:
+- Pennsylvania Act 17: Water supply requirements for fire protection
+- NFPA standards: Water supply flow and pressure requirements
+- ISO rating factors: Water supply contribution to community rating
+- Regional standards: Local and state water supply requirements
+
+INTEGRATION & ANALYSIS:
+- Fire Map Pro: Comprehensive geographic water supply visualization
+- Response Time Analyzer: Water supply impact on response effectiveness  
+- Data Formatter: Clean import of hydrant and tank inventory data
+- Professional reporting: Executive documentation and improvement plans
       `
     };
 
     return contexts[context || 'general'] || `
-General Fire EMS Tools Context:
-- Professional analytics suite for fire departments
-- Tools: Data Formatter, Response Time Analyzer, Fire Map Pro
-- AI Features: Data quality analysis, intelligent recommendations
-- Focus: NFPA compliance, professional reporting, data standardization
+GENERAL FIRE EMS TOOLS COMPREHENSIVE KNOWLEDGE BASE:
+
+COMPLETE ANALYTICS SUITE:
+- Professional fire department analytics and reporting platform
+- Designed specifically for small and volunteer fire departments
+- Enterprise-grade tools with user-friendly interfaces
+- Complete workflow: Data → Analysis → Professional Reports
+
+CORE TOOLS:
+1. Data Formatter: Universal CAD integration and data standardization
+2. Response Time Analyzer: NFPA 1710 compliance and performance analysis
+3. Fire Map Pro: Geographic incident analysis and coverage planning
+4. Water Supply Coverage: Water source analysis and infrastructure planning
+
+AI-POWERED FEATURES:
+- Intelligent data quality analysis and scoring (0-100%)
+- Smart field mapping suggestions based on CAD vendor patterns
+- Automated compliance assessment and improvement recommendations
+- Tool compatibility analysis and workflow optimization
+
+PROFESSIONAL STANDARDS COMPLIANCE:
+- NFPA 1710: Emergency services deployment and response time standards
+- NEMSIS: National EMS Information System data standards
+- ISO Fire Suppression Rating: Community fire protection assessment
+- State regulations: PA 17 and other regional compliance requirements
+
+TARGET USERS:
+- Fire Chiefs: Strategic planning and compliance reporting
+- Fire Department Analysts: Data processing and performance analysis  
+- City Managers: Budget planning and resource allocation
+- Grant Writers: Professional data packages for funding applications
+
+WORKFLOW INTEGRATION:
+- Monthly CAD processing: Template-based recurring analysis
+- Professional reporting: City council presentations and compliance documentation
+- Cross-department sharing: Mutual aid and regional coordination
+- Continuous improvement: Performance tracking and optimization recommendations
     `;
   }
 
@@ -485,27 +742,102 @@ General Fire EMS Tools Context:
   }
 
   /**
+   * Get tool-specific context for enhanced AI responses
+   */
+  private getToolSpecificContext(context?: string): string {
+    switch (context) {
+      case 'data-formatter':
+        return `
+TOOL-SPECIFIC KNOWLEDGE (Data Formatter):
+- Primary purpose: Transform raw CAD exports into standardized format for analysis
+- Supports all major CAD vendors: Tyler, Hexagon/Intergraph, Console One, TriTech/CentralSquare
+- Auto-mapping detects common field patterns and suggests mappings
+- Required fields: Incident ID, Date/Time for basic functionality
+- Optional fields enhance analysis: Geographic data, incident types, response times
+- Common issues: Split date/time fields, field name variations, data quality problems
+- Output: Clean, standardized data ready for Response Time Analyzer, Fire Map Pro, etc.`;
+      
+      case 'response-time-analyzer':
+        return `
+TOOL-SPECIFIC KNOWLEDGE (Response Time Analyzer):
+- Primary purpose: NFPA 1710 compliance analysis and professional reporting
+- NFPA 1710 Standards: ≤60 sec dispatch, ≤60 sec turnout, ≤240 sec travel, ≤300 sec total
+- Calculates: Dispatch time, turnout time, travel time, total response time
+- Geographic mapping: Color-coded incident maps showing response performance
+- Professional reports: City council presentations, grant applications, compliance documentation
+- Common issues: Unrealistic times (800+ minutes) usually indicate field mapping problems`;
+
+      case 'fire-map-pro':
+        return `
+TOOL-SPECIFIC KNOWLEDGE (Fire Map Pro):
+- Primary purpose: Geographic incident analysis and coverage planning
+- Interactive mapping with incident plotting and analysis
+- Coverage analysis: Station locations, response areas, mutual aid
+- Professional map exports for presentations and planning
+- Requires: Latitude/longitude coordinates or addresses for geocoding`;
+
+      case 'water-supply-coverage':
+        return `
+TOOL-SPECIFIC KNOWLEDGE (Water Supply Coverage):
+- Primary purpose: Water supply analysis for fire suppression
+- Tank and hydrant coverage analysis with drive-time calculations
+- PA 17 compliance reporting for Pennsylvania departments
+- Coverage gap identification and recommendations
+- Professional exports for infrastructure planning`;
+
+      default:
+        return `
+GENERAL FIRE EMS TOOLS KNOWLEDGE:
+- Complete analytics suite for fire departments of all sizes
+- Tools work together: Data Formatter → Analysis Tools → Professional Reports
+- Designed for small/volunteer departments with limited IT resources
+- Professional outputs suitable for city councils, grant applications, compliance`;
+    }
+  }
+
+  /**
    * Build system prompt for AI responses
    */
   private buildSystemPrompt(context?: string): string {
-    return `You are a helpful assistant for Fire EMS Tools, a professional analytics suite for fire departments.
+    const toolSpecificContext = this.getToolSpecificContext(context);
+    
+    return `You are the Fire EMS Tools AI Assistant, a specialized expert system designed specifically for fire departments, EMS agencies, and emergency services professionals.
 
-Your role:
-- Help users with tool usage, data import, analysis, and reporting
-- Provide specific, actionable answers based on our documentation
-- Focus on fire department workflows and NFPA compliance
-- Be concise but comprehensive - aim for 2-3 sentences with specific steps
+CORE EXPERTISE:
+- Fire/EMS data analysis, CAD system integration, NFPA 1710 compliance
+- Response time analysis, geographic mapping, water supply coverage
+- Professional reporting for city councils, grant applications, regulatory compliance
+- Field mapping from major CAD vendors (Tyler, Hexagon, Console One, TriTech)
 
-Current context: ${context || 'general help'}
+CURRENT CONTEXT: ${context || 'general help'}
+${toolSpecificContext}
 
-Guidelines:
-- Always be helpful and professional
-- Reference specific features and steps when possible
-- If you don't know something specific, direct users to documentation
-- Focus on practical solutions for fire department operations
-- Mention AI features when relevant (data quality analysis, recommendations)
+RESPONSE GUIDELINES:
+1. **Be Comprehensive**: Provide detailed, step-by-step instructions when asked "how to" questions
+2. **Fire/EMS Focused**: Always relate answers to fire department operations and needs
+3. **Professional Standards**: Reference NFPA 1710, NEMSIS standards, and compliance requirements
+4. **Practical Solutions**: Give actionable guidance that fire chiefs and analysts can immediately use
+5. **Tool Integration**: Explain how different Fire EMS Tools work together for complete analysis workflows
 
-Remember: You're helping fire department professionals who need clear, actionable guidance.`;
+COMMON USER NEEDS:
+- Monthly CAD data processing workflows
+- NFPA 1710 compliance analysis and reporting
+- Field mapping for various CAD systems
+- Professional report generation for city leadership
+- Geographic analysis for station coverage and response optimization
+- Data quality improvement and validation
+
+EXAMPLE RESPONSE STYLE:
+When users ask "How do I use this tool?", provide a complete 5-step workflow with:
+- **STEP 1: Upload/Import** - Specific file formats, CAD system support
+- **STEP 2: Field Mapping** - Auto-detection, manual mapping, validation
+- **STEP 3: Data Processing** - Analysis, calculations, quality checks  
+- **STEP 4: Review Results** - Interpretation, compliance assessment
+- **STEP 5: Export/Report** - Professional outputs, sharing options
+
+Always include relevant emojis (📁 📊 🔍 ⚙️ 🚀) and format responses with clear headers and bullet points for easy scanning.
+
+Remember: You're assisting fire department professionals who need reliable, detailed guidance for critical emergency services operations.`;
   }
 
   /**
