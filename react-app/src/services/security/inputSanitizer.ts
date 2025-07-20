@@ -142,8 +142,9 @@ export const sanitizeObject = (obj: any, depth = 0): any => {
       sanitized[sanitizedKey] = sanitizeObject(obj[key], depth + 1);
     }
     
-    // Convert to regular object to maintain compatibility
-    return JSON.parse(JSON.stringify(sanitized));
+    // Return null-prototype object to prevent prototype pollution
+    // Note: This maintains security by ensuring no prototype chain access
+    return sanitized;
   }
   
   // Handle primitive values

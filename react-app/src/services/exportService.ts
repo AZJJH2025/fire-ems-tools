@@ -142,7 +142,12 @@ export class ExportService {
         throw error;
       }
     } else {
-      console.log('[Export] Using basic layout - no custom elements');
+      console.log('[Export] Using basic layout - adding title/subtitle overlays');
+      
+      // Apply basic title/subtitle overlays for basic layout mode
+      if ((basic.includeTitle && basic.title) || basic.subtitle) {
+        finalCanvas = await this.addBasicTextOverlays(canvas, configuration);
+      }
     }
 
     onProgress?.(80, 'Generating final image...');
@@ -270,6 +275,67 @@ export class ExportService {
     _onProgress?: (progress: number, step: string) => void
   ): Promise<void> {
     throw new Error('GIS format export is not yet implemented. Please use PNG or PDF format.');
+  }
+
+  /**
+   * Add basic title/subtitle overlays to canvas for basic layout mode
+   */
+  private static async addBasicTextOverlays(
+    mapCanvas: HTMLCanvasElement,
+    configuration: ExportConfiguration
+  ): Promise<HTMLCanvasElement> {
+    const { basic } = configuration;
+    
+    // Calculate title/subtitle height requirements
+    let titleHeight = 0;
+    let subtitleHeight = 0;
+    let totalHeaderHeight = 0;
+    
+    if (basic.includeTitle && basic.title) {
+      titleHeight = 60; // Space for title
+      totalHeaderHeight += titleHeight + 20; // Add padding
+    }
+    
+    if (basic.subtitle) {
+      subtitleHeight = 40; // Space for subtitle
+      totalHeaderHeight += subtitleHeight + 10; // Add padding
+    }
+    
+    // Create new canvas with extra space for title/subtitle
+    const overlayCanvas = document.createElement('canvas');
+    const ctx = overlayCanvas.getContext('2d')!;
+    
+    overlayCanvas.width = mapCanvas.width;
+    overlayCanvas.height = mapCanvas.height + totalHeaderHeight;
+    
+    // Fill with white background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+    
+    let currentY = 20; // Start with top padding
+    
+    // Add title if specified
+    if (basic.includeTitle && basic.title) {
+      ctx.fillStyle = '#333333';
+      ctx.font = 'bold 48px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(basic.title, overlayCanvas.width / 2, currentY + 48);
+      currentY += titleHeight + 10;
+    }
+    
+    // Add subtitle if specified
+    if (basic.subtitle) {
+      ctx.fillStyle = '#666666';
+      ctx.font = '32px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(basic.subtitle, overlayCanvas.width / 2, currentY + 32);
+      currentY += subtitleHeight + 10;
+    }
+    
+    // Draw the map below the title/subtitle
+    ctx.drawImage(mapCanvas, 0, currentY);
+    
+    return overlayCanvas;
   }
 
   /**
