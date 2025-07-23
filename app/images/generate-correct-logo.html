@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FireEMS.AI Logo - Correct Version</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body { 
+            margin: 0; 
+            padding: 20px; 
+            background: #f0f0f0; 
+            font-family: Arial, sans-serif;
+        }
+        .preview {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .homepage-header {
+            background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+            padding: 15px 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .material-icon {
+            font-family: 'Material Icons';
+            font-size: 32px;
+            color: white;
+            margin-right: 16px;
+        }
+        .homepage-text {
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview">
+        <h3>Current Homepage Header Design:</h3>
+        <div class="homepage-header">
+            <span class="material-icon">local_fire_department</span>
+            <span class="homepage-text">FireEMS.AI</span>
+        </div>
+        <p><strong>Icon:</strong> Material-UI LocalFireDepartment icon (standard fire department badge)</p>
+        <p><strong>Background:</strong> Blue gradient (#1976d2 to #1565c0)</p>
+    </div>
+    
+    <canvas id="logoCanvas" width="400" height="120" style="border: 1px solid #ccc; margin-bottom: 20px;"></canvas>
+    <br>
+    <button onclick="downloadLogo()" style="padding: 12px 24px; background: #1976d2; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer;">Download PNG for Stripe</button>
+    
+    <script>
+        const canvas = document.getElementById('logoCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Draw background with gradient matching homepage
+        const gradient = ctx.createLinearGradient(0, 0, 400, 120);
+        gradient.addColorStop(0, '#1976d2');
+        gradient.addColorStop(1, '#1565c0');
+        
+        ctx.fillStyle = gradient;
+        ctx.roundRect(0, 0, 400, 120, 8);
+        ctx.fill();
+        
+        // Draw Material Design Fire Department badge icon (simplified version)
+        // This approximates the LocalFireDepartment Material-UI icon
+        ctx.fillStyle = 'white';
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 3;
+        
+        // Badge outline (shield shape)
+        ctx.beginPath();
+        ctx.moveTo(60, 25);
+        ctx.lineTo(75, 25);
+        ctx.lineTo(82, 30);
+        ctx.lineTo(82, 45);
+        ctx.lineTo(78, 55);
+        ctx.lineTo(71, 65);
+        ctx.lineTo(60, 70);
+        ctx.lineTo(49, 65);
+        ctx.lineTo(42, 55);
+        ctx.lineTo(38, 45);
+        ctx.lineTo(38, 30);
+        ctx.lineTo(45, 25);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Fire department cross/maltese cross inside
+        ctx.fillStyle = '#1976d2';
+        
+        // Horizontal bar
+        ctx.fillRect(48, 42, 24, 6);
+        // Vertical bar  
+        ctx.fillRect(57, 33, 6, 24);
+        
+        // Small decorative elements at cross ends
+        ctx.beginPath();
+        ctx.arc(51, 45, 3, 0, Math.PI * 2);
+        ctx.arc(69, 45, 3, 0, Math.PI * 2);
+        ctx.arc(60, 36, 3, 0, Math.PI * 2);
+        ctx.arc(60, 54, 3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw text
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 36px Arial, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('FireEMS.AI', 110, 60);
+        
+        function downloadLogo() {
+            const link = document.createElement('a');
+            link.download = 'fireems-ai-logo-stripe.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            
+            // Show success message
+            const button = document.querySelector('button');
+            const originalText = button.textContent;
+            button.textContent = '✅ Downloaded!';
+            button.style.background = '#22c55e';
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = '#1976d2';
+            }, 2000);
+        }
+        
+        // Auto-download after 1 second
+        setTimeout(() => {
+            console.log('Auto-downloading logo in 1 second...');
+            downloadLogo();
+        }, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FireEMS.AI Logo Generator</title>
+</head>
+<body>
+    <canvas id="logoCanvas" width="400" height="120" style="border: 1px solid #ccc;"></canvas>
+    <br><br>
+    <button onclick="downloadLogo()">Download PNG for Stripe</button>
+    
+    <script>
+        const canvas = document.getElementById('logoCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Draw background with gradient
+        const gradient = ctx.createLinearGradient(0, 0, 400, 120);
+        gradient.addColorStop(0, '#4A90E2');
+        gradient.addColorStop(1, '#357ABD');
+        
+        ctx.fillStyle = gradient;
+        ctx.roundRect(0, 0, 400, 120, 8);
+        ctx.fill();
+        
+        // Draw flame icon
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.moveTo(60, 90);
+        ctx.bezierCurveTo(35, 90, 25, 70, 35, 55);
+        ctx.bezierCurveTo(30, 50, 35, 40, 45, 45);
+        ctx.bezierCurveTo(50, 35, 60, 40, 60, 50);
+        ctx.bezierCurveTo(70, 45, 75, 55, 70, 60);
+        ctx.bezierCurveTo(80, 65, 75, 80, 65, 85);
+        ctx.bezierCurveTo(70, 95, 60, 100, 60, 90);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Draw inner flame
+        ctx.fillStyle = '#4A90E2';
+        ctx.globalAlpha = 0.6;
+        ctx.beginPath();
+        ctx.moveTo(60, 85);
+        ctx.bezierCurveTo(43, 85, 40, 70, 45, 60);
+        ctx.bezierCurveTo(47, 55, 53, 58, 55, 65);
+        ctx.bezierCurveTo(57, 60, 63, 62, 63, 68);
+        ctx.bezierCurveTo(67, 65, 68, 75, 63, 78);
+        ctx.bezierCurveTo(65, 85, 60, 90, 60, 85);
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+        
+        // Draw text
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 36px Arial, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('FireEMS.AI', 110, 60);
+        
+        function downloadLogo() {
+            const link = document.createElement('a');
+            link.download = 'fireems-ai-logo.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // Auto-download after 1 second
+        setTimeout(downloadLogo, 1000);
+    </script>
+</body>
+</html>

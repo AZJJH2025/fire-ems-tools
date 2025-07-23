@@ -52,10 +52,11 @@ const pricingPlans: PricingPlan[] = [
   {
     id: 'trial',
     name: 'Free Trial',
-    price: '30 Days Free',
+    price: '14 Days Free',
     badge: 'Start Here',
     features: [
       'Full access to all 6 tools',
+      'AI data quality analysis',
       'Unlimited PDF reports',
       'All professional features',
       'No credit card required',
@@ -66,9 +67,11 @@ const pricingPlans: PricingPlan[] = [
   {
     id: 'professional',
     name: 'Professional',
-    price: '$59/month',
+    price: '$79/month',
     features: [
       'Everything in trial',
+      'Advanced AI insights',
+      'AI-powered recommendations',
       'Unlimited departments',
       'Template sharing',
       'Priority support',
@@ -405,7 +408,7 @@ const SignUpPage: React.FC = () => {
 
             <Box sx={{ mt: 4, p: 3, bgcolor: '#f5f5f5', borderRadius: 2 }}>
               <Typography variant="body2" color="text.secondary" align="center">
-                Start with a full 30-day free trial - no credit card required. Cancel anytime or continue with our affordable Professional plan.
+                Start with a full 14-day free trial - no credit card required. Cancel anytime or continue with our affordable Professional plan.
               </Typography>
             </Box>
           </Box>

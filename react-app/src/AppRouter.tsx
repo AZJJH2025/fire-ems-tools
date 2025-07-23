@@ -100,7 +100,17 @@ const AppRouter: React.FC = () => {
                 <LandingPage />
               </PublicRoute>
             } />
+            <Route path="/app/landing" element={
+              <PublicRoute>
+                <LandingPage />
+              </PublicRoute>
+            } />
             <Route path="/beta-signup" element={
+              <PublicRoute>
+                <BetaSignupForm />
+              </PublicRoute>
+            } />
+            <Route path="/app/beta-signup" element={
               <PublicRoute>
                 <BetaSignupForm />
               </PublicRoute>
