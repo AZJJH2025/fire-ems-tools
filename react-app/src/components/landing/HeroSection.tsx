@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Container, Typography, Button, Stack } from '@mui/material';
-import { WhatshotRounded, TrendingUpRounded, SecurityRounded } from '@mui/icons-material';
+import { LocalFireDepartment, TrendingUpRounded, SecurityRounded } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { trackCTA } from '../../utils/analytics';
 
@@ -46,7 +46,7 @@ const HeroSection: React.FC = () => {
           mb: 6,
           justifyContent: 'center'
         }}>
-          <WhatshotRounded sx={{ fontSize: 40, color: '#ff6b35' }} />
+          <LocalFireDepartment sx={{ fontSize: 40, color: 'white' }} />
           <Typography variant="h5" sx={{ fontWeight: 'bold', letterSpacing: 1 }}>
             FireEMS.AI
           </Typography>
@@ -102,7 +102,7 @@ const HeroSection: React.FC = () => {
               <Typography variant="body2" sx={{ opacity: 0.9 }}>NFPA Compliance</Typography>
             </Box>
             <Box sx={{ textAlign: 'center' }}>
-              <WhatshotRounded sx={{ fontSize: 48, mb: 1, color: '#f44336' }} />
+              <LocalFireDepartment sx={{ fontSize: 48, mb: 1, color: '#f44336' }} />
               <Typography variant="body2" sx={{ opacity: 0.9 }}>ISO Optimization</Typography>
             </Box>
           </Stack>

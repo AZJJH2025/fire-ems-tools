@@ -7,6 +7,7 @@ interface PublicRouteProps {
   children: React.ReactNode;
   redirectTo?: string;
   restrictWhenAuthenticated?: boolean;
+  skipAuthCheck?: boolean; // Skip authentication checking entirely for landing pages
 }
 
 /**
@@ -20,9 +21,11 @@ interface PublicRouteProps {
 const PublicRoute: React.FC<PublicRouteProps> = ({ 
   children, 
   redirectTo = '/',
-  restrictWhenAuthenticated = false 
+  restrictWhenAuthenticated = false,
+  skipAuthCheck = false
 }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  // Skip authentication check entirely for landing pages and other truly public pages
+  const { isAuthenticated, isLoading } = skipAuthCheck ? { isAuthenticated: false, isLoading: false } : useAuth();
   const location = useLocation();
 
   // Show loading spinner while checking authentication

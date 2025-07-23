@@ -6,8 +6,8 @@ import ProblemSection from './ProblemSection';
 import SolutionSection from './SolutionSection';
 import FeaturesGrid from './FeaturesGrid';
 import PartnershipSection from './PartnershipSection';
-import TestimonialsSection from './TestimonialsSection';
 import CTASection from './CTASection';
+import BetaSignupForm from './BetaSignupForm';
 
 const LandingPage: React.FC = () => {
   useEffect(() => {
@@ -38,8 +38,8 @@ const LandingPage: React.FC = () => {
       <SolutionSection />
       <FeaturesGrid />
       <PartnershipSection />
-      <TestimonialsSection />
       <CTASection />
+      <BetaSignupForm />
     </Box>
   );
 };

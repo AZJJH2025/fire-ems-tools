@@ -64,7 +64,10 @@ export const useAuth = (): AuthState => {
         });
       }
     } catch (error) {
-      console.error('Error checking auth status:', error);
+      // Only log errors if they're not network/endpoint related (to avoid console spam on landing pages)
+      if (error instanceof Error && !error.message.includes('AbortError') && !error.message.includes('Failed to fetch')) {
+        console.error('Error checking auth status:', error);
+      }
       // Always set loading to false to prevent hanging UI
       setAuthState({
         user: null,

@@ -32,9 +32,9 @@ const SolutionSection: React.FC = () => {
       bgcolor: 'background.default'
     }}>
       <Container maxWidth="lg">
-        <Grid container spacing={8} alignItems="center">
+        <Grid container spacing={8} alignItems="center" justifyContent="center">
           {/* Left Column - Content */}
-          <Grid item xs={12} lg={7}>
+          <Grid item xs={12} lg={6}>
             <Typography 
               variant="h2" 
               sx={{ 
@@ -102,7 +102,7 @@ const SolutionSection: React.FC = () => {
           </Grid>
 
           {/* Right Column - Chief Photo Placeholder */}
-          <Grid item xs={12} lg={5}>
+          <Grid item xs={12} lg={6}>
             <Box sx={{ 
               textAlign: 'center',
               p: 4,

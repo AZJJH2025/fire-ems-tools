@@ -96,22 +96,22 @@ const AppRouter: React.FC = () => {
             
             {/* Landing page routes - public */}
             <Route path="/landing" element={
-              <PublicRoute>
+              <PublicRoute skipAuthCheck={true}>
                 <LandingPage />
               </PublicRoute>
             } />
             <Route path="/app/landing" element={
-              <PublicRoute>
+              <PublicRoute skipAuthCheck={true}>
                 <LandingPage />
               </PublicRoute>
             } />
             <Route path="/beta-signup" element={
-              <PublicRoute>
+              <PublicRoute skipAuthCheck={true}>
                 <BetaSignupForm />
               </PublicRoute>
             } />
             <Route path="/app/beta-signup" element={
-              <PublicRoute>
+              <PublicRoute skipAuthCheck={true}>
                 <BetaSignupForm />
               </PublicRoute>
             } />
