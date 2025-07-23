@@ -52,7 +52,7 @@ const PartnershipSection: React.FC = () => {
 
         <Grid container spacing={6} justifyContent="center">
           {/* Joe - Fire Chief */}
-          <Grid item xs={12} md={5}>
+          <Grid size={{ xs: 12, md: 5 }}>
             <Card 
               sx={{ 
                 height: '100%',
@@ -139,7 +139,7 @@ const PartnershipSection: React.FC = () => {
           </Grid>
 
           {/* Dena - PhD Public Policy */}
-          <Grid item xs={12} md={5}>
+          <Grid size={{ xs: 12, md: 5 }}>
             <Card 
               sx={{ 
                 height: '100%',

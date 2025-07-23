@@ -111,7 +111,7 @@ const CTASection: React.FC = () => {
         {/* Urgency Points */}
         <Grid container spacing={4} sx={{ mb: 8 }} justifyContent="center">
           {urgencyPoints.map((point, index) => (
-            <Grid item xs={12} md={4} key={index}>
+            <Grid size={{ xs: 12, md: 4 }} key={index}>
               <Card 
                 sx={{ 
                   height: '100%',

@@ -57,7 +57,7 @@ const ProblemSection: React.FC = () => {
 
         <Grid container spacing={4} sx={{ mb: 6 }}>
           {painPoints.map((point, index) => (
-            <Grid item xs={12} md={4} key={index}>
+            <Grid size={{ xs: 12, md: 4 }} key={index}>
               <Card 
                 sx={{ 
                   height: '100%',

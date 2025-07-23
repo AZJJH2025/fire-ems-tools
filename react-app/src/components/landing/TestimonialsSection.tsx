@@ -64,7 +64,7 @@ const TestimonialsSection: React.FC = () => {
 
         <Grid container spacing={4}>
           {placeholderTestimonials.map((testimonial) => (
-            <Grid item xs={12} md={4} key={testimonial.id}>
+            <Grid size={{ xs: 12, md: 4 }} key={testimonial.id}>
               <Card 
                 sx={{ 
                   height: '100%',

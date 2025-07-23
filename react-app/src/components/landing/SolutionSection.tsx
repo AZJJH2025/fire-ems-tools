@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Container, Typography, Grid, List, ListItem, ListItemIcon, ListItemText, Avatar } from '@mui/material';
-import { CheckCircleRounded, PsychologyRounded, AssessmentRounded, SpeedRounded, SecurityRounded } from '@mui/icons-material';
+import { PsychologyRounded, AssessmentRounded, SpeedRounded, SecurityRounded } from '@mui/icons-material';
 
 const SolutionSection: React.FC = () => {
   const benefits = [
@@ -34,7 +34,7 @@ const SolutionSection: React.FC = () => {
       <Container maxWidth="lg">
         <Grid container spacing={8} alignItems="center" justifyContent="center">
           {/* Left Column - Content */}
-          <Grid item xs={12} lg={6}>
+          <Grid size={{ xs: 12, lg: 6 }}>
             <Typography 
               variant="h2" 
               sx={{ 
@@ -102,7 +102,7 @@ const SolutionSection: React.FC = () => {
           </Grid>
 
           {/* Right Column - Chief Photo Placeholder */}
-          <Grid item xs={12} lg={6}>
+          <Grid size={{ xs: 12, lg: 6 }}>
             <Box sx={{ 
               textAlign: 'center',
               p: 4,

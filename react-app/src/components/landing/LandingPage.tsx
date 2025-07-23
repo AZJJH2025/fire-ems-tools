@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Box, Container } from '@mui/material';
+import { Box } from '@mui/material';
 import { trackPageView, trackFunnel } from '../../utils/analytics';
 import HeroSection from './HeroSection';
 import ProblemSection from './ProblemSection';

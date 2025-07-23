@@ -1,11 +1,9 @@
 import React from 'react';
 import { Box, Container, Typography, Button, Stack } from '@mui/material';
 import { LocalFireDepartment, TrendingUpRounded, SecurityRounded } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
 import { trackCTA } from '../../utils/analytics';
 
 const HeroSection: React.FC = () => {
-  const navigate = useNavigate();
 
   const handleBetaAccess = () => {
     // Analytics tracking
