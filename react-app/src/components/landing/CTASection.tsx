@@ -66,8 +66,8 @@ const CTASection: React.FC = () => {
               mx: 'auto'
             }}
           >
-            Join our early access beta and shape the future of fire data analytics. 
-            Free access during beta with direct input on development priorities.
+            Join our exclusive beta program and shape the future of fire data analytics. 
+            <strong>Selected departments receive 6 months of premium access — 100% free.</strong>
           </Typography>
 
           <Button
@@ -92,7 +92,7 @@ const CTASection: React.FC = () => {
               transition: 'all 0.3s ease-in-out',
             }}
           >
-            Request Access — Free During Beta
+            Request Access — 6 Months Premium Free
           </Button>
 
           <Typography 
@@ -104,7 +104,7 @@ const CTASection: React.FC = () => {
               fontWeight: 500
             }}
           >
-            ⏰ Limited beta spots available • 🔒 No credit card required • 🎯 Early access priority
+            ⏰ Limited beta spots • 🔒 No credit card required • 🎯 6 months premium access free
           </Typography>
         </Box>
 
@@ -172,7 +172,7 @@ const CTASection: React.FC = () => {
               mb: 3
             }}
           >
-            Don't Wait for the Next Audit Cycle
+            Exclusive Beta: 6 Months Premium Access Free
           </Typography>
           
           <Typography 
@@ -186,8 +186,9 @@ const CTASection: React.FC = () => {
               mb: 4
             }}
           >
-            Every day you wait is another day of manual data work, missed optimization opportunities, 
-            and presenting weak analytics to decision-makers who control your department's future.
+            Every day you wait is another day without professional-grade analytics that could secure 
+            funding, improve compliance, and strengthen your department's strategic position. Selected 
+            departments get 6 months to prove ROI at zero cost.
           </Typography>
 
           <Typography 
@@ -198,7 +199,7 @@ const CTASection: React.FC = () => {
               fontSize: '1.1rem'
             }}
           >
-            Beta access is limited. Reserve your spot today.
+            Exclusive beta access with 6 months free premium. Limited spots available — apply today.
           </Typography>
         </Box>
       </Container>

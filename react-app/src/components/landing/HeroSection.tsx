@@ -82,6 +82,7 @@ const HeroSection: React.FC = () => {
             }}
           >
             Smarter insights. Faster compliance. Better planning. FireEMS.ai transforms your data into strategic advantage.
+            <br /><strong>Selected departments receive 6 months of premium access — 100% free.</strong>
           </Typography>
 
           {/* Visual Icons */}
@@ -139,7 +140,7 @@ const HeroSection: React.FC = () => {
               fontSize: '0.9rem'
             }}
           >
-            Free during beta • Built by fire chiefs • Early access limited
+            6 months premium free • Built by fire chiefs • Limited beta spots
           </Typography>
         </Box>
       </Container>

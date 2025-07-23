@@ -179,7 +179,7 @@ const BetaSignupForm: React.FC = () => {
             }}
           >
             Join select fire departments testing the future of fire service analytics. 
-            Free during beta with direct input on feature development.
+            <strong>Selected departments receive 6 months of premium access — 100% free</strong> with direct input on feature development.
           </Typography>
         </Box>
 
@@ -199,6 +199,36 @@ const BetaSignupForm: React.FC = () => {
                 {submitMessage}
               </Alert>
             )}
+
+            <Box sx={{ 
+              mb: 3, 
+              p: 2, 
+              bgcolor: 'rgba(25, 118, 210, 0.1)', 
+              borderRadius: 2,
+              border: '1px solid rgba(25, 118, 210, 0.3)'
+            }}>
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  color: 'primary.main',
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                  fontSize: '1.1rem'
+                }}
+              >
+                🎯 Selected departments receive 6 months of premium access — 100% free
+              </Typography>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  color: 'text.secondary',
+                  textAlign: 'center',
+                  mt: 1
+                }}
+              >
+                Prove ROI and value with zero investment. No contracts, no commitments.
+              </Typography>
+            </Box>
 
             <form onSubmit={handleSubmit}>
               <Grid container spacing={3}>
