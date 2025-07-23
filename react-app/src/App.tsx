@@ -8,6 +8,7 @@ import PreviewValidationContainer from './components/formatter/Preview/PreviewVa
 import ExportContainer from './components/formatter/Export/ExportContainer';
 import logger from './utils/logger';
 import { seedVendorTemplates } from './services/vendorTemplates';
+import { setupAnalytics } from './utils/analytics';
 
 const steps = ['Upload File', 'Map Fields', 'Preview & Validate', 'Export'];
 
@@ -30,12 +31,15 @@ const App: React.FC = () => {
     return 'FireEMS Data Formatter';
   };
 
-  // Set browser tab title dynamically and seed vendor templates
+  // Set browser tab title dynamically, initialize analytics, and seed vendor templates
   React.useEffect(() => {
     const title = getAppTitle();
     logger.debug('[DEBUG] Setting document.title to:', title);
     document.title = title;
     logger.debug('[DEBUG] document.title is now:', document.title);
+    
+    // Initialize Google Analytics
+    setupAnalytics();
     
     // Seed vendor templates on app startup
     try {

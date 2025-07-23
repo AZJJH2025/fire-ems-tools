@@ -1669,6 +1669,7 @@ def create_app(config_name='default'):
         from routes.main import bp as main_bp
         from routes.auth import bp as auth_bp
         from routes.api import bp as api_bp
+        from routes.beta_signup import beta_signup_bp
         from routes.dashboards import bp as dashboards_bp
         from routes.tools import bp as tools_bp
         from routes.admin import bp as admin_bp
@@ -1695,6 +1696,7 @@ def create_app(config_name='default'):
         app.register_blueprint(main_bp)
         app.register_blueprint(auth_bp)
         app.register_blueprint(api_bp)
+        app.register_blueprint(beta_signup_bp)
         app.register_blueprint(dashboards_bp)
         app.register_blueprint(tools_bp)
         app.register_blueprint(admin_bp)

@@ -23,6 +23,10 @@ const ISOCreditContainer = React.lazy(() => import('./components/isoCredit/ISOCr
 const StationCoverageContainer = React.lazy(() => import('./components/stationCoverage/StationCoverageContainer'));
 const FireEMSHomepage = React.lazy(() => import('./components/homepage/FireEMSHomepage'));
 
+// Landing page components
+const LandingPage = React.lazy(() => import('./components/landing/LandingPage'));
+const BetaSignupForm = React.lazy(() => import('./components/landing/BetaSignupForm'));
+
 // Authentication components
 const SignUpPage = React.lazy(() => import('./components/auth/SignUpPage'));
 const LoginPage = React.lazy(() => import('./components/auth/LoginPage'));
@@ -87,6 +91,18 @@ const AppRouter: React.FC = () => {
             <Route path="/" element={
               <PublicRoute>
                 <FireEMSHomepage />
+              </PublicRoute>
+            } />
+            
+            {/* Landing page routes - public */}
+            <Route path="/landing" element={
+              <PublicRoute>
+                <LandingPage />
+              </PublicRoute>
+            } />
+            <Route path="/beta-signup" element={
+              <PublicRoute>
+                <BetaSignupForm />
               </PublicRoute>
             } />
             
