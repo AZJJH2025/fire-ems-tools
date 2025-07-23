@@ -115,6 +115,55 @@ def register_react_routes(app):
         
         # Use template system with nonce injection and dynamic asset detection
         return render_template('react_app.html', main_asset=main_asset)
+
+    # Landing page routes that React Router expects
+    @app.route('/app/landing')
+    def app_landing():
+        """Serve the React landing page at /app/landing"""
+        from flask import render_template
+        from utils.asset_utils import get_main_asset_file
+        
+        # Get the current main asset file dynamically
+        main_asset = get_main_asset_file()
+        
+        # Use template system with nonce injection and dynamic asset detection
+        return render_template('react_app.html', main_asset=main_asset)
+    
+    @app.route('/app/beta-signup')
+    def app_beta_signup():
+        """Serve the React beta signup page at /app/beta-signup"""
+        from flask import render_template
+        from utils.asset_utils import get_main_asset_file
+        
+        # Get the current main asset file dynamically
+        main_asset = get_main_asset_file()
+        
+        # Use template system with nonce injection and dynamic asset detection
+        return render_template('react_app.html', main_asset=main_asset)
+    
+    @app.route('/landing')
+    def landing():
+        """Serve the landing page at /landing (without /app prefix)"""
+        from flask import render_template
+        from utils.asset_utils import get_main_asset_file
+        
+        # Get the current main asset file dynamically
+        main_asset = get_main_asset_file()
+        
+        # Use template system with nonce injection and dynamic asset detection
+        return render_template('react_app.html', main_asset=main_asset)
+    
+    @app.route('/beta-signup')
+    def beta_signup():
+        """Serve the beta signup page at /beta-signup (without /app prefix)"""
+        from flask import render_template
+        from utils.asset_utils import get_main_asset_file
+        
+        # Get the current main asset file dynamically
+        main_asset = get_main_asset_file()
+        
+        # Use template system with nonce injection and dynamic asset detection
+        return render_template('react_app.html', main_asset=main_asset)
     
     # Universal HSTS middleware - ensures HSTS headers on ALL responses
     @app.before_request  
