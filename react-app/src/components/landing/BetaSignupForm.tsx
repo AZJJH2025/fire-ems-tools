@@ -132,7 +132,19 @@ const BetaSignupForm: React.FC = () => {
           position: ''
         });
       } else {
-        throw new Error('Failed to submit form');
+        // Handle specific error responses
+        const errorData = await response.json();
+        
+        if (response.status === 409) {
+          // Email already registered - show as success since they're already on the list
+          setSubmitStatus('success');
+          setSubmitMessage(errorData.message || 'This email is already on our beta list. We\'ll be in touch soon!');
+        } else {
+          // Other errors (400, 500, etc.)
+          setSubmitStatus('error');
+          setSubmitMessage(errorData.error || 'Something went wrong. Please try again or contact us directly.');
+        }
+        return; // Don't throw error, we handled it
       }
     } catch (error) {
       console.error('Form submission error:', error);
