@@ -31,31 +31,20 @@ export default defineConfig({
           const filePath = path.join(assetsDir, file);
           let content = fs.readFileSync(filePath, 'utf8');
           
-          // Replace all variations of assets/ references
-          content = content.replace(/"\/assets\//g, '"/app/assets/');
-          content = content.replace(/\"assets\//g, '"/app/assets/');
-          content = content.replace(/\/assets\//g, '/app/assets/');
-          content = content.replace(/assets\//g, '/app/assets/');
-          content = content.replace(/\\"assets\//g, '\\"/app/assets/');
+          // For root domain serving, keep assets paths as /assets/
+          // No need to rewrite paths - they should stay as /assets/
           
           fs.writeFileSync(filePath, content);
         });
         
-        // Fix index.html file
-        const indexPath = path.join(__dirname, 'dist/index.html');
-        let indexContent = fs.readFileSync(indexPath, 'utf8');
-        
-        // Replace /assets/ with /app/assets/ in HTML
-        indexContent = indexContent.replace(/src="\/assets\//g, 'src="/app/assets/');
-        indexContent = indexContent.replace(/href="\/assets\//g, 'href="/app/assets/');
-        
-        fs.writeFileSync(indexPath, indexContent);
+        // For root domain serving, index.html paths should stay as /assets/
+        // No need to rewrite HTML asset paths
         
         console.log('Fixed asset paths in JavaScript bundles and index.html');
       }
     }
   ],
-  base: '/app/',
+  base: '/',
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),

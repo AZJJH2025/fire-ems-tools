@@ -14,6 +14,30 @@ logger = logging.getLogger(__name__)
 # Create blueprint for React app
 bp = Blueprint('react_app', __name__)
 
+@bp.route('/')
+@bp.route('/<path:path>')
+def react_app_root(path=''):
+    """
+    Serve the React application for root domain routes
+    This handles the main FireEMS.ai domain without /app prefix
+    """
+    try:
+        from flask import render_template
+        from utils.asset_utils import get_main_asset_file
+        
+        # Get the current main asset file dynamically
+        main_asset = get_main_asset_file()
+        
+        # Log the serving
+        logger.info(f"Serving React app at root path: /{path}")
+        
+        # Use template system with CSP nonce injection for security
+        return render_template('react_app.html', main_asset=main_asset)
+    except Exception as e:
+        logger.error(f"Error serving React app at root: {str(e)}")
+        from flask import abort
+        abort(500)
+
 def get_react_build_dir():
     """Get the React build directory path"""
     # Check if we're in a Render environment or local development
@@ -58,9 +82,10 @@ def react_app(path=''):
         logger.error(f"Error serving React app: {str(e)}")
         abort(500)
 
+@bp.route('/assets/<path:filename>')
 @bp.route('/app/assets/<path:filename>')
 def react_app_assets(filename):
-    """Serve React app static assets"""
+    """Serve React app static assets (both root and /app paths for compatibility)"""
     try:
         react_build_dir = get_react_build_dir()
         assets_dir = os.path.join(react_build_dir, 'assets')

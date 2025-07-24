@@ -81,7 +81,7 @@ const ContextAwareAIChat: React.FC = () => {
  */
 const AppRouter: React.FC = () => {
   return (
-    <BrowserRouter basename="/app">
+    <BrowserRouter>
       <CssBaseline />
       <ErrorBoundaryProvider>
         <RouteErrorBoundary>
