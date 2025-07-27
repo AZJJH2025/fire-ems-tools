@@ -79,6 +79,7 @@ class SecurityHeadersMiddleware:
                 "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com",
                 "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://tile.openstreetmap.org",
                 "connect-src 'self' blob: https://api.github.com",  # For dependency checks
+                "frame-src 'self' https://www.youtube.com https://youtube.com",  # Allow YouTube embeds
                 "object-src 'none'",
                 "base-uri 'self'",
                 "form-action 'self'",
@@ -108,6 +109,7 @@ class SecurityHeadersMiddleware:
                 "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com",  # Allow Google Fonts and Font Awesome
                 "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://tile.openstreetmap.org",  # Allow OpenStreetMap tiles and subdomains
                 "connect-src 'self' blob: https://api.github.com",
+                "frame-src 'self' https://www.youtube.com https://youtube.com",  # Allow YouTube embeds
                 "object-src 'none'",
                 "base-uri 'self'",
                 "form-action 'self'",
