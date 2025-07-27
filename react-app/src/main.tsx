@@ -9,8 +9,8 @@ import { theme } from './theme';
 // Initialize security configuration
 import { initializeSecurity } from './security/contentSecurityPolicy';
 
-// AGGRESSIVE CACHE BUST - FORCE RENDER TO SERVE LATEST BUILD
-console.log('🔥🔥🔥 MAIN.TSX CACHE BUST JULY 12 2025 22:50 - FORCE NEW BUILD');
+// AGGRESSIVE CACHE BUST - FORCE RENDER TO SERVE LATEST BUILD - CHROME FIX JULY 27
+console.log('🔥🔥🔥 MAIN.TSX CACHE BUST JULY 27 2025 - CHROME CACHING FIX - BUILD 2');
 
 // Initialize security systems
 initializeSecurity();
