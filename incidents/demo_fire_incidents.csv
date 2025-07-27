@@ -1,0 +1,21 @@
+Incident ID,Call Received Date/Time,Dispatch Time,En Route Time,Arrival Time,Clear Time,Incident Type,Address,City,State,Zip Code,Latitude,Longitude,Responding Unit,Priority,Response Category,NFIRS Code
+2025-001,01/15/2025 08:23:45,08:24:15,08:25:30,08:29:45,08:47:22,Structure Fire,1234 Oak Street,Phoenix,AZ,85001,33.4484,-112.0740,Engine 12,High,Fire Suppression,111
+2025-002,01/15/2025 10:45:12,10:45:42,10:47:15,10:52:30,11:15:45,Medical Emergency,5678 Main Avenue,Phoenix,AZ,85003,33.4734,-112.0879,Rescue 5,High,EMS,321
+2025-003,01/15/2025 14:15:33,14:16:05,14:17:45,14:21:12,14:35:20,Vehicle Accident,2890 Central Blvd,Phoenix,AZ,85006,33.4619,-112.0640,Engine 8,Medium,Rescue,324
+2025-004,01/15/2025 16:30:21,16:30:51,16:32:10,16:36:45,16:58:30,Brush Fire,7523 Desert Road,Phoenix,AZ,85014,33.5206,-111.9370,Engine 22,High,Fire Suppression,142
+2025-005,01/15/2025 19:12:45,19:13:20,19:14:35,19:18:22,19:42:15,Cardiac Arrest,3456 Elm Drive,Phoenix,AZ,85008,33.4342,-112.0123,Rescue 3,High,EMS,322
+2025-006,01/16/2025 06:45:18,06:45:55,06:47:20,06:51:30,07:12:45,Kitchen Fire,8901 Pine Street,Phoenix,AZ,85012,33.5084,-111.9834,Engine 15,High,Fire Suppression,113
+2025-007,01/16/2025 11:23:42,11:24:12,11:25:45,11:29:33,11:51:20,Overdose,1567 Maple Avenue,Phoenix,AZ,85007,33.4396,-112.0456,Rescue 7,High,EMS,381
+2025-008,01/16/2025 13:56:30,13:57:05,13:58:25,14:03:12,14:28:45,Gas Leak,4321 Cedar Lane,Phoenix,AZ,85009,33.4156,-112.0821,Engine 9,High,Hazmat,424
+2025-009,01/16/2025 15:41:22,15:41:52,15:43:15,15:47:45,16:05:30,Fall Injury,9876 Birch Court,Phoenix,AZ,85013,33.5142,-111.9512,Rescue 12,Medium,EMS,351
+2025-010,01/16/2025 20:15:45,20:16:20,20:17:55,20:22:10,20:48:33,Apartment Fire,2468 Valley Road,Phoenix,AZ,85015,33.4892,-111.9743,Engine 18,High,Fire Suppression,123
+2025-011,01/17/2025 07:30:12,07:30:45,07:32:20,07:36:45,07:55:22,Chest Pain,1357 Summit Drive,Phoenix,AZ,85016,33.5034,-111.9456,Rescue 9,High,EMS,320
+2025-012,01/17/2025 09:45:33,09:46:08,09:47:30,09:51:15,10:14:45,Dumpster Fire,8642 Ridge Avenue,Phoenix,AZ,85017,33.4587,-112.1123,Engine 6,Medium,Fire Suppression,151
+2025-013,01/17/2025 12:18:21,12:18:55,12:20:10,12:24:30,12:41:15,Diabetic Emergency,7531 Canyon Street,Phoenix,AZ,85018,33.5156,-111.9834,Rescue 14,Medium,EMS,331
+2025-014,01/17/2025 14:52:45,14:53:18,14:54:45,14:58:22,15:23:10,Garage Fire,9753 Mesa Court,Phoenix,AZ,85019,33.4823,-112.0234,Engine 11,High,Fire Suppression,116
+2025-015,01/17/2025 17:25:12,17:25:45,17:27:20,17:31:45,17:56:30,Stroke,4682 Park Lane,Phoenix,AZ,85020,33.4712,-111.9987,Rescue 8,High,EMS,323
+2025-016,01/18/2025 08:15:30,08:16:05,08:17:35,08:21:22,08:45:15,Commercial Fire,1593 Business Blvd,Phoenix,AZ,85021,33.5089,-112.0456,Engine 20,High,Fire Suppression,140
+2025-017,01/18/2025 11:42:18,11:42:50,11:44:15,11:48:30,12:12:45,Seizure,7412 Garden Avenue,Phoenix,AZ,85022,33.4634,-111.9723,Rescue 6,Medium,EMS,352
+2025-018,01/18/2025 13:28:45,13:29:20,13:30:55,13:35:12,13:58:30,Electrical Fire,8520 Power Street,Phoenix,AZ,85023,33.5201,-112.0123,Engine 7,High,Fire Suppression,112
+2025-019,01/18/2025 16:05:12,16:05:48,16:07:25,16:11:45,16:34:20,Breathing Problems,3698 Health Drive,Phoenix,AZ,85024,33.4578,-111.9634,Rescue 11,High,EMS,320
+2025-020,01/18/2025 18:33:21,18:33:55,18:35:30,18:39:15,19:02:45,Vehicle Fire,5274 Highway 101,Phoenix,AZ,85025,33.4945,-112.0789,Engine 13,Medium,Fire Suppression,131

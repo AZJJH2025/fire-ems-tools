@@ -1,0 +1,63 @@
+/Users/josephhester/fire-ems-tools/app.py:914: SyntaxWarning: invalid escape sequence '\/'
+  template = """
+2025-07-27 08:04:34,244 - fix_deployment - INFO - Applying emergency deployment fixes...
+2025-07-27 08:04:34,376 - fix_deployment - INFO - Added get_json_field helper function to global namespace
+2025-07-27 08:04:34,376 - fix_deployment - INFO - All fixes have been applied successfully!
+2025-07-27 08:04:34,376 - __main__ - INFO - 🔍 RENDER DETECTION: RENDER=None, SERVICE_ID=None, CWD=/Users/josephhester/fire-ems-tools
+2025-07-27 08:04:34,376 - __main__ - INFO - 🔍 FINAL DECISION: is_render=False
+2025-07-27 08:04:34,380 - config - INFO - Using database URL: sqlite:///fire_ems.db
+2025-07-27 08:04:34,380 - __main__ - INFO - Creating application with deployment fixes...
+2025-07-27 08:04:34,381 - app_utils - WARNING - Using in-memory storage for rate limiting. This is not recommended for production.
+2025-07-27 08:04:34,381 - app_utils - INFO - Initializing Flask-Limiter with storage type: MemoryStorage
+2025-07-27 08:04:34,381 - app_utils - ERROR - Error initializing Limiter: property 'storage' of 'Limiter' object has no setter
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask_limiter/extension.py:324: UserWarning: Using the in-memory storage for tracking rate limits as no storage was explicitly specified. This is not recommended for production use. See: https://flask-limiter.readthedocs.io#configuring-a-storage-backend for documentation about configuring the storage backend.
+  warnings.warn(
+2025-07-27 08:04:34,382 - app_utils - INFO - Rate limiter initialized with storage type: MemoryStorage
+2025-07-27 08:04:34,382 - asset_utils - INFO - Asset utilities initialized successfully
+2025-07-27 08:04:34,389 - email_service - INFO - 📧 Email service ENABLED - SMTP: smtp.gmail.com:587
+2025-07-27 08:04:34,389 - email_service - INFO - 📧 Email from: FireEMS.ai <noreply@fireems.ai>
+2025-07-27 08:04:34,395 - static_middleware - INFO - Registered static file handler middleware
+2025-07-27 08:04:34,395 - static_middleware - INFO - Static folder: /Users/josephhester/fire-ems-tools/static
+2025-07-27 08:04:34,395 - static_middleware - INFO - JavaScript MIME type: application/javascript
+2025-07-27 08:04:34,395 - static_middleware - INFO - Available fallback routes: /direct-static/, /app-static/
+2025-07-27 08:04:34,395 - static_middleware - INFO - MIME type for .js: application/javascript
+2025-07-27 08:04:34,395 - static_middleware - INFO - MIME type for .css: text/css
+2025-07-27 08:04:34,395 - static_middleware - INFO - MIME type for .jsx: application/javascript
+2025-07-27 08:04:34,395 - static_middleware - INFO - MIME type for .json: application/json
+2025-07-27 08:04:34,395 - static_middleware - INFO - Sample static files: []
+2025-07-27 08:04:35,077 - ai_service - INFO - ✅ AI Service initialized successfully
+2025-07-27 08:04:35,078 - routes.ai - INFO - ✅ AI service imported successfully
+2025-07-27 08:04:35,078 - __main__ - INFO - AI blueprint imported successfully
+2025-07-27 08:04:35,125 - __main__ - INFO - AI blueprint registered successfully
+2025-07-27 08:04:35,126 - __main__ - INFO - Successfully registered all route blueprints
+2025-07-27 08:04:35,129 - react_data_formatter_route - INFO - Registered React Data Formatter blueprint
+2025-07-27 08:04:35,129 - __main__ - INFO - Registered React Data Formatter routes
+2025-07-27 08:04:35,130 - fix_deployment - INFO - Column preferences already exists in users
+2025-07-27 08:04:35,130 - fix_deployment - INFO - Column has_temp_password already exists in users
+2025-07-27 08:04:35,130 - fix_deployment - INFO - Column reset_token_hash already exists in users
+2025-07-27 08:04:35,131 - fix_deployment - INFO - Column reset_token_expires already exists in users
+2025-07-27 08:04:35,131 - fix_deployment - INFO - Column webhooks_enabled already exists in departments
+2025-07-27 08:04:35,131 - fix_deployment - INFO - Column webhook_url already exists in departments
+2025-07-27 08:04:35,131 - fix_deployment - INFO - Column webhook_secret already exists in departments
+2025-07-27 08:04:35,131 - fix_deployment - INFO - Column webhook_events already exists in departments
+2025-07-27 08:04:35,131 - fix_deployment - INFO - Column webhook_last_error already exists in departments
+2025-07-27 08:04:35,131 - fix_deployment - INFO - Column webhook_last_success already exists in departments
+2025-07-27 08:04:35,143 - fix_deployment - INFO - Updated webhook secrets for 3 departments
+2025-07-27 08:04:35,143 - fix_deployment - INFO - Database tables fixed successfully
+2025-07-27 08:04:35,146 - __main__ - INFO - Found 1 existing super_admin users
+2025-07-27 08:04:35,146 - __main__ - INFO - Super admin user already exists, skipping creation
+2025-07-27 08:04:35,146 - __main__ - INFO - Application created successfully with all fixes applied
+
+
+--------------------------------------
+Server is starting at http://127.0.0.1:5006
+Access Data Formatter at: http://127.0.0.1:5006/data-formatter-react
+Access Response Time Analyzer at: http://127.0.0.1:5006/response-time-analyzer
+Try new analyzer route: http://127.0.0.1:5006/response-time-analyzer-new
+--------------------------------------
+
+
+ * Serving Flask app 'app'
+ * Debug mode: on
+Address already in use
+Port 5006 is in use by another program. Either identify and stop that program, or start the server with a different port.

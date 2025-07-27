@@ -375,20 +375,29 @@ export class PDFReportGenerator {
         theme: 'grid',
         headStyles: {
           fillColor: [211, 47, 47], // Fire department red
-          textColor: 255
+          textColor: 255,
+          fontSize: 12,
+          fontStyle: 'bold',
+          cellPadding: 5,
+          valign: 'middle',
+          halign: 'center'
         },
         bodyStyles: {
-          fontSize: 10,
-          cellPadding: 2,
+          fontSize: 11,
+          cellPadding: 4,
           lineColor: [240, 240, 240],
-          lineWidth: 0.1
+          lineWidth: 0.1,
+          valign: 'middle',
+          halign: 'left',
+          overflow: 'linebreak',
+          cellWidth: 'wrap'
         },
         columnStyles: {
-          0: { cellWidth: 35 }, // Metric - wider for longer names
-          1: { cellWidth: 30 }, // Department Average
-          2: { cellWidth: 25 }, // NFPA Standard
+          0: { cellWidth: 45 }, // Metric - increased for longer names
+          1: { cellWidth: 35 }, // Department Average - increased
+          2: { cellWidth: 35 }, // NFPA Standard - increased for "≤60 seconds"
           3: { 
-            cellWidth: 35, // Status - wider for COMPLIANT/NON-COMPLIANT
+            cellWidth: 55, // Status - increased for COMPLIANT/NON-COMPLIANT
             textColor: (data: any) => {
               return data.cell.text[0].includes('✓') ? [46, 125, 50] : [211, 47, 47];
             }
@@ -498,18 +507,28 @@ export class PDFReportGenerator {
         theme: 'striped',
         headStyles: {
           fillColor: [25, 118, 210], // Professional blue
-          textColor: 255
+          textColor: 255,
+          fontSize: 11,
+          fontStyle: 'bold',
+          cellPadding: 4,
+          valign: 'middle',
+          halign: 'center'
         },
         bodyStyles: {
-          fontSize: 8
+          fontSize: 10,
+          cellPadding: 3,
+          valign: 'middle',
+          halign: 'left',
+          overflow: 'linebreak',
+          cellWidth: 'wrap'
         },
         columnStyles: {
-          0: { cellWidth: 20 }, // Incident ID
-          1: { cellWidth: 22 }, // Date
-          2: { cellWidth: 25 }, // Type
-          3: { cellWidth: 18 }, // Dispatch
-          4: { cellWidth: 18 }, // Turnout
-          5: { cellWidth: 22 }  // Response
+          0: { cellWidth: 25 }, // Incident ID - increased
+          1: { cellWidth: 25 }, // Date - increased
+          2: { cellWidth: 30 }, // Type - increased for longer incident types
+          3: { cellWidth: 22 }, // Dispatch - increased
+          4: { cellWidth: 22 }, // Turnout - increased
+          5: { cellWidth: 26 }  // Response - increased
         },
         margin: { left: 20, right: 20 },
         didDrawPage: (data: any) => {
