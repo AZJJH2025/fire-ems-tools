@@ -568,7 +568,16 @@ export class PDFReportGenerator {
     if (this.data.incidents.length > 20) {
       this.pdf.setFontSize(10);
       this.pdf.setTextColor(this.colors.mediumGray);
-      this.pdf.text(`Note: Showing first 20 of ${this.data.incidents.length} incidents. Full data available in detailed export.`, 20, this.yPosition);
+      // Use splitTextToSize for potentially long note
+      const noteText = `Note: Showing first 20 of ${this.data.incidents.length} incidents. Full data available in detailed export.`;
+      const wrappedNote = this.pdf.splitTextToSize(noteText, 170);
+      wrappedNote.forEach((line: string) => {
+        if (this.yPosition > 250) {
+          this.addNewPage();
+        }
+        this.pdf.text(line, 20, this.yPosition);
+        this.yPosition += 6;
+      });
     }
   }
   
@@ -696,8 +705,17 @@ export class PDFReportGenerator {
       if (this.yPosition > 250) {
         this.addNewPage();
       }
-      this.pdf.text(line, 20, this.yPosition);
-      this.yPosition += 6;
+      // Use splitTextToSize to wrap long lines within page margins (170mm width)
+      const wrappedLines = this.pdf.splitTextToSize(line, 170);
+      
+      // Add each wrapped line
+      wrappedLines.forEach((wrappedLine: string) => {
+        if (this.yPosition > 250) {
+          this.addNewPage();
+        }
+        this.pdf.text(wrappedLine, 20, this.yPosition);
+        this.yPosition += 6;
+      });
     });
     
     // Add incident distribution analysis
@@ -743,10 +761,24 @@ export class PDFReportGenerator {
         this.yPosition += 6;
       });
     } else {
-      this.pdf.text('Geographic data analysis requires city/location information in incident records.', 20, this.yPosition);
-      this.yPosition += 6;
-      this.pdf.text('Consider adding location fields to enable detailed geographic analysis.', 20, this.yPosition);
-      this.yPosition += 6;
+      // Use splitTextToSize for long lines
+      const line1 = this.pdf.splitTextToSize('Geographic data analysis requires city/location information in incident records.', 170);
+      line1.forEach((wrappedLine: string) => {
+        if (this.yPosition > 250) {
+          this.addNewPage();
+        }
+        this.pdf.text(wrappedLine, 20, this.yPosition);
+        this.yPosition += 6;
+      });
+      
+      const line2 = this.pdf.splitTextToSize('Consider adding location fields to enable detailed geographic analysis.', 170);
+      line2.forEach((wrappedLine: string) => {
+        if (this.yPosition > 250) {
+          this.addNewPage();
+        }
+        this.pdf.text(wrappedLine, 20, this.yPosition);
+        this.yPosition += 6;
+      });
     }
   }
   
@@ -778,8 +810,15 @@ export class PDFReportGenerator {
         this.yPosition += 6;
       });
     } else {
-      this.pdf.text('Response time geographic analysis requires location data in incident records.', 20, this.yPosition);
-      this.yPosition += 6;
+      // Use splitTextToSize for long lines
+      const wrappedLine = this.pdf.splitTextToSize('Response time geographic analysis requires location data in incident records.', 170);
+      wrappedLine.forEach((line: string) => {
+        if (this.yPosition > 250) {
+          this.addNewPage();
+        }
+        this.pdf.text(line, 20, this.yPosition);
+        this.yPosition += 6;
+      });
     }
   }
   
@@ -828,8 +867,17 @@ export class PDFReportGenerator {
       if (this.yPosition > 250) {
         this.addNewPage();
       }
-      this.pdf.text(line, 20, this.yPosition);
-      this.yPosition += 6;
+      // Use splitTextToSize to wrap long lines within page margins (170mm width)
+      const wrappedLines = this.pdf.splitTextToSize(line, 170);
+      
+      // Add each wrapped line
+      wrappedLines.forEach((wrappedLine: string) => {
+        if (this.yPosition > 250) {
+          this.addNewPage();
+        }
+        this.pdf.text(wrappedLine, 20, this.yPosition);
+        this.yPosition += 6;
+      });
     });
   }
   
@@ -973,16 +1021,34 @@ export class PDFReportGenerator {
     this.pdf.setTextColor(this.colors.text);
     
     if (!compliance.dispatchCompliance) {
-      this.pdf.text('• Dispatch times exceed NFPA 1710 standard of 60 seconds', 25, this.yPosition);
-      this.yPosition += 6;
+      const wrappedLine = this.pdf.splitTextToSize('• Dispatch times exceed NFPA 1710 standard of 60 seconds', 165);
+      wrappedLine.forEach((line: string) => {
+        if (this.yPosition > 250) {
+          this.addNewPage();
+        }
+        this.pdf.text(line, 25, this.yPosition);
+        this.yPosition += 6;
+      });
     }
     if (!compliance.turnoutCompliance) {
-      this.pdf.text('• Turnout times exceed NFPA 1710 standard of 60 seconds', 25, this.yPosition);
-      this.yPosition += 6;
+      const wrappedLine = this.pdf.splitTextToSize('• Turnout times exceed NFPA 1710 standard of 60 seconds', 165);
+      wrappedLine.forEach((line: string) => {
+        if (this.yPosition > 250) {
+          this.addNewPage();
+        }
+        this.pdf.text(line, 25, this.yPosition);
+        this.yPosition += 6;
+      });
     }
     if (!compliance.responseCompliance) {
-      this.pdf.text('• Total response times exceed NFPA 1710 standard of 5 minutes', 25, this.yPosition);
-      this.yPosition += 6;
+      const wrappedLine = this.pdf.splitTextToSize('• Total response times exceed NFPA 1710 standard of 5 minutes', 165);
+      wrappedLine.forEach((line: string) => {
+        if (this.yPosition > 250) {
+          this.addNewPage();
+        }
+        this.pdf.text(line, 25, this.yPosition);
+        this.yPosition += 6;
+      });
     }
   }
   
