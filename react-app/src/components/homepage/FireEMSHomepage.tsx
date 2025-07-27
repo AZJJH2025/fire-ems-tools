@@ -1023,28 +1023,37 @@ const FireEMSHomepage: React.FC = () => {
                       </Typography>
                     </Box>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                      <strong>Video Content Plan:</strong> Screen recording showing complete fire department workflow 
-                      from CAD export to final compliance report presentation.
+                      <strong>Complete Workflow Tutorial:</strong> Watch this comprehensive demo showing how to transform your CAD export data into professional compliance reports in just minutes.
                     </Typography>
-                    <Box sx={{ bgcolor: '#fff3e0', p: 2, borderRadius: 1, mb: 2 }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                        <strong>Suggested Video Script (8-12 minutes):</strong><br/>
-                        • Opening: "Welcome Fire Chiefs - this is your complete 15-minute workflow"<br/>
-                        • Demo uploading real CAD export file<br/>
-                        • Show auto-field mapping with Console One/Tyler examples<br/>
-                        • Generate NFPA 1710 compliance report<br/>
-                        • Show professional PDF suitable for city council<br/>
-                        • End with "You're now ready for monthly compliance reporting"
-                      </Typography>
+                    
+                    {/* YouTube Video Embed */}
+                    <Box sx={{ 
+                      position: 'relative',
+                      paddingBottom: '56.25%', // 16:9 aspect ratio
+                      height: 0,
+                      overflow: 'hidden',
+                      borderRadius: 2,
+                      mb: 2
+                    }}>
+                      <iframe
+                        src="https://www.youtube.com/embed/c9_F76s8y30"
+                        title="Fire-EMS Tools Complete Workflow Tutorial"
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '100%',
+                          border: 'none'
+                        }}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
                     </Box>
-                    <Button 
-                      variant="outlined" 
-                      startIcon={<VideoLibrary />} 
-                      disabled
-                      sx={{ mt: 1 }}
-                    >
-                      Video Coming Soon
-                    </Button>
+                    
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center', fontStyle: 'italic' }}>
+                      Learn how to upload CAD data, auto-map fields, and generate professional NFPA 1710 compliance reports
+                    </Typography>
                   </CardContent>
                 </Card>
               </Grid>
