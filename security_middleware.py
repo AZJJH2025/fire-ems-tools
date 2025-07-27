@@ -65,19 +65,20 @@ class SecurityHeadersMiddleware:
         style_nonce = getattr(g, 'csp_style_nonce', None)
         
         if is_dev:
-            # Development CSP - more permissive for development tools
+            # Development CSP - more permissive for development tools with Chrome compatibility
             script_nonce = f"'nonce-{nonce}'" if nonce else ""
             style_nonce = f"'nonce-{style_nonce}'" if style_nonce else ""
-            script_src = f"script-src 'self' 'strict-dynamic' {script_nonce} 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net"
-            style_src = f"style-src 'self' {style_nonce} 'unsafe-inline' https://fonts.googleapis.com"
+            script_src = f"script-src 'self' 'strict-dynamic' {script_nonce} 'unsafe-eval' 'unsafe-hashes' blob: https://unpkg.com https://cdn.jsdelivr.net"
+            style_src = f"style-src 'self' {style_nonce} 'unsafe-inline' 'unsafe-hashes' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com data: blob:"
             
             csp_directives = [
                 "default-src 'self'",
                 script_src,
                 style_src,
-                "font-src 'self' https://fonts.gstatic.com",
-                "img-src 'self' data: https:",
-                "connect-src 'self' https://api.github.com",  # For dependency checks
+                f"style-src-elem 'self' 'unsafe-inline' 'unsafe-hashes' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com data: blob:",
+                "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com",
+                "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://tile.openstreetmap.org",
+                "connect-src 'self' blob: https://api.github.com",  # For dependency checks
                 "object-src 'none'",
                 "base-uri 'self'",
                 "form-action 'self'",
