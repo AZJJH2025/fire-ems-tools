@@ -91,8 +91,8 @@ export const productionCSP: CSPConfig = {
   'default-src': ["'self'"],
   'script-src': [
     "'self'",
-    "'strict-dynamic'", // For dynamically loaded scripts
-    // Add nonce or hash for specific scripts if needed
+    "https://fireems.ai", // Allow our own domain for React dynamic imports
+    // Removed 'strict-dynamic' to allow host-based loading for code splitting
   ],
   'style-src': [
     "'self'",
