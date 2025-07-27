@@ -520,27 +520,35 @@ def api_logout():
         }), 500
 
 @bp.route('/api/me', methods=['GET'])
-@login_required
 def api_current_user():
-    """API endpoint to get current user info"""
+    """API endpoint to get current user info - returns JSON for both authenticated and unauthenticated users"""
     try:
-        return jsonify({
-            'success': True,
-            'user': {
-                'id': current_user.id,
-                'email': current_user.email,
-                'name': current_user.name,
-                'role': current_user.role,
-                'department_id': current_user.department_id,
-                'department_name': current_user.department.name if current_user.department else None,
-                'last_login': current_user.last_login.isoformat() if current_user.last_login else None,
-                'has_temp_password': getattr(current_user, 'has_temp_password', False)
-            }
-        })
+        if current_user.is_authenticated:
+            return jsonify({
+                'success': True,
+                'user': {
+                    'id': current_user.id,
+                    'email': current_user.email,
+                    'name': current_user.name,
+                    'role': current_user.role,
+                    'department_id': current_user.department_id,
+                    'department_name': current_user.department.name if current_user.department else None,
+                    'last_login': current_user.last_login.isoformat() if current_user.last_login else None,
+                    'has_temp_password': getattr(current_user, 'has_temp_password', False)
+                }
+            })
+        else:
+            # Return JSON response for unauthenticated users instead of redirecting
+            return jsonify({
+                'success': False,
+                'user': None,
+                'message': 'Not authenticated'
+            }), 401
     except Exception as e:
         logger.error(f"Current user error: {str(e)}")
         return jsonify({
             'success': False,
+            'user': None,
             'message': 'An error occurred getting user info'
         }), 500
 
