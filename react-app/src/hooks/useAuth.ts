@@ -41,22 +41,18 @@ export const useAuth = (): AuthState => {
 
       clearTimeout(timeoutId);
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.user) {
-          setAuthState({
-            user: data.user,
-            isAuthenticated: true,
-            isLoading: false,
-          });
-        } else {
-          setAuthState({
-            user: null,
-            isAuthenticated: false,
-            isLoading: false,
-          });
-        }
+      // Parse JSON response regardless of status code (both 200 and 401 return JSON)
+      const data = await response.json();
+      
+      if (response.ok && data.success && data.user) {
+        // User is authenticated (HTTP 200 with user data)
+        setAuthState({
+          user: data.user,
+          isAuthenticated: true,
+          isLoading: false,
+        });
       } else {
+        // User is not authenticated (HTTP 401 or HTTP 200 with success: false)
         setAuthState({
           user: null,
           isAuthenticated: false,
