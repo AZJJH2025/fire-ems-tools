@@ -127,7 +127,7 @@ Hello {contact_name},
 Great news! Your department "{department_name}" has been approved for FireEMS.ai access.
 
 Your department is now set up and ready to use. You can access the system at:
-{login_url or 'https://www.fireems.ai/app/login'}
+{login_url or 'https://fireems.ai/login'}
 
 Your login credentials:
 Username: {username or contact_email}
@@ -151,7 +151,7 @@ The FireEMS.ai Team
 <p><strong>Great news!</strong> Your department "{department_name}" has been approved for FireEMS.ai access.</p>
 
 <p>Your department is now set up and ready to use. You can access the system at:<br>
-<a href="{login_url or 'https://www.fireems.ai/app/login'}">{login_url or 'https://www.fireems.ai/app/login'}</a></p>
+<a href="{login_url or 'https://fireems.ai/login'}">{login_url or 'https://fireems.ai/login'}</a></p>
 
 <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px;">
 <strong>Your login credentials:</strong><br>
@@ -295,7 +295,7 @@ Hello {user_name},
 Your request to join "{department_name}" on FireEMS.ai has been approved!
 
 You can now access the system at:
-{login_url or 'https://www.fireems.ai/app/login'}
+{login_url or 'https://fireems.ai/login'}
 
 Your login credentials:
 Username: {user_email}
@@ -319,7 +319,7 @@ The FireEMS.ai Team
 <p>Your request to join "<strong>{department_name}</strong>" on FireEMS.ai has been approved!</p>
 
 <p>You can now access the system at:<br>
-<a href="{login_url or 'https://www.fireems.ai/app/login'}">{login_url or 'https://www.fireems.ai/app/login'}</a></p>
+<a href="{login_url or 'https://fireems.ai/login'}">{login_url or 'https://fireems.ai/login'}</a></p>
 
 <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px;">
 <strong>Your login credentials:</strong><br>

@@ -34,7 +34,7 @@ def require_admin(f):
 @bp.route('/')
 def admin_index():
     """Admin index - redirect to React app"""
-    return redirect('/app/admin')
+    return redirect('/admin')
 
 # User Management API Endpoints
 @bp.route('/api/users', methods=['GET'])
@@ -129,13 +129,17 @@ def create_user():
         # Send welcome email with login credentials
         try:
             department_name = user.department.name if user.department else "FireEMS.ai"
+            # Use dynamic URL generation instead of hardcoded domain
+            base_url = request.host_url.rstrip('/')
+            login_url = f"{base_url}/login"
+            
             email_sent = email_service.send_user_approval_email(
                 user_email=user.email,
                 user_name=user.name,
                 department_name=department_name,
                 approved=True,
                 temp_password=temp_password,
-                login_url="https://www.fireems.ai/app/login"
+                login_url=login_url
             )
             
             if email_sent:
@@ -288,13 +292,17 @@ def reset_user_password(user_id):
         # Send password reset email
         try:
             department_name = user.department.name if user.department else "FireEMS.ai"
+            # Use dynamic URL generation instead of hardcoded domain
+            base_url = request.host_url.rstrip('/')
+            login_url = f"{base_url}/login"
+            
             email_sent = email_service.send_user_approval_email(
                 user_email=user.email,
                 user_name=user.name,
                 department_name=department_name,
                 approved=True,
                 temp_password=temp_password,
-                login_url="https://www.fireems.ai/app/login"
+                login_url=login_url
             )
             
             if email_sent:

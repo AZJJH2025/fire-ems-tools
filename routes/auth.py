@@ -53,17 +53,17 @@ def auth_status():
 @bp.route('/login')
 def login():
     """Login route - redirect to React app"""
-    return redirect('/app/login')
+    return redirect('/login')
 
 @bp.route('/register')
 def register():
     """Register route - redirect to React app"""
-    return redirect('/app/signup')
+    return redirect('/signup')
 
 @bp.route('/logout')
 def logout():
     """Logout route"""
-    return redirect('/app/')
+    return redirect('/')
 
 # Debug endpoint to check admin users (temporary)
 @bp.route('/api/debug/admin-users', methods=['GET'])
@@ -593,7 +593,9 @@ def api_forgot_password():
             # Send password reset email
             try:
                 department_name = user.department.name if user.department else "FireEMS.ai"
-                reset_url = f"https://www.fireems.ai/app/reset-password?token={reset_token}&email={email}"
+                # Use dynamic URL generation instead of hardcoded domain
+                base_url = request.host_url.rstrip('/')
+                reset_url = f"{base_url}/reset-password?token={reset_token}&email={email}"
                 
                 email_sent = email_service.send_password_reset_email(
                     user_email=user.email,
